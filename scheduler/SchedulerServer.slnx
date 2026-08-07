@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug-Local" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release-Local" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/Reference.Scheduler.Server/Reference.Scheduler.Server.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Reference.Scheduler.Server.Tests/Reference.Scheduler.Server.Tests.csproj" />
+  </Folder>
+</Solution>

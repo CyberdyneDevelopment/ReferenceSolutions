@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS1591</NoWarn> <!-- Suppress XML documentation warnings for test projects -->
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,96 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <!-- Enable generator debugging -->
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <!-- Disable XML doc generation for this sample application -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- FastEndpoints + Swagger/Scalar -->
+    <PackageReference Include="FastEndpoints" />
+    <PackageReference Include="FastEndpoints.Swagger" />
+    <PackageReference Include="Fdw.Services.SecretManagers.MsSql" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="ReferenceAuthentication.OpenIddict" />
+    <!-- Why: the SERVICE-TYPE package, not the aggregation. A package reference IS a
+     registration, so this is how the host declares it wants MsSql connections
+     registered; it brings ReferenceConnections.MsSql (the aggregation) transitively. -->
+    <PackageReference Include="ReferenceConnections.MsSql.ServiceType" />
+    <PackageReference Include="ReferenceSecretManagers.EnvironmentVariable" />
+    <PackageReference Include="Scalar.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.Grafana.Loki" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Source Generators -->
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.Services.Registration" />
+    <PackageReference Include="Fdw.Services.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Commands.Data.Extensions" />
+
+    <!-- Serilog -->
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Enrichers.Process" />
+    <PackageReference Include="Serilog.Enrichers.Span" />
+    <PackageReference Include="Serilog.Enrichers.Thread" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Settings.Configuration" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.Seq" />
+    <PackageReference Include="Serilog.Enrichers.Environment" />
+
+    <!-- OpenTelemetry -->
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+
+    <!-- Fdw Hosting -->
+    <PackageReference Include="Fdw.Hosting.MsSql" />
+
+    <!-- Fdw Core -->
+    <PackageReference Include="Fdw.Services.Connections" />
+    <PackageReference Include="Fdw.Services.Connections.MsSql" />
+    <PackageReference Include="Fdw.Services.SecretManagers" />
+    <PackageReference Include="Fdw.Services.SecretManagers.EnvironmentVariable" />
+    <PackageReference Include="Fdw.Configuration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Messages" />
+    <PackageReference Include="Fdw.Services.Resiliency" />
+    <PackageReference Include="Fdw.Services.Data" />
+    <PackageReference Include="Fdw.Data" />
+    <PackageReference Include="Fdw.Data.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <!-- Fdw Client Packages -->
+    <PackageReference Include="Fdw.Services.Pipelines.Clients" />
+    <!-- Fdw Scheduling -->
+    <PackageReference Include="Fdw.Services.Scheduling" />
+    <!-- Why: OpenIddict validation so incoming bearer tokens from reference-api/clients are validated. -->
+    <PackageReference Include="Fdw.Services.Authentication.OpenIddict" />
+    <PackageReference Include="Fdw.Services.Multitenancy.Abstractions" />
+
+    <!-- Fdw Schema & Types -->
+    <PackageReference Include="Fdw.Schema.Abstractions" />
+    <PackageReference Include="Fdw.Schema.Ddl" />
+    <PackageReference Include="Fdw.Schema.Ddl.MsSql" />
+    <PackageReference Include="Fdw.Types.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="configurationSchema.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

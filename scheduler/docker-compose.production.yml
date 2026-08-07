@@ -1,0 +1,17 @@
+services:
+  scheduler:
+    build: .
+    container_name: fdw-scheduler
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:5004"
+      FDW_SECRET_CONFIG_RO_PASSWORD: "${FDW_SECRET_CONFIG_RO_PASSWORD:-FdwConfigRoPassword#}"
+      InternalApi__ApiKey: "${INTERNAL_API_KEY:-dev-internal-key}"
+      EtlDispatch__BaseUrl: "${ETL_BASE_URL:-http://localhost:5002}"
+      ControlDb__Server: "${CONFIGDB_SERVER:-localhost}"
+      ControlDb__Authentication__Username: "fdw_config_ro"
+      ControlDb__Authentication__SecretKeyName: "CONFIG_RO_PASSWORD"
+      Serilog__WriteTo__1__Name: "Seq"
+      Serilog__WriteTo__1__Args__serverUrl: "${SEQ_URL:-http://localhost:5341}"
+    ports:
+      - "5004:5004"
