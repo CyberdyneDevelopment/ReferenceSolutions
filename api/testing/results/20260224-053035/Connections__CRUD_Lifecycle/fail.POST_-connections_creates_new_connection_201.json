@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "POST /connections creates new connection (201)",
+  "domain": "Connections — CRUD Lifecycle",
+  "detail": "expected status 201, got 400 (body: {\"statusCode\":400,\"message\":\"One or more errors occurred!\",\"errors\":{\"serviceType\":[\"Service type is required (e.g., MsSql, PostgreSql)\"],\"authentication\":[\"Username is required for SQL authentication)",
+  "httpStatus": "400",
+  "body": "{\"statusCode\":400,\"message\":\"One or more errors occurred!\",\"errors\":{\"serviceType\":[\"Service type is required (e.g., MsSql, PostgreSql)\"],\"authentication\":[\"Username is required for SQL authentication\",\"Secret key name is required for SQL authentication\"]}}",
+  "timestamp": "2026-02-24T05:30:48+00:00"
+}

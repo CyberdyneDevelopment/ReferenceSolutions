@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "switch response has success=true",
+  "domain": "Tenants — Switch",
+  "method": "POST",
+  "endpoint": "/tenants/switch",
+  "detail": "expected .success to be boolean, got ",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:33+00:00"
+}

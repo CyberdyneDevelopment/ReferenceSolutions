@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "LiveDataStream is Streaming type",
+  "domain": "Pipelines",
+  "method": "GET",
+  "endpoint": "/pipelines",
+  "detail": "expected LiveDataStream pipelineType=Streaming, got ",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:47:37+00:00"
+}

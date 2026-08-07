@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /themes as viewer returns 200",
+  "domain": "Themes — Auth Matrix",
+  "method": "GET",
+  "endpoint": "/themes",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:47:41+00:00"
+}

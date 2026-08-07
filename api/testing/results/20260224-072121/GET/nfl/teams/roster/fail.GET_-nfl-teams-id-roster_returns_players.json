@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "GET /nfl/teams/{id}/roster returns players",
+  "domain": "NFL Data — Roster Queries",
+  "method": "GET",
+  "endpoint": "/nfl/teams//roster",
+  "detail": "expected . length >= 1, got ",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:22:59+00:00"
+}

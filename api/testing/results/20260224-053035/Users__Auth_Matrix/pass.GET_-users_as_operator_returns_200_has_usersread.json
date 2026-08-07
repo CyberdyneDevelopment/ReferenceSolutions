@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "GET /users as operator returns 200 (has users:read)",
+  "domain": "Users — Auth Matrix",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:30:37+00:00"
+}

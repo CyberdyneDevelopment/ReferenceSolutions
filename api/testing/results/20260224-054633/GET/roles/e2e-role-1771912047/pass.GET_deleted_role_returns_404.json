@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET deleted role returns 404",
+  "domain": "Roles — CRUD Lifecycle",
+  "method": "GET",
+  "endpoint": "/roles/e2e-role-1771912047",
+  "detail": "",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:30+00:00"
+}

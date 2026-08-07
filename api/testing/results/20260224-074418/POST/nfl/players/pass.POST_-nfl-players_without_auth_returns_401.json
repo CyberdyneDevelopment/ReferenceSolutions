@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "POST /nfl/players without auth returns 401",
+  "domain": "NFL Data — Auth Matrix",
+  "method": "POST",
+  "endpoint": "/nfl/players",
+  "detail": "",
+  "httpStatus": "401",
+  "body": "",
+  "timestamp": "2026-02-24T07:45:04+00:00"
+}

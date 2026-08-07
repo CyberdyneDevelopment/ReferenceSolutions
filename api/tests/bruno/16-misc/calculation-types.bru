@@ -1,0 +1,19 @@
+meta {
+  name: Get calculation types
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/calculations/types
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 404]
+}

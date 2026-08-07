@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Completed promotion exists",
+  "domain": "Promotions — Seeded Promotion Request",
+  "method": "GET",
+  "endpoint": "/promotion",
+  "detail": "Completed promotion not found",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:41+00:00"
+}

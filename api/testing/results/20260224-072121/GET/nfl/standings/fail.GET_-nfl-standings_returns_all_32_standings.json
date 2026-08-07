@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "GET /nfl/standings returns all 32 standings",
+  "domain": "NFL Data — Standings",
+  "method": "GET",
+  "endpoint": "/nfl/standings?season=2025",
+  "detail": "expected . length == 32, got ",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:23:00+00:00"
+}

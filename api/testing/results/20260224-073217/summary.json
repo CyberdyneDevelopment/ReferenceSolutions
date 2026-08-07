@@ -1,0 +1,137 @@
+{
+  "total": 37,
+  "passed": 4,
+  "failed": 62,
+  "skipped": 0,
+  "completed": "2026-02-24T07:33:08+00:00",
+  "endpoints": [
+    {
+      "method": "DELETE",
+      "endpoint": "/nfl/players/",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/nfl/stats/",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/games//boxscore",
+      "pass": 0,
+      "fail": 4,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/games?season=2025&week=1",
+      "pass": 0,
+      "fail": 2,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/standings?season=2025",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/standings?season=2025&conference=AFC",
+      "pass": 1,
+      "fail": 1,
+      "skip": 0,
+      "rate": "50%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams",
+      "pass": 1,
+      "fail": 5,
+      "skip": 0,
+      "rate": "16%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams//roster",
+      "pass": 0,
+      "fail": 6,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams//roster?isActive=true",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams//roster?position=QB",
+      "pass": 0,
+      "fail": 2,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams?conference=AFC",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams?conference=NFC&division=North",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/nfl/games//stats",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/nfl/players",
+      "pass": 2,
+      "fail": 3,
+      "skip": 0,
+      "rate": "40%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/nfl/players//retire",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/nfl/players//transfer",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    }
+  ]
+}

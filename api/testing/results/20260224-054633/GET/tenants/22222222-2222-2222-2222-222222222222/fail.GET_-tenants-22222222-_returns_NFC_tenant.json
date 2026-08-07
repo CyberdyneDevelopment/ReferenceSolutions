@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "GET /tenants/22222222-... returns NFC tenant",
+  "domain": "Tenants — NFC Detail",
+  "method": "GET",
+  "endpoint": "/tenants/22222222-2222-2222-2222-222222222222",
+  "detail": "expected status 200, got 403 (body: )",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:32+00:00"
+}

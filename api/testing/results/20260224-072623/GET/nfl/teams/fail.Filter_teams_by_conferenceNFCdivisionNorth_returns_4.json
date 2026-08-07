@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Filter teams by conference=NFC&division=North returns 4",
+  "domain": "NFL Data — Team Queries",
+  "method": "GET",
+  "endpoint": "/nfl/teams?conference=NFC&division=North",
+  "detail": "expected . length == 4, got 3",
+  "httpStatus": "500",
+  "body": "{\"statusCode\":500,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to list teams\"]}}",
+  "timestamp": "2026-02-24T07:26:41+00:00"
+}

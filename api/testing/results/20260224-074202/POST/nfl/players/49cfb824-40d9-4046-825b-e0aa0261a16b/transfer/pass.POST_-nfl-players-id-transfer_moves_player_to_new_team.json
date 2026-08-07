@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "POST /nfl/players/{id}/transfer moves player to new team",
+  "domain": "NFL Data — Update Operations",
+  "method": "POST",
+  "endpoint": "/nfl/players/49cfb824-40d9-4046-825b-e0aa0261a16b/transfer",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "{\"id\":\"49cfb824-40d9-4046-825b-e0aa0261a16b\",\"teamId\":\"a8bbaebe-80b9-464a-b8e0-c860c41379ca\",\"firstName\":\"E2E\",\"lastName\":\"TestPlayer\",\"position\":\"WR\",\"jerseyNumber\":99,\"heightInches\":72,\"weightLbs\":195,\"college\":\"Test University\",\"draftYear\":2025,\"draftRound\":7,\"draftPick\":250,\"isActive\":true,\"createDate\":\"2026-02-24T07:42:50.5730901+00:00\",\"createBy\":\"api\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:42:51.6703754+00:00\",\"modifyBy\":\"api\",\"modifyOnBehalfOf\":\"\"}",
+  "timestamp": "2026-02-24T07:42:51+00:00"
+}

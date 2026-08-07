@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "DataArchiveCopy is BatchCopy type",
+  "domain": "Pipelines",
+  "detail": "expected DataArchiveCopy pipelineType=BatchCopy, got ",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:30:52+00:00"
+}

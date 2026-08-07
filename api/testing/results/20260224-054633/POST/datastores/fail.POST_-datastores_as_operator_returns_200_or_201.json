@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "POST /datastores as operator returns 200 or 201",
+  "domain": "DataStores",
+  "method": "POST",
+  "endpoint": "/datastores",
+  "detail": "expected 200 or 201, got 500",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to create datastores\",\"details\":\"Failed to persist configuration 'DataStore' with Id '999f7367-a6c6-4d4a-b9d7-829a8202661e': No mapping exists from object type System.Collections.Generic.List`1[[FractalDataWorks.Services.Connections.DataPathConfiguration, FractalDataWorks.Services.Connections, Version=0.8.0.0, Culture=neutral, PublicKeyToken=null]] to a known managed provider native type.\"}",
+  "timestamp": "2026-02-24T05:47:34+00:00"
+}

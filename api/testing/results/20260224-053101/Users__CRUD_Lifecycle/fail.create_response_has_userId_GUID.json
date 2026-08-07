@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "create response has userId (GUID)",
+  "domain": "Users — CRUD Lifecycle",
+  "detail": "expected .userId to be GUID, got \"null\"",
+  "httpStatus": "400",
+  "body": "{\"statusCode\":400,\"message\":\"One or more errors occurred!\",\"errors\":{\"username\":[\"Username must start with a letter and contain only letters, numbers, or underscores\"]}}",
+  "timestamp": "2026-02-24T05:31:03+00:00"
+}

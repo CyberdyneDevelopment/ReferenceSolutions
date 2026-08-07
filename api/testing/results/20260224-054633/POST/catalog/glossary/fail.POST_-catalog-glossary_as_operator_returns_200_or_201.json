@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "POST /catalog/glossary as operator returns 200 or 201",
+  "domain": "Catalog & Glossary",
+  "method": "POST",
+  "endpoint": "/catalog/glossary",
+  "detail": "expected 200 or 201, got 500",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to create glossary term\",\"details\":\"Container 'GlossaryTerm' not found in configuration\"}",
+  "timestamp": "2026-02-24T05:47:39+00:00"
+}

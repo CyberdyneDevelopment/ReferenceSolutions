@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Filter roster by position=QB",
+  "domain": "NFL Data — Roster Queries",
+  "method": "GET",
+  "endpoint": "/nfl/teams//roster?position=QB",
+  "detail": "expected . to be array, got ",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:26:41+00:00"
+}

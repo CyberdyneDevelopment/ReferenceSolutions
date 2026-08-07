@@ -1,0 +1,21 @@
+meta {
+  name: Create promotion (no token)
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/promotion/requests
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "SourceEnvironment": "Dev"
+  }
+}
+
+assert {
+  res.status: eq 401
+}

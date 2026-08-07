@@ -1,0 +1,29 @@
+meta {
+  name: Update glossary term
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/catalog/glossary/{{glossaryTermId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Name": "TestGlossaryTerm",
+    "Definition": "Updated definition for E2E testing",
+    "Category": "IntegrationTest",
+    "Owner": "testAdmin",
+    "RelatedDataSets": ["Schedules", "PipelineExecutions"]
+  }
+}
+
+assert {
+  res.status: eq 200
+}

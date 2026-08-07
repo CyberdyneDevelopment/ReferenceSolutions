@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "first tenant has isActive (bool)",
+  "domain": "Tenants — List",
+  "detail": "expected .[0].isActive to be boolean, got ",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:47+00:00"
+}

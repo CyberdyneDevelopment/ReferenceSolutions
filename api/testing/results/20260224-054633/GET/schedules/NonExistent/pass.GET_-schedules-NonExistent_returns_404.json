@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /schedules/NonExistent returns 404",
+  "domain": "Schedules",
+  "method": "GET",
+  "endpoint": "/schedules/NonExistent",
+  "detail": "",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:39+00:00"
+}

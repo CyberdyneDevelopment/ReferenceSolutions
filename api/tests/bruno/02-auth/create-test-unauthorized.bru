@@ -1,0 +1,36 @@
+meta {
+  name: Bootstrap - Create testUnAuthorized user
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+body:json {
+  {
+    "Username": "{{testUnauthorizedUsername}}",
+    "Password": "{{testUnauthorizedPassword}}",
+    "Email": "unauth@test.com"
+  }
+}
+
+assert {
+  res.status: in [200, 201, 409]
+}
+
+script:post-response {
+  if (res.status === 200 || res.status === 201) {
+    var userId = res.body.UserId || res.body.userId || res.body.Id || res.body.id;
+    if (userId) {
+      bru.setVar("testUnauthorizedUserId", userId);
+    }
+  }
+}

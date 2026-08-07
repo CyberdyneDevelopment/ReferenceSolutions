@@ -1,0 +1,9 @@
+{
+  "status": "skip",
+  "test": "GET /pipelines/DataArchiveCopy/status returns result",
+  "domain": "Pipelines",
+  "detail": "Pipeline status returned 404",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:52+00:00"
+}

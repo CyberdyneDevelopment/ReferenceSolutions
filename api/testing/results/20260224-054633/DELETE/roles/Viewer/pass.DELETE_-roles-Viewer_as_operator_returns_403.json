@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "DELETE /roles/Viewer as operator returns 403",
+  "domain": "Security Matrix — Operator Forbidden on DELETE (403)",
+  "method": "DELETE",
+  "endpoint": "/roles/Viewer",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:45+00:00"
+}

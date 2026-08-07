@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "GET /nfl/games?season=2025&week=1 returns 16 games",
+  "domain": "NFL Data — Game Queries",
+  "method": "GET",
+  "endpoint": "/nfl/games?season=2025&week=1",
+  "detail": "expected . length == 16, got ",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:23:28+00:00"
+}

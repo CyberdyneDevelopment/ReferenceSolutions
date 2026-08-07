@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "GET /promotion/environments returns array",
+  "domain": "Promotions — Environments",
+  "method": "GET",
+  "endpoint": "/promotion/environments",
+  "detail": "expected status 200, got 500 (body: {\"statusCode\":500,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to list environments\"]}})",
+  "httpStatus": "500",
+  "body": "{\"statusCode\":500,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to list environments\"]}}",
+  "timestamp": "2026-02-24T05:47:40+00:00"
+}

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "create response has message",
+  "domain": "Users — CRUD Lifecycle",
+  "method": "POST",
+  "endpoint": "/users",
+  "detail": "",
+  "httpStatus": "400",
+  "body": "{\"statusCode\":400,\"message\":\"One or more errors occurred!\",\"errors\":{\"username\":[\"Username must start with a letter and contain only letters, numbers, or underscores\"]}}",
+  "timestamp": "2026-02-24T05:47:22+00:00"
+}

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /analytics/top without auth returns 401",
+  "domain": "Analytics — Auth Matrix",
+  "method": "GET",
+  "endpoint": "/analytics/top",
+  "detail": "",
+  "httpStatus": "401",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:43+00:00"
+}

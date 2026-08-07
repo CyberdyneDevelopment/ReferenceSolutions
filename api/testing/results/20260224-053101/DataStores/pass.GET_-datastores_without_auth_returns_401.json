@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "GET /datastores without auth returns 401",
+  "domain": "DataStores",
+  "detail": "",
+  "httpStatus": "401",
+  "body": "",
+  "timestamp": "2026-02-24T05:31:12+00:00"
+}

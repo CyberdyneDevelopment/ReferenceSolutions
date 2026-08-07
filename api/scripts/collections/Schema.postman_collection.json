@@ -1,0 +1,253 @@
+{
+  "info": {
+    "name": "Reference API - Schema & DDL",
+    "description": "Schema discovery, import, sync, preview, and DDL operations for the Reference API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "connectionName",
+      "value": "ControlDb",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Schema Discovery",
+      "item": [
+        {
+          "name": "List Schema-Capable Connections",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/connections/schema-capable",
+              "host": ["{{baseUrl}}"],
+              "path": ["connections", "schema-capable"]
+            },
+            "description": "Returns connections that support schema discovery."
+          }
+        },
+        {
+          "name": "Discover Schema",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/connections/{{connectionName}}/schema",
+              "host": ["{{baseUrl}}"],
+              "path": ["connections", "{{connectionName}}", "schema"]
+            },
+            "description": "Discovers the schema (tables, views, columns) for a connection."
+          }
+        },
+        {
+          "name": "Get Schema Graph",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/connections/{{connectionName}}/schema-graph",
+              "host": ["{{baseUrl}}"],
+              "path": ["connections", "{{connectionName}}", "schema-graph"]
+            },
+            "description": "Returns schema in ER diagram graph format."
+          }
+        },
+        {
+          "name": "Get Schema Graph (with filter)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/connections/{{connectionName}}/schema-graph?SchemaFilter=cfg",
+              "host": ["{{baseUrl}}"],
+              "path": ["connections", "{{connectionName}}", "schema-graph"],
+              "query": [
+                {
+                  "key": "SchemaFilter",
+                  "value": "cfg"
+                }
+              ]
+            },
+            "description": "Returns schema graph filtered to a specific schema."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Schema Import & Sync",
+      "item": [
+        {
+          "name": "Import Schema",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"connectionName\": \"{{connectionName}}\",\n  \"dataStoreName\": \"{{connectionName}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/connections/{{connectionName}}/import-schema",
+              "host": ["{{baseUrl}}"],
+              "path": ["connections", "{{connectionName}}", "import-schema"]
+            },
+            "description": "Imports discovered schema into DataStore configuration."
+          }
+        },
+        {
+          "name": "Sync Schema",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"connectionName\": \"{{connectionName}}\",\n  \"applyChanges\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/connections/{{connectionName}}/sync-schema",
+              "host": ["{{baseUrl}}"],
+              "path": ["connections", "{{connectionName}}", "sync-schema"]
+            },
+            "description": "Compares current database schema against stored DataStore config."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Data Preview",
+      "item": [
+        {
+          "name": "Preview Table Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"connectionName\": \"{{connectionName}}\",\n  \"schemaName\": \"cfg\",\n  \"tableName\": \"Connection\",\n  \"maxRows\": 50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/schema/preview",
+              "host": ["{{baseUrl}}"],
+              "path": ["schema", "preview"]
+            },
+            "description": "Preview data from a table with optional column and filter selections."
+          }
+        },
+        {
+          "name": "Preview DataSet Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataSetName\": \"Connections\",\n  \"maxRows\": 100\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/schema/preview",
+              "host": ["{{baseUrl}}"],
+              "path": ["schema", "preview"]
+            },
+            "description": "Preview data from a DataSet."
+          }
+        },
+        {
+          "name": "Preview with Filters",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"connectionName\": \"{{connectionName}}\",\n  \"schemaName\": \"cfg\",\n  \"tableName\": \"Connection\",\n  \"maxRows\": 50,\n  \"filters\": [\n    {\n      \"column\": \"Name\",\n      \"operator\": \"Equal\",\n      \"value\": \"ControlDb\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/schema/preview",
+              "host": ["{{baseUrl}}"],
+              "path": ["schema", "preview"]
+            },
+            "description": "Preview data with WHERE clause filtering."
+          }
+        }
+      ]
+    },
+    {
+      "name": "DDL Operations",
+      "item": [
+        {
+          "name": "Generate DDL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schemaFilter\": \"cfg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/connections/{{connectionName}}/generate-ddl",
+              "host": ["{{baseUrl}}"],
+              "path": ["connections", "{{connectionName}}", "generate-ddl"]
+            },
+            "description": "Generates CREATE TABLE DDL from discovered schema."
+          }
+        },
+        {
+          "name": "Execute DDL (Create Table)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schemaName\": \"dbo\",\n  \"tableName\": \"TestTable\",\n  \"columns\": [\n    {\n      \"name\": \"Id\",\n      \"sqlType\": \"INT\",\n      \"isRequired\": true,\n      \"isPrimaryKey\": true,\n      \"isIdentity\": true\n    },\n    {\n      \"name\": \"Name\",\n      \"sqlType\": \"NVARCHAR\",\n      \"maxLength\": 255,\n      \"isRequired\": true\n    },\n    {\n      \"name\": \"Description\",\n      \"sqlType\": \"NVARCHAR\",\n      \"maxLength\": 1000,\n      \"isRequired\": false\n    },\n    {\n      \"name\": \"CreatedDate\",\n      \"sqlType\": \"DATETIME2\",\n      \"isRequired\": true\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/connections/{{connectionName}}/execute-ddl",
+              "host": ["{{baseUrl}}"],
+              "path": ["connections", "{{connectionName}}", "execute-ddl"]
+            },
+            "description": "Creates a table using safe, parameterized DDL execution."
+          }
+        }
+      ]
+    }
+  ]
+}

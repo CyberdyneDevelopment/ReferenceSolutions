@@ -1,0 +1,28 @@
+meta {
+  name: Update TestApiTheme
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/themes/TestApiTheme
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Name": "TestApiTheme",
+    "DisplayName": "Updated Theme",
+    "PrimaryColor": "#FF5722",
+    "IsDarkMode": true
+  }
+}
+
+assert {
+  res.status: eq 200
+}

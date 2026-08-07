@@ -1,0 +1,34 @@
+meta {
+  name: Create TestApiTheme
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/themes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Name": "TestApiTheme",
+    "DisplayName": "Test API Theme",
+    "Description": "Theme created by API E2E tests",
+    "PrimaryColor": "#1976D2",
+    "SecondaryColor": "#424242",
+    "BackgroundColor": "#FFFFFF",
+    "SurfaceColor": "#FAFAFA",
+    "IsDarkMode": false,
+    "FontFamily": "Roboto, sans-serif",
+    "BorderRadius": 4
+  }
+}
+
+assert {
+  res.status: in [200, 201]
+}

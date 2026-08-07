@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "switch response has message",
+  "domain": "Tenants — Switch",
+  "detail": "expected .message to be string, got ",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:31:11+00:00"
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Bootstrap - Login as testUnAuthorized
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/auth/token
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "Username": "{{testUnauthorizedUsername}}",
+    "Password": "{{testUnauthorizedPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.AccessToken: isDefined
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("testUnauthorizedToken", res.body.AccessToken);
+  }
+}

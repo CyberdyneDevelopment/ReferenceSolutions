@@ -1,0 +1,29 @@
+meta {
+  name: Update TestApiSchedule
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/schedules/TestApiSchedule
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Name": "TestApiSchedule",
+    "PipelineName": "DataArchiveCopy",
+    "SchedulerType": "Cron",
+    "CronExpression": "0 6 * * *",
+    "IsEnabled": true
+  }
+}
+
+assert {
+  res.status: eq 200
+}

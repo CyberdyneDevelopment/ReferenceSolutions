@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Player no longer on old team roster",
+  "domain": "NFL Data — Update Operations",
+  "method": "GET",
+  "endpoint": "/nfl/teams//roster",
+  "detail": "Player still on old team",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:33:07+00:00"
+}

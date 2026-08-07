@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Created player has valid id",
+  "domain": "NFL Data — Insert Operations",
+  "method": "POST",
+  "endpoint": "/nfl/players",
+  "detail": "No id in response",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:23:29+00:00"
+}

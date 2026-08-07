@@ -1,0 +1,19 @@
+meta {
+  name: Get non-existent role
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/roles/NoSuchRole
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 404
+}

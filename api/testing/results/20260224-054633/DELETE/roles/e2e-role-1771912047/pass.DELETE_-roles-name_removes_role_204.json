@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "DELETE /roles/{name} removes role (204)",
+  "domain": "Roles — CRUD Lifecycle",
+  "method": "DELETE",
+  "endpoint": "/roles/e2e-role-1771912047",
+  "detail": "",
+  "httpStatus": "204",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:30+00:00"
+}

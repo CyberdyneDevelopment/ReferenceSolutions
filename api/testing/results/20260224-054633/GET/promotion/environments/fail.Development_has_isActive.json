@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Development has isActive",
+  "domain": "Promotions — Environments",
+  "method": "GET",
+  "endpoint": "/promotion/environments",
+  "detail": "expected .[].isActive to be boolean, got ",
+  "httpStatus": "500",
+  "body": "{\"statusCode\":500,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to list environments\"]}}",
+  "timestamp": "2026-02-24T05:47:40+00:00"
+}

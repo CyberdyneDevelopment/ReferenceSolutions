@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "All filtered players are QBs",
+  "domain": "NFL Data — Roster Queries",
+  "method": "GET",
+  "endpoint": "/nfl/teams/5aeafde0-0eaa-423f-99e8-a50aab3a7f71/roster?position=QB",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[{\"id\":\"873b74c9-12ae-4289-ad03-04f944f9fc0b\",\"teamId\":\"5aeafde0-0eaa-423f-99e8-a50aab3a7f71\",\"firstName\":\"Caleb\",\"lastName\":\"Williams\",\"position\":\"QB\",\"jerseyNumber\":18,\"heightInches\":73,\"weightLbs\":220,\"college\":\"USC\",\"draftYear\":2024,\"draftRound\":1,\"draftPick\":1,\"isActive\":true,\"createDate\":\"2026-02-24T09:00:08.5723799+00:00\",\"createBy\":\"sa\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T09:00:08.5723799+00:00\",\"modifyBy\":\"sa\",\"modifyOnBehalfOf\":\"\"}]",
+  "timestamp": "2026-02-24T09:00:26+00:00"
+}

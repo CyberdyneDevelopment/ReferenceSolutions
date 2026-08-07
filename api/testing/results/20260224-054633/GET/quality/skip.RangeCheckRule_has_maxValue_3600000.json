@@ -1,0 +1,11 @@
+{
+  "status": "skip",
+  "test": "RangeCheckRule has maxValue 3600000",
+  "domain": "Quality Rules",
+  "method": "GET",
+  "endpoint": "/quality",
+  "detail": "Could not find NullCheckRule ID for detail test",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:40+00:00"
+}

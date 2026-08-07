@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "Contains DataArchiveCopy",
+  "domain": "Pipelines",
+  "detail": "expected [.[] | .name] to contain \"DataArchiveCopy\"",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:30:52+00:00"
+}

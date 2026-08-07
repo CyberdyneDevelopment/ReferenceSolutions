@@ -1,0 +1,15 @@
+meta {
+  name: Delete pipeline (no token)
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/pipelines/DataArchiveCopy
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}

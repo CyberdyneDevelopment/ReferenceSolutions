@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "LiveDataStream has correct id",
+  "domain": "Pipelines",
+  "method": "GET",
+  "endpoint": "/pipelines/LiveDataStream",
+  "detail": "expected .id == \"A2B3C4D5-E6F7-8901-AB23-456789ABCDEF\", got \"null\"",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to fetch pipeline\",\"details\":\"Container 'Pipelines' not found in configuration\"}",
+  "timestamp": "2026-02-24T05:47:37+00:00"
+}

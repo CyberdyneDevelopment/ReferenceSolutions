@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "DELETE /users as operator returns 403 (no users:delete)",
+  "domain": "Users — Auth Matrix",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:37+00:00"
+}

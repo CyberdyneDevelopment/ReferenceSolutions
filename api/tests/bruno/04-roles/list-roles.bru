@@ -1,0 +1,19 @@
+meta {
+  name: List roles
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/roles
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+}

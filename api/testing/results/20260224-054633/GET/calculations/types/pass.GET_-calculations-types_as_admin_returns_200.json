@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /calculations/types as admin returns 200",
+  "domain": "Calculations — Auth Matrix",
+  "method": "GET",
+  "endpoint": "/calculations/types",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "{\"types\":[{\"id\":2,\"name\":\"Average\",\"description\":\"Calculates the arithmetic mean of all values\"},{\"id\":5,\"name\":\"Count\",\"description\":\"Returns the number of values\"},{\"id\":4,\"name\":\"Max\",\"description\":\"Returns the maximum value\"},{\"id\":3,\"name\":\"Min\",\"description\":\"Returns the minimum value\"},{\"id\":1,\"name\":\"Sum\",\"description\":\"Calculates the total sum of all values\"}]}",
+  "timestamp": "2026-02-24T05:47:44+00:00"
+}

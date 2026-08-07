@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Schedules totalCount is 4",
+  "domain": "Schedules",
+  "method": "GET",
+  "endpoint": "/schedules",
+  "detail": "expected .totalCount == 4, got ",
+  "httpStatus": "200",
+  "body": "[{\"items\":[],\"totalCount\":0,\"page\":1,\"pageSize\":25,\"totalPages\":0}]",
+  "timestamp": "2026-02-24T05:47:38+00:00"
+}

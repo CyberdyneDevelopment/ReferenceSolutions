@@ -1,0 +1,11 @@
+{
+  "status": "skip",
+  "test": "GET /datasets/Schedules/dataflow",
+  "domain": "Lineage — Dataset-Specific Endpoints",
+  "method": "GET",
+  "endpoint": "/datasets/Schedules/dataflow",
+  "detail": "Dataset dataflow endpoint not implemented",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:42+00:00"
+}

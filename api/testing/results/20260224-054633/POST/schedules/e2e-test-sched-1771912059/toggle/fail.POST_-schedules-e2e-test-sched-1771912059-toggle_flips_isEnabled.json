@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "POST /schedules/e2e-test-sched-1771912059/toggle flips isEnabled",
+  "domain": "Schedules",
+  "method": "POST",
+  "endpoint": "/schedules/e2e-test-sched-1771912059/toggle",
+  "detail": "Toggle returned 405",
+  "httpStatus": "405",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:39+00:00"
+}

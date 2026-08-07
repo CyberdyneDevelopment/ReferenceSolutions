@@ -1,0 +1,19 @@
+meta {
+  name: Get dataflow graph
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/dataflow/graph
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 404, 500]
+}

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "POST /datastores as viewer returns 403",
+  "domain": "Security Matrix — Viewer Forbidden on POST (403)",
+  "method": "POST",
+  "endpoint": "/datastores",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:45+00:00"
+}

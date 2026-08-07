@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Glossary contains Customer",
+  "domain": "Catalog & Glossary",
+  "method": "GET",
+  "endpoint": "/catalog/glossary",
+  "detail": "expected [.[] | .name] to contain \"Customer\"",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to list glossary terms\",\"details\":\"Container 'GlossaryTerm' not found in configuration\"}",
+  "timestamp": "2026-02-24T05:47:39+00:00"
+}

@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "checks is an array",
+  "domain": "Health",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "{\"status\":\"Healthy\",\"application\":\"Reference.Api\",\"timestamp\":\"2026-02-24T05:31:01.5509648+00:00\",\"checks\":[{\"name\":\"ControlDb\",\"status\":\"Healthy\"}]}",
+  "timestamp": "2026-02-24T05:31:01+00:00"
+}

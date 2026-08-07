@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /configuration/instances as viewer returns 200",
+  "domain": "Configuration — Configuration Instances",
+  "method": "GET",
+  "endpoint": "/configuration/instances",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[{\"id\":\"d1e2f3a4-b5c6-7890-abcd-ef1234567001\",\"name\":\"AuthDb\",\"serviceType\":\"Connection\",\"category\":\"Connection\",\"createdAt\":\"0001-01-01T00:00:00\",\"modifiedAt\":null},{\"id\":\"c3d4e5f6-a7b8-9012-cdef-234567890abc\",\"name\":\"ControlDb\",\"serviceType\":\"Connection\",\"category\":\"Connection\",\"createdAt\":\"0001-01-01T00:00:00\",\"modifiedAt\":null},{\"id\":\"f1a2b3c4-d5e6-7890-abcd-250000000001\",\"name\":\"DemoHttpApi\",\"serviceType\":\"Connection\",\"category\":\"Connection\",\"createdAt\":\"0001-01-01T00:00:00\",\"modifiedAt\":null},{\"id\":\"d1e2f3a4-b5c6-7890-abcd-ef1234567004\",\"name\":\"EtlDb\",\"serviceType\":\"Connection\",\"category\":\"Connection\",\"createdAt\":\"0001-01-01T00:00:00\",\"modifiedAt\":null},{\"id\":\"d1e2f3a4-b5c6-7890-abcd-ef1234567006\",\"name\":\"OpsDb\",\"serviceType\":\"Connection\",\"category\":\"Connection\",\"createdAt\":\"0001-01-01T00:00:00\",\"modifiedAt\":null},{\"id\":\"d1e2f3a4-b5c6-7890-abcd-ef1234567005\",\"name\":\"SchedDb\",\"serviceType\":\"Connection\",\"category\":\"Connection\",\"createdAt\":\"0001-01-01T00:00:00\",\"modifiedAt\":null},{\"id\":\"d1e2f3a4-b5c6-7890-abcd-ef1234567002\",\"name\":\"TenantDb\",\"serviceType\":\"Connection\",\"category\":\"Connection\",\"createdAt\":\"0001-01-01T00:00:00\",\"modifiedAt\":null}]",
+  "timestamp": "2026-02-24T05:47:42+00:00"
+}

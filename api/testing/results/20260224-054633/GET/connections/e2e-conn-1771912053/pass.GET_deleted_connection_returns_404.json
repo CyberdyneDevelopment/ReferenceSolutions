@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET deleted connection returns 404",
+  "domain": "Connections — CRUD Lifecycle",
+  "method": "GET",
+  "endpoint": "/connections/e2e-conn-1771912053",
+  "detail": "",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:34+00:00"
+}

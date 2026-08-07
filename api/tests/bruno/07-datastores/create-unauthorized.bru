@@ -1,0 +1,25 @@
+meta {
+  name: Create datastore (unauthorized)
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/datastores
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testUnauthorizedToken}}
+}
+
+body:json {
+  {
+    "Name": "ShouldFail"
+  }
+}
+
+assert {
+  res.status: in [401, 403]
+}

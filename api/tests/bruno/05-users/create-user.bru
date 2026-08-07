@@ -1,0 +1,36 @@
+meta {
+  name: Create apiTestUser
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Username": "apiTestUser",
+    "Password": "ApiTestPass123#",
+    "Email": "apitest@example.com"
+  }
+}
+
+assert {
+  res.status: in [200, 201]
+}
+
+script:post-response {
+  if (res.status === 200 || res.status === 201) {
+    var userId = res.body.UserId || res.body.userId || res.body.Id || res.body.id;
+    if (userId) {
+      bru.setVar("createdUserId", userId);
+    }
+  }
+}

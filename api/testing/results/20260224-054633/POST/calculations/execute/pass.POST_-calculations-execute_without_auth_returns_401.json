@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "POST /calculations/execute without auth returns 401",
+  "domain": "Calculations — Auth Matrix",
+  "method": "POST",
+  "endpoint": "/calculations/execute",
+  "detail": "",
+  "httpStatus": "401",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:44+00:00"
+}

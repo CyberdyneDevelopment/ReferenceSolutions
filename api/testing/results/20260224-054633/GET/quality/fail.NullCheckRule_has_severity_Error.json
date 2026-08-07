@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "NullCheckRule has severity Error",
+  "domain": "Quality Rules",
+  "method": "GET",
+  "endpoint": "/quality",
+  "detail": "expected severity=Error, got ",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:40+00:00"
+}

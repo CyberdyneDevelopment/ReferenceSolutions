@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "refresh response has expiresIn",
+  "domain": "Authentication",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "{\"accessToken\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiYmJiYmJiYi1iYmJiLWJiYmItYmJiYi1iYmJiYmJiYmJiYmIiLCJqdGkiOiJiYjhiYWZiNy02OWViLTRhZWUtYjQzZS04N2FkNzUwZjE0ODUiLCJpYXQiOjE3NzE5MTEwNjIsIm5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJyb2xlIjoiQWRtaW4iLCJuYmYiOjE3NzE5MTEwNjIsImV4cCI6MTc3MTkxNDY2MiwiaXNzIjoiRnJhY3RhbERhdGFXb3Jrcy5SZWZlcmVuY2UuQXBpIiwiYXVkIjoiRnJhY3RhbERhdGFXb3Jrcy5SZWZlcmVuY2UuQXBpIn0.xkDlzMQvzCQpelXFK_15L3LdyB4B0KG45tpVgyTmOvE\",\"refreshToken\":\"5UZxqmNqEjATXX4aNSJUgpJJHA8Ok9n84ktpaa9Q2kRp2qdutT3TbT1uKN/l8Zfdqy6OqMXKMPzHLmYNTC5HkA==\",\"tokenType\":\"Bearer\",\"expiresIn\":3599}",
+  "timestamp": "2026-02-24T05:31:02+00:00"
+}

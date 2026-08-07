@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "GET /nfl/teams returns all 32 teams",
+  "domain": "NFL Data — Team Queries",
+  "method": "GET",
+  "endpoint": "/nfl/teams",
+  "detail": "expected . length == 32, got 3",
+  "httpStatus": "500",
+  "body": "{\"statusCode\":500,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to list teams\"]}}",
+  "timestamp": "2026-02-24T07:33:06+00:00"
+}

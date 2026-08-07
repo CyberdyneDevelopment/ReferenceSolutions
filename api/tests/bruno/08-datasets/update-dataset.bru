@@ -1,0 +1,30 @@
+meta {
+  name: Update TestApiDataSet
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/datasets/TestApiDataSet
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Name": "TestApiDataSet",
+    "Description": "Updated test dataset",
+    "Category": "IntegrationTest",
+    "Version": "2.0",
+    "RecordTypeName": "TestRecord",
+    "KeyFields": ["Id"]
+  }
+}
+
+assert {
+  res.status: eq 200
+}

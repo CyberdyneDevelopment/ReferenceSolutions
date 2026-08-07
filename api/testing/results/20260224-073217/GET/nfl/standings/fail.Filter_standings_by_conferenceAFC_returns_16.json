@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Filter standings by conference=AFC returns 16",
+  "domain": "NFL Data — Standings",
+  "method": "GET",
+  "endpoint": "/nfl/standings?season=2025&conference=AFC",
+  "detail": "expected . length == 16, got 3",
+  "httpStatus": "500",
+  "body": "{\"statusCode\":500,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to list standings\"]}}",
+  "timestamp": "2026-02-24T07:33:07+00:00"
+}

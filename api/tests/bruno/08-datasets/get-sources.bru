@@ -1,0 +1,19 @@
+meta {
+  name: Get dataset sources
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/datasets/TestApiDataSet/sources
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 404]
+}

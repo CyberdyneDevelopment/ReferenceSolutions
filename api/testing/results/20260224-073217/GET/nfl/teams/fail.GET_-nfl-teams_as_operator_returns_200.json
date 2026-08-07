@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "GET /nfl/teams as operator returns 200",
+  "domain": "NFL Data — Auth Matrix",
+  "method": "GET",
+  "endpoint": "/nfl/teams",
+  "detail": "expected status 200, got 500 (body: {\"statusCode\":500,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to list teams\"]}})",
+  "httpStatus": "500",
+  "body": "{\"statusCode\":500,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to list teams\"]}}",
+  "timestamp": "2026-02-24T07:33:06+00:00"
+}

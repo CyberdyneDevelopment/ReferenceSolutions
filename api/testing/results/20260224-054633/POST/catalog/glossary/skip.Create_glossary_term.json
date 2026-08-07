@@ -1,0 +1,11 @@
+{
+  "status": "skip",
+  "test": "Create glossary term",
+  "domain": "Catalog & Glossary",
+  "method": "POST",
+  "endpoint": "/catalog/glossary",
+  "detail": "Glossary create returned 500",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to create glossary term\",\"details\":\"Container 'GlossaryTerm' not found in configuration\"}",
+  "timestamp": "2026-02-24T05:47:39+00:00"
+}

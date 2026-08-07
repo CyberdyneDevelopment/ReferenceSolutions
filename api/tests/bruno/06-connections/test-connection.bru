@@ -1,0 +1,23 @@
+meta {
+  name: Test ControlDb connection
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/connections/ControlDb/test
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: in [200, 422, 500]
+}

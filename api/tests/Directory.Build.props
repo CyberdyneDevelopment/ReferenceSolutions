@@ -1,0 +1,16 @@
+<Project>
+  <!-- Why: import the parent public/Directory.Build.props so test projects inherit the same
+       restore configuration as src — notably IsLocalConfiguration + RestoreConfigFile
+       (=$(LocalNugetFolder)/Fdw.Local.nuget.config) for -Local builds. Without this, MSBuild
+       stops at the nearest Directory.Build.props and the test projects fall back to ambient
+       nuget.config resolution, restoring FDW packages from the private feed instead of the
+       local feed. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Suppress XML documentation warnings for test projects -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- Suppress the verbose pruning output -->
+    <NuGetPruneVerbosity>quiet</NuGetPruneVerbosity>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "tenants is array",
+  "domain": "Tenants — List",
+  "detail": "expected . to be array, got ",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:47+00:00"
+}

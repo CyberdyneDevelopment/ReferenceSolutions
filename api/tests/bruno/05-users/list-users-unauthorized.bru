@@ -1,0 +1,19 @@
+meta {
+  name: List users (unauthorized)
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/users
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testUnauthorizedToken}}
+}
+
+assert {
+  res.status: in [401, 403]
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Update TestApiConn
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/connections/TestApiConn
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Name": "TestApiConn",
+    "Server": "192.168.1.100",
+    "Port": 5432,
+    "Database": "UpdatedDb"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

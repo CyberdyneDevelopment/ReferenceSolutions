@@ -1,0 +1,21 @@
+meta {
+  name: Create theme (no token)
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/themes
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "Name": "ShouldFail"
+  }
+}
+
+assert {
+  res.status: eq 401
+}

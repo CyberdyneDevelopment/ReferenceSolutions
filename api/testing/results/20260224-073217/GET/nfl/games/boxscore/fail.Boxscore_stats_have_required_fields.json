@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Boxscore stats have required fields",
+  "domain": "NFL Data — Game Queries",
+  "method": "GET",
+  "endpoint": "/nfl/games//boxscore",
+  "detail": "expected .[0].playerId to be GUID, got \"\"",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:33:06+00:00"
+}

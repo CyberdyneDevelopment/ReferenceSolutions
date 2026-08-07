@@ -1,0 +1,27 @@
+meta {
+  name: Update TestApiRole
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/roles/TestApiRole
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Name": "TestApiRole",
+    "DisplayName": "Updated Test Role",
+    "Description": "Updated by E2E test"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

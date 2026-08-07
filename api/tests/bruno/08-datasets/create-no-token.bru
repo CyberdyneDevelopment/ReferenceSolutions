@@ -1,0 +1,21 @@
+meta {
+  name: Create dataset (no token)
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/datasets
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "Name": "ShouldFail"
+  }
+}
+
+assert {
+  res.status: eq 401
+}

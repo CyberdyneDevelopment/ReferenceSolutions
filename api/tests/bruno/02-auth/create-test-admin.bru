@@ -1,0 +1,37 @@
+meta {
+  name: Bootstrap - Create testAdmin user
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+body:json {
+  {
+    "Username": "{{testAdminUsername}}",
+    "Password": "{{testAdminPassword}}",
+    "Email": "testadmin@test.com",
+    "Roles": ["Admin"]
+  }
+}
+
+assert {
+  res.status: in [200, 201, 409]
+}
+
+script:post-response {
+  if (res.status === 200 || res.status === 201) {
+    var userId = res.body.UserId || res.body.userId || res.body.Id || res.body.id;
+    if (userId) {
+      bru.setVar("testAdminUserId", userId);
+    }
+  }
+}

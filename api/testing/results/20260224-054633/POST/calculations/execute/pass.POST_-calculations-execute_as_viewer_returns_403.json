@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "POST /calculations/execute as viewer returns 403",
+  "domain": "Calculations — Auth Matrix",
+  "method": "POST",
+  "endpoint": "/calculations/execute",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:44+00:00"
+}

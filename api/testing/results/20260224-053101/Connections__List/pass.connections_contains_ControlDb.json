@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "connections contains ControlDb",
+  "domain": "Connections — List",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[{\"connectionType\":\"MsSql\",\"name\":\"ControlDb\"},{\"connectionType\":\"MsSql\",\"name\":\"AuthDb\"},{\"connectionType\":\"MsSql\",\"name\":\"TenantDb\"},{\"connectionType\":\"MsSql\",\"name\":\"EtlDb\"},{\"connectionType\":\"MsSql\",\"name\":\"SchedDb\"},{\"connectionType\":\"MsSql\",\"name\":\"OpsDb\"},{\"connectionType\":\"Http\",\"name\":\"DemoHttpApi\"}]",
+  "timestamp": "2026-02-24T05:31:12+00:00"
+}

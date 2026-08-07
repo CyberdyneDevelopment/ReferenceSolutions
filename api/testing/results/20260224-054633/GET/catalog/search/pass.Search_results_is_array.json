@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "Search results is array",
+  "domain": "Catalog & Glossary",
+  "method": "GET",
+  "endpoint": "/catalog/search?q=data",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:47:39+00:00"
+}

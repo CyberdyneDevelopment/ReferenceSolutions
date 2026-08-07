@@ -1,0 +1,19 @@
+meta {
+  name: List datastore paths
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/datastores/ControlDb/paths
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 404]
+}

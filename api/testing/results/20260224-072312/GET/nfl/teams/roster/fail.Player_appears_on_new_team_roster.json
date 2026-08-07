@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Player appears on new team roster",
+  "domain": "NFL Data — Update Operations",
+  "method": "GET",
+  "endpoint": "/nfl/teams//roster",
+  "detail": "Player not found on new team",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:23:29+00:00"
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Get non-existent dataset
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/datasets/NoSuchDataSet
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 404
+}

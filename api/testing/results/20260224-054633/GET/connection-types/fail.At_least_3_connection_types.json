@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "At least 3 connection types",
+  "domain": "Configuration — Connection Types",
+  "method": "GET",
+  "endpoint": "/connection-types",
+  "detail": "expected . length >= 3, got 1",
+  "httpStatus": "200",
+  "body": "[{\"displayName\":\"MsSql\",\"description\":\"Connection type: MsSql\",\"category\":\"Connection\",\"name\":\"MsSql\"}]",
+  "timestamp": "2026-02-24T05:47:42+00:00"
+}

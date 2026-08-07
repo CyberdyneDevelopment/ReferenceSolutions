@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Retired player not in active roster",
+  "domain": "NFL Data — Update Operations",
+  "method": "GET",
+  "endpoint": "/nfl/teams//roster?isActive=true",
+  "detail": "Retired player still in active roster",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:23:01+00:00"
+}

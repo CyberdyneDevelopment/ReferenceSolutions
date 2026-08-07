@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "GET /tenants/11111111-... returns AFC tenant",
+  "domain": "Tenants — AFC Detail",
+  "detail": "expected status 200, got 403 (body: )",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:47+00:00"
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Create TestApiDataSet
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/datasets
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Name": "TestApiDataSet",
+    "Description": "Test dataset for API E2E tests",
+    "Category": "Testing",
+    "Version": "1.0",
+    "RecordTypeName": "TestRecord",
+    "KeyFields": ["Id", "Name"]
+  }
+}
+
+assert {
+  res.status: in [200, 201]
+}

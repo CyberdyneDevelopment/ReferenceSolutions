@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /bulk/export as operator returns 200",
+  "domain": "Bulk — Auth Matrix",
+  "method": "GET",
+  "endpoint": "/bulk/export",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "{\"exportedAt\":\"2026-02-24T05:47:43.9798232Z\",\"version\":\"1.0\",\"pipelines\":[],\"connections\":[{\"name\":\"ControlDb\",\"serviceType\":\"MsSql\"},{\"name\":\"AuthDb\",\"serviceType\":\"MsSql\"},{\"name\":\"TenantDb\",\"serviceType\":\"MsSql\"},{\"name\":\"EtlDb\",\"serviceType\":\"MsSql\"},{\"name\":\"SchedDb\",\"serviceType\":\"MsSql\"},{\"name\":\"OpsDb\",\"serviceType\":\"MsSql\"},{\"name\":\"DemoHttpApi\",\"serviceType\":\"Http\"},{\"name\":\"\",\"serviceType\":\"Unknown\"}],\"dataSets\":[],\"schedules\":[],\"summary\":{\"pipelines\":0,\"connections\":8,\"datasets\":0,\"schedules\":0}}",
+  "timestamp": "2026-02-24T05:47:44+00:00"
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Delete glossary term
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/catalog/glossary/{{glossaryTermId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 204]
+}

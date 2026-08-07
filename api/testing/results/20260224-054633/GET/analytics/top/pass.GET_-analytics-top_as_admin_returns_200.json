@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /analytics/top as admin returns 200",
+  "domain": "Analytics — Auth Matrix",
+  "method": "GET",
+  "endpoint": "/analytics/top",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "{\"calculations\":[]}",
+  "timestamp": "2026-02-24T05:47:43+00:00"
+}

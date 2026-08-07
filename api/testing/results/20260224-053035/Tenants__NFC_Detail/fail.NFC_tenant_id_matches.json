@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "NFC tenant id matches",
+  "domain": "Tenants — NFC Detail",
+  "detail": "expected .id == \"22222222-2222-2222-2222-222222222222\", got \"\"",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:47+00:00"
+}

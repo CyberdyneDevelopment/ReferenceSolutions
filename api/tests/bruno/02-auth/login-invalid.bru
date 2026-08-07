@@ -1,0 +1,22 @@
+meta {
+  name: Login with invalid password
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/auth/token
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "Username": "{{testAdminUsername}}",
+    "Password": "wrongpassword"
+  }
+}
+
+assert {
+  res.status: eq 401
+}

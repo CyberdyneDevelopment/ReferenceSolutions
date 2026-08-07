@@ -1,0 +1,19 @@
+meta {
+  name: Get dataset annotation
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/catalog/datasets/Schedules/annotation
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 204, 404]
+}

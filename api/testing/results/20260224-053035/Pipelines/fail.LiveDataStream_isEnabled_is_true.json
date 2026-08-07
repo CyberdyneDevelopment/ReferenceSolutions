@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "LiveDataStream isEnabled is true",
+  "domain": "Pipelines",
+  "detail": "expected .isEnabled to be boolean, got null",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to fetch pipeline\",\"details\":\"Container 'Pipelines' not found in configuration\"}",
+  "timestamp": "2026-02-24T05:30:52+00:00"
+}

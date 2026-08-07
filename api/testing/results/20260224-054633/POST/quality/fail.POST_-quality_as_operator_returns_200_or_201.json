@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "POST /quality as operator returns 200 or 201",
+  "domain": "Quality Rules",
+  "method": "POST",
+  "endpoint": "/quality",
+  "detail": "expected 200 or 201, got 404",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:40+00:00"
+}

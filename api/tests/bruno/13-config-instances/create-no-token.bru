@@ -1,0 +1,21 @@
+meta {
+  name: Create config instance (no token)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/configuration/instances/Connection
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "Name": "ShouldFail"
+  }
+}
+
+assert {
+  res.status: eq 401
+}

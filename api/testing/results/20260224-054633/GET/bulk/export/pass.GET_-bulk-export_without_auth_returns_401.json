@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /bulk/export without auth returns 401",
+  "domain": "Bulk — Auth Matrix",
+  "method": "GET",
+  "endpoint": "/bulk/export",
+  "detail": "",
+  "httpStatus": "401",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:43+00:00"
+}

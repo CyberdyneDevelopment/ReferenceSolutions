@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "ManualExecution has schedulerType Manual",
+  "domain": "Schedules",
+  "method": "GET",
+  "endpoint": "/schedules/ManualExecution",
+  "detail": "expected .schedulerType == \"Manual\", got \"\"",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:39+00:00"
+}

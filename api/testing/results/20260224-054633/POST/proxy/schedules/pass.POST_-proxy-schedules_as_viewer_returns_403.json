@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "POST /proxy/schedules as viewer returns 403",
+  "domain": "Proxy — Schedules POST Auth Matrix",
+  "method": "POST",
+  "endpoint": "/proxy/schedules",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:43+00:00"
+}

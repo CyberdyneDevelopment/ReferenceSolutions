@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "created role has correct displayName",
+  "domain": "Roles — CRUD Lifecycle",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "{\"displayName\":\"E2E Test Role\",\"description\":\"Created by E2E tests\",\"isSystem\":false,\"isTenantScoped\":false,\"parentRoleName\":null,\"sortOrder\":0,\"permissions\":[],\"id\":\"3fa228ff-0ca9-4eee-826f-b1cf2a2a5022\",\"name\":\"e2e-role-1771911041\"}",
+  "timestamp": "2026-02-24T05:30:42+00:00"
+}

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "POST /roles creates new role (201)",
+  "domain": "Roles — CRUD Lifecycle",
+  "method": "POST",
+  "endpoint": "/roles",
+  "detail": "",
+  "httpStatus": "201",
+  "body": "{\"id\":\"570085ed-1991-4981-afd0-89945f0e34a6\",\"displayName\":\"E2E Test Role\",\"description\":\"Created by E2E tests\",\"isSystem\":false,\"isTenantScoped\":false,\"sortOrder\":0,\"name\":\"e2e-role-1771912047\"}",
+  "timestamp": "2026-02-24T05:47:28+00:00"
+}

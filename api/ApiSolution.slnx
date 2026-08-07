@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug-Local" />
+    <BuildType Name="Develop" />
+    <BuildType Name="Develop-Local" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release-Local" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/Reference.Api/Reference.Api.csproj" />
+    <Project Path="src/Reference.Nfl/Reference.Nfl.csproj" />
+  </Folder>
+</Solution>

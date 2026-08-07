@@ -1,0 +1,19 @@
+meta {
+  name: List config instances
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/configuration/instances
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+}

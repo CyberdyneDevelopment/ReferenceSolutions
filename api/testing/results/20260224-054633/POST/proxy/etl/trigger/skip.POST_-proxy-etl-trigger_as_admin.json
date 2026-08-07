@@ -1,0 +1,11 @@
+{
+  "status": "skip",
+  "test": "POST /proxy/etl/trigger as admin",
+  "domain": "Proxy — ETL Auth Matrix",
+  "method": "POST",
+  "endpoint": "/proxy/etl/trigger",
+  "detail": "ETL server unavailable (502) — auth passed",
+  "httpStatus": "502",
+  "body": "{\"statusCode\":502,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to proxy request to EtlServer\"]}}",
+  "timestamp": "2026-02-24T05:47:43+00:00"
+}

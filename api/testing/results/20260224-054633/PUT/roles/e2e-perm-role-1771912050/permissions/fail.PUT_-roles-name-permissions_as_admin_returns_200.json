@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "PUT /roles/{name}/permissions as admin returns 200",
+  "domain": "Permissions — Role Permission Assignment",
+  "method": "PUT",
+  "endpoint": "/roles/e2e-perm-role-1771912050/permissions",
+  "detail": "expected status 200, got 400 (body: {\"statusCode\":400,\"message\":\"One or more errors occurred!\",\"errors\":{\"permissionNames\":[\"At least one permission name is required\"]}})",
+  "httpStatus": "400",
+  "body": "{\"statusCode\":400,\"message\":\"One or more errors occurred!\",\"errors\":{\"permissionNames\":[\"At least one permission name is required\"]}}",
+  "timestamp": "2026-02-24T05:47:31+00:00"
+}

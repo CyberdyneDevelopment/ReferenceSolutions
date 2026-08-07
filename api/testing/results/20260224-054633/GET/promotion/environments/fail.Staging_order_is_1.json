@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Staging order is 1",
+  "domain": "Promotions — Environments",
+  "method": "GET",
+  "endpoint": "/promotion/environments",
+  "detail": "expected .[].order == 1, got ",
+  "httpStatus": "500",
+  "body": "{\"statusCode\":500,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to list environments\"]}}",
+  "timestamp": "2026-02-24T05:47:40+00:00"
+}

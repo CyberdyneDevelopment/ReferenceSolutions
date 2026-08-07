@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "POST /pipelines/DataArchiveCopy/execute as operator returns success",
+  "domain": "Pipelines",
+  "method": "POST",
+  "endpoint": "/pipelines/DataArchiveCopy/execute",
+  "detail": "expected 200/202/500/503 for execute, got 415",
+  "httpStatus": "415",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:37+00:00"
+}

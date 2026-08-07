@@ -1,0 +1,19 @@
+meta {
+  name: Delete apiTestUser
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/users/{{createdUserId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+}

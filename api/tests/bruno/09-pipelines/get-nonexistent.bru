@@ -1,0 +1,19 @@
+meta {
+  name: Get non-existent pipeline
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/pipelines/NoSuchPipeline
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 404
+}

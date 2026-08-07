@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "PUT /schedules/DailyArchiveSync as viewer returns 403",
+  "domain": "Schedules",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:53+00:00"
+}

@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "created connection has correct name",
+  "domain": "Connections — CRUD Lifecycle",
+  "method": "POST",
+  "endpoint": "/connections",
+  "detail": "expected .name == \"e2e-conn-1771912053\", got \"null\"",
+  "httpStatus": "400",
+  "body": "{\"statusCode\":400,\"message\":\"One or more errors occurred!\",\"errors\":{\"serviceType\":[\"Service type is required (e.g., MsSql, PostgreSql)\"],\"authentication\":[\"Username is required for SQL authentication\",\"Secret key name is required for SQL authentication\"]}}",
+  "timestamp": "2026-02-24T05:47:33+00:00"
+}

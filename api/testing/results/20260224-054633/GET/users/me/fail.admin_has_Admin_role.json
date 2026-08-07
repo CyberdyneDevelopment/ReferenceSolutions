@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "admin has Admin role",
+  "domain": "Users — /users/me",
+  "method": "GET",
+  "endpoint": "/users/me",
+  "detail": "expected .roles to contain \"Admin\"",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:21+00:00"
+}

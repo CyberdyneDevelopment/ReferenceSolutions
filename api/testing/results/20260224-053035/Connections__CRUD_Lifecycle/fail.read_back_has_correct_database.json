@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "read back has correct database",
+  "domain": "Connections — CRUD Lifecycle",
+  "detail": "expected .database == \"TestDb\", got \"\"",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:48+00:00"
+}

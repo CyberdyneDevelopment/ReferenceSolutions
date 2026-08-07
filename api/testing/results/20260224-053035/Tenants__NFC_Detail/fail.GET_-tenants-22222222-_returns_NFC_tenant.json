@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "GET /tenants/22222222-... returns NFC tenant",
+  "domain": "Tenants — NFC Detail",
+  "detail": "expected status 200, got 403 (body: )",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:47+00:00"
+}

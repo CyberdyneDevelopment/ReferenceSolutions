@@ -1,0 +1,27 @@
+meta {
+  name: Update TestApiPipeline
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/pipelines/TestApiPipeline
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Name": "TestApiPipeline",
+    "Description": "Updated test pipeline",
+    "IsEnabled": false
+  }
+}
+
+assert {
+  res.status: eq 200
+}

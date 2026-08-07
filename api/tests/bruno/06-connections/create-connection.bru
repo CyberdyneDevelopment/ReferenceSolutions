@@ -1,0 +1,38 @@
+meta {
+  name: Create TestApiConn
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/connections
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Name": "TestApiConn",
+    "ServiceType": "MsSql",
+    "Server": "localhost",
+    "Port": 1433,
+    "Database": "TestApiDb",
+    "AuthenticationType": "SqlAuth",
+    "Authentication": {
+      "Type": "SqlAuth",
+      "Username": "testuser",
+      "SecretManagerName": "EnvSecrets",
+      "SecretKeyName": "TEST_DB_PWD"
+    },
+    "TrustServerCertificate": true,
+    "Encrypt": false
+  }
+}
+
+assert {
+  res.status: in [200, 201]
+}

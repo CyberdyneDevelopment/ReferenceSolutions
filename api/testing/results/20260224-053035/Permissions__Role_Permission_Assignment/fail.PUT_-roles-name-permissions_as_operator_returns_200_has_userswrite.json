@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "PUT /roles/{name}/permissions as operator returns 200 (has users:write)",
+  "domain": "Permissions — Role Permission Assignment",
+  "detail": "expected status 200, got 400 (body: {\"statusCode\":400,\"message\":\"One or more errors occurred!\",\"errors\":{\"permissionNames\":[\"At least one permission name is required\"]}})",
+  "httpStatus": "400",
+  "body": "{\"statusCode\":400,\"message\":\"One or more errors occurred!\",\"errors\":{\"permissionNames\":[\"At least one permission name is required\"]}}",
+  "timestamp": "2026-02-24T05:30:46+00:00"
+}

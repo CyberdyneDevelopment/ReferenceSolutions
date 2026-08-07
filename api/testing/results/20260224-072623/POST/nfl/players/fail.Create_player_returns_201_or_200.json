@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Create player returns 201 or 200",
+  "domain": "NFL Data — Insert Operations",
+  "method": "POST",
+  "endpoint": "/nfl/players",
+  "detail": "Expected 201/200, got 400",
+  "httpStatus": "400",
+  "body": "{\"statusCode\":400,\"message\":\"One or more errors occurred!\",\"errors\":{\"teamId\":[\"The JSON value is not in a supported Guid format.\"]}}",
+  "timestamp": "2026-02-24T07:26:43+00:00"
+}

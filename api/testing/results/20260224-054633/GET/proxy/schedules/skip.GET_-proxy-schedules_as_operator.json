@@ -1,0 +1,11 @@
+{
+  "status": "skip",
+  "test": "GET /proxy/schedules as operator",
+  "domain": "Proxy — Schedules GET Auth Matrix",
+  "method": "GET",
+  "endpoint": "/proxy/schedules",
+  "detail": "Scheduler server unavailable (502) — auth passed",
+  "httpStatus": "502",
+  "body": "{\"statusCode\":502,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to proxy request to SchedulerServer\"]}}",
+  "timestamp": "2026-02-24T05:47:43+00:00"
+}

@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "GET /pipelines/LiveDataStream returns detail",
+  "domain": "Pipelines",
+  "method": "GET",
+  "endpoint": "/pipelines/LiveDataStream",
+  "detail": "expected status 200, got 500 (body: {\"error\":\"Failed to fetch pipeline\",\"details\":\"Container 'Pipelines' not found in configuration\"})",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to fetch pipeline\",\"details\":\"Container 'Pipelines' not found in configuration\"}",
+  "timestamp": "2026-02-24T05:47:37+00:00"
+}

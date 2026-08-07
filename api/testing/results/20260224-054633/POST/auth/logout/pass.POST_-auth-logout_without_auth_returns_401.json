@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "POST /auth/logout without auth returns 401",
+  "domain": "Authentication",
+  "method": "POST",
+  "endpoint": "/auth/logout",
+  "detail": "",
+  "httpStatus": "401",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:20+00:00"
+}

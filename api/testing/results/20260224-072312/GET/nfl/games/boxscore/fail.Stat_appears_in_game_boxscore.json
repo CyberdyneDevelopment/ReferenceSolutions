@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Stat appears in game boxscore",
+  "domain": "NFL Data — Insert Operations",
+  "method": "GET",
+  "endpoint": "/nfl/games//boxscore",
+  "detail": "New stat not found in boxscore",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:23:29+00:00"
+}

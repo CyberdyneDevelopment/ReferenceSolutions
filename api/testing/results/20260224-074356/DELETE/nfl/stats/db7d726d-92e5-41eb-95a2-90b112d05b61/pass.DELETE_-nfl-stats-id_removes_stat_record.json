@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "DELETE /nfl/stats/{id} removes stat record",
+  "domain": "NFL Data — Delete Operations",
+  "method": "DELETE",
+  "endpoint": "/nfl/stats/db7d726d-92e5-41eb-95a2-90b112d05b61",
+  "detail": "",
+  "httpStatus": "204",
+  "body": "",
+  "timestamp": "2026-02-24T07:44:12+00:00"
+}

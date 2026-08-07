@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Read back created dataset",
+  "domain": "DataSets",
+  "method": "GET",
+  "endpoint": "/datasets/e2e-test-ds-1771912056",
+  "detail": "expected status 200, got 500 (body: {\"error\":\"Failed to get datasets\",\"details\":\"SQL execution failed: Invalid column name 'CreatedAt'.\\nInvalid column name 'ModifiedAt'.\"})",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to get datasets\",\"details\":\"SQL execution failed: Invalid column name 'CreatedAt'.\\nInvalid column name 'ModifiedAt'.\"}",
+  "timestamp": "2026-02-24T05:47:36+00:00"
+}

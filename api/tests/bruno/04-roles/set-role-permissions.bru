@@ -1,0 +1,25 @@
+meta {
+  name: Set TestApiRole permissions
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/roles/TestApiRole/permissions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "PermissionNames": ["connections:read", "datastores:read", "datasets:read"]
+  }
+}
+
+assert {
+  res.status: eq 200
+}

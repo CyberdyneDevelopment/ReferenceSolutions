@@ -1,0 +1,19 @@
+meta {
+  name: Get current tenant
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/tenants/current
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 204, 404]
+}

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "Deleted schedule returns 404",
+  "domain": "Schedules",
+  "method": "GET",
+  "endpoint": "/schedules/e2e-test-sched-1771912059",
+  "detail": "",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:39+00:00"
+}

@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Contains RangeCheckRule for PipelineExecutions.DurationMs",
+  "domain": "Quality Rules",
+  "method": "GET",
+  "endpoint": "/quality",
+  "detail": "expected RangeCheckRule for PipelineExecutions.DurationMs",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:40+00:00"
+}

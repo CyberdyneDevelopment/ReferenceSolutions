@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Create player returns 201 or 200",
+  "domain": "NFL Data — Insert Operations",
+  "method": "POST",
+  "endpoint": "/nfl/players",
+  "detail": "Expected 201/200, got 404",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:23:00+00:00"
+}

@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "DELETE /pipelines/DataArchiveCopy as operator returns 403",
+  "domain": "Pipelines",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:52+00:00"
+}

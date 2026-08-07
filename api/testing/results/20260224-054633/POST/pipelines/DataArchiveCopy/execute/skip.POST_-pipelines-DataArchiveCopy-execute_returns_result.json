@@ -1,0 +1,11 @@
+{
+  "status": "skip",
+  "test": "POST /pipelines/DataArchiveCopy/execute returns result",
+  "domain": "Pipelines",
+  "method": "POST",
+  "endpoint": "/pipelines/DataArchiveCopy/execute",
+  "detail": "Pipeline execute returned 415 (ETL server may not be running)",
+  "httpStatus": "415",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:37+00:00"
+}

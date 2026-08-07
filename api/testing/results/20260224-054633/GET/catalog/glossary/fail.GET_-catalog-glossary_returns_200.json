@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "GET /catalog/glossary returns 200",
+  "domain": "Catalog & Glossary",
+  "method": "GET",
+  "endpoint": "/catalog/glossary",
+  "detail": "expected status 200, got 500 (body: {\"error\":\"Failed to list glossary terms\",\"details\":\"Container 'GlossaryTerm' not found in configuration\"})",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to list glossary terms\",\"details\":\"Container 'GlossaryTerm' not found in configuration\"}",
+  "timestamp": "2026-02-24T05:47:39+00:00"
+}

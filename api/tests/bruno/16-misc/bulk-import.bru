@@ -1,0 +1,25 @@
+meta {
+  name: Bulk import (empty)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/bulk/import
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "items": []
+  }
+}
+
+assert {
+  res.status: in [200, 400, 404]
+}

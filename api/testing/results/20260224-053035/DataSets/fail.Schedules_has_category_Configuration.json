@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "Schedules has category Configuration",
+  "domain": "DataSets",
+  "detail": "expected .category == \"Configuration\", got \"null\"",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to get datasets\",\"details\":\"SQL execution failed: Invalid column name 'CreatedAt'.\\nInvalid column name 'ModifiedAt'.\"}",
+  "timestamp": "2026-02-24T05:30:50+00:00"
+}

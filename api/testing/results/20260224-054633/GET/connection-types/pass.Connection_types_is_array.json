@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "Connection types is array",
+  "domain": "Configuration — Connection Types",
+  "method": "GET",
+  "endpoint": "/connection-types",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[{\"displayName\":\"MsSql\",\"description\":\"Connection type: MsSql\",\"category\":\"Connection\",\"name\":\"MsSql\"}]",
+  "timestamp": "2026-02-24T05:47:42+00:00"
+}

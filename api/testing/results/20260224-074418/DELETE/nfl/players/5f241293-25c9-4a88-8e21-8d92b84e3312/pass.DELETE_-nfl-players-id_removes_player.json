@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "DELETE /nfl/players/{id} removes player",
+  "domain": "NFL Data — Delete Operations",
+  "method": "DELETE",
+  "endpoint": "/nfl/players/5f241293-25c9-4a88-8e21-8d92b84e3312",
+  "detail": "",
+  "httpStatus": "204",
+  "body": "",
+  "timestamp": "2026-02-24T07:45:09+00:00"
+}

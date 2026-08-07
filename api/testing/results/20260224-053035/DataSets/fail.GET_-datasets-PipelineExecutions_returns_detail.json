@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "GET /datasets/PipelineExecutions returns detail",
+  "domain": "DataSets",
+  "detail": "expected status 200, got 500 (body: {\"error\":\"Failed to get datasets\",\"details\":\"SQL execution failed: Invalid column name 'CreatedAt'.\\nInvalid column name 'ModifiedAt'.\"})",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to get datasets\",\"details\":\"SQL execution failed: Invalid column name 'CreatedAt'.\\nInvalid column name 'ModifiedAt'.\"}",
+  "timestamp": "2026-02-24T05:30:50+00:00"
+}

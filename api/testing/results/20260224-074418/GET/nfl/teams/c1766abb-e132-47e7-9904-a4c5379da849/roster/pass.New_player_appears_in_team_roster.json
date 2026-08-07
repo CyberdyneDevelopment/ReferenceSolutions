@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "New player appears in team roster",
+  "domain": "NFL Data — Insert Operations",
+  "method": "GET",
+  "endpoint": "/nfl/teams/c1766abb-e132-47e7-9904-a4c5379da849/roster",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[{\"id\":\"7859c696-3d84-427c-ba68-fc5d3e304f68\",\"teamId\":\"c1766abb-e132-47e7-9904-a4c5379da849\",\"firstName\":\"Bo\",\"lastName\":\"Nix\",\"position\":\"QB\",\"jerseyNumber\":10,\"heightInches\":74,\"weightLbs\":214,\"college\":\"Oregon\",\"draftYear\":2024,\"draftRound\":1,\"draftPick\":12,\"isActive\":true,\"createDate\":\"2026-02-24T07:44:53.0381734+00:00\",\"createBy\":\"sa\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:44:53.0381734+00:00\",\"modifyBy\":\"sa\",\"modifyOnBehalfOf\":\"\"},{\"id\":\"2cc055fe-5c23-40f5-a84a-ede0a269e477\",\"teamId\":\"c1766abb-e132-47e7-9904-a4c5379da849\",\"firstName\":\"Patrick\",\"lastName\":\"Surtain II\",\"position\":\"CB\",\"jerseyNumber\":2,\"heightInches\":74,\"weightLbs\":202,\"college\":\"Alabama\",\"draftYear\":2021,\"draftRound\":1,\"draftPick\":9,\"isActive\":true,\"createDate\":\"2026-02-24T07:44:53.0381734+00:00\",\"createBy\":\"sa\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:44:53.0381734+00:00\",\"modifyBy\":\"sa\",\"modifyOnBehalfOf\":\"\"},{\"id\":\"5f241293-25c9-4a88-8e21-8d92b84e3312\",\"teamId\":\"c1766abb-e132-47e7-9904-a4c5379da849\",\"firstName\":\"E2E\",\"lastName\":\"TestPlayer\",\"position\":\"WR\",\"jerseyNumber\":99,\"heightInches\":72,\"weightLbs\":195,\"college\":\"Test University\",\"draftYear\":2025,\"draftRound\":7,\"draftPick\":250,\"isActive\":true,\"createDate\":\"2026-02-24T07:45:07.0877909+00:00\",\"createBy\":\"api\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:45:07.0877909+00:00\",\"modifyBy\":\"api\",\"modifyOnBehalfOf\":\"\"}]",
+  "timestamp": "2026-02-24T07:45:07+00:00"
+}

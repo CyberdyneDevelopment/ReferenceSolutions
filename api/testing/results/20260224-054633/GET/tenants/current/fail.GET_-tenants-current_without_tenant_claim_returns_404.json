@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "GET /tenants/current without tenant claim returns 404",
+  "domain": "Tenants — Current",
+  "method": "GET",
+  "endpoint": "/tenants/current",
+  "detail": "expected status 404, got 403 (body: )",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:33+00:00"
+}

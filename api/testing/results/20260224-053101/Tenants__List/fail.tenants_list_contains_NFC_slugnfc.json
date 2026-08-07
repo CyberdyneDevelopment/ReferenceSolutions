@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "tenants list contains NFC (slug=nfc)",
+  "domain": "Tenants — List",
+  "detail": "expected tenants to contain slug=nfc",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:31:11+00:00"
+}

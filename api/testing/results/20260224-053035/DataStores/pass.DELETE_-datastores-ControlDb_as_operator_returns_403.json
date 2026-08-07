@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "DELETE /datastores/ControlDb as operator returns 403",
+  "domain": "DataStores",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:48+00:00"
+}

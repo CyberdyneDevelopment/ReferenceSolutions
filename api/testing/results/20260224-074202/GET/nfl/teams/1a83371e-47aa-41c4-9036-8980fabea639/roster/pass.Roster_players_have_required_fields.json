@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "Roster players have required fields",
+  "domain": "NFL Data — Roster Queries",
+  "method": "GET",
+  "endpoint": "/nfl/teams/1a83371e-47aa-41c4-9036-8980fabea639/roster",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[{\"id\":\"11012c7a-864a-490b-a805-732546c335e8\",\"teamId\":\"1a83371e-47aa-41c4-9036-8980fabea639\",\"firstName\":\"DJ\",\"lastName\":\"Moore\",\"position\":\"WR\",\"jerseyNumber\":2,\"heightInches\":72,\"weightLbs\":210,\"college\":\"Maryland\",\"draftYear\":2018,\"draftRound\":1,\"draftPick\":24,\"isActive\":true,\"createDate\":\"2026-02-24T07:42:36.5354061+00:00\",\"createBy\":\"sa\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:42:36.5354061+00:00\",\"modifyBy\":\"sa\",\"modifyOnBehalfOf\":\"\"},{\"id\":\"239e21a6-54a7-4f17-a709-a64571c19f87\",\"teamId\":\"1a83371e-47aa-41c4-9036-8980fabea639\",\"firstName\":\"Caleb\",\"lastName\":\"Williams\",\"position\":\"QB\",\"jerseyNumber\":18,\"heightInches\":73,\"weightLbs\":220,\"college\":\"USC\",\"draftYear\":2024,\"draftRound\":1,\"draftPick\":1,\"isActive\":true,\"createDate\":\"2026-02-24T07:42:36.5354061+00:00\",\"createBy\":\"sa\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:42:36.5354061+00:00\",\"modifyBy\":\"sa\",\"modifyOnBehalfOf\":\"\"}]",
+  "timestamp": "2026-02-24T07:42:49+00:00"
+}

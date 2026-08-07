@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /roles without auth returns 401",
+  "domain": "Security Matrix — Unauthenticated GET (401)",
+  "method": "GET",
+  "endpoint": "/roles",
+  "detail": "",
+  "httpStatus": "401",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:44+00:00"
+}

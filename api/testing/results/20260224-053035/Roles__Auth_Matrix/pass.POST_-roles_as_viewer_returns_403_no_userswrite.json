@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "POST /roles as viewer returns 403 (no users:write)",
+  "domain": "Roles — Auth Matrix",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:38+00:00"
+}

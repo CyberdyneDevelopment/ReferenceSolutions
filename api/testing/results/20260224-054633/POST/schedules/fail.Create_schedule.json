@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Create schedule",
+  "domain": "Schedules",
+  "method": "POST",
+  "endpoint": "/schedules",
+  "detail": "expected status 201, got 500 (body: {\"error\":\"Failed to create schedules\",\"details\":\"SQL execution failed for 'Schedule': Invalid column name 'CronSchedule'.\\nInvalid column name 'IntervalSchedule'.\"})",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to create schedules\",\"details\":\"SQL execution failed for 'Schedule': Invalid column name 'CronSchedule'.\\nInvalid column name 'IntervalSchedule'.\"}",
+  "timestamp": "2026-02-24T05:47:39+00:00"
+}

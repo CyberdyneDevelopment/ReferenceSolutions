@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "DELETE /schedules/DailyArchiveSync as operator returns 403",
+  "domain": "Schedules",
+  "method": "DELETE",
+  "endpoint": "/schedules/DailyArchiveSync",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:38+00:00"
+}

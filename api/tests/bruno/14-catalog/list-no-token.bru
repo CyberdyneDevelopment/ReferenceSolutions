@@ -1,0 +1,15 @@
+meta {
+  name: List glossary (no token)
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/catalog/glossary
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}

@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Create dataset",
+  "domain": "DataSets",
+  "method": "POST",
+  "endpoint": "/datasets",
+  "detail": "expected status 201, got 500 (body: {\"error\":\"Failed to check existence datasets\",\"details\":\"SQL execution failed: Invalid column name 'CreatedAt'.\\nInvalid column name 'ModifiedAt'.\"})",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to check existence datasets\",\"details\":\"SQL execution failed: Invalid column name 'CreatedAt'.\\nInvalid column name 'ModifiedAt'.\"}",
+  "timestamp": "2026-02-24T05:47:36+00:00"
+}

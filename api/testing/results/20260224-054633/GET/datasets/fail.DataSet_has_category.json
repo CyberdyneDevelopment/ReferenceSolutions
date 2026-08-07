@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "DataSet has category",
+  "domain": "DataSets",
+  "method": "GET",
+  "endpoint": "/datasets",
+  "detail": "expected .[0].category to be string, got ",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to list datasets\",\"details\":\"SQL execution failed: Invalid column name 'CreatedAt'.\\nInvalid column name 'ModifiedAt'.\"}",
+  "timestamp": "2026-02-24T05:47:35+00:00"
+}

@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "DELETE /nfl/players/{id} removes player",
+  "domain": "NFL Data — Delete Operations",
+  "method": "DELETE",
+  "endpoint": "/nfl/players/",
+  "detail": "Expected 200/204, got 404",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:23:30+00:00"
+}

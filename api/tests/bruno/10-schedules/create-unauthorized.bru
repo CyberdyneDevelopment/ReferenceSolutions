@@ -1,0 +1,25 @@
+meta {
+  name: Create schedule (unauthorized)
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/schedules
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testUnauthorizedToken}}
+}
+
+body:json {
+  {
+    "Name": "ShouldFail"
+  }
+}
+
+assert {
+  res.status: in [401, 403]
+}

@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "users list has at least 4 seed users",
+  "domain": "Users — List",
+  "method": "GET",
+  "endpoint": "/users",
+  "detail": "expected . length >= 4, got 0",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:47:22+00:00"
+}

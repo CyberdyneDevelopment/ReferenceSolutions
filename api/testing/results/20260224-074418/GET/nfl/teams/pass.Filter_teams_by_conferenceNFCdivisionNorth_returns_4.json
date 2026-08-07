@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "Filter teams by conference=NFC&division=North returns 4",
+  "domain": "NFL Data — Team Queries",
+  "method": "GET",
+  "endpoint": "/nfl/teams?conference=NFC&division=North",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[{\"id\":\"72c0c901-8127-4055-a84f-22972a1f9c07\",\"name\":\"Bears\",\"city\":\"Chicago\",\"abbreviation\":\"CHI\",\"conference\":\"NFC\",\"division\":\"North\",\"foundedYear\":1920,\"stadiumName\":\"Soldier Field\",\"headCoach\":\"Ben Johnson\",\"createDate\":\"2026-02-24T07:44:52.9680186+00:00\",\"createBy\":\"sa\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:44:52.9680186+00:00\",\"modifyBy\":\"sa\",\"modifyOnBehalfOf\":\"\"},{\"id\":\"d6cc3a53-66f9-4f9c-a67b-8e7816464322\",\"name\":\"Lions\",\"city\":\"Detroit\",\"abbreviation\":\"DET\",\"conference\":\"NFC\",\"division\":\"North\",\"foundedYear\":1930,\"stadiumName\":\"Ford Field\",\"headCoach\":\"Dan Campbell\",\"createDate\":\"2026-02-24T07:44:52.9680186+00:00\",\"createBy\":\"sa\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:44:52.9680186+00:00\",\"modifyBy\":\"sa\",\"modifyOnBehalfOf\":\"\"},{\"id\":\"54796f4d-2e68-48f0-9d74-4c60d032e93f\",\"name\":\"Packers\",\"city\":\"Green Bay\",\"abbreviation\":\"GB\",\"conference\":\"NFC\",\"division\":\"North\",\"foundedYear\":1921,\"stadiumName\":\"Lambeau Field\",\"headCoach\":\"Matt LaFleur\",\"createDate\":\"2026-02-24T07:44:52.9680186+00:00\",\"createBy\":\"sa\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:44:52.9680186+00:00\",\"modifyBy\":\"sa\",\"modifyOnBehalfOf\":\"\"},{\"id\":\"deae5779-fb02-4b4d-8009-453f01962c4a\",\"name\":\"Vikings\",\"city\":\"Minnesota\",\"abbreviation\":\"MIN\",\"conference\":\"NFC\",\"division\":\"North\",\"foundedYear\":1961,\"stadiumName\":\"U.S. Bank Stadium\",\"headCoach\":\"Kevin O'Connell\",\"createDate\":\"2026-02-24T07:44:52.9680186+00:00\",\"createBy\":\"sa\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:44:52.9680186+00:00\",\"modifyBy\":\"sa\",\"modifyOnBehalfOf\":\"\"}]",
+  "timestamp": "2026-02-24T07:45:05+00:00"
+}

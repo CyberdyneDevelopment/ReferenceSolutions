@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "ControlDb has correct id",
+  "domain": "DataStores",
+  "detail": "expected .id == \"E1F2A3B4-C5D6-7890-ABCD-111111111111\", got \"e1f2a3b4-c5d6-7890-abcd-111111111111\"",
+  "httpStatus": "200",
+  "body": "{\"storeType\":\"MsSql\",\"connectionId\":\"c3d4e5f6-a7b8-9012-cdef-234567890abc\",\"description\":\"DataStore for cfg schema tables\",\"paths\":[{\"id\":\"e1f2a3b4-c5d6-7890-abcd-111111111112\",\"name\":\"cfg\",\"pathType\":\"DatabasePath\",\"path\":\"\",\"description\":null,\"containers\":[{\"id\":\"a5697422-5994-490b-b07a-1975621bff9e\",\"name\":\"Schedule\",\"containerType\":\"Table\",\"fieldCount\":13},{\"id\":\"7ebb5388-d925-4935-a095-ebfdd7fff88e\",\"name\":\"Connection\",\"containerType\":\"Table\",\"fieldCount\":4},{\"id\":\"1975e680-6760-4e47-b34b-f2c1343cf07c\",\"name\":\"DataSet\",\"containerType\":\"Table\",\"fieldCount\":9},{\"id\":\"5030ca88-e8e1-4fdd-8aee-b349fe930248\",\"name\":\"DataSetField\",\"containerType\":\"Table\",\"fieldCount\":9}]}],\"id\":\"e1f2a3b4-c5d6-7890-abcd-111111111111\",\"name\":\"ControlDb\"}",
+  "timestamp": "2026-02-24T05:31:13+00:00"
+}

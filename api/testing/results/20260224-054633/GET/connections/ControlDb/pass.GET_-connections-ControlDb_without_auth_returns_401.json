@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /connections/ControlDb without auth returns 401",
+  "domain": "Security Matrix — Unauthenticated GET (401)",
+  "method": "GET",
+  "endpoint": "/connections/ControlDb",
+  "detail": "",
+  "httpStatus": "401",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:44+00:00"
+}

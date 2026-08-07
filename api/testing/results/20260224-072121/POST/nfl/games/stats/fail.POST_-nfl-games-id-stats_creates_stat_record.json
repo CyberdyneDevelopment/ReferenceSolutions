@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "POST /nfl/games/{id}/stats creates stat record",
+  "domain": "NFL Data — Insert Operations",
+  "method": "POST",
+  "endpoint": "/nfl/games//stats",
+  "detail": "Expected 201/200, got 404",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:23:00+00:00"
+}

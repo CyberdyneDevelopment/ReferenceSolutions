@@ -1,0 +1,22 @@
+meta {
+  name: Refresh valid token
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/auth/refresh
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "RefreshToken": "{{lastRefreshToken}}",
+    "AccessToken": "{{lastAccessToken}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

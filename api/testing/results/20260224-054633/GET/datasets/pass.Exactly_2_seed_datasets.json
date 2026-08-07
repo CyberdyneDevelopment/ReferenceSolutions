@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "Exactly 2 seed datasets",
+  "domain": "DataSets",
+  "method": "GET",
+  "endpoint": "/datasets",
+  "detail": "",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to list datasets\",\"details\":\"SQL execution failed: Invalid column name 'CreatedAt'.\\nInvalid column name 'ModifiedAt'.\"}",
+  "timestamp": "2026-02-24T05:47:35+00:00"
+}

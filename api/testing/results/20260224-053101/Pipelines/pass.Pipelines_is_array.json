@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "Pipelines is array",
+  "domain": "Pipelines",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:31:16+00:00"
+}

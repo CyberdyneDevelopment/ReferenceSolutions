@@ -1,0 +1,19 @@
+meta {
+  name: Get non-existent user
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/users/00000000-0000-0000-0000-000000000099
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 404
+}

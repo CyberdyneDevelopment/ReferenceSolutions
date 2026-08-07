@@ -1,0 +1,25 @@
+meta {
+  name: Create pipeline (unauthorized)
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/pipelines
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testUnauthorizedToken}}
+}
+
+body:json {
+  {
+    "Name": "ShouldFail"
+  }
+}
+
+assert {
+  res.status: in [401, 403]
+}

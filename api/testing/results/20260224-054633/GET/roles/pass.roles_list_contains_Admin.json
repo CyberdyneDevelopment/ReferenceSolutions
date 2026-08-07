@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "roles list contains Admin",
+  "domain": "Roles — List",
+  "method": "GET",
+  "endpoint": "/roles",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[{\"id\":\"2fcab57a-4dac-47d7-979c-59aa12f63fd2\",\"displayName\":\"Viewer\",\"description\":\"Read-only access to all resource types\",\"isSystem\":true,\"isTenantScoped\":false,\"sortOrder\":1,\"name\":\"Viewer\"},{\"id\":\"5766aea0-272e-4197-8f34-1beb129873a9\",\"displayName\":\"Operator\",\"description\":\"Write and execute access (inherits Viewer read permissions)\",\"isSystem\":true,\"isTenantScoped\":false,\"sortOrder\":2,\"name\":\"Operator\"},{\"id\":\"f436ce4e-ef11-44c5-8205-2058cd06e83e\",\"displayName\":\"Administrator\",\"description\":\"Full administrative access including delete and system configuration\",\"isSystem\":true,\"isTenantScoped\":false,\"sortOrder\":3,\"name\":\"Admin\"}]",
+  "timestamp": "2026-02-24T05:47:27+00:00"
+}

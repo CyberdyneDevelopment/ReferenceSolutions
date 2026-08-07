@@ -1,0 +1,19 @@
+meta {
+  name: Get ControlDb datastore
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/datastores/ControlDb
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+}

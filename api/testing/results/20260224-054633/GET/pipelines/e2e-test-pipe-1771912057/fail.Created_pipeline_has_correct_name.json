@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Created pipeline has correct name",
+  "domain": "Pipelines",
+  "method": "GET",
+  "endpoint": "/pipelines/e2e-test-pipe-1771912057",
+  "detail": "expected .name == \"e2e-test-pipe-1771912057\", got \"null\"",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to fetch pipeline\",\"details\":\"Container 'Pipelines' not found in configuration\"}",
+  "timestamp": "2026-02-24T05:47:38+00:00"
+}

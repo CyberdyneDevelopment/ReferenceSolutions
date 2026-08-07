@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Default theme isDefault is true",
+  "domain": "Themes — Default Theme Detail",
+  "method": "GET",
+  "endpoint": "/themes/default",
+  "detail": "expected .isDefault == true, got false",
+  "httpStatus": "200",
+  "body": "{\"id\":\"2b7dcd52-3d3e-4fd6-8b33-ec2e361ec3b9\",\"tenantId\":null,\"name\":\"fractal\",\"displayName\":\"Fractal\",\"description\":\"Deep Logic Purple - FractalDataWorks brand theme\",\"primaryColor\":\"#7209B7\",\"secondaryColor\":\"#3A0CA3\",\"tertiaryColor\":\"#F72585\",\"backgroundColor\":\"#0F1115\",\"surfaceColor\":\"#1A1D24\",\"errorColor\":\"#FF6B6B\",\"warningColor\":\"#FFE66D\",\"successColor\":\"#4ECDC4\",\"infoColor\":\"#4EA8DE\",\"textPrimary\":\"#E2E8F0\",\"textSecondary\":\"#94A3B8\",\"textDisabled\":\"#64748B\",\"textOnPrimary\":\"#FFFFFF\",\"textOnSecondary\":\"#FFFFFF\",\"fontFamily\":\"Roboto, sans-serif\",\"fontFamilyMono\":\"JetBrains Mono, Consolas, monospace\",\"fontSizeBase\":14,\"borderRadius\":4,\"isDarkMode\":true,\"isDefault\":false,\"logoUrl\":null,\"appName\":\"FractalDataWorks\",\"faviconUrl\":null}",
+  "timestamp": "2026-02-24T05:47:41+00:00"
+}

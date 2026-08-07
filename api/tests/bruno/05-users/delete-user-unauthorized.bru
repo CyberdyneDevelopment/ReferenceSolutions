@@ -1,0 +1,19 @@
+meta {
+  name: Delete user (unauthorized)
+  type: http
+  seq: 11
+}
+
+delete {
+  url: {{baseUrl}}/users/BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testUnauthorizedToken}}
+}
+
+assert {
+  res.status: in [401, 403]
+}

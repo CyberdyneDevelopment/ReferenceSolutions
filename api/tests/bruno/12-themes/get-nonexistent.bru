@@ -1,0 +1,19 @@
+meta {
+  name: Get non-existent theme
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/themes/NoSuchTheme
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 404
+}

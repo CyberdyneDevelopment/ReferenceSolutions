@@ -1,0 +1,29 @@
+meta {
+  name: Re-login after logout
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{baseUrl}}/auth/token
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "Username": "{{testAdminUsername}}",
+    "Password": "{{testAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.AccessToken: isDefined
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("testAdminToken", res.body.AccessToken);
+  }
+}

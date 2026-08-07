@@ -1,0 +1,22 @@
+meta {
+  name: Refresh with invalid token
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/auth/refresh
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "RefreshToken": "invalid-token",
+    "AccessToken": "invalid-access"
+  }
+}
+
+assert {
+  res.status: in [400, 401]
+}

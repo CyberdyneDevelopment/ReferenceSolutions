@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /connection-types as viewer returns 200",
+  "domain": "Configuration — Auth Matrix",
+  "method": "GET",
+  "endpoint": "/connection-types",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[{\"displayName\":\"MsSql\",\"description\":\"Connection type: MsSql\",\"category\":\"Connection\",\"name\":\"MsSql\"}]",
+  "timestamp": "2026-02-24T05:47:42+00:00"
+}

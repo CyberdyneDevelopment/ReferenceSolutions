@@ -1,0 +1,19 @@
+meta {
+  name: Get dataset fields
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/datasets/TestApiDataSet/fields
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 404]
+}

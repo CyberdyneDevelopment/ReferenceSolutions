@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "POST /pipelines as operator returns 200 or 201",
+  "domain": "Pipelines",
+  "detail": "expected 200 or 201, got 400",
+  "httpStatus": "400",
+  "body": "{\"statusCode\":400,\"message\":\"One or more errors occurred!\",\"errors\":{\"sourceConnectionName\":[\"Source connection name is required\"],\"targetConnectionName\":[\"Target connection name is required\"]}}",
+  "timestamp": "2026-02-24T05:31:16+00:00"
+}

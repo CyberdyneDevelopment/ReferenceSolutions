@@ -1,0 +1,72 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <NuGetPruneVerbosity>quiet</NuGetPruneVerbosity>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Configurations>Debug;Debug-Local;Develop;Develop-Local;Release;Release-Local</Configurations>
+
+    <IsLocalConfiguration>false</IsLocalConfiguration>
+    <IsLocalConfiguration Condition="$(Configuration.EndsWith('-Local'))">true</IsLocalConfiguration>
+    <BaseConfiguration>$(Configuration)</BaseConfiguration>
+    <BaseConfiguration Condition="'$(IsLocalConfiguration)' == 'true'">$(Configuration.Replace('-Local', ''))</BaseConfiguration>
+
+    <Deterministic>true</Deterministic>
+    <IsPackable>false</IsPackable>
+
+    <!-- Hand-set product version (SemVer 2.0), lockstep across the workspace. No MinVer, no git tags. -->
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix>rc.1</VersionSuffix>
+
+    <!-- Warning suppressions (same as FDW) -->
+    <NoWarn>$(NoWarn);VSTHRD200;CA1716;CA1000;CA1848;CA1510;CA1834;MA0051;MA0048;CA1711;CA1707;NETSDK1195</NoWarn>
+  </PropertyGroup>
+
+  <!-- Debug -->
+  <PropertyGroup Condition="'$(BaseConfiguration)' == 'Debug'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <AnalysisLevel>none</AnalysisLevel>
+    <RunAnalyzers>false</RunAnalyzers>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <!-- Develop -->
+  <PropertyGroup Condition="'$(BaseConfiguration)' == 'Develop'">
+    <DefineConstants>TRACE;DEVELOP</DefineConstants>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <RunAnalyzers>true</RunAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <!-- Release -->
+  <PropertyGroup Condition="'$(BaseConfiguration)' == 'Release'">
+    <DefineConstants>TRACE;RELEASE</DefineConstants>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>true</Optimize>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <RunAnalyzers>true</RunAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <!-- Local NuGet Development Configuration -->
+  <PropertyGroup>
+    <LocalNugetConfigFileName Condition="'$(LocalNugetConfigFileName)' == ''">Fdw.Local.nuget.config</LocalNugetConfigFileName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(IsLocalConfiguration)' == 'true' AND '$(LocalNugetFolder)' != ''">
+    <RestoreConfigFile>$(LocalNugetFolder)/$(LocalNugetConfigFileName)</RestoreConfigFile>
+  </PropertyGroup>
+</Project>

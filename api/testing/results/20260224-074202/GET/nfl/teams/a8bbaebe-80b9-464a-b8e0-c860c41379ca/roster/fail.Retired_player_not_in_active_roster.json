@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Retired player not in active roster",
+  "domain": "NFL Data — Update Operations",
+  "method": "GET",
+  "endpoint": "/nfl/teams/a8bbaebe-80b9-464a-b8e0-c860c41379ca/roster?isActive=true",
+  "detail": "Retired player still in active roster",
+  "httpStatus": "200",
+  "body": "[{\"id\":\"142b99f9-6536-4df7-9922-634ca89eb39e\",\"teamId\":\"a8bbaebe-80b9-464a-b8e0-c860c41379ca\",\"firstName\":\"Jayden\",\"lastName\":\"Daniels\",\"position\":\"QB\",\"jerseyNumber\":5,\"heightInches\":76,\"weightLbs\":210,\"college\":\"LSU\",\"draftYear\":2024,\"draftRound\":1,\"draftPick\":2,\"isActive\":true,\"createDate\":\"2026-02-24T07:42:36.5354061+00:00\",\"createBy\":\"sa\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:42:36.5354061+00:00\",\"modifyBy\":\"sa\",\"modifyOnBehalfOf\":\"\"},{\"id\":\"a05630e4-6973-41b2-94a6-aed5cd77a195\",\"teamId\":\"a8bbaebe-80b9-464a-b8e0-c860c41379ca\",\"firstName\":\"Terry\",\"lastName\":\"McLaurin\",\"position\":\"WR\",\"jerseyNumber\":17,\"heightInches\":72,\"weightLbs\":210,\"college\":\"Ohio State\",\"draftYear\":2019,\"draftRound\":3,\"draftPick\":76,\"isActive\":true,\"createDate\":\"2026-02-24T07:42:36.5354061+00:00\",\"createBy\":\"sa\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:42:36.5354061+00:00\",\"modifyBy\":\"sa\",\"modifyOnBehalfOf\":\"\"},{\"id\":\"49cfb824-40d9-4046-825b-e0aa0261a16b\",\"teamId\":\"a8bbaebe-80b9-464a-b8e0-c860c41379ca\",\"firstName\":\"E2E\",\"lastName\":\"TestPlayer\",\"position\":\"WR\",\"jerseyNumber\":99,\"heightInches\":72,\"weightLbs\":195,\"college\":\"Test University\",\"draftYear\":2025,\"draftRound\":7,\"draftPick\":250,\"isActive\":true,\"createDate\":\"2026-02-24T07:42:50.5730901+00:00\",\"createBy\":\"api\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:42:51.6703754+00:00\",\"modifyBy\":\"api\",\"modifyOnBehalfOf\":\"\"}]",
+  "timestamp": "2026-02-24T07:42:52+00:00"
+}

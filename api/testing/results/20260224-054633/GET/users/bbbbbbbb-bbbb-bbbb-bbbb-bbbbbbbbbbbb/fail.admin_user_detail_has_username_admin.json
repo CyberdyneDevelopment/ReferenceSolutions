@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "admin user detail has username admin",
+  "domain": "Users — Get by ID",
+  "method": "GET",
+  "endpoint": "/users/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+  "detail": "expected .username == \"admin\", got \"\"",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:22+00:00"
+}

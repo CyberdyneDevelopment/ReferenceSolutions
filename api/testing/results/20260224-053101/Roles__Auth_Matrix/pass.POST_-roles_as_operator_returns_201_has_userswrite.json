@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "POST /roles as operator returns 201 (has users:write)",
+  "domain": "Roles — Auth Matrix",
+  "detail": "",
+  "httpStatus": "201",
+  "body": "{\"id\":\"08f07388-4cb0-4967-818c-c97f3395c011\",\"displayName\":\"Probe Role\",\"description\":null,\"isSystem\":false,\"isTenantScoped\":false,\"sortOrder\":0,\"name\":\"op-probe-1771911063\"}",
+  "timestamp": "2026-02-24T05:31:04+00:00"
+}

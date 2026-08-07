@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "tenants list contains AFC (slug=afc)",
+  "domain": "Tenants — List",
+  "method": "GET",
+  "endpoint": "/tenants",
+  "detail": "expected tenants to contain slug=afc",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:32+00:00"
+}

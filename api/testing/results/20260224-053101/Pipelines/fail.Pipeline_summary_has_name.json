@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "Pipeline summary has name",
+  "domain": "Pipelines",
+  "detail": "expected .[0].name to be string, got null",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:31:16+00:00"
+}

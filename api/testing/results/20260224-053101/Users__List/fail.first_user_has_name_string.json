@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "first user has name (string)",
+  "domain": "Users — List",
+  "detail": "expected .[0].name to be string, got null",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:31:03+00:00"
+}

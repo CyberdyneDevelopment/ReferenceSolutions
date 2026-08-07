@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "POST /nfl/players/{id}/retire marks player inactive",
+  "domain": "NFL Data — Update Operations",
+  "method": "POST",
+  "endpoint": "/nfl/players/8cc24a8f-8cbc-4e8f-bdcb-a57f8339c6fc/retire",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "{\"id\":\"8cc24a8f-8cbc-4e8f-bdcb-a57f8339c6fc\",\"teamId\":\"f0f6b80e-da8f-4e23-8620-23957e56c782\",\"firstName\":\"E2E\",\"lastName\":\"TestPlayer\",\"position\":\"WR\",\"jerseyNumber\":99,\"heightInches\":72,\"weightLbs\":195,\"college\":\"Test University\",\"draftYear\":2025,\"draftRound\":7,\"draftPick\":250,\"isActive\":false,\"createDate\":\"2026-02-24T09:00:27.4791855+00:00\",\"createBy\":\"api\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T09:00:29.2115897+00:00\",\"modifyBy\":\"api\",\"modifyOnBehalfOf\":\"\"}",
+  "timestamp": "2026-02-24T09:00:29+00:00"
+}

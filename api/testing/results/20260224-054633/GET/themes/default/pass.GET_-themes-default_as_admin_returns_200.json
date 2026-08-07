@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /themes/default as admin returns 200",
+  "domain": "Security Matrix — Admin Read Access (200)",
+  "method": "GET",
+  "endpoint": "/themes/default",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "{\"id\":\"d75b551f-ccee-4526-ae72-3208743f0b94\",\"tenantId\":null,\"name\":\"fractal\",\"displayName\":\"Fractal\",\"description\":\"Deep Logic Purple - FractalDataWorks brand theme\",\"primaryColor\":\"#7209B7\",\"secondaryColor\":\"#3A0CA3\",\"tertiaryColor\":\"#F72585\",\"backgroundColor\":\"#0F1115\",\"surfaceColor\":\"#1A1D24\",\"errorColor\":\"#FF6B6B\",\"warningColor\":\"#FFE66D\",\"successColor\":\"#4ECDC4\",\"infoColor\":\"#4EA8DE\",\"textPrimary\":\"#E2E8F0\",\"textSecondary\":\"#94A3B8\",\"textDisabled\":\"#64748B\",\"textOnPrimary\":\"#FFFFFF\",\"textOnSecondary\":\"#FFFFFF\",\"fontFamily\":\"Roboto, sans-serif\",\"fontFamilyMono\":\"JetBrains Mono, Consolas, monospace\",\"fontSizeBase\":14,\"borderRadius\":4,\"isDarkMode\":true,\"isDefault\":false,\"logoUrl\":null,\"appName\":\"FractalDataWorks\",\"faviconUrl\":null}",
+  "timestamp": "2026-02-24T05:47:46+00:00"
+}

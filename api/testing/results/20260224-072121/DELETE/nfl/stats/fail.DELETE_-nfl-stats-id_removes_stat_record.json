@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "DELETE /nfl/stats/{id} removes stat record",
+  "domain": "NFL Data — Delete Operations",
+  "method": "DELETE",
+  "endpoint": "/nfl/stats/",
+  "detail": "Expected 200/204, got 404",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:23:01+00:00"
+}

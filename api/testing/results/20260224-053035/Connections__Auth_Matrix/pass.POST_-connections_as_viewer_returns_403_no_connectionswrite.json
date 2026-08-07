@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "POST /connections as viewer returns 403 (no connections:write)",
+  "domain": "Connections — Auth Matrix",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:47+00:00"
+}

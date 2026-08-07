@@ -1,0 +1,32 @@
+meta {
+  name: Login with valid credentials
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/auth/token
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "Username": "{{testAdminUsername}}",
+    "Password": "{{testAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.AccessToken: isDefined
+  res.body.RefreshToken: isDefined
+  res.body.TokenType: eq Bearer
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("lastAccessToken", res.body.AccessToken);
+    bru.setVar("lastRefreshToken", res.body.RefreshToken);
+  }
+}

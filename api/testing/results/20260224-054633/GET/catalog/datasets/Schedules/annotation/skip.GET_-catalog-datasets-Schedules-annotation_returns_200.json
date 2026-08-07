@@ -1,0 +1,11 @@
+{
+  "status": "skip",
+  "test": "GET /catalog/datasets/Schedules/annotation returns 200",
+  "domain": "Catalog & Glossary",
+  "method": "GET",
+  "endpoint": "/catalog/datasets/Schedules/annotation",
+  "detail": "Dataset annotation returned 500",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to get annotation\",\"details\":\"Container 'DataSetAnnotation' not found in configuration\"}",
+  "timestamp": "2026-02-24T05:47:39+00:00"
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Delete TestApiPipeline
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/pipelines/TestApiPipeline
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+}

@@ -1,0 +1,11 @@
+{
+  "status": "skip",
+  "test": "POST /promotion creates promotion (Pending)",
+  "domain": "Promotions — CRUD Lifecycle",
+  "method": "POST",
+  "endpoint": "/promotion",
+  "detail": "Promotion create returned 404",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:41+00:00"
+}

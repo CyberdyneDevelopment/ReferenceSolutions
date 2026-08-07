@@ -1,0 +1,37 @@
+meta {
+  name: Create promotion request for rejection
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/promotion/requests
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "SourceEnvironment": "Development",
+    "TargetEnvironment": "Production",
+    "EntityTypes": ["Pipeline"],
+    "EntityNames": ["DataArchiveCopy"],
+    "RequestedBy": "testAdmin"
+  }
+}
+
+assert {
+  res.status: in [200, 201]
+}
+
+script:post-response {
+  if (res.body.Id) {
+    bru.setVar("rejectPromotionId", res.body.Id);
+  } else if (res.body.id) {
+    bru.setVar("rejectPromotionId", res.body.id);
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Schedules has id (guid)",
+  "domain": "DataSets",
+  "method": "GET",
+  "endpoint": "/datasets/Schedules",
+  "detail": "expected .id to be GUID, got \"null\"",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to get datasets\",\"details\":\"SQL execution failed: Invalid column name 'CreatedAt'.\\nInvalid column name 'ModifiedAt'.\"}",
+  "timestamp": "2026-02-24T05:47:35+00:00"
+}

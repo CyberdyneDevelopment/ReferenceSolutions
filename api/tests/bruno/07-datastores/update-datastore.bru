@@ -1,0 +1,26 @@
+meta {
+  name: Update TestApiStore
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/datastores/TestApiStore
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Name": "TestApiStore",
+    "Description": "Updated test datastore description"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

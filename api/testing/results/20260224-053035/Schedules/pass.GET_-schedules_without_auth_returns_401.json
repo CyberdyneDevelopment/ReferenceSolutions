@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "GET /schedules without auth returns 401",
+  "domain": "Schedules",
+  "detail": "",
+  "httpStatus": "401",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:53+00:00"
+}

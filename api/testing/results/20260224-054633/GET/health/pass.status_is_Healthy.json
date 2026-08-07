@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "status is Healthy",
+  "domain": "Health",
+  "method": "GET",
+  "endpoint": "/health",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "{\"status\":\"Healthy\",\"application\":\"Reference.Api\",\"timestamp\":\"2026-02-24T05:47:18.9334717+00:00\",\"checks\":[{\"name\":\"ControlDb\",\"status\":\"Healthy\"}]}",
+  "timestamp": "2026-02-24T05:47:18+00:00"
+}

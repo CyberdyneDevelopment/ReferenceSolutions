@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /schedules?pageSize=1 limits results",
+  "domain": "Schedules",
+  "method": "GET",
+  "endpoint": "/schedules?pageSize=1",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[{\"items\":[],\"totalCount\":0,\"page\":1,\"pageSize\":1,\"totalPages\":0}]",
+  "timestamp": "2026-02-24T05:47:38+00:00"
+}

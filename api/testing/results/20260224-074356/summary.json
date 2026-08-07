@@ -1,0 +1,153 @@
+{
+  "total": 37,
+  "passed": 66,
+  "failed": 0,
+  "skipped": 0,
+  "completed": "2026-02-24T07:44:13+00:00",
+  "endpoints": [
+    {
+      "method": "DELETE",
+      "endpoint": "/nfl/players/2155e1db-9d55-4280-b601-d8147ee0e1eb",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/nfl/stats/db7d726d-92e5-41eb-95a2-90b112d05b61",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/games/122e5a0b-e69e-4034-8144-c6c604037a8d/boxscore",
+      "pass": 4,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/games?season=2025&week=1",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/standings?season=2025",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/standings?season=2025&conference=AFC",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams",
+      "pass": 6,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams/1a83371e-47aa-41c4-9036-8980fabea639/roster",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams/1a83371e-47aa-41c4-9036-8980fabea639/roster?position=QB",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams/230e024b-a595-4bf0-96e4-cab24986e598/roster",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams/a8bbaebe-80b9-464a-b8e0-c860c41379ca/roster",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams/a8bbaebe-80b9-464a-b8e0-c860c41379ca/roster?isActive=true",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams?conference=AFC",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/nfl/teams?conference=NFC&division=North",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/nfl/games/122e5a0b-e69e-4034-8144-c6c604037a8d/stats",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/nfl/players",
+      "pass": 5,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/nfl/players/2155e1db-9d55-4280-b601-d8147ee0e1eb/retire",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/nfl/players/2155e1db-9d55-4280-b601-d8147ee0e1eb/transfer",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    }
+  ]
+}

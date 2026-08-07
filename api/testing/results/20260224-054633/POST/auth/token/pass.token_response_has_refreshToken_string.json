@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "token response has refreshToken (string)",
+  "domain": "Authentication",
+  "method": "POST",
+  "endpoint": "/auth/token",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "{\"accessToken\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiYmJiYmJiYi1iYmJiLWJiYmItYmJiYi1iYmJiYmJiYmJiYmIiLCJqdGkiOiJhY2I1YWQ2ZS01NDg5LTQ4NjYtOGQwZS1mNWQ3M2I0MGY3NDciLCJpYXQiOjE3NzE5MTIwMzksIm5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJyb2xlIjoiQWRtaW4iLCJuYmYiOjE3NzE5MTIwMzksImV4cCI6MTc3MTkxNTYzOSwiaXNzIjoiRnJhY3RhbERhdGFXb3Jrcy5SZWZlcmVuY2UuQXBpIiwiYXVkIjoiRnJhY3RhbERhdGFXb3Jrcy5SZWZlcmVuY2UuQXBpIn0.qz5OE4WrPgNn8VQKAELOQHdZ-Jw1FgfiJN-U4ek7I58\",\"refreshToken\":\"us/UufY/UTxYBG8Dh0GGipvtIjN7ROlylF3GLG9w5bgLwefHNheJN0SztwCAbh8x3kxJE6BC4qso2l+/P/I8cw==\",\"tokenType\":\"Bearer\",\"expiresIn\":3599,\"tenantId\":null}",
+  "timestamp": "2026-02-24T05:47:19+00:00"
+}

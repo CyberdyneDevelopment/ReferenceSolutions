@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /connections/schema-capable as viewer returns 200",
+  "domain": "Configuration — Schema-Capable Connections",
+  "method": "GET",
+  "endpoint": "/connections/schema-capable",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[{\"name\":\"ControlDb\",\"type\":\"MsSql\",\"supportsSchemaIntrospection\":true},{\"name\":\"AuthDb\",\"type\":\"MsSql\",\"supportsSchemaIntrospection\":true},{\"name\":\"TenantDb\",\"type\":\"MsSql\",\"supportsSchemaIntrospection\":true},{\"name\":\"EtlDb\",\"type\":\"MsSql\",\"supportsSchemaIntrospection\":true},{\"name\":\"SchedDb\",\"type\":\"MsSql\",\"supportsSchemaIntrospection\":true},{\"name\":\"OpsDb\",\"type\":\"MsSql\",\"supportsSchemaIntrospection\":true}]",
+  "timestamp": "2026-02-24T05:47:42+00:00"
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Login with non-existent user
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/auth/token
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "Username": "noSuchUser",
+    "Password": "whatever"
+  }
+}
+
+assert {
+  res.status: eq 401
+}

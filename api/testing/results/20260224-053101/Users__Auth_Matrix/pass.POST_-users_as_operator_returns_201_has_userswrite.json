@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "POST /users as operator returns 201 (has users:write)",
+  "domain": "Users — Auth Matrix",
+  "detail": "",
+  "httpStatus": "201",
+  "body": "{\"success\":true,\"userId\":\"56e8b7b2-51ba-4a5c-baa2-141fa1b00dc3\",\"message\":\"User created successfully\"}",
+  "timestamp": "2026-02-24T05:31:02+00:00"
+}

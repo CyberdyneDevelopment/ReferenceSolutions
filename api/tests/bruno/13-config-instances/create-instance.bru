@@ -1,0 +1,32 @@
+meta {
+  name: Create TestConfigInstance
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/configuration/instances/Connection
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "ServiceType": "MsSql",
+    "Name": "TestConfigInstance",
+    "Values": {
+      "Server": "test-server.example.com",
+      "Port": "1433",
+      "Database": "TestConfigDb",
+      "AuthenticationType": "SqlAuth"
+    }
+  }
+}
+
+assert {
+  res.status: in [200, 201]
+}

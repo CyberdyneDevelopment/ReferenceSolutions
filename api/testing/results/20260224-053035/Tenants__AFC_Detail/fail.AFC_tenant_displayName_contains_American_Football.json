@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "AFC tenant displayName contains American Football",
+  "domain": "Tenants — AFC Detail",
+  "detail": "expected .displayName to contain \"American Football\", got \"\"",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:47+00:00"
+}

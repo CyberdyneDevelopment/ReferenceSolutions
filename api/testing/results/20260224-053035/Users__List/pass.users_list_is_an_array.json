@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "users list is an array",
+  "domain": "Users — List",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:30:38+00:00"
+}

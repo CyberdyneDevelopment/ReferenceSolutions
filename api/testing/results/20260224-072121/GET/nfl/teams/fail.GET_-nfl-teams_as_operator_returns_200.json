@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "GET /nfl/teams as operator returns 200",
+  "domain": "NFL Data — Auth Matrix",
+  "method": "GET",
+  "endpoint": "/nfl/teams",
+  "detail": "expected status 200, got 404 (body: )",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:22:59+00:00"
+}

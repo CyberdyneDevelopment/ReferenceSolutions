@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "POST /pipelines without auth returns 401",
+  "domain": "Security Matrix — Unauthenticated POST (401)",
+  "method": "POST",
+  "endpoint": "/pipelines",
+  "detail": "",
+  "httpStatus": "401",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:45+00:00"
+}

@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "switch response has tenant object",
+  "domain": "Tenants — Switch",
+  "detail": "expected .tenant to be object, got ",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:47+00:00"
+}

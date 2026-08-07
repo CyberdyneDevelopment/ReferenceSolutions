@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "AFC tenant id matches",
+  "domain": "Tenants — AFC Detail",
+  "method": "GET",
+  "endpoint": "/tenants/11111111-1111-1111-1111-111111111111",
+  "detail": "expected .id == \"11111111-1111-1111-1111-111111111111\", got \"\"",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:32+00:00"
+}

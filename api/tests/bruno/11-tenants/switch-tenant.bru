@@ -1,0 +1,25 @@
+meta {
+  name: Switch to AFC tenant
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/tenants/switch
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "TenantId": "11111111-1111-1111-1111-111111111111"
+  }
+}
+
+assert {
+  res.status: in [200, 400, 404]
+}

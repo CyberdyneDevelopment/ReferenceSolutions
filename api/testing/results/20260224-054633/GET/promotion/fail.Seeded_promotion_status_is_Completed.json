@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Seeded promotion status is Completed",
+  "domain": "Promotions — Seeded Promotion Request",
+  "method": "GET",
+  "endpoint": "/promotion",
+  "detail": "expected .[].status == \"Completed\", got \"\"",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:41+00:00"
+}

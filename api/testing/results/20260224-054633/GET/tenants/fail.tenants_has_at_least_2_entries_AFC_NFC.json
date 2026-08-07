@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "tenants has at least 2 entries (AFC, NFC)",
+  "domain": "Tenants — List",
+  "method": "GET",
+  "endpoint": "/tenants",
+  "detail": "expected . length >= 2, got ",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:32+00:00"
+}

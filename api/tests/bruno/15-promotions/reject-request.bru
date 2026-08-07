@@ -1,0 +1,26 @@
+meta {
+  name: Reject promotion request
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/promotion/requests/{{rejectPromotionId}}/reject
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "ActionBy": "testAdmin",
+    "Comments": "Rejected by E2E test"
+  }
+}
+
+assert {
+  res.status: in [200, 204]
+}

@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "GET /nfl/teams returns all 32 teams",
+  "domain": "NFL Data — Team Queries",
+  "method": "GET",
+  "endpoint": "/nfl/teams",
+  "detail": "expected . length == 32, got ",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:22:59+00:00"
+}

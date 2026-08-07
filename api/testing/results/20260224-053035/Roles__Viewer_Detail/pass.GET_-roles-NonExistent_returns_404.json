@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "GET /roles/NonExistent returns 404",
+  "domain": "Roles — Viewer Detail",
+  "detail": "",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:41+00:00"
+}

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "PUT /roles/{name}/permissions as viewer returns 403 (no users:write)",
+  "domain": "Permissions — Role Permission Assignment",
+  "method": "PUT",
+  "endpoint": "/roles/e2e-perm-role-1771912050/permissions",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:31+00:00"
+}

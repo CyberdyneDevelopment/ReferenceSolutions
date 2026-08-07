@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "POST /tenants/switch to AFC returns 200",
+  "domain": "Tenants — Switch",
+  "method": "POST",
+  "endpoint": "/tenants/switch",
+  "detail": "expected status 200, got 403 (body: )",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:33+00:00"
+}

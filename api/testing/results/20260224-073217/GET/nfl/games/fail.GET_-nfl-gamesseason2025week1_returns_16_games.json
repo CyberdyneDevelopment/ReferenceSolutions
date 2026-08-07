@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "GET /nfl/games?season=2025&week=1 returns 16 games",
+  "domain": "NFL Data — Game Queries",
+  "method": "GET",
+  "endpoint": "/nfl/games?season=2025&week=1",
+  "detail": "expected . length == 16, got 3",
+  "httpStatus": "500",
+  "body": "{\"statusCode\":500,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to list games\"]}}",
+  "timestamp": "2026-02-24T07:33:06+00:00"
+}

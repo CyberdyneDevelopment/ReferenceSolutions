@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Teams have required fields",
+  "domain": "NFL Data — Team Queries",
+  "method": "GET",
+  "endpoint": "/nfl/teams",
+  "detail": "expected .[0].conference to be string, got ",
+  "httpStatus": "500",
+  "body": "{\"statusCode\":500,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to list teams\"]}}",
+  "timestamp": "2026-02-24T07:26:40+00:00"
+}

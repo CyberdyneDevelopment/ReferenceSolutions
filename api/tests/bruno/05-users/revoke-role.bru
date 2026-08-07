@@ -1,0 +1,19 @@
+meta {
+  name: Revoke Viewer role from testAdmin
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/users/{{testAdminUserId}}/roles/Viewer
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+}

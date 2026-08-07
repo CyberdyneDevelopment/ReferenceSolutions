@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /calculations/period-comparisons as viewer returns 200",
+  "domain": "Calculations — Auth Matrix",
+  "method": "GET",
+  "endpoint": "/calculations/period-comparisons",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "{\"types\":[{\"id\":5,\"name\":\"DayOverDay\",\"description\":\"Compares current day to previous day\"},{\"id\":2,\"name\":\"MonthOverMonth\",\"description\":\"Compares current month to previous month\"},{\"id\":8,\"name\":\"MonthToDate\",\"description\":\"Compares current month-to-date to previous month-to-date\"},{\"id\":0,\"name\":\"None\",\"description\":\"No period comparison\"},{\"id\":3,\"name\":\"QuarterOverQuarter\",\"description\":\"Compares current quarter to previous quarter\"},{\"id\":7,\"name\":\"QuarterToDate\",\"description\":\"Compares current quarter-to-date to previous quarter-to-date\"},{\"id\":4,\"name\":\"WeekOverWeek\",\"description\":\"Compares current week to previous week\"},{\"id\":1,\"name\":\"YearOverYear\",\"description\":\"Compares current year to previous year\"},{\"id\":6,\"name\":\"YearToDate\",\"description\":\"Compares current year-to-date to previous year-to-date\"}]}",
+  "timestamp": "2026-02-24T05:47:44+00:00"
+}

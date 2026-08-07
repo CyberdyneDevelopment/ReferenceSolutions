@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Default theme has name",
+  "domain": "Themes — Seeded Data",
+  "method": "GET",
+  "endpoint": "/themes",
+  "detail": "expected .[null].name == \"Default\", got \"\"",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:47:41+00:00"
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Assign Viewer role to testAdmin
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/users/{{testAdminUserId}}/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "RoleName": "Viewer"
+  }
+}
+
+assert {
+  res.status: in [200, 201]
+}

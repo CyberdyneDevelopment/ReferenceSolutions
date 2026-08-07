@@ -1,0 +1,31 @@
+meta {
+  name: Create TestApiPipeline
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/pipelines
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Name": "TestApiPipeline",
+    "PipelineType": "BatchCopy",
+    "SourceConnectionName": "ControlDb",
+    "DestinationConnectionName": "OpsDb",
+    "SourceDataSet": "Schedules",
+    "Description": "Test pipeline for API E2E tests",
+    "IsEnabled": true
+  }
+}
+
+assert {
+  res.status: in [200, 201]
+}

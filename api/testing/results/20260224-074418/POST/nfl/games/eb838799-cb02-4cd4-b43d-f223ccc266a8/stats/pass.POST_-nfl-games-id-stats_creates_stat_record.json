@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "POST /nfl/games/{id}/stats creates stat record",
+  "domain": "NFL Data — Insert Operations",
+  "method": "POST",
+  "endpoint": "/nfl/games/eb838799-cb02-4cd4-b43d-f223ccc266a8/stats",
+  "detail": "",
+  "httpStatus": "201",
+  "body": "{\"id\":\"c1ae752b-ad5f-4abf-91f2-fb5b0f08483a\",\"gameId\":\"eb838799-cb02-4cd4-b43d-f223ccc266a8\",\"playerId\":\"5f241293-25c9-4a88-8e21-8d92b84e3312\",\"passingYards\":0,\"passingTDs\":0,\"interceptions\":0,\"rushingYards\":45,\"rushingTDs\":0,\"receptions\":3,\"receivingYards\":67,\"receivingTDs\":1,\"tackles\":0,\"sacks\":0,\"fumblesForced\":0,\"createDate\":\"2026-02-24T07:45:07.5747437+00:00\",\"createBy\":\"api\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:45:07.5747437+00:00\",\"modifyBy\":\"api\",\"modifyOnBehalfOf\":\"\"}",
+  "timestamp": "2026-02-24T07:45:07+00:00"
+}

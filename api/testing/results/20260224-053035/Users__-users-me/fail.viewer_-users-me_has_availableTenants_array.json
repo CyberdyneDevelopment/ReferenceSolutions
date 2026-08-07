@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "viewer /users/me has availableTenants array",
+  "domain": "Users — /users/me",
+  "detail": "expected .availableTenants to be array, got ",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:38+00:00"
+}

@@ -1,0 +1,19 @@
+meta {
+  name: List permissions (unauthorized)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/permissions
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testUnauthorizedToken}}
+}
+
+assert {
+  res.status: in [401, 403]
+}

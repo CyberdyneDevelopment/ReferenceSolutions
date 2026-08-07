@@ -1,0 +1,19 @@
+meta {
+  name: Delete TestConfigInstance
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/configuration/instances/Connection/TestConfigInstance
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+}

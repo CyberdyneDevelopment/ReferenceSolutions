@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "first tenant has slug (string)",
+  "domain": "Tenants — List",
+  "method": "GET",
+  "endpoint": "/tenants",
+  "detail": "expected .[0].slug to be string, got ",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:32+00:00"
+}

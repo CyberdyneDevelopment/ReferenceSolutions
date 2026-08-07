@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Contains NullCheckRule for Schedules.Name",
+  "domain": "Quality Rules",
+  "method": "GET",
+  "endpoint": "/quality",
+  "detail": "expected NullCheckRule for Schedules.Name",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:40+00:00"
+}

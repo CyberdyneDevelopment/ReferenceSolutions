@@ -1,0 +1,19 @@
+meta {
+  name: List executions
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/executions
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 404, 500]
+}

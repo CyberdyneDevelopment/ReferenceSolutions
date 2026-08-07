@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "Default theme exists",
+  "domain": "Themes — Seeded Data",
+  "method": "GET",
+  "endpoint": "/themes",
+  "detail": "Default theme not found",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:47:41+00:00"
+}

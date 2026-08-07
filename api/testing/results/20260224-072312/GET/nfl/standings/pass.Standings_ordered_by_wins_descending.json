@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "Standings ordered by wins descending",
+  "domain": "NFL Data — Standings",
+  "method": "GET",
+  "endpoint": "/nfl/standings?season=2025&conference=AFC",
+  "detail": "",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:23:29+00:00"
+}

@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "GET /users as admin returns 200",
+  "domain": "Users — List",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:30:38+00:00"
+}

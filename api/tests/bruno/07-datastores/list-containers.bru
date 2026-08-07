@@ -1,0 +1,19 @@
+meta {
+  name: List datastore containers
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/datastores/ControlDb/containers
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 404]
+}

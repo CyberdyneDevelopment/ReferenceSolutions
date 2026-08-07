@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "Deleted player not in any roster",
+  "domain": "NFL Data — Delete Operations",
+  "method": "GET",
+  "endpoint": "/nfl/teams/a8bbaebe-80b9-464a-b8e0-c860c41379ca/roster",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[{\"id\":\"142b99f9-6536-4df7-9922-634ca89eb39e\",\"teamId\":\"a8bbaebe-80b9-464a-b8e0-c860c41379ca\",\"firstName\":\"Jayden\",\"lastName\":\"Daniels\",\"position\":\"QB\",\"jerseyNumber\":5,\"heightInches\":76,\"weightLbs\":210,\"college\":\"LSU\",\"draftYear\":2024,\"draftRound\":1,\"draftPick\":2,\"isActive\":true,\"createDate\":\"2026-02-24T07:42:36.5354061+00:00\",\"createBy\":\"sa\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:42:36.5354061+00:00\",\"modifyBy\":\"sa\",\"modifyOnBehalfOf\":\"\"},{\"id\":\"a05630e4-6973-41b2-94a6-aed5cd77a195\",\"teamId\":\"a8bbaebe-80b9-464a-b8e0-c860c41379ca\",\"firstName\":\"Terry\",\"lastName\":\"McLaurin\",\"position\":\"WR\",\"jerseyNumber\":17,\"heightInches\":72,\"weightLbs\":210,\"college\":\"Ohio State\",\"draftYear\":2019,\"draftRound\":3,\"draftPick\":76,\"isActive\":true,\"createDate\":\"2026-02-24T07:42:36.5354061+00:00\",\"createBy\":\"sa\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:42:36.5354061+00:00\",\"modifyBy\":\"sa\",\"modifyOnBehalfOf\":\"\"}]",
+  "timestamp": "2026-02-24T07:44:12+00:00"
+}

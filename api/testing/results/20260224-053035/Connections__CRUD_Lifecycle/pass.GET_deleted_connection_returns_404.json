@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "GET deleted connection returns 404",
+  "domain": "Connections — CRUD Lifecycle",
+  "detail": "",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:48+00:00"
+}

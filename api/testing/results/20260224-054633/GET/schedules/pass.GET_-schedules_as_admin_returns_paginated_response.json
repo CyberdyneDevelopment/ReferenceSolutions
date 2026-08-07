@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /schedules as admin returns paginated response",
+  "domain": "Schedules",
+  "method": "GET",
+  "endpoint": "/schedules",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[{\"items\":[],\"totalCount\":0,\"page\":1,\"pageSize\":25,\"totalPages\":0}]",
+  "timestamp": "2026-02-24T05:47:38+00:00"
+}

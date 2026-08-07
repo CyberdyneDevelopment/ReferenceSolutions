@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "Deleted pipeline returns 404",
+  "domain": "Pipelines",
+  "detail": "expected status 404, got 500 (body: {\"error\":\"Failed to fetch pipeline\",\"details\":\"Container 'Pipelines' not found in configuration\"})",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to fetch pipeline\",\"details\":\"Container 'Pipelines' not found in configuration\"}",
+  "timestamp": "2026-02-24T05:31:16+00:00"
+}

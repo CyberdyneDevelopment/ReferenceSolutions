@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "POST /quality as viewer returns 403",
+  "domain": "Quality Rules",
+  "method": "POST",
+  "endpoint": "/quality",
+  "detail": "expected status 403, got 404 (body: )",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:40+00:00"
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Update TestConfigInstance
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/configuration/instances/Connection/TestConfigInstance
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Values": {
+      "Server": "updated-server.example.com",
+      "Port": "5432"
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+}

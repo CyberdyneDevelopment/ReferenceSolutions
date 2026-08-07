@@ -1,0 +1,11 @@
+{
+  "status": "skip",
+  "test": "POST /datastores/ControlDb/introspect returns result",
+  "domain": "DataStores",
+  "method": "POST",
+  "endpoint": "/datastores/ControlDb/introspect",
+  "detail": "Introspect returned 404 (may require live DB)",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:34+00:00"
+}

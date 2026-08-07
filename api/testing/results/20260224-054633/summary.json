@@ -1,0 +1,1001 @@
+{
+  "total": 603,
+  "passed": 301,
+  "failed": 278,
+  "skipped": 31,
+  "completed": "2026-02-24T05:47:54+00:00",
+  "endpoints": [
+    {
+      "method": "DELETE",
+      "endpoint": "/connections/ControlDb",
+      "pass": 3,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/connections/e2e-conn-1771912053",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/datasets/Schedules",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/datasets/e2e-test-ds-1771912056",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/datastores/ControlDb",
+      "pass": 3,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/pipelines/DataArchiveCopy",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/pipelines/e2e-test-pipe-1771912057",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/roles/Admin",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/roles/Viewer",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/roles/e2e-role-1771912047",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/schedules/DailyArchiveSync",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/schedules/e2e-test-sched-1771912059",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/users/AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA",
+      "pass": 3,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/analytics",
+      "pass": 3,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/analytics/top",
+      "pass": 3,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/bulk/export",
+      "pass": 4,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/calculations/period-comparisons",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/calculations/types",
+      "pass": 3,
+      "fail": 1,
+      "skip": 0,
+      "rate": "75%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/catalog",
+      "pass": 0,
+      "fail": 4,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/catalog/datasets/Schedules/annotation",
+      "pass": 0,
+      "fail": 0,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/catalog/glossary",
+      "pass": 1,
+      "fail": 4,
+      "skip": 1,
+      "rate": "16%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/catalog/search?q=data",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/configuration/instances",
+      "pass": 3,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/connection-types",
+      "pass": 6,
+      "fail": 3,
+      "skip": 0,
+      "rate": "66%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/connections",
+      "pass": 10,
+      "fail": 2,
+      "skip": 1,
+      "rate": "76%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/connections/ControlDb",
+      "pass": 15,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/connections/NonExistent",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/connections/e2e-conn-1771912053",
+      "pass": 1,
+      "fail": 4,
+      "skip": 0,
+      "rate": "20%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/connections/schema-capable",
+      "pass": 4,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/dataflow",
+      "pass": 0,
+      "fail": 13,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datasets",
+      "pass": 2,
+      "fail": 8,
+      "skip": 0,
+      "rate": "20%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datasets/NonExistent",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datasets/PipelineExecutions",
+      "pass": 0,
+      "fail": 6,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datasets/PipelineExecutions/fields",
+      "pass": 0,
+      "fail": 0,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datasets/Schedules",
+      "pass": 1,
+      "fail": 7,
+      "skip": 0,
+      "rate": "12%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datasets/Schedules/dataflow",
+      "pass": 0,
+      "fail": 0,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datasets/Schedules/fields",
+      "pass": 0,
+      "fail": 0,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datasets/Schedules/impact",
+      "pass": 0,
+      "fail": 0,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datasets/Schedules/lineage",
+      "pass": 0,
+      "fail": 0,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datasets/Schedules/sources",
+      "pass": 0,
+      "fail": 0,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datasets/e2e-test-ds-1771912056",
+      "pass": 0,
+      "fail": 4,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datastores",
+      "pass": 17,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datastores/ControlDb",
+      "pass": 6,
+      "fail": 2,
+      "skip": 0,
+      "rate": "75%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datastores/ControlDb/containers",
+      "pass": 0,
+      "fail": 0,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datastores/ControlDb/paths",
+      "pass": 3,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/datastores/NonExistent",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/health",
+      "pass": 8,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/permissions",
+      "pass": 15,
+      "fail": 1,
+      "skip": 0,
+      "rate": "93%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/permissions/grouped",
+      "pass": 7,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/pipelines",
+      "pass": 5,
+      "fail": 7,
+      "skip": 0,
+      "rate": "41%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/pipelines/DataArchiveCopy",
+      "pass": 1,
+      "fail": 8,
+      "skip": 0,
+      "rate": "11%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/pipelines/DataArchiveCopy/status",
+      "pass": 0,
+      "fail": 0,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/pipelines/LiveDataStream",
+      "pass": 0,
+      "fail": 5,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/pipelines/NonExistent",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/pipelines/e2e-test-pipe-1771912057",
+      "pass": 0,
+      "fail": 5,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/promotion",
+      "pass": 0,
+      "fail": 12,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/promotion/environments",
+      "pass": 3,
+      "fail": 21,
+      "skip": 0,
+      "rate": "12%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/proxy/schedules",
+      "pass": 1,
+      "fail": 0,
+      "skip": 3,
+      "rate": "25%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/quality",
+      "pass": 0,
+      "fail": 15,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/roles",
+      "pass": 13,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/roles/Admin",
+      "pass": 9,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/roles/NonExistent",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/roles/Operator",
+      "pass": 5,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/roles/Viewer",
+      "pass": 5,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/roles/e2e-role-1771912047",
+      "pass": 4,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedules",
+      "pass": 4,
+      "fail": 10,
+      "skip": 0,
+      "rate": "28%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedules/DailyArchiveSync",
+      "pass": 1,
+      "fail": 9,
+      "skip": 0,
+      "rate": "10%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedules/HourlyDataRefresh",
+      "pass": 0,
+      "fail": 4,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedules/ManualExecution",
+      "pass": 0,
+      "fail": 4,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedules/NonExistent",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedules/WeeklyCleanup",
+      "pass": 0,
+      "fail": 4,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedules/e2e-test-sched-1771912059",
+      "pass": 1,
+      "fail": 4,
+      "skip": 1,
+      "rate": "16%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedules?isEnabled=false",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedules?pageSize=1",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/tenants",
+      "pass": 0,
+      "fail": 10,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/tenants/00000000-0000-0000-0000-000000000000",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/tenants/11111111-1111-1111-1111-111111111111",
+      "pass": 0,
+      "fail": 5,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/tenants/22222222-2222-2222-2222-222222222222",
+      "pass": 0,
+      "fail": 4,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/tenants/current",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/themes",
+      "pass": 5,
+      "fail": 8,
+      "skip": 0,
+      "rate": "38%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/themes/default",
+      "pass": 5,
+      "fail": 8,
+      "skip": 0,
+      "rate": "38%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/users",
+      "pass": 5,
+      "fail": 8,
+      "skip": 0,
+      "rate": "38%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/users/00000000-0000-0000-0000-000000000000",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/users/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "pass": 0,
+      "fail": 2,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/users/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+      "pass": 0,
+      "fail": 2,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/users/me",
+      "pass": 1,
+      "fail": 17,
+      "skip": 0,
+      "rate": "5%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/auth/logout",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/auth/refresh",
+      "pass": 6,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/auth/token",
+      "pass": 10,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/bulk/import",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/calculations/execute",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/calculations/preview",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/catalog/glossary",
+      "pass": 1,
+      "fail": 1,
+      "skip": 1,
+      "rate": "33%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/connections",
+      "pass": 3,
+      "fail": 2,
+      "skip": 0,
+      "rate": "60%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/connections/ControlDb/test",
+      "pass": 0,
+      "fail": 0,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/datasets",
+      "pass": 2,
+      "fail": 2,
+      "skip": 0,
+      "rate": "50%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/datastores",
+      "pass": 2,
+      "fail": 1,
+      "skip": 0,
+      "rate": "66%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/datastores/ControlDb/introspect",
+      "pass": 0,
+      "fail": 0,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/pipelines",
+      "pass": 2,
+      "fail": 2,
+      "skip": 0,
+      "rate": "50%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/pipelines/DataArchiveCopy/execute",
+      "pass": 0,
+      "fail": 1,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/promotion",
+      "pass": 0,
+      "fail": 1,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/proxy/etl/trigger",
+      "pass": 2,
+      "fail": 0,
+      "skip": 2,
+      "rate": "50%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/proxy/schedules",
+      "pass": 2,
+      "fail": 0,
+      "skip": 2,
+      "rate": "50%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/quality",
+      "pass": 0,
+      "fail": 2,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/quality/check",
+      "pass": 0,
+      "fail": 0,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/roles",
+      "pass": 5,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/schedules",
+      "pass": 2,
+      "fail": 2,
+      "skip": 0,
+      "rate": "50%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/schedules/e2e-test-sched-1771912059/toggle",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/tenants/switch",
+      "pass": 0,
+      "fail": 7,
+      "skip": 1,
+      "rate": "0%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/themes",
+      "pass": 4,
+      "fail": 0,
+      "skip": 1,
+      "rate": "80%"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/users",
+      "pass": 5,
+      "fail": 3,
+      "skip": 1,
+      "rate": "55%"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/connections/ControlDb",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/connections/e2e-conn-1771912053",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/datasets/Schedules",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/datasets/e2e-test-ds-1771912056",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/datastores/ControlDb",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/pipelines/DataArchiveCopy",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/pipelines/e2e-test-pipe-1771912057",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/roles/Admin",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/roles/e2e-perm-role-1771912050/permissions",
+      "pass": 1,
+      "fail": 2,
+      "skip": 0,
+      "rate": "33%"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/roles/e2e-role-1771912047",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/schedules/DailyArchiveSync",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/schedules/e2e-test-sched-1771912059",
+      "pass": 0,
+      "fail": 1,
+      "skip": 0,
+      "rate": "0%"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/users/AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0,
+      "rate": "100%"
+    }
+  ]
+}

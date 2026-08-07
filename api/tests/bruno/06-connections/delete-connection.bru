@@ -1,0 +1,19 @@
+meta {
+  name: Delete TestApiConn
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/connections/TestApiConn
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+}

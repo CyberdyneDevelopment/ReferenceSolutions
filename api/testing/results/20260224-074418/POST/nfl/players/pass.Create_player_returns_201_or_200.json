@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "Create player returns 201 or 200",
+  "domain": "NFL Data — Insert Operations",
+  "method": "POST",
+  "endpoint": "/nfl/players",
+  "detail": "",
+  "httpStatus": "201",
+  "body": "{\"id\":\"5f241293-25c9-4a88-8e21-8d92b84e3312\",\"teamId\":\"c1766abb-e132-47e7-9904-a4c5379da849\",\"firstName\":\"E2E\",\"lastName\":\"TestPlayer\",\"position\":\"WR\",\"jerseyNumber\":99,\"heightInches\":72,\"weightLbs\":195,\"college\":\"Test University\",\"draftYear\":2025,\"draftRound\":7,\"draftPick\":250,\"isActive\":true,\"createDate\":\"2026-02-24T07:45:07.0877909+00:00\",\"createBy\":\"api\",\"createOnBehalfOf\":\"\",\"modifyDate\":\"2026-02-24T07:45:07.0877909+00:00\",\"modifyBy\":\"api\",\"modifyOnBehalfOf\":\"\"}",
+  "timestamp": "2026-02-24T07:45:07+00:00"
+}

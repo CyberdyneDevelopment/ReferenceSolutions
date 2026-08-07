@@ -1,0 +1,9 @@
+{
+  "status": "skip",
+  "test": "GET /datasets/PipelineExecutions/fields returns 200",
+  "domain": "DataSets",
+  "detail": "PipelineExecutions fields returned 500",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to get datasets\",\"details\":\"SQL execution failed: Invalid column name 'CreatedAt'.\\nInvalid column name 'ModifiedAt'.\"}",
+  "timestamp": "2026-02-24T05:31:15+00:00"
+}

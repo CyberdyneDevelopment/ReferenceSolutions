@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "GET /roles without auth returns 401",
+  "domain": "Roles — Auth Matrix",
+  "detail": "",
+  "httpStatus": "401",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:38+00:00"
+}

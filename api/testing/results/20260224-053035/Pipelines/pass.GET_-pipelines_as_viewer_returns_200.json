@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "GET /pipelines as viewer returns 200",
+  "domain": "Pipelines",
+  "detail": "",
+  "httpStatus": "200",
+  "body": "[]",
+  "timestamp": "2026-02-24T05:30:52+00:00"
+}

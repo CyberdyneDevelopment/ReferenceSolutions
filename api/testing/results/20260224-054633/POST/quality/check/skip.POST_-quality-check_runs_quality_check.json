@@ -1,0 +1,11 @@
+{
+  "status": "skip",
+  "test": "POST /quality/check runs quality check",
+  "domain": "Quality Rules",
+  "method": "POST",
+  "endpoint": "/quality/check",
+  "detail": "Quality check returned 404",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:40+00:00"
+}

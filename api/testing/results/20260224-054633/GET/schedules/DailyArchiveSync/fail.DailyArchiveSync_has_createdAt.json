@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "DailyArchiveSync has createdAt",
+  "domain": "Schedules",
+  "method": "GET",
+  "endpoint": "/schedules/DailyArchiveSync",
+  "detail": "expected .createdAt to be ISO 8601 datetime, got \"\"",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:38+00:00"
+}

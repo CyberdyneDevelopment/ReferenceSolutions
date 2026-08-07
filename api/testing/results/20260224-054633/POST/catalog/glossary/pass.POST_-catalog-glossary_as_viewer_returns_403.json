@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "POST /catalog/glossary as viewer returns 403",
+  "domain": "Catalog & Glossary",
+  "method": "POST",
+  "endpoint": "/catalog/glossary",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:39+00:00"
+}

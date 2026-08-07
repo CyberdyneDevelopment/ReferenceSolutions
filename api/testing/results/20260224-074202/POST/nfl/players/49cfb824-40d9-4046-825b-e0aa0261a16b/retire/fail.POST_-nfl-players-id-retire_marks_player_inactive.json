@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "POST /nfl/players/{id}/retire marks player inactive",
+  "domain": "NFL Data — Update Operations",
+  "method": "POST",
+  "endpoint": "/nfl/players/49cfb824-40d9-4046-825b-e0aa0261a16b/retire",
+  "detail": "Expected 200, got 415",
+  "httpStatus": "415",
+  "body": "",
+  "timestamp": "2026-02-24T07:42:52+00:00"
+}

@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "POST /nfl/players/{id}/transfer moves player to new team",
+  "domain": "NFL Data — Update Operations",
+  "method": "POST",
+  "endpoint": "/nfl/players//transfer",
+  "detail": "Expected 200, got 404",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T07:23:00+00:00"
+}

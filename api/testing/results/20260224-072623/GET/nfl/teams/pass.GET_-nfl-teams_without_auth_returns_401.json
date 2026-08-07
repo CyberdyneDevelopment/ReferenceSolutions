@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "GET /nfl/teams without auth returns 401",
+  "domain": "NFL Data — Auth Matrix",
+  "method": "GET",
+  "endpoint": "/nfl/teams",
+  "detail": "",
+  "httpStatus": "401",
+  "body": "",
+  "timestamp": "2026-02-24T07:26:39+00:00"
+}

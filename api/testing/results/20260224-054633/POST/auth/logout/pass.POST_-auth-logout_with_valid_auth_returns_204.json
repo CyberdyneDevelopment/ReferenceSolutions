@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "POST /auth/logout with valid auth returns 204",
+  "domain": "Authentication",
+  "method": "POST",
+  "endpoint": "/auth/logout",
+  "detail": "",
+  "httpStatus": "204",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:20+00:00"
+}

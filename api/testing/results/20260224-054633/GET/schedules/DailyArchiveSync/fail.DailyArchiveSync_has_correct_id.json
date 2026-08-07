@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "DailyArchiveSync has correct id",
+  "domain": "Schedules",
+  "method": "GET",
+  "endpoint": "/schedules/DailyArchiveSync",
+  "detail": "expected .id == \"A1A2B3C4-D5E6-7890-1234-567890ABCDEF\", got \"\"",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:38+00:00"
+}

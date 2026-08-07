@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "AFC tenant isActive is true",
+  "domain": "Tenants — AFC Detail",
+  "detail": "expected .isActive to be boolean, got ",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:47+00:00"
+}

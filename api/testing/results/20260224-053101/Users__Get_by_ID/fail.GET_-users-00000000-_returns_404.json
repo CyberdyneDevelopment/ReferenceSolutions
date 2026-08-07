@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "GET /users/00000000-... returns 404",
+  "domain": "Users — Get by ID",
+  "detail": "expected status 404, got 400 (body: {\"statusCode\":400,\"message\":\"One or more errors occurred!\",\"errors\":{\"userId\":[\"A valid user ID is required\"]}})",
+  "httpStatus": "400",
+  "body": "{\"statusCode\":400,\"message\":\"One or more errors occurred!\",\"errors\":{\"userId\":[\"A valid user ID is required\"]}}",
+  "timestamp": "2026-02-24T05:31:03+00:00"
+}

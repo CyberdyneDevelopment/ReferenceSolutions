@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "viewer username is afcuser",
+  "domain": "Users — /users/me",
+  "detail": "expected .username == \"afcuser\", got \"\"",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:38+00:00"
+}

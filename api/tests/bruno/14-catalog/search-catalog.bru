@@ -1,0 +1,19 @@
+meta {
+  name: Search catalog
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/catalog/search?q=test
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 404]
+}

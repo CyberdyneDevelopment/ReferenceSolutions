@@ -1,0 +1,26 @@
+meta {
+  name: Approve promotion request
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/promotion/requests/{{promotionId}}/approve
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "ActionBy": "testAdmin",
+    "Comments": "Approved by E2E test"
+  }
+}
+
+assert {
+  res.status: in [200, 204]
+}

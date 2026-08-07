@@ -1,0 +1,19 @@
+meta {
+  name: Get DailyArchiveSync schedule
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/schedules/DailyArchiveSync
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 404]
+}

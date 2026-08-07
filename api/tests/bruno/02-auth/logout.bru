@@ -1,0 +1,19 @@
+meta {
+  name: Logout with valid token
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{baseUrl}}/auth/logout
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 204]
+}

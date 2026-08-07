@@ -1,0 +1,19 @@
+meta {
+  name: Get non-existent datastore
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/datastores/NoSuchStore
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 404
+}

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "test": "DELETE /connections/ControlDb as operator returns 403 (no connections:delete)",
+  "domain": "Connections — Auth Matrix",
+  "method": "DELETE",
+  "endpoint": "/connections/ControlDb",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:33+00:00"
+}

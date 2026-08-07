@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "POST /datasets as operator returns 200 or 201",
+  "domain": "DataSets",
+  "detail": "expected 200 or 201, got 500",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to check existence datasets\",\"details\":\"SQL execution failed: Invalid column name 'CreatedAt'.\\nInvalid column name 'ModifiedAt'.\"}",
+  "timestamp": "2026-02-24T05:30:49+00:00"
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Update apiTestUser
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/users/{{createdUserId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Email": "apitest-updated@example.com"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

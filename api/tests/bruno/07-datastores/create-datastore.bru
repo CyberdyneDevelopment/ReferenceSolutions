@@ -1,0 +1,28 @@
+meta {
+  name: Create TestApiStore
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/datastores
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+body:json {
+  {
+    "Name": "TestApiStore",
+    "ConnectionId": "C3D4E5F6-A7B8-9012-CDEF-234567890ABC",
+    "Description": "Test datastore for API E2E tests",
+    "ServiceOptionType": "MsSql"
+  }
+}
+
+assert {
+  res.status: in [200, 201]
+}

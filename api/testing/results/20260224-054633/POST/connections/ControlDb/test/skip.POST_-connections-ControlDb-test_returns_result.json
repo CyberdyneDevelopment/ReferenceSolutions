@@ -1,0 +1,11 @@
+{
+  "status": "skip",
+  "test": "POST /connections/ControlDb/test returns result",
+  "domain": "Connections — Test",
+  "method": "POST",
+  "endpoint": "/connections/ControlDb/test",
+  "detail": "connection test returned 415 (DB may not be available)",
+  "httpStatus": "415",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:33+00:00"
+}

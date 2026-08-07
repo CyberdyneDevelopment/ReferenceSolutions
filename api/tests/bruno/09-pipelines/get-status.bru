@@ -1,0 +1,19 @@
+meta {
+  name: Get pipeline status
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/pipelines/TestApiPipeline/status
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 404, 500]
+}

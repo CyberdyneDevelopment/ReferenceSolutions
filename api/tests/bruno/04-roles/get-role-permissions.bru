@@ -1,0 +1,19 @@
+meta {
+  name: Get TestApiRole permissions
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/roles/TestApiRole/permissions
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+}

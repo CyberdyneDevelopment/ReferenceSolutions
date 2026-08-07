@@ -1,0 +1,11 @@
+{
+  "status": "skip",
+  "test": "GET /datasets/Schedules/sources returns 200",
+  "domain": "DataSets",
+  "method": "GET",
+  "endpoint": "/datasets/Schedules/sources",
+  "detail": "Sources returned 500",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to get datasets\",\"details\":\"SQL execution failed: Invalid column name 'CreatedAt'.\\nInvalid column name 'ModifiedAt'.\"}",
+  "timestamp": "2026-02-24T05:47:36+00:00"
+}

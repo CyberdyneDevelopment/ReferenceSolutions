@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "GET /datasets without auth returns 401",
+  "domain": "DataSets",
+  "detail": "",
+  "httpStatus": "401",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:49+00:00"
+}

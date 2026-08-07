@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "test": "POST /datasets as viewer returns 403",
+  "domain": "DataSets",
+  "detail": "",
+  "httpStatus": "403",
+  "body": "",
+  "timestamp": "2026-02-24T05:30:49+00:00"
+}

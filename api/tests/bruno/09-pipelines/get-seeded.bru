@@ -1,0 +1,19 @@
+meta {
+  name: Get DataArchiveCopy pipeline
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/pipelines/DataArchiveCopy
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: in [200, 404]
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Get non-existent connection
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/connections/NoSuchConn
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 404
+}

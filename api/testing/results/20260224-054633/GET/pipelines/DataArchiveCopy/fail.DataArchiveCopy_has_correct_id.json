@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "DataArchiveCopy has correct id",
+  "domain": "Pipelines",
+  "method": "GET",
+  "endpoint": "/pipelines/DataArchiveCopy",
+  "detail": "expected .id == \"E1F2A3B4-C5D6-7890-EF12-34567890ABCD\", got \"null\"",
+  "httpStatus": "500",
+  "body": "{\"error\":\"Failed to fetch pipeline\",\"details\":\"Container 'Pipelines' not found in configuration\"}",
+  "timestamp": "2026-02-24T05:47:37+00:00"
+}

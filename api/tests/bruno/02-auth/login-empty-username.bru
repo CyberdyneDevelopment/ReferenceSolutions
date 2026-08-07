@@ -1,0 +1,22 @@
+meta {
+  name: Login with empty username
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/auth/token
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "Username": "",
+    "Password": "{{testAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: in [400, 401]
+}

@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "test": "Contains HourlyDataRefresh",
+  "domain": "Schedules",
+  "detail": "expected [.items[] | .name] to contain \"HourlyDataRefresh\"",
+  "httpStatus": "200",
+  "body": "[{\"items\":[],\"totalCount\":0,\"page\":1,\"pageSize\":25,\"totalPages\":0}]",
+  "timestamp": "2026-02-24T05:31:17+00:00"
+}

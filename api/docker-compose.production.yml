@@ -1,0 +1,70 @@
+services:
+  mssql:
+    build: docker/mssql
+    container_name: fdw-mssql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SA_PASSWORD:?SA_PASSWORD environment variable is required}"
+      MSSQL_PID: Developer
+      FDW_SECRET_AUTH_PASSWORD: "${FDW_SECRET_AUTH_PASSWORD:-FdwAuthPassword#}"
+      FDW_SECRET_TENANT_PASSWORD: "${FDW_SECRET_TENANT_PASSWORD:-FdwTenantPassword#}"
+      FDW_SECRET_CONFIG_PASSWORD: "${FDW_SECRET_CONFIG_PASSWORD:-FdwConfigPassword#}"
+      FDW_SECRET_ETL_PASSWORD: "${FDW_SECRET_ETL_PASSWORD:-FdwEtlPassword#}"
+      FDW_SECRET_SCHED_PASSWORD: "${FDW_SECRET_SCHED_PASSWORD:-FdwSchedPassword#}"
+      FDW_SECRET_OPS_PASSWORD: "${FDW_SECRET_OPS_PASSWORD:-FdwOpsPassword#}"
+      FDW_SECRET_CONFIG_RO_PASSWORD: "${FDW_SECRET_CONFIG_RO_PASSWORD:-FdwConfigRoPassword#}"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" -b -o /dev/null
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
+    networks:
+      - fdw-internal
+
+  seq:
+    image: datalust/seq:latest
+    container_name: fdw-seq
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_NOAUTHENTICATION: "false"
+    ports:
+      - "5341:80"
+      - "5342:5342"
+    volumes:
+      - seq-data:/data
+    restart: unless-stopped
+    networks:
+      - fdw-internal
+
+  api:
+    build: .
+    container_name: fdw-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:5000"
+      FDW_SECRET_CONFIG_PASSWORD: "${FDW_SECRET_CONFIG_PASSWORD:-FdwConfigPassword#}"
+      FDW_AUTH_TEST_USERNAME: "${FDW_AUTH_TEST_USERNAME:-testuser}"
+      FDW_AUTH_TEST_PASSWORD: "${FDW_AUTH_TEST_PASSWORD:-TestPassword123#}"
+      FDW_AUTH_ADMIN_USERNAME: "${FDW_AUTH_ADMIN_USERNAME:-admin}"
+      FDW_AUTH_ADMIN_PASSWORD: "${FDW_AUTH_ADMIN_PASSWORD:-AdminPassword123#}"
+      Serilog__WriteTo__1__Args__serverUrl: "http://seq"
+      ControlDb__Server: "mssql"
+    ports:
+      - "5000:5000"
+    depends_on:
+      mssql:
+        condition: service_healthy
+    networks:
+      - fdw-internal
+
+networks:
+  fdw-internal:
+
+volumes:
+  mssql-data:
+  seq-data:

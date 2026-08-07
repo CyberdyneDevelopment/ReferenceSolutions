@@ -1,0 +1,19 @@
+meta {
+  name: Get promotion request
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/promotion/requests/{{promotionId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+}

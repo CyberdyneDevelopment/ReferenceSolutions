@@ -1,0 +1,11 @@
+{
+  "status": "skip",
+  "test": "Create theme",
+  "domain": "Themes — CRUD Lifecycle",
+  "method": "POST",
+  "endpoint": "/themes",
+  "detail": "Theme create returned 500",
+  "httpStatus": "500",
+  "body": "{\"statusCode\":500,\"message\":\"One or more errors occurred!\",\"errors\":{\"generalErrors\":[\"Failed to persist theme configuration\"]}}",
+  "timestamp": "2026-02-24T05:47:41+00:00"
+}

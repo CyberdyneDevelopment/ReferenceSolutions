@@ -1,0 +1,197 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <!-- Enable generator debugging -->
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <!-- Disable XML doc generation for this sample application -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Suppress locale-sensitive warnings in sample code -->
+    <NoWarn>$(NoWarn);CA1305;CA1873</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Why: the test project exercises the internal per-type connection detail mappers directly. -->
+    <InternalsVisibleTo Include="Reference.Api.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Serilog -->
+    <PackageReference Include="Fdw.Configuration.Endpoints" />
+    <PackageReference Include="Fdw.Data.Abstractions" />
+    <PackageReference Include="Fdw.Data.DataPaths" />
+    <!-- Why: concrete record-source TypeOptions (Json/Xml/Delimited/FixedWidth/Http) register into
+         RecordSourceTypes via this app's Registration.SourceGenerators module-init. Without these
+         direct references the assemblies aren't in the reference closure, RecordSourceTypes.ByName
+         returns NotFound, and format-based reads (HTTP JSON RecordSelector, file reads) can't extract rows. -->
+    <PackageReference Include="Fdw.Data.RowSources.Json" />
+    <PackageReference Include="Fdw.Data.RowSources.Xml" />
+    <PackageReference Include="Fdw.Data.RowSources.Delimited" />
+    <PackageReference Include="Fdw.Data.RowSources.FixedWidth" />
+    <PackageReference Include="Fdw.Data.RowSources.Http" />
+    <PackageReference Include="Fdw.Schema.Clients" />
+    <PackageReference Include="Fdw.Security.Hashing" />
+    <PackageReference Include="Fdw.Services.Agents" />
+    <PackageReference Include="Fdw.Services.Agents.Abstractions" />
+    <PackageReference Include="Fdw.Services.Data.Clients" />
+    <!-- Fdw.Services.Authentication.Endpoints removed: folded into Fdw.Web.Api in rc.2-reorg -->
+    <!-- Fdw.Services.DataVault removed: folded into Fdw.Services.Credentials.Sql in rc.2-reorg -->
+    <!-- Why: Fdw.Services.Messaging.Endpoints still exists in rc.2-reorg (map target UI.Pages was imperfect). -->
+    <PackageReference Include="Fdw.Services.Messaging.Endpoints" />
+    <PackageReference Include="Fdw.Services.Connections.Http" />
+    <PackageReference Include="Fdw.Services.Connections.FileSystem" />
+    <PackageReference Include="Fdw.Services.Connections.RoslynWorkspace" />
+    <PackageReference Include="Fdw.Services.Multitenancy" />
+    <PackageReference Include="Fdw.Services.Registration" />
+    <PackageReference Include="Fdw.Services.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Services.Users.Clients" />
+    <!-- Why: MSBuildWorkspace transitively pins Microsoft.Build.Framework + Microsoft.NET.StringTools, both of which must be marked runtime-excluded at the app level (MSBL001). -->
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.StringTools" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Fdw.Services.Quality" />
+    <!-- Why: Fdw.Services.Settings.Endpoints still exists in rc.2-reorg (map target Web.Api was imperfect). -->
+    <PackageReference Include="Fdw.Services.Settings.Endpoints" />
+    <PackageReference Include="ReferenceAuthentication.TokenProviders" />
+    <PackageReference Include="ReferenceDataPaths.Templates" />
+    <PackageReference Include="ReferenceHosting.Middleware" />
+    <!-- Console notification service. FDW-622 moved the Console [ServiceTypeOption] out of FDW into
+         ReferenceNotifications.Console; referencing it registers the notification domain. -->
+    <PackageReference Include="ReferenceNotifications.Console" />
+    <PackageReference Include="Fdw.Services.Users.Abstractions" />
+    <PackageReference Include="Fdw.Web.Api" />
+    <!-- Why: OpenIddict.Validation.AspNetCore handles RS256 bearer validation; JwtBearer removed with old auth. -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="ReferenceAuthentication.OpenIddict" />
+    <!-- Why: the SERVICE-TYPE package, not the aggregation. A package reference IS a
+     registration, so this is how the host declares it wants MsSql connections
+     registered; it brings ReferenceConnections.MsSql (the aggregation) transitively. -->
+    <PackageReference Include="ReferenceConnections.MsSql.ServiceType" />
+    <PackageReference Include="ReferenceConnections.MsSql.DataVault" />
+    <PackageReference Include="ReferenceCredentials.Sql" />
+    <PackageReference Include="ReferenceMultitenancy.Sql" />
+    <PackageReference Include="ReferenceSecretManagers.EnvironmentVariable" />
+    <PackageReference Include="ReferenceSecretManagers.MsSql" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Enrichers.Process" />
+    <PackageReference Include="Serilog.Enrichers.Span" />
+    <PackageReference Include="Serilog.Enrichers.Thread" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Settings.Configuration" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.Grafana.Loki" />
+    <PackageReference Include="Serilog.Sinks.Seq" />
+    <PackageReference Include="Serilog.Enrichers.Environment" />
+
+    <!-- OpenTelemetry -->
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" />
+
+    <!-- FastEndpoints + Scalar -->
+    <PackageReference Include="FastEndpoints" />
+    <PackageReference Include="FastEndpoints.Swagger" />
+    <PackageReference Include="Scalar.AspNetCore" />
+
+    <!-- Fdw Hosting -->
+    <PackageReference Include="Fdw.Hosting.MsSql" />
+
+    <!-- Fdw Domain Endpoint Packages -->
+    <!-- Fdw.Services.Connections.Endpoints removed: folded into Fdw.Web.Api in rc.2-reorg -->
+    <!-- Fdw.Services.Data.Endpoints removed: folded into Fdw.Web.Api in rc.2-reorg -->
+    <!-- Fdw.Services.Pipelines.Endpoints removed: folded into Fdw.Web.Api in rc.2-reorg -->
+    <!-- Fdw.Services.Scheduling.Endpoints removed: folded into Fdw.Web.Api in rc.2-reorg -->
+    <!-- Fdw.Services.Users.Endpoints removed: folded into Fdw.Web.Api in rc.2-reorg -->
+    <!-- Fdw.Services.Authorization.Endpoints removed: folded into Fdw.Web.Api in rc.2-reorg -->
+    <!-- Fdw.Services.Multitenancy.Endpoints removed: folded into Fdw.Web.Api in rc.2-reorg -->
+    <!-- Fdw.Services.Quality.Endpoints removed: folded into Fdw.Web.Api in rc.2-reorg -->
+    <!-- Fdw.Services.Catalog.Endpoints removed: folded into Fdw.Web.Api in rc.2-reorg -->
+    <!-- Fdw.Schema.Endpoints removed: folded into Fdw.Web.Api in rc.2-reorg -->
+    <!-- Fdw.Web.Search.Endpoints removed: folded into Fdw.Web.Api in rc.2-reorg -->
+    <PackageReference Include="Fdw.Operations.Endpoints" />
+    <PackageReference Include="Fdw.Services.SecretManagers.Endpoints" />
+    <PackageReference Include="Fdw.UI.Themes" />
+    <PackageReference Include="Fdw.UI.Themes.Clients" />
+    <!-- Fdw.UI.Themes.Endpoints removed: folded into Fdw.Web.Api in rc.2-reorg -->
+    <PackageReference Include="Fdw.UI.Pipelines.Endpoints" />
+    <!-- Why: rc.3-reorg reverses the rc.2 consolidation into UI.Pages; these packages are restored
+         as standalone packages so the API no longer references a UI package. -->
+    <PackageReference Include="Fdw.Services.Pipelines.Clients" />
+    <PackageReference Include="Fdw.Services.Notifications.Endpoints" />
+    <PackageReference Include="Fdw.Services.Data.Abstractions" />
+
+    <!-- Fdw Client Packages -->
+    <!-- Fdw.Services.Scheduling.Clients removed: folded into Fdw.Services.Scheduling.Components in rc.2-reorg -->
+    <!-- Why: Fdw.Services.Scheduling.Components provides scheduling client abstractions after rc.2-reorg consolidation. -->
+    <PackageReference Include="Fdw.Services.Scheduling.Components" />
+
+    <!-- Fdw Core -->
+    <PackageReference Include="Fdw.Services.Connections" />
+    <PackageReference Include="Fdw.Services.Pipelines" />
+    <PackageReference Include="Fdw.Services.Connections.PostgreSql" />
+    <PackageReference Include="Fdw.Services.SecretManagers" />
+    <PackageReference Include="Fdw.Services.Data" />
+    <PackageReference Include="Fdw.Services.Messaging" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Data.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Configuration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Messages" />
+    <PackageReference Include="Fdw.Services.Authentication" />
+    <!-- Why: Authentication.Jwt / Jwt.MsSql deleted in auth-cutover; OpenIddict provider replaces them. -->
+    <!-- Why: BearerTokenHandler for inter-service HTTP client auth (api→etl, api→scheduler). -->
+    <PackageReference Include="Fdw.Web.Http.Authentication" />
+    <PackageReference Include="Fdw.Services.Authorization" />
+    <PackageReference Include="Fdw.Services.Authorization.Abstractions" />
+    <PackageReference Include="Fdw.Services.RateLimiting" />
+    <PackageReference Include="Fdw.Services.Resiliency" />
+    <PackageReference Include="Fdw.Services.Users" />
+    <PackageReference Include="Fdw.Services.Etl" />
+    <PackageReference Include="Fdw.Services.Etl.Projects" />
+    <PackageReference Include="Fdw.Operations" />
+    <PackageReference Include="Fdw.Operations.Abstractions" />
+    <PackageReference Include="Fdw.Services.Transformations.Abstractions" />
+    <PackageReference Include="Fdw.Calculations.Abstractions" />
+    <!-- Fdw.Calculations.Contracts removed: folded into Fdw.Calculations.SignalR in rc.2-reorg; already referenced -->
+    <PackageReference Include="Fdw.Calculations.Endpoints" />
+    <PackageReference Include="Fdw.Calculations.SignalR" />
+    <PackageReference Include="Fdw.Services.Calculations" />
+    <PackageReference Include="Fdw.Services.Calculations.Abstractions" />
+    <PackageReference Include="Fdw.SignalR" />
+    <PackageReference Include="Fdw.Services.Data.SignalR" />
+
+    <!-- Fdw Schema & Types -->
+    <PackageReference Include="Fdw.Schema.Abstractions" />
+    <PackageReference Include="Fdw.Schema.Ddl" />
+    <PackageReference Include="Fdw.Schema.Ddl.MsSql" />
+    <PackageReference Include="Fdw.Types.Abstractions" />
+    <!-- Fdw.Types.MsSql removed: folded into Fdw.Services.Connections.MsSql in rc.2-reorg; already referenced -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Reference.Nfl\Reference.Nfl.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Startup configuration: deserialized via STJ by AddConfigurationGateway at service
+         registration time. No IConfiguration binding — STJ polymorphic dispatch resolves
+         ConnectionConfiguration and SecretManagerConfiguration to concrete subtypes.
+         Why: SDK auto-includes Content items so no explicit Include needed — only set build action. -->
+    <Content Update="configurationSchema.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Services.Audit.Abstractions" />
+    <PackageReference Include="Fdw.Services.Audit" />
+    <PackageReference Include="Fdw.Services.SessionState.Abstractions" />
+    <PackageReference Include="Fdw.Services.SessionState" />
+    <PackageReference Include="Fdw.Web.Analytics.Clients.Abstractions" />
+    <PackageReference Include="Fdw.Web.Analytics.Clients" />
+  </ItemGroup>
+
+</Project>

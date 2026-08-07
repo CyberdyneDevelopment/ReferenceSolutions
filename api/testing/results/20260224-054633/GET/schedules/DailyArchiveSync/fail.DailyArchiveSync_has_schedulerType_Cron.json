@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "DailyArchiveSync has schedulerType Cron",
+  "domain": "Schedules",
+  "method": "GET",
+  "endpoint": "/schedules/DailyArchiveSync",
+  "detail": "expected .schedulerType == \"Cron\", got \"\"",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:38+00:00"
+}

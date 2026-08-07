@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "test": "ManualExecution has pipelineName LiveDataStream",
+  "domain": "Schedules",
+  "method": "GET",
+  "endpoint": "/schedules/ManualExecution",
+  "detail": "expected .pipelineName == \"LiveDataStream\", got \"\"",
+  "httpStatus": "404",
+  "body": "",
+  "timestamp": "2026-02-24T05:47:39+00:00"
+}

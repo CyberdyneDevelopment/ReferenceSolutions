@@ -1,0 +1,26 @@
+meta {
+  name: Create role (unauthorized)
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testUnauthorizedToken}}
+}
+
+body:json {
+  {
+    "Name": "UnAuthRole",
+    "DisplayName": "Should Fail"
+  }
+}
+
+assert {
+  res.status: in [401, 403]
+}
