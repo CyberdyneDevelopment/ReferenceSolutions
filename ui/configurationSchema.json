@@ -1,0 +1,100 @@
+{
+  "ConfigurationSchema": {
+    "Connections": [
+      {
+        "Name": "ConfigurationDb",
+        "ServiceOptionType": "FileSystem",
+        "Configuration": {
+          "Root": "config-data"
+        }
+      }
+    ],
+    "SecretManagers": [
+      {
+        "Name": "EnvSecrets",
+        "ServiceOptionType": "EnvironmentVariable",
+        "Configuration": {
+          "Prefix": "FDW_SECRET_"
+        }
+      }
+    ],
+    "DataStores": [
+      {
+        "Name": "ConfigurationDb",
+        "TypeId": "FileSystem",
+        "Paths": [
+          {
+            "Name": "sec",
+            "Path": "sec",
+            "PathType": "DatabasePath",
+            "Containers": [
+              {
+                "Name": "SecretManager",
+                "TypeId": "Table",
+                "Format": "Json",
+                "Fields": [
+                  { "Name": "RowId", "Ordinal": 1, "IsNullable": false },
+                  { "Name": "Id", "Ordinal": 2, "IsNullable": false },
+                  { "Name": "Name", "Ordinal": 3, "IsNullable": false },
+                  { "Name": "ServiceOptionType", "Ordinal": 4, "IsNullable": false },
+                  { "Name": "IsCurrent", "Ordinal": 5, "IsNullable": false },
+                  { "Name": "IsDeleted", "Ordinal": 6, "IsNullable": false }
+                ],
+                "Keys": [
+                  {
+                    "Name": "PK_SecretManager",
+                    "TypeId": "Physical",
+                    "KeyFields": [ { "Name": "RowId", "Ordinal": 0 } ]
+                  },
+                  {
+                    "Name": "PK_SecretManager_Logical",
+                    "TypeId": "Logical",
+                    "KeyFields": [ { "Name": "Id", "Ordinal": 0 } ]
+                  }
+                ]
+              },
+              {
+                "Name": "EnvironmentVariableSecretManager",
+                "TypeId": "Table",
+                "Format": "Json",
+                "Fields": [
+                  { "Name": "RowId", "Ordinal": 1, "IsNullable": false },
+                  { "Name": "Id", "Ordinal": 2, "IsNullable": false },
+                  { "Name": "SecretManagerId", "Ordinal": 3, "IsNullable": false },
+                  { "Name": "SecretManagerRowId", "Ordinal": 4, "IsNullable": false },
+                  { "Name": "IsEnabled", "Ordinal": 5, "IsNullable": false },
+                  { "Name": "Prefix", "Ordinal": 6, "IsNullable": false },
+                  { "Name": "CaseSensitive", "Ordinal": 7, "IsNullable": false },
+                  { "Name": "Separator", "Ordinal": 8, "IsNullable": false },
+                  { "Name": "StripPrefix", "Ordinal": 9, "IsNullable": false },
+                  { "Name": "Target", "Ordinal": 10, "IsNullable": false },
+                  { "Name": "IsCurrent", "Ordinal": 11, "IsNullable": false },
+                  { "Name": "IsDeleted", "Ordinal": 12, "IsNullable": false }
+                ],
+                "Keys": [
+                  {
+                    "Name": "PK_EnvironmentVariableSecretManager",
+                    "TypeId": "Physical",
+                    "KeyFields": [ { "Name": "RowId", "Ordinal": 0 } ]
+                  },
+                  {
+                    "Name": "PK_EnvironmentVariableSecretManager_Logical",
+                    "TypeId": "Logical",
+                    "KeyFields": [ { "Name": "Id", "Ordinal": 0 } ]
+                  },
+                  {
+                    "Name": "FK_EnvironmentVariableSecretManager_SecretManager",
+                    "TypeId": "Foreign",
+                    "KeyFields": [ { "Name": "SecretManagerRowId", "Ordinal": 0 } ],
+                    "ReferencedContainerName": "SecretManager",
+                    "ReferencedKeyName": "PK_SecretManager"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

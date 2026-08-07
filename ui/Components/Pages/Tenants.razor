@@ -1,0 +1,200 @@
+@page "/tenants"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@using Fdw.Services.Multitenancy.Components.Tenants
+
+<PageTitle>Tenants - Cyberdyne</PageTitle>
+
+<TenantsAdminProvider>
+    <ChildContent Context="ctx">
+        @{ SyncFromContext(ctx); }
+        <div class="pagehead">
+            <div>
+                <div class="ey">Administration</div>
+                <h1>Tenants</h1>
+                <div class="sub">manage · create · configure</div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" @onclick="() => _showCreateForm = !_showCreateForm" disabled="@ctx.IsSaving">
+                    @if (_showCreateForm) { <span>Cancel</span> } else { <span>+ Create Tenant</span> }
+                </button>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(ctx.ErrorMessage))
+        {
+            <div class="alert alert-err" style="margin-bottom:14px;">@ctx.ErrorMessage</div>
+        }
+
+        @if (!string.IsNullOrEmpty(ctx.SuccessMessage))
+        {
+            <div class="alert alert-success" style="margin-bottom:14px;">@ctx.SuccessMessage</div>
+        }
+
+        @if (_showCreateForm)
+        {
+            <div class="card" style="margin-bottom:14px;">
+                <div class="card-h"><h3>Create New Tenant</h3></div>
+                <div class="card-b">
+                    <div class="frow">
+                        <label>Tenant Name</label>
+                        <input class="fin" @bind="_newTenantName" placeholder="e.g. Acme Corp" />
+                    </div>
+                    <div class="frow">
+                        <label>Slug</label>
+                        <input class="fin" @bind="_newTenantSlug" placeholder="e.g. acme-corp" />
+                    </div>
+                    <div class="frow">
+                        <label>Connection Name (optional)</label>
+                        <input class="fin" @bind="_newTenantConnectionName" placeholder="e.g. TenantDb" />
+                    </div>
+                    <div style="border-top:1px solid var(--hair);padding-top:16px;display:flex;align-items:center;gap:14px;">
+                        <button class="btn btn-primary" disabled="@(ctx.IsSaving || string.IsNullOrEmpty(_newTenantName) || string.IsNullOrEmpty(_newTenantSlug))" @onclick="() => HandleCreateTenant(ctx)">
+                            Create
+                        </button>
+                        <button class="btn btn-secondary" disabled="@ctx.IsSaving" @onclick="() => ResetForm()">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (ctx.IsLoading)
+        {
+            <div class="loadwrap" style="padding:32px 0;"><div class="spin"></div></div>
+        }
+        else if (ctx.Tenants.Count == 0)
+        {
+            <div class="card">
+                <div class="card-b" style="text-align:center;color:var(--n-500);">
+                    <p>No tenants found. <a href="#" @onclick:preventDefault style="cursor:pointer;" @onclick="() => _showCreateForm = true">Create one</a></p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="tenants-grid">
+                @foreach (var tenant in ctx.Tenants)
+                {
+                    <div class="card" style="cursor:pointer;" @onclick="() => SelectTenant(tenant)">
+                        <div class="card-h">
+                            <h3>@tenant.Name</h3>
+                            <span class="badge @(tenant.IsActive ? "badge-success" : "badge-neutral")">@(tenant.IsActive ? "Active" : "Inactive")</span>
+                        </div>
+                        <div class="card-b">
+                            <div style="font-size:12px;color:var(--n-500);margin-bottom:8px;">
+                                <strong>Slug:</strong> @tenant.Slug
+                            </div>
+                            @if (!string.IsNullOrEmpty(tenant.ConnectionName))
+                            {
+                                <div style="font-size:12px;color:var(--n-500);margin-bottom:8px;">
+                                    <strong>Connection:</strong> @tenant.ConnectionName
+                                </div>
+                            }
+                            @if (tenant.AvailableRoles.Count > 0)
+                            {
+                                <div style="font-size:12px;color:var(--n-500);">
+                                    <strong>Roles:</strong> @string.Join(", ", tenant.AvailableRoles)
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (_selectedTenant is not null)
+        {
+            <div class="card" style="margin-top:14px;border:2px solid var(--amber);">
+                <div class="card-h"><h3>Edit: @_selectedTenant.Name</h3></div>
+                <div class="card-b">
+                    <div class="frow">
+                        <label>Tenant Name</label>
+                        <input class="fin" @bind="_editTenantName" />
+                    </div>
+                    <div class="frow">
+                        <label>Slug</label>
+                        <input class="fin" @bind="_editTenantSlug" />
+                    </div>
+                    <div style="border-top:1px solid var(--hair);padding-top:16px;display:flex;align-items:center;gap:14px;">
+                        <button class="btn btn-primary" disabled="@(ctx.IsSaving || string.IsNullOrEmpty(_editTenantName))" @onclick="() => HandleUpdateTenant(ctx)">
+                            Save
+                        </button>
+                        <button class="btn btn-secondary" disabled="@ctx.IsSaving" @onclick="() => _selectedTenant = null">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </ChildContent>
+</TenantsAdminProvider>
+
+<style>
+    .tenants-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 14px;
+    }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+    .badge-success { background: var(--success); color: white; }
+    .badge-neutral { background: var(--n-700); color: var(--n-300); }
+</style>
+
+@code {
+    private bool _showCreateForm;
+    private string _newTenantName = "";
+    private string _newTenantSlug = "";
+    private string? _newTenantConnectionName;
+    private TenantDetailPayload? _selectedTenant;
+    private string _editTenantName = "";
+    private string _editTenantSlug = "";
+
+    private void SyncFromContext(TenantsAdminContext ctx) { }
+
+    private void ResetForm()
+    {
+        _newTenantName = "";
+        _newTenantSlug = "";
+        _newTenantConnectionName = null;
+        _showCreateForm = false;
+    }
+
+    private void SelectTenant(TenantDetailPayload tenant)
+    {
+        _selectedTenant = tenant;
+        _editTenantName = tenant.Name;
+        _editTenantSlug = tenant.Slug;
+    }
+
+    private async Task HandleCreateTenant(TenantsAdminContext ctx)
+    {
+        var request = new CreateTenantRequest
+        {
+            Name = _newTenantName,
+            Slug = _newTenantSlug,
+            ConnectionName = _newTenantConnectionName
+        };
+        await ctx.OnCreateTenant(request);
+        if (string.IsNullOrEmpty(ctx.ErrorMessage))
+        {
+            ResetForm();
+        }
+    }
+
+    private async Task HandleUpdateTenant(TenantsAdminContext ctx)
+    {
+        if (_selectedTenant is null) return;
+        // Why: UpdateTenantRequest only supports Name/IsActive/ConnectionName; Slug editing
+        // requires a separate API surface that does not yet exist.
+        var request = new UpdateTenantRequest
+        {
+            Name = _editTenantName
+        };
+        await ctx.OnUpdateTenant(_selectedTenant.Id, request);
+        if (string.IsNullOrEmpty(ctx.ErrorMessage))
+        {
+            _selectedTenant = null;
+        }
+    }
+}

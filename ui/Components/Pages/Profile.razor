@@ -1,0 +1,182 @@
+@page "/profile"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Profile - Cyberdyne</PageTitle>
+
+<ProfileProvider>
+    <ChildContent Context="ctx">
+        <div class="pagehead">
+            <div>
+                <div class="ey">Account</div>
+                <h1>Profile</h1>
+                <div class="sub">Your account · session · preferences</div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-ghost btn-sm" @onclick="() => ctx.OnRefresh.Invoke()" disabled="@ctx.IsLoading">
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(ctx.ErrorMessage))
+        {
+            <div class="alert alert-err" style="margin-bottom:14px;">@ctx.ErrorMessage</div>
+        }
+
+        @if (!string.IsNullOrEmpty(ctx.SuccessMessage))
+        {
+            <div class="alert alert-ok" style="margin-bottom:14px;">@ctx.SuccessMessage</div>
+        }
+
+        @if (ctx.IsLoading && ctx.Profile is null)
+        {
+            <div class="loadwrap"><div class="spin"></div></div>
+        }
+        else if (ctx.Profile is not null)
+        {
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                <!-- User Information -->
+                <div class="card">
+                    <div class="card-h"><h3>User information</h3></div>
+                    <div class="card-b">
+                        <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;">
+                            <div class="avatar">@ctx.Profile.Username[0].ToString().ToUpper()</div>
+                            <div>
+                                <div style="font-size:16px;font-weight:500;color:var(--n-100);">@ctx.Profile.Username</div>
+                                <div class="mono" style="font-size:12px;color:var(--n-500);">@(ctx.Profile.Email ?? "No email set")</div>
+                            </div>
+                        </div>
+                        <div class="fgrid" style="border-top:1px solid var(--hair);padding-top:18px;">
+                            <div class="frow" style="margin:0;">
+                                <label>User ID</label>
+                                <div class="finput mono">@ctx.Profile.UserId</div>
+                            </div>
+                            <div class="frow" style="margin:0;">
+                                <label>Roles</label>
+                                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                                    @foreach (var role in ctx.Profile.Roles)
+                                    {
+                                        <span class="badge b-run">@role</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Password -->
+                <div class="card">
+                    <div class="card-h"><h3>Change password</h3></div>
+                    <div class="card-b">
+                        <div class="frow">
+                            <label>Current password</label>
+                            <input type="password" class="fin mono" @bind="_currentPassword" />
+                        </div>
+                        <div class="frow">
+                            <label>New password</label>
+                            <input type="password" class="fin mono" @bind="_newPassword" />
+                        </div>
+                        <div class="frow">
+                            <label>Confirm new password</label>
+                            <input type="password" class="fin mono" @bind="_confirmPassword" />
+                        </div>
+                        @if (!string.IsNullOrEmpty(_passwordError))
+                        {
+                            <div class="alert alert-err" style="margin-bottom:14px;">@_passwordError</div>
+                        }
+                        <button class="btn btn-primary" @onclick="() => SubmitPasswordChange(ctx)" disabled="@ctx.IsLoading">
+                            @(ctx.IsLoading ? "Updating..." : "Update password")
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Preferences -->
+                <div class="card">
+                    <div class="card-h"><h3>Preferences</h3></div>
+                    <div class="card-b">
+                        @if (ctx.Preferences.Any())
+                        {
+                            <div style="margin-bottom:14px;">
+                                @foreach (var pref in ctx.Preferences)
+                                {
+                                    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--hair);">
+                                        <span style="font-size:13px;color:var(--n-200);">@pref.Key</span>
+                                        <span class="mono" style="font-size:12px;color:var(--n-400);">@pref.Value</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="empty" style="padding:16px 0;">No preferences configured.</p>
+                        }
+
+                        <div style="border-top:1px solid var(--hair);padding-top:14px;">
+                            <label class="flbl">Set preference</label>
+                            <div style="display:flex;gap:8px;">
+                                <input class="fin" style="flex:1;" placeholder="Key" @bind="_prefKey" />
+                                <input class="fin" style="flex:1;" placeholder="Value" @bind="_prefValue" />
+                                <button class="btn btn-secondary" @onclick="() => SubmitPreference(ctx)" disabled="@ctx.IsLoading">
+                                    Set
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </ChildContent>
+</ProfileProvider>
+
+@code {
+    private string _currentPassword = "";
+    private string _newPassword = "";
+    private string _confirmPassword = "";
+    private string? _passwordError;
+    private string _prefKey = "";
+    private string _prefValue = "";
+
+    private async Task SubmitPasswordChange(ProfileContext ctx)
+    {
+        _passwordError = null;
+
+        if (string.IsNullOrWhiteSpace(_currentPassword))
+        {
+            _passwordError = "Current password is required.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(_newPassword) || _newPassword.Length < 8)
+        {
+            _passwordError = "New password must be at least 8 characters.";
+            return;
+        }
+        if (!string.Equals(_newPassword, _confirmPassword, StringComparison.Ordinal))
+        {
+            _passwordError = "New passwords do not match.";
+            return;
+        }
+
+        var request = new ChangePasswordRequest
+        {
+            CurrentPassword = _currentPassword,
+            NewPassword = _newPassword
+        };
+        await ctx.OnChangePassword(request);
+
+        _currentPassword = "";
+        _newPassword = "";
+        _confirmPassword = "";
+    }
+
+    private async Task SubmitPreference(ProfileContext ctx)
+    {
+        if (string.IsNullOrWhiteSpace(_prefKey))
+        {
+            return;
+        }
+
+        await ctx.OnSetPreference(_prefKey.Trim(), _prefValue.Trim());
+        _prefKey = "";
+        _prefValue = "";
+    }
+}

@@ -1,0 +1,62 @@
+@page "/"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Fdw.Services.Connections.Components.Dashboard
+@using Fdw.Services.Pipelines.Components.Dashboard
+@using Fdw.Services.Scheduling.Components.Dashboard
+@using Fdw.Web.Analytics.Components.Dashboard
+@using Fdw.Operations.Components.Dashboard
+@using Fdw.Web.Analytics.Components.Health.Dashboard
+
+<PageTitle>Dashboard - Cyberdyne</PageTitle>
+
+@* Why: Cross-tenant filter bar. Only visible in cross-tenant mode (ctx.IsVisible = false for
+   single-tenant users). The selected tenant IDs are a presentation filter — RLS is the real
+   security boundary. The filter is mounted at the top of the primary data-viewing page so
+   every sub-dashboard below can eventually key off the selected set. *@
+<TenantMultiSelectProvider>
+    <ChildContent Context="tenantCtx">
+        @if (tenantCtx.IsVisible)
+        {
+            <div class="filters">
+                <span class="lbl">Tenant</span>
+                <TenantMultiSelect />
+                <span class="lbl" style="margin-left:auto;">
+                    @(tenantCtx.SelectedTenantIds.Count == tenantCtx.AvailableTenants.Count
+                        ? "ALL TENANTS"
+                        : $"{tenantCtx.SelectedTenantIds.Count}/{tenantCtx.AvailableTenants.Count} SELECTED")
+                </span>
+            </div>
+        }
+    </ChildContent>
+</TenantMultiSelectProvider>
+
+<ConnectionDashboardProvider>
+    <ChildContent Context="connCtx">
+        <PipelineDashboardProvider>
+            <ChildContent Context="pipeCtx">
+                <ScheduleDashboardProvider>
+                    <ChildContent Context="schedCtx">
+                        <AnalyticsDashboardProvider DefaultDays="7">
+                            <ChildContent Context="analyticsCtx">
+                                <OperationsDashboardProvider>
+                                    <ChildContent Context="opsCtx">
+                                        <HealthDashboardProvider ThroughputWindow="TimeSpan.FromMinutes(5)" RefreshInterval="TimeSpan.FromSeconds(30)">
+                                            <ChildContent Context="healthCtx">
+                                                <DashboardLayout ConnectionContext="connCtx"
+                                                                 PipelineContext="pipeCtx"
+                                                                 ScheduleContext="schedCtx"
+                                                                 AnalyticsContext="analyticsCtx"
+                                                                 OperationsContext="opsCtx"
+                                                                 HealthContext="healthCtx" />
+                                            </ChildContent>
+                                        </HealthDashboardProvider>
+                                    </ChildContent>
+                                </OperationsDashboardProvider>
+                            </ChildContent>
+                        </AnalyticsDashboardProvider>
+                    </ChildContent>
+                </ScheduleDashboardProvider>
+            </ChildContent>
+        </PipelineDashboardProvider>
+    </ChildContent>
+</ConnectionDashboardProvider>

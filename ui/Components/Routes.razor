@@ -1,0 +1,45 @@
+@using System.Linq
+@using System.Reflection
+@using Fdw.UI.Registration
+
+@code {
+    // Why: derived from the pages each PageType actually declares, so this cannot name an assembly holding
+    // none of them. Distinct() is still needed because the package reorg put many page groups in ONE
+    // assembly and the Router throws "Assembly already defined" on duplicates. This assembly is the
+    // Router's AppAssembly and must NOT appear here — host pages come from HostPages, which contributes
+    // no assembly for exactly that reason.
+    private static readonly Assembly[] _fdwPageAssemblies =
+        PageTypes.All()
+            .SelectMany(p => p.PageAssemblies)
+            .Distinct()
+            .ToArray();
+}
+
+<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="_fdwPageAssemblies">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <Authorizing>
+                <div class="flex items-center justify-center min-h-screen">
+                    <div class="text-gray-400">Authenticating...</div>
+                </div>
+            </Authorizing>
+            <NotAuthorized>
+                <RedirectToLogin />
+            </NotAuthorized>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not Found</PageTitle>
+        <LayoutView Layout="typeof(Layout.MainLayout)">
+            <div class="text-center py-20">
+                <div class="text-6xl font-bold text-red-500 mb-4">404</div>
+                <h1 class="text-2xl font-bold text-gray-200 uppercase tracking-wider">Resource Not Found</h1>
+                <p class="mt-2 text-gray-500">The requested resource does not exist.</p>
+                <a href="/" class="inline-block mt-6 px-6 py-2 border border-red-500 text-red-500 hover:bg-red-500/10 uppercase tracking-wider text-sm">
+                    Return to Dashboard
+                </a>
+            </div>
+        </LayoutView>
+    </NotFound>
+</Router>

@@ -1,0 +1,48 @@
+<div class="metric">
+    <div class="mt">
+        <span class="lbl">@Title</span>
+        <span class="ic" style="background:@GetIconBg();color:@GetIconColor();">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor">
+                @GetIconPath()
+            </svg>
+        </span>
+    </div>
+    <div class="row">
+        <span class="val">@Value</span>
+        <span class="trend" style="color:var(--success);">+20.1%</span>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Value { get; set; } = "0";
+    [Parameter] public string Icon { get; set; } = "workflow";
+    [Parameter] public string Color { get; set; } = "red";
+
+    private string GetIconColor() => Color switch
+    {
+        "green" => "var(--success)",
+        "cyan" => "var(--glacier)",
+        "yellow" => "var(--warn)",
+        "red" => "var(--signal)",
+        _ => "var(--amber)"
+    };
+
+    private string GetIconBg() => Color switch
+    {
+        "green" => "var(--success-dim)",
+        "cyan" => "var(--glacier-dim)",
+        "yellow" => "var(--warn-dim)",
+        "red" => "var(--signal-dim)",
+        _ => "var(--s2)"
+    };
+
+    private MarkupString GetIconPath() => Color switch
+    {
+        "red" => new("<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M13 10V3L4 14h7v7l9-11h-7z\" />"),
+        "cyan" => new("<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4\" />"),
+        "yellow" => new("<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z\" />"),
+        "green" => new("<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253\" />"),
+        _ => new("<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M13 10V3L4 14h7v7l9-11h-7z\" />")
+    };
+}

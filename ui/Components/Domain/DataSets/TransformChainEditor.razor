@@ -1,0 +1,117 @@
+@* TransformChainEditor — main wrapper for field mapping transform chain editing.
+   Wraps FieldMappingTransformProvider and renders the full chain editor UI. *@
+
+<FieldMappingTransformProvider FieldMappingId="@FieldMappingId" FieldMappingName="@FieldMappingName">
+    <ChildContent Context="ctx">
+        <div class="space-y-4">
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <h3 class="text-lg font-bold text-gray-200 uppercase tracking-widest">Transform Chain</h3>
+                    @if (!string.IsNullOrEmpty(ctx.FieldMappingName))
+                    {
+                        <span class="text-xs font-mono text-gray-500 bg-gray-800 px-2 py-1 rounded border border-gray-700">@ctx.FieldMappingName</span>
+                    }
+                </div>
+                <button class="btn-cyber btn-sm" @onclick="() => _showTypeSelector = true" disabled="@(ctx.IsLoading || ctx.IsSaving)">
+                    <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Transform
+                </button>
+            </div>
+
+            <!-- Error -->
+            @if (!string.IsNullOrEmpty(ctx.ErrorMessage))
+            {
+                <div class="rounded-lg border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-400">
+                    @ctx.ErrorMessage
+                </div>
+            }
+
+            <!-- Loading -->
+            @if (ctx.IsLoading)
+            {
+                <div class="flex justify-center py-12">
+                    <div class="animate-spin w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full"></div>
+                </div>
+            }
+            else if (ctx.Transforms.Count == 0)
+            {
+                <!-- Empty state -->
+                <div class="card">
+                    <div class="card-content py-12 text-center">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
+                        </svg>
+                        <p class="text-gray-500 text-sm">No transforms configured.</p>
+                        <p class="text-gray-600 text-xs mt-1">Add a transform to begin building the chain.</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Transform chain list -->
+                <div class="space-y-0">
+                    @{ var ordered = ctx.Transforms.OrderBy(t => t.Ordinal).ToList(); }
+                    @for (var i = 0; i < ordered.Count; i++)
+                    {
+                        var transform = ordered[i];
+                        var isFirst = i == 0;
+                        var isLast = i == ordered.Count - 1;
+                        var isExpanded = _expandedTransformId == transform.Id;
+                        var typeDef = ctx.AvailableTransformTypes.FirstOrDefault(t => string.Equals(t.Name, transform.TransformType, StringComparison.OrdinalIgnoreCase));
+
+                        @if (!isFirst)
+                        {
+                            <!-- Connecting line between cards -->
+                            <div class="flex justify-start ml-6">
+                                <div class="w-0.5 h-4 bg-gray-700"></div>
+                            </div>
+                        }
+
+                        <TransformStepCard Transform="@transform"
+                                           TypeDefinition="@typeDef"
+                                           StepNumber="@(i + 1)"
+                                           IsFirst="@isFirst"
+                                           IsLast="@isLast"
+                                           IsExpanded="@isExpanded"
+                                           IsSaving="@ctx.IsSaving"
+                                           OnToggleExpand="@(() => ToggleExpand(transform.Id))"
+                                           OnMoveUp="@(() => ctx.OnMoveUp(transform.Id))"
+                                           OnMoveDown="@(() => ctx.OnMoveDown(transform.Id))"
+                                           OnDelete="@(() => ctx.OnDeleteTransform(transform.Id))"
+                                           OnSave="@(request => ctx.OnSaveTransform(request))" />
+                    }
+                </div>
+            }
+
+            <!-- Type selector modal -->
+            @if (_showTypeSelector)
+            {
+                <TransformTypeSelector AvailableTypes="@ctx.AvailableTransformTypes"
+                                       OnSelect="@(typeName => HandleAddTransform(ctx, typeName))"
+                                       OnClose="@(() => _showTypeSelector = false)" />
+            }
+        </div>
+    </ChildContent>
+</FieldMappingTransformProvider>
+
+@code {
+    [Parameter, EditorRequired] public Guid FieldMappingId { get; set; }
+    [Parameter] public string FieldMappingName { get; set; } = string.Empty;
+
+    private bool _showTypeSelector;
+    private Guid? _expandedTransformId;
+
+    private void ToggleExpand(Guid transformId)
+    {
+        _expandedTransformId = _expandedTransformId == transformId ? null : transformId;
+    }
+
+    private async Task HandleAddTransform(FieldMappingTransformContext ctx, string typeName)
+    {
+        _showTypeSelector = false;
+        await ctx.OnAddTransform(typeName);
+    }
+}

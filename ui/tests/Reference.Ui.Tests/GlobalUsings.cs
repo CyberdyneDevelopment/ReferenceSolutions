@@ -1,0 +1,16 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading.Tasks;
+global using Bunit;
+global using Bunit.TestDoubles;
+global using Microsoft.AspNetCore.Components;
+global using Microsoft.AspNetCore.Components.Web;
+global using Microsoft.Extensions.DependencyInjection;
+global using Shouldly;
+global using Xunit;
+global using Fdw.Services.Data.Clients.Models;
+global using Reference.Management.UI.Tailwind.Components;
+global using Reference.Management.UI.Tailwind.Components.Layout;
+global using Reference.Management.UI.Tailwind.Components.Pages;
+global using Reference.Management.UI.Tailwind.Components.Domain.DataSets;

@@ -1,0 +1,149 @@
+@* TransformStepCard — renders a single transform step in the chain.
+   Shows ordinal badge, type name, category, parameters, and action buttons. *@
+
+<div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden transition-colors @(IsExpanded ? "border-red-500/40" : "hover:border-gray-600")">
+    <!-- Card header (always visible) -->
+    <div class="flex items-center gap-3 px-4 py-3 cursor-pointer" @onclick="OnToggleExpand">
+        <!-- Ordinal badge -->
+        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center">
+            <span class="text-sm font-bold font-mono text-red-500">@StepNumber</span>
+        </div>
+
+        <!-- Transform info -->
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-bold text-gray-200">@(TypeDefinition?.DisplayName ?? Transform.TransformType)</span>
+                @if (TypeDefinition is not null && !string.IsNullOrEmpty(TypeDefinition.Category))
+                {
+                    <span class="text-[10px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded @GetCategoryClasses(TypeDefinition.Category)">
+                        @TypeDefinition.Category
+                    </span>
+                }
+            </div>
+            @if (Transform.Parameters.Count > 0)
+            {
+                <div class="flex items-center gap-2 mt-0.5">
+                    @foreach (var param in Transform.Parameters.Take(3))
+                    {
+                        <span class="text-xs text-gray-500 font-mono">@param.Name=<span class="text-gray-400">@Truncate(param.Value, 20)</span></span>
+                    }
+                    @if (Transform.Parameters.Count > 3)
+                    {
+                        <span class="text-xs text-gray-600">+@(Transform.Parameters.Count - 3) more</span>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-xs text-gray-600 mt-0.5">No parameters configured</p>
+            }
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex items-center gap-1 flex-shrink-0" @onclick:stopPropagation="true">
+            <button class="p-1.5 text-gray-500 hover:text-gray-300 disabled:opacity-30 disabled:cursor-not-allowed"
+                    disabled="@(IsFirst || IsSaving)" @onclick="OnMoveUp" title="Move up">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                </svg>
+            </button>
+            <button class="p-1.5 text-gray-500 hover:text-gray-300 disabled:opacity-30 disabled:cursor-not-allowed"
+                    disabled="@(IsLast || IsSaving)" @onclick="OnMoveDown" title="Move down">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <button class="p-1.5 text-red-500/60 hover:text-red-500 disabled:opacity-30 disabled:cursor-not-allowed"
+                    disabled="@IsSaving" @onclick="HandleDelete" title="Delete transform">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Expand indicator -->
+        <div class="flex-shrink-0">
+            <svg class="w-4 h-4 text-gray-500 transition-transform @(IsExpanded ? "rotate-180" : "")" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+        </div>
+    </div>
+
+    <!-- Expanded parameter form -->
+    @if (IsExpanded && TypeDefinition is not null)
+    {
+        <div class="border-t border-gray-700 px-4 py-4 bg-gray-900/50">
+            <TransformParameterForm ParameterDefinitions="@TypeDefinition.Parameters"
+                                    CurrentParameters="@Transform.Parameters"
+                                    IsSaving="@IsSaving"
+                                    OnSave="@HandleSave" />
+        </div>
+    }
+    else if (IsExpanded && TypeDefinition is null)
+    {
+        <div class="border-t border-gray-700 px-4 py-4 bg-gray-900/50">
+            <p class="text-sm text-gray-500">Transform type definition not available. Parameters cannot be edited.</p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public FieldMappingTransformPayload Transform { get; set; } = default!;
+    [Parameter] public TransformTypePayload? TypeDefinition { get; set; }
+    [Parameter] public int StepNumber { get; set; }
+    [Parameter] public bool IsFirst { get; set; }
+    [Parameter] public bool IsLast { get; set; }
+    [Parameter] public bool IsExpanded { get; set; }
+    [Parameter] public bool IsSaving { get; set; }
+    [Parameter] public EventCallback OnToggleExpand { get; set; }
+    [Parameter] public EventCallback OnMoveUp { get; set; }
+    [Parameter] public EventCallback OnMoveDown { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public EventCallback<SaveFieldMappingTransformRequest> OnSave { get; set; }
+
+    private bool _confirmDelete;
+
+    private async Task HandleDelete()
+    {
+        if (!_confirmDelete)
+        {
+            _confirmDelete = true;
+            return;
+        }
+
+        _confirmDelete = false;
+        await OnDelete.InvokeAsync();
+    }
+
+    private async Task HandleSave(IList<SaveTransformParameterRequest> parameters)
+    {
+        var request = new SaveFieldMappingTransformRequest
+        {
+            FieldMappingId = Transform.FieldMappingId,
+            TransformType = Transform.TransformType,
+            Ordinal = Transform.Ordinal,
+            Parameters = parameters
+        };
+        await OnSave.InvokeAsync(request);
+    }
+
+    private static string Truncate(string value, int maxLength)
+    {
+        if (string.IsNullOrEmpty(value)) return string.Empty;
+        return value.Length <= maxLength ? value : string.Concat(value.AsSpan(0, maxLength), "...");
+    }
+
+    private static string GetCategoryClasses(string category)
+    {
+        return category.ToUpperInvariant() switch
+        {
+            "DATETIME" => "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+            "NUMERIC" => "bg-blue-500/10 text-blue-400 border border-blue-500/20",
+            "STRING" => "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20",
+            "BOOLEAN" => "bg-amber-500/10 text-amber-400 border border-amber-500/20",
+            "INJECTION" => "bg-orange-500/10 text-orange-400 border border-orange-500/20",
+            "CONDITIONAL" => "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
+            _ => "bg-gray-500/10 text-gray-400 border border-gray-500/20"
+        };
+    }
+}

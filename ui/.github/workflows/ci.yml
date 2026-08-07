@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - '*.md'
+  pull_request:
+    branches:
+      - master
+      - develop
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '10.0'
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+  DOTNET_INSTALL_DIR: ${{ github.workspace }}/.dotnet
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: windows-latest
+    env:
+      BUILD_CONFIGURATION: Release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore and Build ManagementUI
+        run: |
+          dotnet restore ManagementUI/ManagementUI.slnx
+          dotnet build ManagementUI/ManagementUI.slnx --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Restore and Build ManagementUI-WASM
+        run: |
+          dotnet restore ManagementUI-WASM/ManagementUI-WASM.slnx
+          dotnet build ManagementUI-WASM/ManagementUI-WASM.slnx --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Restore and Build ManagementUI-Tailwind
+        run: |
+          dotnet restore ManagementUI-Tailwind/ManagementUI-Tailwind.slnx
+          dotnet build ManagementUI-Tailwind/ManagementUI-Tailwind.slnx --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Test ManagementUI
+        run: dotnet test ManagementUI/ManagementUI.slnx --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal
+        continue-on-error: ${{ github.ref == 'refs/heads/develop' }}
+
+      - name: Test ManagementUI-WASM
+        run: dotnet test ManagementUI-WASM/ManagementUI-WASM.slnx --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal
+        continue-on-error: true
+
+  security-scan:
+    name: Security Scan
+    runs-on: windows-latest
+    needs: build-and-test
+    if: |
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    env:
+      BUILD_CONFIGURATION: Release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Restore and Build for CodeQL
+        run: |
+          dotnet restore ManagementUI/ManagementUI.slnx
+          dotnet build ManagementUI/ManagementUI.slnx --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+          dotnet restore ManagementUI-WASM/ManagementUI-WASM.slnx
+          dotnet build ManagementUI-WASM/ManagementUI-WASM.slnx --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+          dotnet restore ManagementUI-Tailwind/ManagementUI-Tailwind.slnx
+          dotnet build ManagementUI-Tailwind/ManagementUI-Tailwind.slnx --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:csharp"
+        continue-on-error: true
+
+      - name: Security audit (vulnerable packages)
+        run: |
+          $output = dotnet list package --vulnerable --include-transitive 2>&1
+          Write-Output $output
+          if ($output -match "has the following vulnerable packages") {
+            Write-Output "::error::Vulnerable packages detected"
+            exit 1
+          }
+        continue-on-error: true

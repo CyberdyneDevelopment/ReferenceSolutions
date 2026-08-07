@@ -1,0 +1,278 @@
+@page "/settings/appearance"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Appearance - Cyberdyne</PageTitle>
+
+<ThemeProvider @ref="_provider">
+    <ChildContent Context="ctx">
+        @{ _ctx = ctx; }
+                <div>
+                    <div class="pagehead">
+                        <div>
+                            <div class="ey">Admin · Settings</div>
+                            <h1>Themes</h1>
+                            <div class="sub">Customize the console appearance</div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-ghost btn-sm" @onclick='() => Nav.NavigateTo("/settings")'>
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Back
+                            </button>
+                            <button class="btn btn-primary" @onclick="() => { _showCreateForm = true; _editingName = null; _form = new ThemeForm(); }">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                New theme
+                            </button>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(_errorMessage))
+                    {
+                        <div class="alert alert-err" style="margin-bottom:14px;">@_errorMessage</div>
+                    }
+
+                    @if (ctx.IsLoading)
+                    {
+                        <div class="loadwrap"><div class="spin"></div></div>
+                    }
+                    else
+                    {
+                        <!-- Theme Grid -->
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+                            @foreach (var theme in ctx.Themes)
+                            {
+                                <div class="themecard @(theme.IsDefault ? "on" : "")">
+                                    <!-- Color Swatches -->
+                                    <div style="display:flex;gap:8px;margin-bottom:14px;">
+                                        <div class="swatch" style="background-color: @(theme.PrimaryColor)" title="Primary"></div>
+                                        <div class="swatch" style="background-color: @(theme.SecondaryColor)" title="Secondary"></div>
+                                        <div class="swatch" style="background-color: @(theme.BackgroundColor)" title="Background"></div>
+                                    </div>
+
+                                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                                        <div>
+                                            <h3 style="font-size:14px;font-weight:500;color:var(--n-100);margin:0;">@(theme.DisplayName ?? theme.Name)</h3>
+                                            <p style="font-size:12px;color:var(--n-500);margin:2px 0 0;">@(theme.IsDarkMode ? "Dark" : "Light") theme</p>
+                                        </div>
+                                        @if (theme.IsDefault)
+                                        {
+                                            <span class="badge b-ok"><span class="bd"></span>Default</span>
+                                        }
+                                    </div>
+
+                                    <div style="display:flex;gap:8px;margin-top:14px;">
+                                        @if (!theme.IsDefault)
+                                        {
+                                            <button class="btn btn-secondary btn-sm" style="flex:1;" @onclick="async () => await ctx.OnSetDefaultTheme(theme.Name)">Set default</button>
+                                        }
+                                        <button class="btn btn-ghost btn-sm" @onclick="() => EditTheme(theme)">Edit</button>
+                                        @if (!theme.IsDefault)
+                                        {
+                                            <button class="btn btn-ghost btn-sm" style="color:var(--signal);" @onclick="async () => await ctx.OnDeleteTheme(theme.Name)">Delete</button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        @if (ctx.Themes.Count == 0)
+                        {
+                            <div class="card"><div class="card-b"><p class="empty">No themes configured. Create a theme to customize the appearance.</p></div></div>
+                        }
+                    }
+
+                    <!-- Create/Edit Modal -->
+                    @if (_showCreateForm || _showEditForm)
+                    {
+                        <div class="overlay">
+                            <div class="modal">
+                                <div class="card-h"><h3>@(_editingName != null ? "Edit theme" : "New theme")</h3></div>
+                                <div class="card-b">
+                                    <div class="frow">
+                                        <label>Name</label>
+                                        <input class="fin" @bind="_form.Name" placeholder="My theme" />
+                                    </div>
+
+                                    <div class="fgrid">
+                                        <div class="frow">
+                                            <label>Primary color</label>
+                                            <div style="display:flex;gap:8px;">
+                                                <input type="color" style="width:38px;height:38px;background:transparent;border:0;cursor:pointer;padding:0;" @bind="_form.PrimaryColor" />
+                                                <input class="fin mono" style="flex:1;" @bind="_form.PrimaryColor" />
+                                            </div>
+                                        </div>
+                                        <div class="frow">
+                                            <label>Secondary color</label>
+                                            <div style="display:flex;gap:8px;">
+                                                <input type="color" style="width:38px;height:38px;background:transparent;border:0;cursor:pointer;padding:0;" @bind="_form.SecondaryColor" />
+                                                <input class="fin mono" style="flex:1;" @bind="_form.SecondaryColor" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="fgrid">
+                                        <div class="frow">
+                                            <label>Background color</label>
+                                            <div style="display:flex;gap:8px;">
+                                                <input type="color" style="width:38px;height:38px;background:transparent;border:0;cursor:pointer;padding:0;" @bind="_form.BackgroundColor" />
+                                                <input class="fin mono" style="flex:1;" @bind="_form.BackgroundColor" />
+                                            </div>
+                                        </div>
+                                        <div class="frow">
+                                            <label>Surface color</label>
+                                            <div style="display:flex;gap:8px;">
+                                                <input type="color" style="width:38px;height:38px;background:transparent;border:0;cursor:pointer;padding:0;" @bind="_form.SurfaceColor" />
+                                                <input class="fin mono" style="flex:1;" @bind="_form.SurfaceColor" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="frow">
+                                        <label>Text color</label>
+                                        <div style="display:flex;gap:8px;">
+                                            <input type="color" style="width:38px;height:38px;background:transparent;border:0;cursor:pointer;padding:0;" @bind="_form.TextColor" />
+                                            <input class="fin mono" style="flex:1;" @bind="_form.TextColor" />
+                                        </div>
+                                    </div>
+
+                                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:16px;">
+                                        <input type="checkbox" style="width:16px;height:16px;accent-color:var(--amber);" @bind="_form.IsDark" />
+                                        <span style="font-size:13px;color:var(--n-200);">Dark theme</span>
+                                    </label>
+
+                                    <!-- Preview -->
+                                    <div style="border-radius:10px;padding:16px;margin-bottom:16px;background-color: @_form.BackgroundColor">
+                                        <div style="padding:12px;border-radius:8px;margin-bottom:8px;background-color: @_form.SurfaceColor">
+                                            <div style="height:8px;border-radius:4px;margin-bottom:4px;background-color: @_form.PrimaryColor; width: 60%"></div>
+                                            <div style="height:4px;border-radius:4px;background-color: @_form.TextColor; opacity: 0.5; width: 80%"></div>
+                                        </div>
+                                        <div style="display:flex;gap:8px;">
+                                            <div style="height:24px;border-radius:6px;padding:0 12px;display:flex;align-items:center;font-size:10px;background-color: @_form.PrimaryColor; color: @_form.BackgroundColor">Primary</div>
+                                            <div style="height:24px;border-radius:6px;padding:0 12px;display:flex;align-items:center;font-size:10px;background-color: @_form.SecondaryColor; color: @_form.BackgroundColor">Secondary</div>
+                                        </div>
+                                    </div>
+
+                                    <div style="display:flex;justify-content:flex-end;gap:8px;border-top:1px solid var(--hair);padding-top:16px;">
+                                        <button class="btn btn-ghost btn-sm" @onclick="CloseForm">Cancel</button>
+                                        <button class="btn btn-primary btn-sm" @onclick="SaveTheme" disabled="@_isSaving">
+                                            @(_isSaving ? "Saving..." : "Save")
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+    </ChildContent>
+</ThemeProvider>
+
+@code {
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+
+    private ThemeProvider _provider = null!;
+    private bool _isSaving = false;
+    private string? _errorMessage;
+    private bool _showCreateForm;
+    private bool _showEditForm;
+    private string? _editingName;
+    private ThemeForm _form = new();
+
+    private ThemeContext? _ctx;
+
+    private void EditTheme(ThemeSummaryPayload theme)
+    {
+        _editingName = theme.Name;
+        _form = new ThemeForm
+        {
+            Name = theme.DisplayName ?? theme.Name,
+            PrimaryColor = theme.PrimaryColor,
+            SecondaryColor = theme.SecondaryColor,
+            BackgroundColor = theme.BackgroundColor,
+            SurfaceColor = "#0f172a",
+            TextColor = "#e2e8f0",
+            IsDark = theme.IsDarkMode,
+        };
+        _showEditForm = true;
+    }
+
+    private void CloseForm()
+    {
+        _showEditForm = false;
+        _showCreateForm = false;
+        _editingName = null;
+    }
+
+    private async Task SaveTheme()
+    {
+        if (string.IsNullOrWhiteSpace(_form.Name)) return;
+        if (_ctx == null) return;
+        _isSaving = true;
+        _errorMessage = null;
+        try
+        {
+            if (_editingName != null)
+            {
+                var result = await _ctx.OnUpdateTheme(_editingName, new UpdateThemeRequest
+                {
+                    DisplayName = _form.Name,
+                    PrimaryColor = _form.PrimaryColor,
+                    SecondaryColor = _form.SecondaryColor,
+                    BackgroundColor = _form.BackgroundColor,
+                    SurfaceColor = _form.SurfaceColor,
+                    TextPrimary = _form.TextColor,
+                    IsDarkMode = _form.IsDark,
+                });
+                if (result == null)
+                {
+                    _errorMessage = _ctx.ErrorMessage ?? "Failed to update theme";
+                    return;
+                }
+            }
+            else
+            {
+                var result = await _ctx.OnCreateTheme(new CreateThemeRequest
+                {
+                    Name = _form.Name,
+                    DisplayName = _form.Name,
+                    PrimaryColor = _form.PrimaryColor,
+                    SecondaryColor = _form.SecondaryColor,
+                    BackgroundColor = _form.BackgroundColor,
+                    SurfaceColor = _form.SurfaceColor,
+                    TextPrimary = _form.TextColor,
+                    IsDarkMode = _form.IsDark,
+                });
+                if (result == null)
+                {
+                    _errorMessage = _ctx.ErrorMessage ?? "Failed to create theme";
+                    return;
+                }
+            }
+            _showEditForm = false;
+            _showCreateForm = false;
+            _editingName = null;
+            await _ctx.OnLoadThemes();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private class ThemeForm
+    {
+        public string Name { get; set; } = "";
+        public string PrimaryColor { get; set; } = "#ef4444";
+        public string SecondaryColor { get; set; } = "#06b6d4";
+        public string BackgroundColor { get; set; } = "#020617";
+        public string SurfaceColor { get; set; } = "#0f172a";
+        public string TextColor { get; set; } = "#e2e8f0";
+        public bool IsDark { get; set; } = true;
+    }
+}

@@ -1,0 +1,142 @@
+@* TransformParameterForm — dynamic form for editing transform parameters.
+   Renders input fields based on parameter definitions from the transform type. *@
+
+<div class="space-y-4">
+    @if (ParameterDefinitions.Count == 0)
+    {
+        <p class="text-sm text-gray-500">This transform has no configurable parameters.</p>
+    }
+    else
+    {
+        @foreach (var definition in ParameterDefinitions)
+        {
+            var currentValue = GetParameterValue(definition.Name);
+
+            <div class="space-y-1">
+                <label class="text-xs uppercase tracking-wider text-gray-500 flex items-center gap-1">
+                    @(string.IsNullOrEmpty(definition.DisplayName) ? definition.Name : definition.DisplayName)
+                    @if (definition.IsRequired)
+                    {
+                        <span class="text-red-500">*</span>
+                    }
+                    @if (!string.IsNullOrEmpty(definition.Kind) && !string.Equals(definition.Kind, "Scalar", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <span class="text-[10px] font-mono text-gray-600 ml-1">(@definition.Kind)</span>
+                    }
+                </label>
+                <input class="bg-gray-900 border border-gray-700 text-gray-200 px-3 py-2 rounded w-full font-mono text-sm
+                       focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/20
+                       placeholder:text-gray-600"
+                       value="@currentValue"
+                       placeholder="@GetPlaceholder(definition)"
+                       @onchange="@(e => SetParameterValue(definition.Name, e.Value?.ToString() ?? string.Empty))" />
+                @if (!string.IsNullOrEmpty(definition.HelpText))
+                {
+                    <p class="text-xs text-gray-600">@definition.HelpText</p>
+                }
+            </div>
+        }
+    }
+
+    <!-- Save button -->
+    <div class="flex items-center justify-between pt-3 border-t border-gray-700/50">
+        @if (!string.IsNullOrEmpty(_validationError))
+        {
+            <span class="text-xs text-red-400">@_validationError</span>
+        }
+        else
+        {
+            <span></span>
+        }
+        <button class="btn-cyber btn-sm" @onclick="HandleSave" disabled="@(IsSaving || !_isDirty)">
+            @if (IsSaving)
+            {
+                <div class="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full mr-1"></div>
+            }
+            Save Parameters
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<TransformParameterDefinitionPayload> ParameterDefinitions { get; set; } = [];
+    [Parameter] public IReadOnlyList<FieldMappingTransformParameterPayload> CurrentParameters { get; set; } = [];
+    [Parameter] public bool IsSaving { get; set; }
+    [Parameter] public EventCallback<IList<SaveTransformParameterRequest>> OnSave { get; set; }
+
+    private Dictionary<string, string> _editValues = new(StringComparer.OrdinalIgnoreCase);
+    private bool _isDirty;
+    private string? _validationError;
+    private bool _initialized;
+
+    protected override void OnParametersSet()
+    {
+        if (!_initialized)
+        {
+            InitializeValues();
+            _initialized = true;
+        }
+    }
+
+    private void InitializeValues()
+    {
+        _editValues.Clear();
+        foreach (var definition in ParameterDefinitions)
+        {
+            var existing = CurrentParameters.FirstOrDefault(p => string.Equals(p.Name, definition.Name, StringComparison.OrdinalIgnoreCase));
+            _editValues[definition.Name] = existing?.Value ?? string.Empty;
+        }
+        _isDirty = false;
+        _validationError = null;
+    }
+
+    private string GetParameterValue(string name)
+    {
+        return _editValues.TryGetValue(name, out var value) ? value : string.Empty;
+    }
+
+    private void SetParameterValue(string name, string value)
+    {
+        _editValues[name] = value;
+        _isDirty = true;
+        _validationError = null;
+    }
+
+    private static string GetPlaceholder(TransformParameterDefinitionPayload definition)
+    {
+        if (!string.IsNullOrEmpty(definition.HelpText))
+        {
+            return definition.HelpText.Length > 50
+                ? string.Concat(definition.HelpText.AsSpan(0, 50), "...")
+                : definition.HelpText;
+        }
+
+        return definition.IsRequired ? "Required" : "Optional";
+    }
+
+    private async Task HandleSave()
+    {
+        _validationError = null;
+
+        // Validate required fields
+        foreach (var definition in ParameterDefinitions)
+        {
+            if (!definition.IsRequired) continue;
+
+            if (!_editValues.TryGetValue(definition.Name, out var val) || string.IsNullOrWhiteSpace(val))
+            {
+                var label = string.IsNullOrEmpty(definition.DisplayName) ? definition.Name : definition.DisplayName;
+                _validationError = $"{label} is required.";
+                return;
+            }
+        }
+
+        var parameters = _editValues
+            .Where(kv => !string.IsNullOrEmpty(kv.Value))
+            .Select(kv => new SaveTransformParameterRequest { Name = kv.Key, Value = kv.Value })
+            .ToList();
+
+        await OnSave.InvokeAsync(parameters);
+        _isDirty = false;
+    }
+}

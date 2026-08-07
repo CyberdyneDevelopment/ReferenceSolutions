@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug-Local" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release-Local" />
+  </Configurations>
+  <Folder Name="/tests/">
+    <Project Path="tests/Reference.Ui.E2E/Reference.Ui.E2E.csproj" />
+    <Project Path="tests/Reference.Ui.Selenium/Reference.Ui.Selenium.csproj" />
+    <Project Path="tests/Reference.Ui.Tests/Reference.Ui.Tests.csproj" />
+  </Folder>
+  <Project Path="reference-ui.csproj" />
+</Solution>

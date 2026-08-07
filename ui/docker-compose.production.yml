@@ -1,0 +1,12 @@
+services:
+  ui-tailwind:
+    build:
+      context: ..
+      dockerfile: ManagementUI-Tailwind/Dockerfile
+    container_name: fdw-ui-tailwind
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:5008"
+      ApiEndpoints__Api: "${API_BASE_URL:-http://localhost:5000}"
+    ports:
+      - "5008:5008"

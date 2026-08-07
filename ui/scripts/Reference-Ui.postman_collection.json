@@ -1,0 +1,106 @@
+{
+  "info": {
+    "_postman_id": "61a93b21-2f1b-49b3-9d57-44ab9e6c1a02",
+    "name": "Reference UI (auth proxy endpoints)",
+    "description": "Reference.Ui is primarily a Blazor SPA, not a REST API. It exposes only two HTTP endpoints that act as form-based proxies into the auth API:\n\n- POST /auth/login   (application/x-www-form-urlencoded; on success sets cookie + 302 to returnUrl; on failure 302 to /login?error=...)\n- GET  /auth/logout  (clears auth cookie + 302 to /login)\n\nThis collection covers the documented behaviors for those two endpoints. The Blazor-rendered pages (Login.razor, etc.) are out of scope and tested via bUnit.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. POST /auth/login (form)",
+      "item": [
+        {
+          "name": "Edge: missing username/password -> 302 to /login?error=invalid-credentials",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "returnUrl", "value": "/", "type": "text" }
+            ] },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          },
+          "protocolProfileBehavior": { "followRedirects": false },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('status 302', function () { pm.response.to.have.status(302); });",
+            "pm.test('redirects to /login?error=invalid-credentials', function () { pm.expect(pm.response.headers.get('Location') || '').to.match(/^\\/login\\?error=invalid-credentials/); });"
+          ] } }]
+        },
+        {
+          "name": "Edge: wrong credentials -> 302 with error",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "definitely_wrong_user", "type": "text" },
+              { "key": "password", "value": "definitely-wrong-password", "type": "text" },
+              { "key": "returnUrl", "value": "/dashboard", "type": "text" }
+            ] },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          },
+          "protocolProfileBehavior": { "followRedirects": false },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('status 302', function () { pm.response.to.have.status(302); });",
+            "pm.test('redirects to /login?error=invalid-credentials with returnUrl', function () { var loc = pm.response.headers.get('Location') || ''; pm.expect(loc).to.match(/^\\/login\\?error=invalid-credentials/); pm.expect(loc).to.match(/returnUrl=%2Fdashboard/); });"
+          ] } }]
+        },
+        {
+          "name": "Edge: JSON body (handler reads form) -> 302",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"username\":\"x\",\"password\":\"y\"}" },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          },
+          "protocolProfileBehavior": { "followRedirects": false },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('status 302/400 (handler does ReadFormAsync)', function () { pm.expect([302, 400, 415, 500]).to.include(pm.response.code); });"
+          ] } }]
+        }
+      ]
+    },
+    {
+      "name": "2. GET /auth/logout",
+      "item": [
+        {
+          "name": "Happy: logout always redirects",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] }
+          },
+          "protocolProfileBehavior": { "followRedirects": false },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('status 302', function () { pm.response.to.have.status(302); });",
+            "pm.test('redirects to /login', function () { pm.expect(pm.response.headers.get('Location') || '').to.match(/^\\/login/); });"
+          ] } }]
+        }
+      ]
+    },
+    {
+      "name": "3. Site smoke",
+      "item": [
+        {
+          "name": "GET / -> 302 to /login (unauthenticated)",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}/", "host": ["{{baseUrl}}"], "path": [""] }
+          },
+          "protocolProfileBehavior": { "followRedirects": false },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('status 302 or 200', function () { pm.expect([200, 302]).to.include(pm.response.code); });"
+          ] } }]
+        },
+        {
+          "name": "GET /login -> 200 HTML",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}/login", "host": ["{{baseUrl}}"], "path": ["login"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('returns HTML', function () { pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/text\\/html/); });"
+          ] } }]
+        }
+      ]
+    }
+  ]
+}

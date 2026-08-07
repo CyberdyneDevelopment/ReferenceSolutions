@@ -1,0 +1,148 @@
+@using Fdw.UI.Components
+@inherits MainLayoutBase
+
+<BlazorThemeProvider Themes="_themes">
+<ChildContent Context="themeCtx">
+<CascadingValue Value="this">
+    <div class="app">
+        <!-- Sidebar -->
+        @if (!_isFullscreen)
+        {
+            <aside class="sidebar">
+                <div class="brandcell">
+                    <svg class="mk" viewBox="0 0 64 64" fill="none">
+                        <rect x="16" y="11" width="32" height="6" fill="#d99a3f" />
+                        <rect x="12" y="21" width="40" height="6" fill="#ece8e0" />
+                        <rect x="8" y="31" width="48" height="6" fill="#ece8e0" /><rect x="29" y="31" width="6" height="6" fill="#e05c4a" />
+                        <rect x="8" y="41" width="48" height="6" fill="#ece8e0" />
+                        <rect x="8" y="51" width="48" height="4" fill="#66614f" />
+                    </svg>
+                    <div class="wm"><b>Cyberdyne<span class="dev">Development</span></b><span>REFERENCE CONSOLE</span></div>
+                </div>
+
+                @* Why: EVERY entry comes from a declared page — the layout declares none of its own.
+                   Hardcoding the list let it drift from the pages that actually exist: it carried a
+                   /configuration/issues link to a page that exists nowhere, and omitted eight pages that
+                   do. A page reaches the sidebar by declaring a NavItem, nowhere else. A group with a
+                   null Label renders as an unlabelled block (the Dashboard entry). *@
+                <nav class="nav">
+                    @foreach (var group in _nav)
+                    {
+                        @if (group.Label is null)
+                        {
+                            <div class="navsec">
+                                @foreach (var page in group.Pages)
+                                {
+                                    <NavItem Page="page" />
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <NavSection Title="@group.Label">
+                                @foreach (var page in group.Pages)
+                                {
+                                    <NavItem Page="page" />
+                                }
+                            </NavSection>
+                        }
+                    }
+                </nav>
+
+                <div class="sidefoot">
+                    <div class="statusline">
+                        <span class="d"></span>All systems nominal
+                        <span class="ver">v@(_platformVersion)</span>
+                    </div>
+                    <div class="userline">
+                        <ProfileDropdown />
+                        <a class="out" href="/auth/logout" title="Sign out">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                        </a>
+                    </div>
+                </div>
+            </aside>
+        }
+
+        <!-- Main -->
+        <div class="main">
+            <header class="topbar">
+                <div class="crumb"><span>Workspace</span><span class="sep">/</span><b>fdw-core</b></div>
+                <div class="topright">
+                    <span class="supv"><span class="led"></span>Supervised</span>
+                    <NotificationBellProvider>
+                        <ChildContent Context="bell">
+                            <a class="iconbtn" href="/messages">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3C7.7 6.2 6 8.4 6 11v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1" /></svg>
+                                @if (bell.UnreadCount > 0)
+                                {
+                                    <span class="dot">@(bell.UnreadCount > 9 ? "9+" : bell.UnreadCount.ToString(System.Globalization.CultureInfo.InvariantCulture))</span>
+                                }
+                            </a>
+                        </ChildContent>
+                    </NotificationBellProvider>
+                </div>
+            </header>
+            <main class="@(!_noPadding ? "content" : "")" style="@(_noPadding ? "flex:1;overflow:hidden;" : "")">
+                <SessionStateProvider>
+                    <ChildContent Context="sessionCtx">
+                        <CascadingValue Value="sessionCtx">
+                            @Body
+                        </CascadingValue>
+                    </ChildContent>
+                </SessionStateProvider>
+            </main>
+        </div>
+    </div>
+</CascadingValue>
+</ChildContent>
+</BlazorThemeProvider>
+
+@code {
+    private static readonly IReadOnlyList<IBlazorTheme> _themes = new IBlazorTheme[] { new CyberdyneTheme() };
+
+    // Why: surface the FDW platform version (baked into InformationalVersion at build via $(FdwVersion))
+    // instead of the stale UI assembly version. Strip any "+commit" SourceLink suffix.
+    private static readonly string _platformVersion =
+        (System.Reflection.CustomAttributeExtensions
+            .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>(
+                System.Reflection.Assembly.GetExecutingAssembly())?.InformationalVersion
+            ?? System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.0")
+        .Split('+')[0];
+
+    private bool _isFullscreen;
+    private bool _noPadding;
+
+    private IReadOnlyList<Fdw.UI.Registration.NavGroup> _nav = [];
+
+    [CascadingParameter]
+    private Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState>? AuthState { get; set; }
+
+    // Why: the sidebar is filtered by the SAME permission set that authorizes the request — the login
+    // handler copies every JWT claim onto the cookie principal, so the 'perm' claims are already here and
+    // no API call is needed. An unauthenticated principal holds none, so it sees only pages that declare
+    // no RequiredPermission.
+    protected override async Task OnParametersSetAsync()
+    {
+        var user = AuthState is null ? null : (await AuthState).User;
+
+        _nav = Fdw.UI.Registration.NavTree.Build(
+            Fdw.UI.Registration.PageTypes.All()
+                .SelectMany(pageType => pageType.Pages)
+                .Concat(Registration.HostPages.All),
+            permission => user is not null
+                && user.FindAll("perm").Any(c => string.Equals(c.Value, permission, StringComparison.Ordinal)));
+    }
+
+    public override void SetFullscreen(bool isFullscreen)
+    {
+        _isFullscreen = isFullscreen;
+        StateHasChanged();
+    }
+
+    public override void SetNoPadding(bool noPadding)
+    {
+        _noPadding = noPadding;
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,157 @@
+@using ReferenceSecretManagers.EnvironmentVariable
+@page "/local-config"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using System.Linq
+@using System.Threading
+@using Fdw.ServiceTypes
+@using Fdw.Services.SecretManagers
+@using Fdw.Services.SecretManagers.Abstractions
+@using Fdw.Services.SecretManagers.EnvironmentVariable.Configuration
+
+<PageTitle>Local Config - Cyberdyne</PageTitle>
+
+<div>
+    <div class="pagehead">
+        <div>
+            <div class="ey">Admin · Configuration</div>
+            <h1>Local Config (FileSystem)</h1>
+            <div class="sub">Direct <span class="mono">IConfigurationGateway</span> read/write of SecretManager config — no reference-api hop</div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-err" style="margin-bottom:14px;">@_errorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(_statusMessage))
+    {
+        <div class="alert alert-ok" style="margin-bottom:14px;">@_statusMessage</div>
+    }
+
+    @if (_isLoading)
+    {
+        <div class="loadwrap"><div class="spin"></div></div>
+    }
+    else if (_config is not null)
+    {
+        <div class="card" style="max-width:640px;">
+            <div class="card-h"><h3>SecretManager: @_config.Name</h3></div>
+            <div class="card-b">
+                <div class="frow">
+                    <label>Name</label>
+                    <input class="fin mono" value="@_config.Name" disabled />
+                </div>
+                <div class="frow">
+                    <label>ServiceOptionType</label>
+                    <input class="fin mono" value="@_config.ServiceOptionType" disabled />
+                </div>
+                <div class="frow">
+                    <label>EnvironmentVariable · Prefix (from typed body)</label>
+                    <input class="fin mono" value="@_typedPrefix" disabled />
+                </div>
+
+                <div style="border-top:1px solid var(--hair);margin:16px 0;padding-top:16px;">
+                    <div class="frow">
+                        <label>Edit Prefix</label>
+                        <input class="fin mono" @bind="_prefixInput" placeholder="FDW_SECRET_" />
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;gap:8px;">
+                        <button class="btn btn-ghost btn-sm" @onclick="Load" disabled="@_isSaving">Reload from file</button>
+                        <button class="btn btn-primary btn-sm" @onclick="Save" disabled="@_isSaving">
+                            @(_isSaving ? "Saving..." : "Save")
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card"><div class="card-b"><p class="empty">No SecretManager configuration loaded.</p></div></div>
+    }
+</div>
+
+@code {
+    // Why (FDW-578): read+write SecretManager config DIRECTLY through the FileSystem-backed
+    // IConfigurationGateway — proving the UI does not need the reference-api HTTP hop for config.
+    [Inject] private SecretManagerConfigurationProvider Provider { get; set; } = default!;
+
+    // Why (FDW-578): resolving the scoped SecretManager SERVICE provider once triggers the domain's
+    // typed-body-provider wiring (EnvironmentVariableSecretManagerType.RegisterFactory ->
+    // SecretManagerConfigurationProvider.RegisterTypedProvider). Without that wiring, Get("EnvSecrets")
+    // returns the header only (DefaultConfigurationProvider.ComposeTypedBody short-circuits on an empty
+    // typed-provider registry) and the typed EnvironmentVariableConfiguration.Prefix stays null.
+    // reference-api gets this for free via per-request SecretManager endpoint resolution; this UI has no
+    // such flow, so touching the provider here forces the same one-time wiring on the shared singleton.
+    [Inject] private IFdwServiceProvider<ISecretManager, SecretManagerConfiguration> SecretManagerServiceProvider { get; set; } = default!;
+
+    private SecretManagerConfiguration? _config;
+    private string _typedPrefix = string.Empty;
+    private string _prefixInput = string.Empty;
+    private string? _errorMessage;
+    private string? _statusMessage;
+    private bool _isLoading = true;
+    private bool _isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Force the one-time typed-body-provider wiring (see field comment) before the first read.
+        _ = SecretManagerServiceProvider;
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        _statusMessage = null;
+
+        var result = await Provider.Get("EnvSecrets", CancellationToken.None);
+        if (!result.IsSuccess)
+        {
+            _errorMessage = result.Messages.Count > 0
+                ? "Load failed: " + string.Join(" ", result.Messages.Select(m => m.Message))
+                : "Load failed: the configuration gateway returned a failure result with no message.";
+            _config = null;
+            _isLoading = false;
+            return;
+        }
+
+        _config = result.Value;
+        // Why: the typed body is attached to Configuration only when the typed-body provider composed it.
+        // Cast to the concrete EnvironmentVariable type to surface Prefix; leave blank if not composed.
+        _typedPrefix = _config?.Configuration is EnvironmentVariableConfiguration ev ? ev.Prefix : string.Empty;
+        _prefixInput = _typedPrefix;
+        _isLoading = false;
+    }
+
+    private async Task Save()
+    {
+        if (_config is null)
+            return;
+
+        _isSaving = true;
+        _errorMessage = null;
+        _statusMessage = null;
+
+        // Apply the edited prefix onto the typed body before persisting through the same provider.
+        if (_config.Configuration is EnvironmentVariableConfiguration ev)
+            ev.Prefix = _prefixInput;
+
+        var result = await Provider.Save(_config, CancellationToken.None);
+        _isSaving = false;
+
+        if (!result.IsSuccess)
+        {
+            // Why: fail loud — if the FileSystem write path is not yet wired the real error surfaces here
+            // rather than being papered over. Do NOT swallow or fake success.
+            _errorMessage = result.Messages.Count > 0
+                ? "Save failed: " + string.Join(" ", result.Messages.Select(m => m.Message))
+                : "Save failed: the configuration provider returned a failure result with no message.";
+            return;
+        }
+
+        _statusMessage = "Saved. Re-reading from the file to confirm the write round-tripped...";
+        await Load();
+    }
+}

@@ -1,0 +1,161 @@
+@page "/Error"
+@layout EmptyLayout
+@attribute [AllowAnonymous]
+@using System.Diagnostics
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Diagnostics
+@using Microsoft.AspNetCore.Http
+@using Microsoft.Extensions.Configuration
+@using Fdw.UI.Components.Error
+@using Fdw.UI.Components.Models
+@using Reference.Management.UI.Tailwind.Logging
+
+<PageTitle>Error - Cyberdyne</PageTitle>
+
+<FdwErrorDisplay Error="_errorResponse">
+    <Content Context="error">
+        <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);position:relative;overflow:hidden;padding:24px;">
+            <!-- Grid Background -->
+            <div style="position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:linear-gradient(var(--hair) 1px, transparent 1px),linear-gradient(90deg, var(--hair) 1px, transparent 1px);background-size:42px 42px;"></div>
+
+            <div class="card" style="position:relative;z-index:10;width:100%;max-width:480px;padding:32px;">
+                <!-- Severity Icon -->
+                <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:24px;text-align:center;">
+                    @if (_severity == ErrorSeverity.Error)
+                    {
+                        <div style="background:var(--signal-dim);padding:14px;border-radius:14px;margin-bottom:16px;">
+                            <svg style="width:30px;height:30px;color:var(--signal);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                        </div>
+                    }
+                    else if (_severity == ErrorSeverity.Warning)
+                    {
+                        <div style="background:var(--warn-dim);padding:14px;border-radius:14px;margin-bottom:16px;">
+                            <svg style="width:30px;height:30px;color:var(--warn);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="background:var(--glacier-dim);padding:14px;border-radius:14px;margin-bottom:16px;">
+                            <svg style="width:30px;height:30px;color:var(--glacier);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    }
+
+                    <h1 style="font-size:22px;font-weight:500;letter-spacing:-0.02em;color:var(--n-100);margin:0;">@_title</h1>
+                    <p style="font-family:var(--mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--n-500);margin-top:10px;">System Fault Detected</p>
+                </div>
+
+                <!-- Message -->
+                <p style="color:var(--n-400);text-align:center;font-size:13px;">@error.Error.Message</p>
+
+                <!-- Request ID -->
+                @if (!string.IsNullOrEmpty(error.Error.ReferenceId))
+                {
+                    <div class="frow" style="margin-top:22px;">
+                        <label>Request ID</label>
+                        <div class="finput mono" style="word-break:break-all;user-select:all;">@error.Error.ReferenceId</div>
+                    </div>
+                }
+
+                <!-- Original Path -->
+                @if (!string.IsNullOrEmpty(_originalPath))
+                {
+                    <div class="frow">
+                        <label>Failed Path</label>
+                        <div class="finput mono" style="word-break:break-all;">@_originalPath</div>
+                    </div>
+                }
+
+                <!-- Support Contact -->
+                @if (!string.IsNullOrEmpty(_supportContact))
+                {
+                    <p style="font-size:12px;color:var(--n-500);text-align:center;margin-top:8px;">
+                        Contact support: <span style="color:var(--n-300);">@_supportContact</span>
+                    </p>
+                }
+
+                <!-- Return Link -->
+                <div style="margin-top:24px;text-align:center;">
+                    <a href="/" class="btn btn-primary">Return to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </Content>
+</FdwErrorDisplay>
+
+@code {
+    private string? _originalPath;
+    private string? _supportContact;
+    private string _title = "Application Error";
+    private ErrorSeverity _severity = ErrorSeverity.Error;
+    private ErrorResponse _errorResponse = new();
+
+    [Inject]
+    private IHttpContextAccessor HttpContextAccessor { get; set; } = default!;
+
+    [Inject]
+    private IConfiguration Configuration { get; set; } = default!;
+
+    [Inject]
+    private ILogger<Error> LoggerParam { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        var logger = LoggerParam ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<Error>.Instance;
+
+        _supportContact = Configuration["SupportContact"];
+
+        var httpContext = HttpContextAccessor.HttpContext;
+        if (httpContext is null)
+        {
+            ErrorPageLog.HttpContextUnavailable(logger);
+            _errorResponse = new ErrorResponse { Message = "An unexpected error occurred.", ReferenceId = Guid.NewGuid().ToString("N") };
+            return;
+        }
+
+        var requestId = Activity.Current?.Id ?? httpContext.TraceIdentifier;
+
+        var exceptionFeature = httpContext.Features.Get<IExceptionHandlerPathFeature>();
+        if (exceptionFeature is null)
+        {
+            ErrorPageLog.NoExceptionContext(logger, requestId);
+            _errorResponse = new ErrorResponse { Message = "An unexpected error occurred.", ReferenceId = requestId };
+            return;
+        }
+
+        _originalPath = exceptionFeature.Path;
+        var exception = exceptionFeature.Error;
+        var exceptionTypeName = exception.GetType().Name;
+
+        // Why: Map exception type to severity for display — cancellations are informational, auth failures are warnings
+        if (exception is OperationCanceledException or TaskCanceledException)
+        {
+            _severity = ErrorSeverity.Info;
+            _title = "Request Cancelled";
+        }
+        else if (exception is UnauthorizedAccessException)
+        {
+            _severity = ErrorSeverity.Warning;
+            _title = "Access Denied";
+        }
+        else
+        {
+            _severity = ErrorSeverity.Error;
+            _title = "Application Error";
+        }
+
+        _errorResponse = new ErrorResponse
+        {
+            Code = exceptionTypeName,
+            Message = "An unexpected error has occurred. Please try again or contact support if the problem persists.",
+            ReferenceId = requestId,
+        };
+
+        ErrorPageLog.UnhandledException(logger, exception, requestId, _originalPath);
+    }
+}
