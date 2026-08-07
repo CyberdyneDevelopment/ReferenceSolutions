@@ -83,6 +83,7 @@
     <PackageReference Include="Fdw.Services.Etl" />
     <PackageReference Include="Fdw.Services.Etl.Abstractions" />
     <PackageReference Include="Fdw.Services.Etl.Projects" />
+    <PackageReference Include="Fdw.Services.Etl.JobTriggerSources" />
     <PackageReference Include="Fdw.Services.Pipelines" />
     <PackageReference Include="Fdw.SignalR" />
     <!-- Fdw Operations Endpoints (lineage base classes) -->

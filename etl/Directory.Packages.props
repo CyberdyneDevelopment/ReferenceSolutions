@@ -64,6 +64,7 @@
     <PackageVersion Include="Fdw.Services.Etl" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Etl.Abstractions" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Etl.Projects" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Etl.JobTriggerSources" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Pipelines" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Pipelines.Abstractions" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Transformations" Version="$(FdwVersion)" />
