@@ -1,0 +1,16 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug-Local" />
+    <BuildType Name="Develop" />
+    <BuildType Name="Develop-Local" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release-Local" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/Reference.Etl.Server/Reference.Etl.Server.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Reference.Etl.Server.Tests/Reference.Etl.Server.Tests.csproj" />
+  </Folder>
+</Solution>

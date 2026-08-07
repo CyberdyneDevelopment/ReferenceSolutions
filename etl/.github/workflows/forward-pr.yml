@@ -1,0 +1,31 @@
+name: Forward PR
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  notify-internal:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger internal review pipeline
+        run: |
+          curl -X POST \
+            --fail \
+            -F "token=${{ secrets.INTERNAL_TRIGGER_TOKEN }}" \
+            -F "ref=develop" \
+            -F "variables[PR_NUMBER]=${{ github.event.pull_request.number }}" \
+            "${{ secrets.INTERNAL_API_URL }}"
+
+          echo "PR #${{ github.event.pull_request.number }} forwarded for internal review"
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: 'Thanks for your contribution!\n\nThis PR has been forwarded to our internal review system. A maintainer will review and merge it there, which will automatically close this PR.\n\nPlease do not merge this PR directly via GitHub - it will be handled through our sync process.'
+            });

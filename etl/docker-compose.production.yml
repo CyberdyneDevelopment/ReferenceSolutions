@@ -1,0 +1,16 @@
+services:
+  etl:
+    build: .
+    container_name: fdw-etl
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:5002"
+      FDW_SECRET_CONFIG_RO_PASSWORD: "${FDW_SECRET_CONFIG_RO_PASSWORD:-FdwConfigRoPassword#}"
+      InternalApi__ApiKey: "${INTERNAL_API_KEY:-dev-internal-key}"
+      Webhooks__CompletionUrl: "${WEBHOOK_COMPLETION_URL:-http://localhost:5000/api/v1/etl/webhook/completion}"
+      ControlDb__Server: "${CONFIGDB_SERVER:-localhost}"
+      ControlDb__Authentication__Username: "fdw_config_ro"
+      ControlDb__Authentication__SecretKeyName: "CONFIG_RO_PASSWORD"
+      Serilog__WriteTo__1__Args__serverUrl: "${SEQ_URL:-http://localhost:5341}"
+    ports:
+      - "5002:5002"
