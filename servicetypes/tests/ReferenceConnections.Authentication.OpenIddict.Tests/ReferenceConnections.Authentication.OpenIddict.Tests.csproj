@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" />
+    <PackageReference Include="OpenIddict.Abstractions" />
+    <PackageReference Include="OpenIddict.Server.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Why: Smoke tests spin up a real ASP.NET Core test host via Microsoft.AspNetCore.TestHost. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Services.Authentication.OpenIddict" />
+    <PackageReference Include="Fdw.Services.Data.Abstractions" />
+    <PackageReference Include="Fdw.Services.Connections.Abstractions" />
+    <ProjectReference Include="..\..\src\ReferenceConnections.MsSql\ReferenceConnections.MsSql.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceAuthentication.OpenIddict\ReferenceAuthentication.OpenIddict.csproj" />
+    <PackageReference Include="Fdw.Commands.Data" />
+    <PackageReference Include="Fdw.Commands.Data.Abstractions" />
+    <PackageReference Include="Fdw.Commands.Data.Extensions" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Services.Authentication.Abstractions" />
+    <PackageReference Include="Fdw.Services.Authorization.Abstractions" />
+    <PackageReference Include="Fdw.Services.Multitenancy.Abstractions" />
+    <PackageReference Include="Fdw.Services.SecretManagers.Abstractions" />
+    <PackageReference Include="Fdw.Services.SecretManagers" />
+    <PackageReference Include="Fdw.Services.Users.Abstractions" />
+    <PackageReference Include="Fdw.Services.Authorization" />
+    <PackageReference Include="Fdw.Services.Authentication" />
+    <PackageReference Include="Fdw.Messages" />
+    <!-- Why: emits the module-init that registers every [TypeOption] (incl. ConfigurationCommands)
+         so the real external-identity provisioning path (binding provider's Get) resolves Commands()
+         in-test. Without it ConfigurationCommands is empty and the provisioner tests throw. -->
+    <PackageReference Include="Fdw.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

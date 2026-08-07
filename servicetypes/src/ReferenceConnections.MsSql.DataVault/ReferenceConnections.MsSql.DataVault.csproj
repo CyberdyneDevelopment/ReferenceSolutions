@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Description>MsSql data vault — the sanctioned raw-ADO credential surface over an MsSql connection.</Description>
+  </PropertyGroup>
+
+  <!-- Why: the vault is a SEPARATE concern from the connection, but it is MsSql-specific raw ADO,
+       so it composes ReferenceConnections.MsSql rather than living in the framework. The generic
+       vault machinery it derives from stays in Fdw.Services.Credentials.Sql. -->
+  <ItemGroup>
+    <ProjectReference Include="..\ReferenceConnections.MsSql\ReferenceConnections.MsSql.csproj" />
+    <ProjectReference Include="..\ReferenceCredentials.Sql\ReferenceCredentials.Sql.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.Messages" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Results.Abstractions" />
+    <PackageReference Include="Fdw.Services.Abstractions" />
+    <PackageReference Include="Fdw.Services.Connections.Abstractions" />
+    <PackageReference Include="Fdw.Services.Connections.MsSql" />
+    <PackageReference Include="Fdw.Services.Credentials.Sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+</Project>

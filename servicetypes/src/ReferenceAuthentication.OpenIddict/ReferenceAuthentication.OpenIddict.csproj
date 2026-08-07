@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <Description>OpenIddict authentication token manager — the aggregation over FDW's Authentication machinery, plus its service type registration.</Description>
+  </PropertyGroup>
+
+  <!-- Why: the AGGREGATION lives here; the components it composes stay in FDW. Reference
+       implementations get NO InternalsVisibleTo — anything needed to compose this service
+       has to be public API. See fractaldataworks 7201fb0fa. -->
+  <ItemGroup>
+    <PackageReference Include="Fdw.Commands.Data" />
+    <PackageReference Include="Fdw.Commands.Data.Extensions" />
+    <PackageReference Include="Fdw.Data.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Services.Authentication" />
+    <PackageReference Include="Fdw.Services.Authentication.Abstractions" />
+    <PackageReference Include="Fdw.Services.Authentication.OpenIddict" />
+    <PackageReference Include="Fdw.Services.Authorization" />
+    <PackageReference Include="Fdw.Services.Authorization.Abstractions" />
+    <PackageReference Include="Fdw.Services.Data.Abstractions" />
+    <PackageReference Include="Fdw.Services.ExternalIdentityProviders" />
+    <PackageReference Include="Fdw.Services.ExternalIdentityProviders.Abstractions" />
+    <PackageReference Include="Fdw.Services.Multitenancy.Abstractions" />
+    <PackageReference Include="Fdw.Services.SecretManagers" />
+    <PackageReference Include="Fdw.Services.SecretManagers.Abstractions" />
+    <PackageReference Include="Fdw.Services.TokenManagers" />
+    <PackageReference Include="Fdw.Services.TokenManagers.Abstractions" />
+    <PackageReference Include="Fdw.Services.Users.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Configuration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Data.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FastEndpoints" />
+    <PackageReference Include="OpenIddict.Abstractions" />
+    <PackageReference Include="OpenIddict.Core" />
+    <PackageReference Include="OpenIddict.Server.AspNetCore" />
+    <PackageReference Include="OpenIddict.Validation.AspNetCore" />
+    <PackageReference Include="OpenIddict.Validation.ServerIntegration" />
+    <PackageReference Include="OpenIddict.Validation.SystemNetHttp" />
+  </ItemGroup>
+
+  <!-- Why: a reference implementation grants internals to ITS OWN tests. The rule the split
+       enforces is that FDW must not grant them to a reference implementation. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="ReferenceConnections.Authentication.OpenIddict.Tests" />
+  </ItemGroup>
+
+</Project>

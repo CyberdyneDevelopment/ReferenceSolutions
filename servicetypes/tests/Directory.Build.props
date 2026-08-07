@@ -1,0 +1,56 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Suppress the verbose pruning output -->
+    <NuGetPruneVerbosity>quiet</NuGetPruneVerbosity>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
+    <IsTestProject>true</IsTestProject>
+    <LangVersion>preview</LangVersion>
+
+    <!-- Code Coverage: use coverlet.collector via "dotnet test" with XPlat Code Coverage -->
+    <!-- See coverlet.runsettings for collector configuration -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- xUnit v3 -->
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+
+    <!-- Shouldly for assertions -->
+    <PackageReference Include="Shouldly" />
+
+    <!-- Coverlet for code coverage (collector mode) -->
+    <PackageReference Include="coverlet.collector" />
+
+    <!-- JUnit test logger: required by the shared ci-components dotnet-package test job,
+         which invokes the junit logger via dotnet test. Without it every CI test run
+         aborts with "Could not find a test logger 'junit'" and pack/publish are skipped. -->
+    <PackageReference Include="JunitXml.TestLogger" />
+
+    <!-- Microsoft Test SDK -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+
+    <!-- Moq for mocking -->
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Shouldly" />
+    <Using Include="Moq" />
+  </ItemGroup>
+
+  <!-- Local NuGet Development Configuration (inherits IsLocalConfiguration from parent) -->
+  <PropertyGroup>
+    <!-- Default config filename - can be overridden in project files -->
+    <LocalNugetConfigFileName Condition="'$(LocalNugetConfigFileName)' == ''">Fdw.Local.nuget.config</LocalNugetConfigFileName>
+  </PropertyGroup>
+
+  <!-- Use local NuGet config when using a -Local configuration and LocalNugetFolder is set -->
+  <PropertyGroup Condition="'$(IsLocalConfiguration)' == 'true' AND '$(LocalNugetFolder)' != ''">
+    <RestoreConfigFile>$(LocalNugetFolder)\$(LocalNugetConfigFileName)</RestoreConfigFile>
+  </PropertyGroup>
+</Project>

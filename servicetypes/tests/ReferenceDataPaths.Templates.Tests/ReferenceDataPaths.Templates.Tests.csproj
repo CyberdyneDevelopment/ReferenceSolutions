@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ReferenceDataPaths.Templates\ReferenceDataPaths.Templates.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Fdw.Registration.SourceGenerators">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <!-- Why scoped: coverage over this package only. The collection and its base live in FDW and are
+       covered there; reporting them here would inflate this project's numbers with someone else's code. -->
+  <PropertyGroup>
+    <Include>[ReferenceDataPaths.Templates]*</Include>
+    <Exclude>[xunit.*]*,[Moq]*,[Shouldly]*</Exclude>
+  </PropertyGroup>
+</Project>

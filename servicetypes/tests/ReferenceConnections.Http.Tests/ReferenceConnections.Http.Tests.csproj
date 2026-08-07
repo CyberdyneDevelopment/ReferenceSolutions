@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Why: xunit.v3.common transitively pins Microsoft.Bcl.AsyncInterfaces 6.0.0
+         (minimum bound), conflicting with the 10.0.x demanded by the FDW chain.
+         A direct reference here promotes it to primary so the central pin wins. -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ReferenceConnections.Http\ReferenceConnections.Http.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceConnections.Http.ServiceType\ReferenceConnections.Http.ServiceType.csproj" />
+  </ItemGroup>
+</Project>

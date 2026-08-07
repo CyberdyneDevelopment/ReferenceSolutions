@@ -1,0 +1,245 @@
+<Project>
+  <!--
+    EtlServer - Package Management
+
+    Two package sources:
+    - Fdw.* from LocalNugetFolder (external dependency)
+    - the private package feed for CI builds
+  -->
+  <PropertyGroup>
+    <FdwVersion>1.0.0-rc.1.*</FdwVersion>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- Why: enables NuGet CPM transitive pinning so PackageVersion entries also override
+         transitive dependencies — required to resolve pre-release FDW packages that appear
+         only in the local NuGet feed when consuming packages have stable version floors (>= 1.0.0). -->
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <!-- Why: Microsoft.AspNetCore.TestHost is pinned "*" to follow the SDK, same as FDW. -->
+    <CentralPackageFloatingVersionsEnabled>true</CentralPackageFloatingVersionsEnabled>
+  </PropertyGroup>
+  <!-- Override FdwVersion with locally-packed version for -Local configurations -->
+  <Import Project="$(LocalNugetFolder)/FdwVersion.props" Condition="$(Configuration.EndsWith('-Local')) AND Exists('$(LocalNugetFolder)/FdwVersion.props')" />
+  <ItemGroup>
+    <!-- Fdw Core -->
+    <PackageVersion Include="Fdw.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Collections" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Collections.SourceGenerators" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Commands.Data.Extensions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.DependencyInjection" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Messages" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Operations" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Registration.SourceGenerators" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Results" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Types" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.ServiceTypes" Version="$(FdwVersion)" />
+    <!-- Fdw Configuration -->
+    <PackageVersion Include="Fdw.Configuration" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Configuration.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Configuration.MsSql" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Configuration.SourceGenerators" Version="$(FdwVersion)" />
+    <!-- Fdw Data -->
+    <PackageVersion Include="Fdw.Data" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.SourceGenerators" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.Transformations.Abstractions" Version="$(FdwVersion)" />
+    <!-- Fdw Services -->
+    <PackageVersion Include="Fdw.Services" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Registration" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Registration.SourceGenerators" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Connections" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Connections.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Connections.MsSql" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Connections.Http" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.RowSources.Json" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.RowSources.Xml" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.RowSources.Delimited" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.RowSources.FixedWidth" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.RowSources.Http" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Data" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Data.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.SignalR" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.SecretManagers" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.SecretManagers.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.SecretManagers.EnvironmentVariable" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.SecretManagers.MsSql" Version="$(FdwVersion)" />
+    <!-- Fdw ETL -->
+    <PackageVersion Include="Fdw.Services.Etl" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Etl.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Etl.Projects" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Pipelines" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Pipelines.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Transformations" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Transformations.Abstractions" Version="$(FdwVersion)" />
+    <!-- Fdw Operations Endpoints (lineage base classes) -->
+    <PackageVersion Include="Fdw.Operations.Endpoints" Version="$(FdwVersion)" />
+    <!-- Fdw MessageLogging -->
+    <PackageVersion Include="Fdw.MessageLogging.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.MessageLogging.SourceGenerators" Version="$(FdwVersion)" />
+    <!-- Fdw Authorization -->
+    <PackageVersion Include="Fdw.Services.Authorization" Version="$(FdwVersion)" />
+    <!-- Transitive FDW packages that need explicit pinning for pre-release resolution in -Local builds -->
+    <PackageVersion Include="Fdw.Data.Builders" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.SchemaImporters.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Processors.Abstractions" Version="$(FdwVersion)" />
+    <!-- Authentication.Jwt.MsSql deleted in auth-cutover; replaced by OpenIddict provider. -->
+    <PackageVersion Include="Fdw.Services.Authentication.OpenIddict" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Authentication.Sql" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Calculations.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Connections.Http.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Execution.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.UI.Components.Blazor.MsSql" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Validation.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Web.Analytics.Clients" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Web.Clients.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Pipelines.Designer.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Quality.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.RateLimiting.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.UI.Components" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Web.Http.Authentication" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Authentication.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.UI.Pipelines.Clients.Abstractions" Version="$(FdwVersion)" />
+    <!-- Fdw Hosting -->
+    <PackageVersion Include="Fdw.Hosting" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Hosting.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Hosting.MsSql" Version="$(FdwVersion)" />
+    <!-- Fdw Resiliency -->
+    <PackageVersion Include="Fdw.Services.Resiliency" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Resiliency.Abstractions" Version="$(FdwVersion)" />
+    <!-- Fdw Schema -->
+    <PackageVersion Include="Fdw.Schema.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Schema.Ddl" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Schema.Ddl.MsSql" Version="$(FdwVersion)" />
+    <!-- Fdw Types -->
+    <PackageVersion Include="Fdw.Types.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Serilog.Enrichers.Span" Version="3.1.0" />
+    <!-- Override transitive 8.0.0 from Azure.Core to match .NET 10 inbox assembly -->
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.10" />
+    <PackageVersion Include="Serilog.Sinks.Grafana.Loki" Version="8.3.2" />
+      <PackageVersion Include="Fdw.Commands.Data" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Commands.Data.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.DataSets" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Results.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Connections.Sql" Version="$(FdwVersion)" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.50.3" />
+      <PackageVersion Include="Fdw.Data.DataNodes" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.DataPaths" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.DataSets.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.RowSources" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.RowSources.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.RowSources.FixedWidth.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Authorization.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Connections.FileSystem.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.10" />
+      <PackageVersion Include="Fdw.Data.DataContainers.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.Files" Version="$(FdwVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.10" />
+    <PackageVersion Include="Npgsql" Version="10.0.3" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.10" />
+      <PackageVersion Include="Azure.Identity" Version="1.21.0" />
+    <PackageVersion Include="Fdw.Data.Http" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.MsSql" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.PostgreSql" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Data.Sqlite" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Connections.PostgreSql" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Connections.Sqlite" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Types.MsSql" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Validation" Version="$(FdwVersion)" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+    <PackageVersion Include="Microsoft.Data.SqlClient.Extensions.Azure" Version="1.0.0" />
+      <PackageVersion Include="Fdw.Services.Authentication" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Credentials.Sql" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Multitenancy.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Users.Abstractions" Version="$(FdwVersion)" />
+    <!-- Why: FDW conditions this by TFM (11.12.0 for netstandard2.0, 12.1.1 for net10.0).
+         Everything here is net10.0, so it takes the net10.0 pin. -->
+    <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="*" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.10" />
+    <PackageVersion Include="OpenIddict.Abstractions" Version="7.5.0" />
+    <PackageVersion Include="OpenIddict.Server.AspNetCore" Version="7.5.0" />
+    <!-- Service-type aggregations split out of FDW (see fractaldataworks 7201fb0fa) -->
+    <PackageVersion Include="Fdw.Security.Hashing" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Credentials.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.DataVault.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.EtlMappers" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.EtlMappers.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.ExternalIdentityProviders" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.ExternalIdentityProviders.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.ExternalIdentityProviders.Oidc" Version="$(FdwVersion)" />
+    <!-- Why: pinned to match the versions FDW itself uses (its Directory.Packages.props), so the
+         OIDC discovery/validation stack cannot drift between the contract and this aggregation. -->
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.18.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.18.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.18.0" />
+    <PackageVersion Include="Fdw.Services.Messaging.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Multitenancy" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Multitenancy.Sql" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Notifications" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Notifications.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Notifications.Console" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Notifications.Email" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Notifications.System" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Notifications.Webhook" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.SecretManagers.AzureKeyVault" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.SecretManagers.Sqlite" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.SecretManagers.UserSecrets" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.TokenManagers" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.TokenManagers.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.9.0" />
+    <PackageVersion Include="Azure.Security.KeyVault.Secrets" Version="4.11.0" />
+    <PackageVersion Include="MailKit" Version="4.17.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.10" />
+    <PackageVersion Include="OpenIddict.Core" Version="7.5.0" />
+    <PackageVersion Include="OpenIddict.Validation.AspNetCore" Version="7.5.0" />
+    <PackageVersion Include="OpenIddict.Validation.ServerIntegration" Version="7.5.0" />
+    <PackageVersion Include="OpenIddict.Validation.SystemNetHttp" Version="7.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- External packages -->
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
+    <!-- Serilog -->
+    <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Settings.Configuration" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageVersion Include="Serilog.Sinks.Seq" Version="9.1.0" />
+    <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+    <PackageVersion Include="Serilog.Enrichers.Process" Version="3.0.0" />
+    <!-- OpenTelemetry -->
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.3" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.2" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.1" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.15.3" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
+    <!-- FastEndpoints + Swagger/Scalar -->
+    <PackageVersion Include="FastEndpoints" Version="8.1.0" />
+    <PackageVersion Include="FastEndpoints.Swagger" Version="8.1.0" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.12.18" />
+    <!-- Build/Analyzers (inherited from parent Directory.Build.props) -->
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.300" />
+    <PackageVersion Include="AsyncFixer" Version="2.1.0" />
+    <PackageVersion Include="Meziantou.Analyzer" Version="3.0.98" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" />
+    <PackageVersion Include="Roslynator.Analyzers" Version="4.15.0" />
+    <PackageVersion Include="SecurityCodeScan.VS2019" Version="5.6.7" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Test packages -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="coverlet.collector" Version="10.0.1" />
+    <PackageVersion Include="JunitXml.TestLogger" Version="6.1.0" />
+    <PackageVersion Include="Shouldly" Version="4.3.0" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
+  </ItemGroup>
+</Project>

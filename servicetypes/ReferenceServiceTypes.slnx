@@ -1,0 +1,75 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug-Local" />
+    <BuildType Name="Develop" />
+    <BuildType Name="Develop-Local" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release-Local" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/ReferenceAuthentication.OpenIddict/ReferenceAuthentication.OpenIddict.csproj" />
+    <Project Path="src/ReferenceAuthentication.TokenProviders/ReferenceAuthentication.TokenProviders.csproj" />
+    <Project Path="src/ReferenceConnections.Http.ServiceType/ReferenceConnections.Http.ServiceType.csproj" />
+    <Project Path="src/ReferenceConnections.Http/ReferenceConnections.Http.csproj" />
+    <Project Path="src/ReferenceConnections.MsSql.ServiceType/ReferenceConnections.MsSql.ServiceType.csproj" />
+    <Project Path="src/ReferenceConnections.MsSql/ReferenceConnections.MsSql.csproj" />
+    <Project Path="src/ReferenceConnections.MsSql.DataVault/ReferenceConnections.MsSql.DataVault.csproj" />
+    <Project Path="src/ReferenceConnections.PostgreSql.ServiceType/ReferenceConnections.PostgreSql.ServiceType.csproj" />
+    <Project Path="src/ReferenceConnections.PostgreSql/ReferenceConnections.PostgreSql.csproj" />
+    <Project Path="src/ReferenceConnections.Sqlite.ServiceType/ReferenceConnections.Sqlite.ServiceType.csproj" />
+    <Project Path="src/ReferenceConnections.Sqlite/ReferenceConnections.Sqlite.csproj" />
+    <Project Path="src/ReferenceCredentials.Sql/ReferenceCredentials.Sql.csproj" />
+    <Project Path="src/ReferenceDataPaths.Templates/ReferenceDataPaths.Templates.csproj" />
+    <Project Path="src/ReferenceExternalIdentityProviders.Oidc/ReferenceExternalIdentityProviders.Oidc.csproj" />
+    <Project Path="src/ReferenceHosting.Middleware/ReferenceHosting.Middleware.csproj" />
+    <Project Path="src/ReferenceMultitenancy.Sql/ReferenceMultitenancy.Sql.csproj" />
+    <Project Path="src/ReferenceNotifications.Console/ReferenceNotifications.Console.csproj" />
+    <Project Path="src/ReferenceNotifications.Email/ReferenceNotifications.Email.csproj" />
+    <Project Path="src/ReferenceNotifications.System/ReferenceNotifications.System.csproj" />
+    <Project Path="src/ReferenceNotifications.Webhook/ReferenceNotifications.Webhook.csproj" />
+    <Project Path="src/ReferenceSecretManagers.AzureKeyVault/ReferenceSecretManagers.AzureKeyVault.csproj" />
+    <Project Path="src/ReferenceSecretManagers.EnvironmentVariable/ReferenceSecretManagers.EnvironmentVariable.csproj" />
+    <Project Path="src/ReferenceSecretManagers.MsSql/ReferenceSecretManagers.MsSql.csproj" />
+    <Project Path="src/ReferenceSecretManagers.Sqlite/ReferenceSecretManagers.Sqlite.csproj" />
+    <Project Path="src/ReferenceSecretManagers.UserSecrets/ReferenceSecretManagers.UserSecrets.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ReferenceAuthentication.TokenProviders.Tests/ReferenceAuthentication.TokenProviders.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/ReferenceConnections.Authentication.OpenIddict.Tests/ReferenceConnections.Authentication.OpenIddict.Tests.csproj" />
+    <Project Path="tests/ReferenceConnections.Data.Tests/ReferenceConnections.Data.Tests.csproj" />
+    <Project Path="tests/ReferenceConnections.Http.Tests/ReferenceConnections.Http.Tests.csproj" />
+    <Project Path="tests/ReferenceConnections.MsSql.Tests/ReferenceConnections.MsSql.Tests.csproj" />
+    <Project Path="tests/ReferenceConnections.Sqlite.Tests/ReferenceConnections.Sqlite.Tests.csproj" />
+    <Project Path="tests/ReferenceCredentials.Sql.Tests/ReferenceCredentials.Sql.Tests.csproj" />
+    <Project Path="tests/ReferenceDataPaths.Templates.Tests/ReferenceDataPaths.Templates.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/ReferenceExternalIdentityProviders.Oidc.Tests/ReferenceExternalIdentityProviders.Oidc.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/ReferenceHosting.Middleware.Tests/ReferenceHosting.Middleware.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/ReferenceMultitenancy.Sql.Tests/ReferenceMultitenancy.Sql.Tests.csproj" />
+    <Project Path="tests/ReferenceNotifications.Console.Tests/ReferenceNotifications.Console.Tests.csproj" />
+    <Project Path="tests/ReferenceNotifications.Webhook.Tests/ReferenceNotifications.Webhook.Tests.csproj" />
+    <Project Path="tests/ReferenceSecretManagers.AzureKeyVault.Tests/ReferenceSecretManagers.AzureKeyVault.Tests.csproj" />
+    <Project Path="tests/ReferenceSecretManagers.EnvironmentVariable.Tests/ReferenceSecretManagers.EnvironmentVariable.Tests.csproj" />
+    <Project Path="tests/ReferenceSecretManagers.Sqlite.Tests/ReferenceSecretManagers.Sqlite.Tests.csproj" />
+  </Folder>
+</Solution>

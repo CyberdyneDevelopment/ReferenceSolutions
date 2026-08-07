@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <Description>The Http service-type registration: the [ServiceTypeOption] and its configuration provider. References the aggregation package, so referencing THIS package brings the aggregation with it.</Description>
+  </PropertyGroup>
+
+  <!-- Why: a reference to the service-type package must transitively bring the aggregation,
+       since the ServiceTypeOption and its configuration provider are meaningless without the
+       connection/dialect/translator machinery the aggregation composes over. -->
+  <ItemGroup>
+    <ProjectReference Include="..\ReferenceConnections.Http\ReferenceConnections.Http.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Commands.Data" />
+    <PackageReference Include="Fdw.Commands.Data.Abstractions" />
+    <PackageReference Include="Fdw.Configuration" />
+    <PackageReference Include="Fdw.Data" />
+    <PackageReference Include="Fdw.Data.Abstractions" />
+    <PackageReference Include="Fdw.Data.DataContainers.Abstractions" />
+    <PackageReference Include="Fdw.Data.DataNodes" />
+    <PackageReference Include="Fdw.Data.DataSets" />
+    <PackageReference Include="Fdw.Data.Files" />
+    <PackageReference Include="Fdw.Data.Http" />
+    <PackageReference Include="Fdw.Data.RowSources" />
+    <PackageReference Include="Fdw.Data.RowSources.Abstractions" />
+    <PackageReference Include="Fdw.Data.RowSources.FixedWidth.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Results.Abstractions" />
+    <PackageReference Include="Fdw.Services" />
+    <PackageReference Include="Fdw.Services.Abstractions" />
+    <PackageReference Include="Fdw.Services.Connections" />
+    <PackageReference Include="Fdw.Services.Connections.Abstractions" />
+    <PackageReference Include="Fdw.Services.Connections.Http" />
+    <PackageReference Include="Fdw.Services.Connections.Http.Abstractions" />
+    <PackageReference Include="Fdw.Services.Data" />
+    <PackageReference Include="Fdw.Services.Data.Abstractions" />
+    <PackageReference Include="Fdw.Services.SecretManagers" />
+    <PackageReference Include="Fdw.Services.SecretManagers.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Configuration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Data.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
+  </ItemGroup>
+
+</Project>

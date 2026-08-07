@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <Description>The Sqlite service-type registration: the [ServiceTypeOption] and its configuration provider. References the aggregation package, so referencing THIS package brings the aggregation with it.</Description>
+  </PropertyGroup>
+
+  <!-- Why: a reference to the service-type package must transitively bring the aggregation it
+       registers — a caller that references ONLY this package still gets the full Sqlite
+       connection composition, not just the registration surface. -->
+  <ItemGroup>
+    <ProjectReference Include="..\ReferenceConnections.Sqlite\ReferenceConnections.Sqlite.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.Commands.Data" />
+    <PackageReference Include="Fdw.Commands.Data.Abstractions" />
+    <PackageReference Include="Fdw.Configuration.Abstractions" />
+    <PackageReference Include="Fdw.Data.Abstractions" />
+    <PackageReference Include="Fdw.Data.DataSets" />
+    <PackageReference Include="Fdw.Data.Sqlite" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.Messages" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Results.Abstractions" />
+    <PackageReference Include="Fdw.Services" />
+    <PackageReference Include="Fdw.Services.Connections" />
+    <PackageReference Include="Fdw.Services.Connections.Abstractions" />
+    <PackageReference Include="Fdw.Services.Connections.Sql" />
+    <PackageReference Include="Fdw.Services.Connections.Sqlite" />
+    <PackageReference Include="Fdw.Services.Data" />
+    <PackageReference Include="Fdw.Services.Data.Abstractions" />
+    <PackageReference Include="Fdw.Services.SecretManagers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Configuration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Data.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
+  </ItemGroup>
+
+</Project>

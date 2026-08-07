@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <Description>Generic OIDC external identity provider — the aggregation over FDW's ExternalIdentityProviders machinery, plus its service type registration. Covers Authentik, Entra, Keycloak, Auth0, Okta; vendor differences belong in the configuration row, not in a per-vendor option.</Description>
+  </PropertyGroup>
+
+  <!-- Why: the AGGREGATION lives here; the components it composes stay in FDW. Reference
+       implementations get NO InternalsVisibleTo — anything needed to compose this service
+       has to be public API. See fractaldataworks 7201fb0fa.
+
+       Why this is a separate package at all (FDW-624): module initializers auto-register every
+       [ServiceTypeOption], so referencing this package IS opting into external-IdP login. An app
+       that wants password-only auth simply does not reference it, and the external_identity grant
+       reports itself unsupported rather than the token endpoint failing to start. -->
+  <ItemGroup>
+    <PackageReference Include="Fdw.Commands.Data" />
+    <PackageReference Include="Fdw.Commands.Data.Extensions" />
+    <PackageReference Include="Fdw.Configuration" />
+    <PackageReference Include="Fdw.Configuration.Abstractions" />
+    <PackageReference Include="Fdw.Data.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Services" />
+    <PackageReference Include="Fdw.Services.Abstractions" />
+    <PackageReference Include="Fdw.Services.Data.Abstractions" />
+    <PackageReference Include="Fdw.Services.ExternalIdentityProviders" />
+    <PackageReference Include="Fdw.Services.ExternalIdentityProviders.Abstractions" />
+    <!-- Why: the configuration POCO + its ConfigurationCommand stayed in FDW as the contract;
+         only the aggregation moved here. -->
+    <PackageReference Include="Fdw.Services.ExternalIdentityProviders.Oidc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Configuration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Data.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" />
+  </ItemGroup>
+
+</Project>

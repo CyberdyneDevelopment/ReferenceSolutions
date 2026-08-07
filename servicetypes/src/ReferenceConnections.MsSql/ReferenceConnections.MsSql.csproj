@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <Description>MsSql connection — the aggregation over FDW's MsSql dialect, translators and components. The service-type registration lives in the sibling ReferenceConnections.MsSql.ServiceType package.</Description>
+  </PropertyGroup>
+
+  <!-- Why: a connection is a COMPOSITION. The dialect, translators, converters, native types,
+       error handlers and limits are framework machinery and stay in FDW; this package is the
+       composition over them and the service-type surface that registers it. -->
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.Commands.Data.Abstractions" />
+    <PackageReference Include="Fdw.Configuration.Abstractions" />
+    <PackageReference Include="Fdw.Data.Abstractions" />
+    <PackageReference Include="Fdw.Data.DataNodes" />
+    <PackageReference Include="Fdw.Data.DataSets" />
+    <PackageReference Include="Fdw.Data.MsSql" />
+    <PackageReference Include="Fdw.Data.RowSources.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.Messages" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Results.Abstractions" />
+    <PackageReference Include="Fdw.Services" />
+    <PackageReference Include="Fdw.Services.Authentication.Abstractions" />
+    <PackageReference Include="Fdw.Services.Connections" />
+    <PackageReference Include="Fdw.Services.Connections.Abstractions" />
+    <PackageReference Include="Fdw.Services.Connections.MsSql" />
+    <PackageReference Include="Fdw.Services.Connections.Sql" />
+    <PackageReference Include="Fdw.Services.Data" />
+    <PackageReference Include="Fdw.Services.Data.Abstractions" />
+    <PackageReference Include="Fdw.Services.SecretManagers" />
+    <PackageReference Include="Fdw.Types.MsSql" />
+    <PackageReference Include="Fdw.Validation" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Configuration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Data.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Microsoft.Data.SqlClient.Extensions.Azure" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <!-- Why: these suites exercise MsSqlConnection's internal seams (BuildSessionContextPlan,
+       CreatePooledConnection, SetUserSessionContext). Same repo, test-only — the grant FDW used to
+       hold for them before the connection moved here. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="ReferenceConnections.MsSql.Tests" />
+    <InternalsVisibleTo Include="ReferenceConnections.Authentication.OpenIddict.Tests" />
+  </ItemGroup>
+
+</Project>

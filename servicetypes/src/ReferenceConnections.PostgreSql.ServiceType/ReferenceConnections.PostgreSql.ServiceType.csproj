@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <Description>The PostgreSql connection service-type registration: the [ServiceTypeOption] and its configuration provider. References the aggregation package, so referencing THIS package brings the aggregation with it.</Description>
+  </PropertyGroup>
+
+  <!-- Why: a connection is a COMPOSITION. The dialect, translators, converters, native types,
+       error handlers and limits are framework machinery and stay in FDW; this package is the
+       composition over them and the service-type surface that registers it. -->
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.Commands.Data" />
+    <PackageReference Include="Fdw.Commands.Data.Abstractions" />
+    <PackageReference Include="Fdw.Configuration.Abstractions" />
+    <PackageReference Include="Fdw.Data" />
+    <PackageReference Include="Fdw.Data.Abstractions" />
+    <PackageReference Include="Fdw.Data.DataContainers.Abstractions" />
+    <PackageReference Include="Fdw.Data.DataSets" />
+    <PackageReference Include="Fdw.Data.Files" />
+    <PackageReference Include="Fdw.Data.PostgreSql" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.Messages" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Results.Abstractions" />
+    <PackageReference Include="Fdw.Services" />
+    <PackageReference Include="Fdw.Services.Connections" />
+    <PackageReference Include="Fdw.Services.Connections.Abstractions" />
+    <PackageReference Include="Fdw.Services.Connections.PostgreSql" />
+    <PackageReference Include="Fdw.Services.Connections.Sql" />
+    <PackageReference Include="Fdw.Services.Data.Abstractions" />
+    <PackageReference Include="Fdw.Services.SecretManagers" />
+  </ItemGroup>
+
+  <!-- Why: this package IS the service-type registration surface for PostgreSql, but the
+       [ServiceTypeOption]/provider types here depend on the connection/factory/discoverer
+       types that remain in the aggregation package. A ProjectReference here ensures anyone
+       who references this ServiceType package transitively gets the aggregation too. -->
+  <ItemGroup>
+    <ProjectReference Include="..\ReferenceConnections.PostgreSql\ReferenceConnections.PostgreSql.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Configuration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Data.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+
+</Project>
