@@ -120,8 +120,14 @@
 
     // Why: the sidebar is filtered by the SAME permission set that authorizes the request — the login
     // handler copies every JWT claim onto the cookie principal, so the 'perm' claims are already here and
-    // no API call is needed. An unauthenticated principal holds none, so it sees only pages that declare
-    // no RequiredPermission.
+    // no API call is needed.
+    //
+    // Why the authentication state is passed SEPARATELY from the permission predicate: they answer two
+    // different questions. An unauthenticated visitor answers false to every permission, which is
+    // indistinguishable from a signed-in user holding none — so the predicate alone cannot tell a page
+    // declaring PageAccess.Anonymous (which they may see) from one declaring PageAccess.Authenticated
+    // (which they may not). Every page in this console declares one of the latter two, so an
+    // unauthenticated visitor correctly gets an empty sidebar here.
     protected override async Task OnParametersSetAsync()
     {
         var user = AuthState is null ? null : (await AuthState).User;
@@ -130,6 +136,7 @@
             Fdw.UI.Registration.PageTypes.All()
                 .SelectMany(pageType => pageType.Pages)
                 .Concat(Registration.HostPages.All),
+            user?.Identity?.IsAuthenticated is true,
             permission => user is not null
                 && user.FindAll("perm").Any(c => string.Equals(c.Value, permission, StringComparison.Ordinal)));
     }

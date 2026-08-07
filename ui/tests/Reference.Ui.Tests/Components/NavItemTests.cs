@@ -34,7 +34,10 @@ public sealed class NavItemTests : BunitContext
 
         public Registration.INavItem NavItem { get; } = new Registration.NavItem(label, icon, null, 0);
 
-        public string? RequiredPermission => null;
+        // Why Authenticated rather than Anonymous: these tests render the nav ITEM directly, never through
+        // NavTree's filter, so the value is not exercised — and the honest stand-in for a console page is
+        // the rule every page in this console actually declares.
+        public Registration.IPageAccess Access => Registration.PageAccess.Authenticated;
     }
 
     // Why: the component injects ILogger<NavItem> so a bad declaration is reported rather than thrown;

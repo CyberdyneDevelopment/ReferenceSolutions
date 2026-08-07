@@ -21,21 +21,51 @@ public sealed class MainLayoutTests : BunitContext
         ComponentFactories.AddStub<ProfileDropdown>();
     }
 
+    // Why this list: these are the NavSections titles the hosted page packages actually
+    // contribute. The former list (Schema/Calculations/Lineage/Messaging/Account/System) named
+    // sections that no longer exist in Fdw.UI.Registration.NavSections. "Scheduling" is a real
+    // section but is deliberately absent: no page in this host's package set declares it, so
+    // an empty section renders nothing.
+    private static readonly string[] ExpectedSections =
+    [
+        "Data Sources", "Transformations", "Pipelines", "Quality", "Catalog", "Operations",
+        "Security", "Configuration", "Developer Tools", "Observability", "Administration",
+    ];
+
     [Fact]
-    public void RendersSidebarAndAllNavSections()
+    public void RendersSidebarAndAllNavSectionsForAnAuthenticatedUser()
     {
+        // Why the user must be authorized for this to hold: every page in this console declares
+        // PageAccess.Authenticated or a permission, so the sections exist only for a caller with a
+        // session. Each section above is carried by at least one page declaring plain Authenticated,
+        // which is why no permission needs granting here.
+        AddAuthorization().SetAuthorized("test-user");
         RegisterProviderStubs();
+
         var cut = Render<MainLayout>();
+
         cut.Markup.ShouldContain("CYBERDYNE");
-        // Why this list: these are the NavSections titles the hosted page packages actually
-        // contribute. The former list (Schema/Calculations/Lineage/Messaging/Account/System) named
-        // sections that no longer exist in Fdw.UI.Registration.NavSections. "Scheduling" is a real
-        // section but is deliberately absent: no page in this host's package set declares it, so
-        // an empty section renders nothing.
-        foreach (var section in new[] { "Data Sources", "Transformations", "Pipelines", "Quality",
-                                        "Catalog", "Operations", "Security", "Configuration",
-                                        "Developer Tools", "Observability", "Administration" })
+        foreach (var section in ExpectedSections)
             cut.Markup.ShouldContain(section);
+    }
+
+    [Fact]
+    public void AnonymousVisitorGetsNoNavSections()
+    {
+        // Why this is the guarantee worth pinning: this test previously rendered with no
+        // authentication at all and still expected every section, because a null RequiredPermission
+        // meant "anyone" to the nav filter. It now means PageAccess.Authenticated, so a visitor with
+        // no session is shown nothing they cannot use. A page that IS public says so with
+        // PageAccess.Anonymous; this console declares none, so the sidebar is empty.
+        AddAuthorization();
+        RegisterProviderStubs();
+
+        var cut = Render<MainLayout>();
+
+        // The chrome still renders — it is the LINKS that are withheld, not the shell.
+        cut.Markup.ShouldContain("CYBERDYNE");
+        foreach (var section in ExpectedSections)
+            cut.Markup.ShouldNotContain(section);
     }
 
     [Fact]

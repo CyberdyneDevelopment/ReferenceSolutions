@@ -25,16 +25,16 @@ public static class HostPages
             "Home",
             typeof(Components.Pages.Home),
             new NavItem("Dashboard", "dashboard", null, 0),
-            null),
+            PageAccess.Authenticated),
         new Page(
             "Profile",
             typeof(Components.Pages.Profile),
             new NavItem("Profile", "user", NavSections.Security, 90),
-            null),
+            PageAccess.Authenticated),
         new Page(
             "LocalConfig",
             typeof(Components.Pages.LocalConfig),
             new NavItem("Local Config (FS)", "database", NavSections.Configuration, 95),
-            null),
+            PageAccess.Authenticated),
     ];
 }
