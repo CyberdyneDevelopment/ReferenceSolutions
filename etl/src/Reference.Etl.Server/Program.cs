@@ -136,8 +136,21 @@ public static class Program
             // "declared choice" domain (MultitenancyTypes) — its self-selecting Configure resolves the
             // single option named by ConfigurationSchema.Multitenancy (this host's configurationSchema.json
             // declares "SingleTenant"), so it participates in this same sweep with no separate manual block.
-            PlatformServices.Configure(builder, loggerFactory);
-            PlatformServices.Register(builder, loggerFactory);
+            // Why each phase is checked: they report failure by returning it, not by throwing, so a
+            // discarded result means this host starts on top of a domain that did not come up. The
+            // documented contract for a host is that a non-success phase ends the process.
+            var configured = PlatformServices.Configure(builder, loggerFactory);
+            if (configured.IsFailure)
+            {
+                Log.Fatal("PlatformServices.Configure failed: {Reason}", configured.CurrentMessage);
+                return 1;
+            }
+            var registered = PlatformServices.Register(builder, loggerFactory);
+            if (registered.IsFailure)
+            {
+                Log.Fatal("PlatformServices.Register failed: {Reason}", registered.CurrentMessage);
+                return 1;
+            }
 
             // SecretManagerConfigurationProvider is now registered by every secret-manager-kind
             // [ServiceTypeOption] itself (idempotent TryAddSingleton) — see service-domain-patterns skill.
@@ -207,7 +220,12 @@ public static class Program
             // hardcoded UseFrameworkApplicationPipeline(false) argument used to skip.
             var hasMultitenancy = app.Services.GetRequiredService<IMultitenancyType>().EnablesTenantResolution;
 
-            PlatformServices.Initialize(app, loggerFactory);
+            var initialized = PlatformServices.Initialize(app, loggerFactory);
+            if (initialized.IsFailure)
+            {
+                Log.Fatal("PlatformServices.Initialize failed: {Reason}", initialized.CurrentMessage);
+                return 1;
+            }
             OrchestrationTypes.InitializeOrchestration(app.Services, loggerFactory);
 
             // Why: behind the preview proxy chain (Cloudflare/nginx HTTPS -> Caddy HTTP -> Kestrel),
