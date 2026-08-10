@@ -2,8 +2,8 @@ using Fdw.Services.Messaging.Components.Bell;
 using Fdw.Services.SessionState.Components;
 using Fdw.UI.Themes;
 using Fdw.UI.Themes.Components.Themes;
-using Reference.Management.UI.Tailwind.Components.Domain.Tenants;
-using Reference.Management.UI.Tailwind.Components.Layout;
+using Reference.Ui.Components.Domain.Tenants;
+using Reference.Ui.Components.Layout;
 using Reference.Ui.Tests.Infrastructure;
 
 namespace Reference.Ui.Tests.Components;

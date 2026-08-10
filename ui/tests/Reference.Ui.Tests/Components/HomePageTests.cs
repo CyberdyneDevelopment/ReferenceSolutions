@@ -4,8 +4,8 @@ using Fdw.Services.Pipelines.Components.Dashboard;
 using Fdw.Services.Scheduling.Components.Dashboard;
 using Fdw.Web.Analytics.Components.Dashboard;
 using Fdw.Web.Analytics.Components.Health.Dashboard;
-using Reference.Management.UI.Tailwind.Components.Domain.Tenants;
-using Reference.Management.UI.Tailwind.Components.Pages;
+using Reference.Ui.Components.Domain.Tenants;
+using Reference.Ui.Components.Pages;
 using Reference.Ui.Tests.Infrastructure;
 
 namespace Reference.Ui.Tests.Components;

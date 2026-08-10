@@ -3,9 +3,12 @@ using Microsoft.Extensions.Logging;
 // Why: Fdw.UI.Registration.NavItem (the DECLARATION) and Components.Layout.NavItem (the COMPONENT that
 // renders it) share a name. Aliasing the declaration side keeps bare `NavItem` meaning the component,
 // which is what every Render<T> below is about.
-using Registration = Fdw.UI.Registration;
-
 namespace Reference.Ui.Tests.Components;
+
+// Why the alias sits inside the namespace: the host declares its own Reference.Ui.Registration, and
+// from inside Reference.Ui.Tests.Components the enclosing-namespace walk finds that one before it
+// consults a compilation-unit alias. Declared here, the alias is in the innermost scope and wins.
+using Registration = Fdw.UI.Registration;
 
 public sealed class NavItemTests : BunitContext
 {

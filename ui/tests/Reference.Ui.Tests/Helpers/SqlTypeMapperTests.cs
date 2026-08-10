@@ -1,4 +1,4 @@
-using Reference.Management.UI.Tailwind.Helpers;
+using Reference.Ui.Helpers;
 
 namespace Reference.Ui.Tests.Helpers;
 

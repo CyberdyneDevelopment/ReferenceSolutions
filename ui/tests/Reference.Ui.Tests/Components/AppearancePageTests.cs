@@ -2,7 +2,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using Reference.Management.UI.Tailwind.Components.Pages;
+using Reference.Ui.Components.Pages;
 using Reference.Ui.Tests.Infrastructure;
 
 namespace Reference.Ui.Tests.Components;

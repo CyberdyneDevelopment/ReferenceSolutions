@@ -1,7 +1,7 @@
 using Fdw.Results;
 using Fdw.Messages;
 using Fdw.Data.Components.DataSets;
-using Reference.Management.UI.Tailwind.Components.Domain.DataSets;
+using Reference.Ui.Components.Domain.DataSets;
 using Reference.Ui.Tests.Infrastructure;
 
 namespace Reference.Ui.Tests.Components;

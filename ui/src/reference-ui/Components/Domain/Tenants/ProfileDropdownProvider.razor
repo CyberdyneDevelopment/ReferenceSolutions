@@ -1,0 +1,508 @@
+@namespace Reference.Ui.Components.Domain.Tenants
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Http
+@using Microsoft.Extensions.Logging
+@using Microsoft.Extensions.Logging.Abstractions
+@using System
+@using System.Collections.Generic
+@using System.IdentityModel.Tokens.Jwt
+@using System.Linq
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Security.Claims
+@using System.Threading
+@using System.Threading.Tasks
+@using Fdw.Services.Multitenancy.Clients
+@using Fdw.Services.Multitenancy.Clients.Models
+@using Fdw.Services.Authentication.Clients.Models
+@using Reference.Ui.Logging
+
+@if (ChildContent is not null)
+{
+    @ChildContent(_context)
+}
+
+@code {
+    // ── Parameters ─────────────────────────────────────────────────────────────
+
+    /// <summary>The render template that receives the dropdown context.</summary>
+    [Parameter]
+    public RenderFragment<ProfileDropdownContext>? ChildContent { get; set; }
+
+    // ── Injected Services ──────────────────────────────────────────────────────
+
+    [Inject] private AuthenticationStateProvider AuthState { get; set; } = default!;
+    [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+    [Inject] private IHttpContextAccessor HttpContextAccessor { get; set; } = default!;
+    [Inject] private ILoggerFactory? LoggerFactory { get; set; }
+    [Inject] private ILogger<ProfileDropdownProvider>? LoggerParam { get; set; }
+
+    // ── Private State ──────────────────────────────────────────────────────────
+
+    private ILogger<ProfileDropdownProvider> _logger = NullLogger<ProfileDropdownProvider>.Instance;
+    private TenantApiClient? _tenantApi;
+
+    private string _userName = string.Empty;
+    private string _userEmail = string.Empty;
+    private string _initials = "?";
+    private Guid? _activeTenantId;
+    private string? _activeTenantName;
+    private string _role = string.Empty;
+    private bool _isCrossTenantMode;
+    private IReadOnlyList<TenantSummaryPayload> _tenants = [];
+    private Guid? _defaultTenantId;
+    private bool _showTenantSwitcher;
+    private bool _showCrossTenantOption;
+    private bool _isOpen;
+    private bool _isLoading;
+    private string? _errorMessage;
+    private bool _initialized;
+
+    private ProfileDropdownContext _context = new();
+
+    // ── Lifecycle ──────────────────────────────────────────────────────────────
+
+    protected override void OnInitialized()
+    {
+        _logger = LoggerParam ?? NullLogger<ProfileDropdownProvider>.Instance;
+        _tenantApi = new TenantApiClient(
+            HttpClientFactory.CreateClient("TenantClient"),
+            LoggerFactory?.CreateLogger<TenantApiClient>() ?? NullLogger<TenantApiClient>.Instance);
+        RebuildContext();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _initialized) return;
+        _initialized = true;
+        await LoadClaimsAndTenants();
+    }
+
+    // ── Private Operations ─────────────────────────────────────────────────────
+
+    private async Task LoadClaimsAndTenants(CancellationToken cancellationToken = default)
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        RebuildContext();
+        StateHasChanged();
+
+        try
+        {
+            // Read claims from current authenticated principal
+            var authState = await AuthState.GetAuthenticationStateAsync();
+            var principal = authState.User;
+
+            if (principal.Identity?.IsAuthenticated == true)
+            {
+                _userName = principal.FindFirst("name")?.Value
+                    ?? principal.FindFirst(ClaimTypes.Name)?.Value
+                    ?? string.Empty;
+                _userEmail = principal.FindFirst("email")?.Value
+                    ?? principal.FindFirst(ClaimTypes.Email)?.Value
+                    ?? string.Empty;
+                _role = principal.FindFirst("role")?.Value
+                    ?? principal.FindFirst(ClaimTypes.Role)?.Value
+                    ?? string.Empty;
+
+                // Parse tenant_id claim — null means cross-tenant or no tenant
+                var tenantIdRaw = principal.FindFirst("tenant_id")?.Value;
+                _activeTenantId = Guid.TryParse(tenantIdRaw, out var tid) ? tid : null;
+                _isCrossTenantMode = _activeTenantId is null;
+
+                // Build initials from display name (up to first two words' initials)
+                _initials = BuildInitials(_userName);
+
+                // Check for tenants:view-all permission in perm claims
+                var perms = principal.FindAll("perm").Select(c => c.Value).ToList();
+                _showCrossTenantOption = perms.Any(p =>
+                    p.Equals("tenants:view-all", StringComparison.OrdinalIgnoreCase));
+
+                TenantLog.LoadingTenants(_logger);
+                var result = await _tenantApi!.GetTenants(false, cancellationToken);
+
+                if (!result.IsSuccess)
+                {
+                    _errorMessage = TenantLog.LoadTenantsFailed(
+                        _logger, new InvalidOperationException(result.CurrentMessage ?? "API returned failure")).Message;
+                    _tenants = [];
+                    _isLoading = false;
+                    RebuildContext();
+                    StateHasChanged();
+                    return;
+                }
+
+                _tenants = result.Value ?? [];
+                TenantLog.LoadedTenants(_logger, _tenants.Count);
+
+                // More than one tenant → show the switcher
+                _showTenantSwitcher = _tenants.Count > 1;
+
+                // Resolve active tenant name for display
+                if (_activeTenantId.HasValue)
+                {
+                    _activeTenantName = _tenants.FirstOrDefault(
+                        t => t.Id == _activeTenantId.Value)?.Name;
+                }
+
+                // The first load doesn't have a "default" marker yet (§0 adds IsDefault to
+                // TenantSummaryPayload in the backend). Until that ships, the default tenant is
+                // inferred as the one whose Id matches the current access token's tenant_id
+                // claim. The real backend marker will override once available.
+                // Why: Fail loud rather than guess — only mark default when we have an explicit
+                // active tenant (the claim tells us which tenant the server selected).
+                _defaultTenantId = _activeTenantId;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = TenantLog.LoadTenantsFailed(_logger, ex).Message;
+            _tenants = [];
+        }
+        finally
+        {
+            _isLoading = false;
+            RebuildContext();
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleToggle()
+    {
+        _isOpen = !_isOpen;
+        RebuildContext();
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+
+    private void HandleClose()
+    {
+        _isOpen = false;
+        RebuildContext();
+        StateHasChanged();
+    }
+
+    private async Task HandleSwitchTenant(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        RebuildContext();
+        StateHasChanged();
+
+        TenantLog.SwitchingTenant(_logger, tenantId.ToString());
+
+        try
+        {
+            // Re-mint the JWT via /connect/token with grant_type=refresh_token + tenant=<id>
+            // The current refresh token is stored in the auth cookie properties.
+            var httpContext = HttpContextAccessor.HttpContext;
+            var refreshToken = httpContext is not null
+                ? await httpContext.GetTokenAsync("refresh_token")
+                : null;
+
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                _errorMessage = TenantLog.TenantSwitchReauthFailed(_logger).Message;
+                _isLoading = false;
+                _isOpen = false;
+                RebuildContext();
+                StateHasChanged();
+                return;
+            }
+
+            var authClient = HttpClientFactory.CreateClient("AuthApi");
+            var tokenRequest = new Dictionary<string, string>
+            {
+                ["grant_type"] = "refresh_token",
+                ["refresh_token"] = refreshToken,
+                ["tenant"] = tenantId.ToString()
+            };
+
+            var formContent = new FormUrlEncodedContent(tokenRequest);
+            var response = await authClient.PostAsync("auth/token-switch", formContent, cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                TenantLog.TenantSwitchFailed(_logger,
+                    new InvalidOperationException($"HTTP {(int)response.StatusCode}"),
+                    tenantId.ToString());
+                _errorMessage = TenantLog.TenantSwitchFailed(_logger,
+                    new InvalidOperationException($"Tenant switch returned {(int)response.StatusCode}"),
+                    tenantId.ToString()).Message;
+                _isLoading = false;
+                _isOpen = false;
+                RebuildContext();
+                StateHasChanged();
+                return;
+            }
+
+            var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: cancellationToken);
+            if (tokenResponse is null || string.IsNullOrEmpty(tokenResponse.AccessToken))
+            {
+                _errorMessage = TenantLog.TenantSwitchReauthFailed(_logger).Message;
+                _isLoading = false;
+                _isOpen = false;
+                RebuildContext();
+                StateHasChanged();
+                return;
+            }
+
+            // Store the new tokens back into the auth cookie and re-issue sign-in
+            if (httpContext is not null)
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwt = handler.ReadJwtToken(tokenResponse.AccessToken);
+                var identity = new System.Security.Claims.ClaimsIdentity(jwt.Claims, "jwt", "name", "role");
+                var newPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+
+                var newExpiry = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn);
+                var authProperties = new Microsoft.AspNetCore.Authentication.AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = newExpiry.AddDays(7)
+                };
+                authProperties.StoreTokens(
+                [
+                    new Microsoft.AspNetCore.Authentication.AuthenticationToken
+                    {
+                        Name = "access_token", Value = tokenResponse.AccessToken
+                    },
+                    new Microsoft.AspNetCore.Authentication.AuthenticationToken
+                    {
+                        Name = "refresh_token", Value = tokenResponse.RefreshToken
+                    },
+                    new Microsoft.AspNetCore.Authentication.AuthenticationToken
+                    {
+                        Name = "expires_at", Value = newExpiry.ToString("o")
+                    }
+                ]);
+
+                await httpContext.SignInAsync("Blazor", newPrincipal, authProperties);
+            }
+
+            TenantLog.TenantSwitchSucceeded(_logger, tenantId.ToString());
+
+            // Reload claims + tenant list to reflect new active tenant
+            _isOpen = false;
+            _initialized = false;
+            await LoadClaimsAndTenants(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = TenantLog.TenantSwitchFailed(_logger, ex, tenantId.ToString()).Message;
+            _isLoading = false;
+            _isOpen = false;
+            RebuildContext();
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleSetDefaultTenant(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        RebuildContext();
+        StateHasChanged();
+
+        TenantLog.SettingDefaultTenant(_logger, tenantId.ToString());
+
+        try
+        {
+            var authClient = HttpClientFactory.CreateClient("AuthApi");
+            var response = await authClient.PutAsync($"tenants/{tenantId}/default", null, cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _errorMessage = TenantLog.SetDefaultTenantFailed(_logger,
+                    new InvalidOperationException($"HTTP {(int)response.StatusCode}"),
+                    tenantId.ToString()).Message;
+                _isLoading = false;
+                RebuildContext();
+                StateHasChanged();
+                return;
+            }
+
+            _defaultTenantId = tenantId;
+            TenantLog.DefaultTenantSet(_logger, tenantId.ToString());
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = TenantLog.SetDefaultTenantFailed(_logger, ex, tenantId.ToString()).Message;
+        }
+        finally
+        {
+            _isLoading = false;
+            RebuildContext();
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleEnterCrossTenantMode(CancellationToken cancellationToken = default)
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        RebuildContext();
+        StateHasChanged();
+
+        try
+        {
+            var httpContext = HttpContextAccessor.HttpContext;
+            var refreshToken = httpContext is not null
+                ? await httpContext.GetTokenAsync("refresh_token")
+                : null;
+
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                _errorMessage = TenantLog.CrossTenantModeFailed(_logger,
+                    new InvalidOperationException("No refresh token available")).Message;
+                _isLoading = false;
+                _isOpen = false;
+                RebuildContext();
+                StateHasChanged();
+                return;
+            }
+
+            var authClient = HttpClientFactory.CreateClient("AuthApi");
+            var tokenRequest = new Dictionary<string, string>
+            {
+                ["grant_type"] = "refresh_token",
+                ["refresh_token"] = refreshToken,
+                ["scope"] = "cross_tenant"
+            };
+
+            var formContent = new FormUrlEncodedContent(tokenRequest);
+            var response = await authClient.PostAsync("auth/token-switch", formContent, cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _errorMessage = TenantLog.CrossTenantModeFailed(_logger,
+                    new InvalidOperationException($"HTTP {(int)response.StatusCode}")).Message;
+                _isLoading = false;
+                _isOpen = false;
+                RebuildContext();
+                StateHasChanged();
+                return;
+            }
+
+            var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: cancellationToken);
+            if (tokenResponse is null || string.IsNullOrEmpty(tokenResponse.AccessToken))
+            {
+                _errorMessage = TenantLog.CrossTenantModeFailed(_logger,
+                    new InvalidOperationException("Empty token response")).Message;
+                _isLoading = false;
+                _isOpen = false;
+                RebuildContext();
+                StateHasChanged();
+                return;
+            }
+
+            if (httpContext is not null)
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwt = handler.ReadJwtToken(tokenResponse.AccessToken);
+                var identity = new System.Security.Claims.ClaimsIdentity(jwt.Claims, "jwt", "name", "role");
+                var newPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+
+                var newExpiry = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn);
+                var authProperties = new Microsoft.AspNetCore.Authentication.AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = newExpiry.AddDays(7)
+                };
+                authProperties.StoreTokens(
+                [
+                    new Microsoft.AspNetCore.Authentication.AuthenticationToken
+                    {
+                        Name = "access_token", Value = tokenResponse.AccessToken
+                    },
+                    new Microsoft.AspNetCore.Authentication.AuthenticationToken
+                    {
+                        Name = "refresh_token", Value = tokenResponse.RefreshToken
+                    },
+                    new Microsoft.AspNetCore.Authentication.AuthenticationToken
+                    {
+                        Name = "expires_at", Value = newExpiry.ToString("o")
+                    }
+                ]);
+
+                await httpContext.SignInAsync("Blazor", newPrincipal, authProperties);
+            }
+
+            TenantLog.CrossTenantModeEntered(_logger);
+
+            _isOpen = false;
+            _initialized = false;
+            await LoadClaimsAndTenants(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = TenantLog.CrossTenantModeFailed(_logger, ex).Message;
+            _isLoading = false;
+            _isOpen = false;
+            RebuildContext();
+            StateHasChanged();
+        }
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
+    private static string BuildInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return "?";
+
+        var parts = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length switch
+        {
+            0 => "?",
+            1 => parts[0][..1].ToUpperInvariant(),
+            _ => (parts[0][..1] + parts[^1][..1]).ToUpperInvariant()
+        };
+    }
+
+    // ── Context Builder ────────────────────────────────────────────────────────
+
+    private void RebuildContext()
+    {
+        _context = new ProfileDropdownContext
+        {
+            UserName = _userName,
+            UserEmail = _userEmail,
+            Initials = _initials,
+            ActiveTenantId = _activeTenantId,
+            ActiveTenantName = _activeTenantName,
+            Role = _role,
+            IsCrossTenantMode = _isCrossTenantMode,
+            Tenants = _tenants,
+            DefaultTenantId = _defaultTenantId,
+            ShowTenantSwitcher = _showTenantSwitcher,
+            ShowCrossTenantOption = _showCrossTenantOption,
+            IsOpen = _isOpen,
+            IsLoading = _isLoading,
+            ErrorMessage = _errorMessage,
+            OnToggle = HandleToggle,
+            OnClose = HandleClose,
+            OnSwitchTenant = tenantId => HandleSwitchTenant(tenantId),
+            OnSetDefaultTenant = tenantId => HandleSetDefaultTenant(tenantId),
+            OnEnterCrossTenantMode = () => HandleEnterCrossTenantMode()
+        };
+    }
+}

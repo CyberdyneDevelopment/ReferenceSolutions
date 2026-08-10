@@ -10,5 +10,5 @@
     <Project Path="tests/Reference.Ui.Selenium/Reference.Ui.Selenium.csproj" />
     <Project Path="tests/Reference.Ui.Tests/Reference.Ui.Tests.csproj" />
   </Folder>
-  <Project Path="reference-ui.csproj" />
+  <Project Path="src/reference-ui/reference-ui.csproj" />
 </Solution>

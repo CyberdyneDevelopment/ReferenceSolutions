@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\reference-ui.csproj" />
+    <ProjectReference Include="..\..\src\reference-ui\reference-ui.csproj" />
   </ItemGroup>
 
   <ItemGroup>

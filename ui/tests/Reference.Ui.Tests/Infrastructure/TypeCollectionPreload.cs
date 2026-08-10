@@ -23,6 +23,6 @@ internal static class TypeCollectionPreload
         // Touch a type that lives in the reference-ui assembly so the runtime runs that
         // assembly's module constructor (which performs all TypeOption registration) now.
         RuntimeHelpers.RunModuleConstructor(
-            typeof(global::Reference.Management.UI.Tailwind.Components.App).Module.ModuleHandle);
+            typeof(global::Reference.Ui.Components.App).Module.ModuleHandle);
     }
 }

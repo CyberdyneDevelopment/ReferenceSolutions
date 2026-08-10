@@ -20,8 +20,8 @@ public sealed class ErrorPageTests : BunitContext
         config.SetupGet(c => c["SupportContact"]).Returns(supportContact);
         Services.AddSingleton(config.Object);
 
-        Services.AddSingleton<ILogger<Reference.Management.UI.Tailwind.Components.Pages.Error>>(
-            NullLogger<Reference.Management.UI.Tailwind.Components.Pages.Error>.Instance);
+        Services.AddSingleton<ILogger<Reference.Ui.Components.Pages.Error>>(
+            NullLogger<Reference.Ui.Components.Pages.Error>.Instance);
     }
 
     private static DefaultHttpContext ContextWithException(Exception ex, string path = "/failed")
@@ -48,7 +48,7 @@ public sealed class ErrorPageTests : BunitContext
     public void RendersFallbackMessageWhenHttpContextNull()
     {
         RegisterServices(httpContext: null);
-        var cut = Render<Reference.Management.UI.Tailwind.Components.Pages.Error>();
+        var cut = Render<Reference.Ui.Components.Pages.Error>();
         cut.Markup.ShouldContain("An unexpected error occurred.");
     }
 
@@ -56,7 +56,7 @@ public sealed class ErrorPageTests : BunitContext
     public void RendersFallbackMessageWhenNoExceptionFeature()
     {
         RegisterServices(httpContext: new DefaultHttpContext { TraceIdentifier = "trace-x" });
-        var cut = Render<Reference.Management.UI.Tailwind.Components.Pages.Error>();
+        var cut = Render<Reference.Ui.Components.Pages.Error>();
         cut.Markup.ShouldContain("An unexpected error occurred.");
         cut.Markup.ShouldContain("trace-x");
     }
@@ -65,7 +65,7 @@ public sealed class ErrorPageTests : BunitContext
     public void OperationCanceledRendersAsRequestCancelledInfo()
     {
         RegisterServices(ContextWithException(new OperationCanceledException("user aborted")));
-        var cut = Render<Reference.Management.UI.Tailwind.Components.Pages.Error>();
+        var cut = Render<Reference.Ui.Components.Pages.Error>();
         cut.Markup.ShouldContain("Request Cancelled");
     }
 
@@ -73,7 +73,7 @@ public sealed class ErrorPageTests : BunitContext
     public void TaskCanceledRendersAsRequestCancelled()
     {
         RegisterServices(ContextWithException(new TaskCanceledException()));
-        var cut = Render<Reference.Management.UI.Tailwind.Components.Pages.Error>();
+        var cut = Render<Reference.Ui.Components.Pages.Error>();
         cut.Markup.ShouldContain("Request Cancelled");
     }
 
@@ -81,7 +81,7 @@ public sealed class ErrorPageTests : BunitContext
     public void UnauthorizedRendersAsAccessDeniedWarning()
     {
         RegisterServices(ContextWithException(new UnauthorizedAccessException()));
-        var cut = Render<Reference.Management.UI.Tailwind.Components.Pages.Error>();
+        var cut = Render<Reference.Ui.Components.Pages.Error>();
         cut.Markup.ShouldContain("Access Denied");
     }
 
@@ -89,7 +89,7 @@ public sealed class ErrorPageTests : BunitContext
     public void GenericExceptionRendersAsApplicationError()
     {
         RegisterServices(ContextWithException(new InvalidOperationException()));
-        var cut = Render<Reference.Management.UI.Tailwind.Components.Pages.Error>();
+        var cut = Render<Reference.Ui.Components.Pages.Error>();
         cut.Markup.ShouldContain("Application Error");
     }
 
@@ -97,7 +97,7 @@ public sealed class ErrorPageTests : BunitContext
     public void RendersFailedPathFromExceptionFeature()
     {
         RegisterServices(ContextWithException(new InvalidOperationException(), path: "/api/widgets"));
-        var cut = Render<Reference.Management.UI.Tailwind.Components.Pages.Error>();
+        var cut = Render<Reference.Ui.Components.Pages.Error>();
         cut.Markup.ShouldContain("/api/widgets");
     }
 
@@ -105,7 +105,7 @@ public sealed class ErrorPageTests : BunitContext
     public void RendersSupportContactWhenConfigured()
     {
         RegisterServices(ContextWithException(new InvalidOperationException()), supportContact: "ops@example.com");
-        var cut = Render<Reference.Management.UI.Tailwind.Components.Pages.Error>();
+        var cut = Render<Reference.Ui.Components.Pages.Error>();
         cut.Markup.ShouldContain("ops@example.com");
     }
 }

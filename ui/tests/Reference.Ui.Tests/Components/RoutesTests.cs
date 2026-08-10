@@ -1,5 +1,5 @@
 using System.Reflection;
-using Reference.Management.UI.Tailwind.Components;
+using Reference.Ui.Components;
 
 namespace Reference.Ui.Tests.Components;
 

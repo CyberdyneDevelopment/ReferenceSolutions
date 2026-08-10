@@ -2,7 +2,7 @@ using Fdw.Results;
 using Fdw.Messages;
 using Fdw.Services.Authentication.Clients.Models;
 using Fdw.Services.Authentication.Components.Profile;
-using Reference.Management.UI.Tailwind.Components.Pages;
+using Reference.Ui.Components.Pages;
 using Reference.Ui.Tests.Infrastructure;
 
 namespace Reference.Ui.Tests.Components;
