@@ -18,6 +18,7 @@ using ReferenceNotifications.Console;
 using Fdw.Services.Notifications.Console;
 using Fdw.Services;
 using Fdw;
+using Fdw.Results;
 
 namespace ReferenceNotifications.Console;
 
@@ -76,7 +77,7 @@ public sealed class ConsoleNotificationType
 
             var factory = services.GetRequiredService<IConsoleNotificationFactory>();
             var factoryResult = provider.Register(Name, factory);
-            if (!factoryResult.IsSuccess) return host;
+            if (!factoryResult.IsSuccess) return factoryResult.ToNewResult<IHost>();
 
             // Why: the typed body attaches to the domain's HEADER provider by discriminator, which is how
             // every other composed-header domain (connections, secret managers, data stores) does it. The
@@ -88,7 +89,7 @@ public sealed class ConsoleNotificationType
                     Name,
                     services.GetRequiredService<DefaultConfigurationProvider<ConsoleNotificationConfiguration, ConsoleNotificationConfigurationCommand>>());
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Configuration(builder =>
@@ -96,7 +97,7 @@ public sealed class ConsoleNotificationType
 
             builder.Services.Configure<List<NotificationConfiguration>>(builder.Configuration.GetSection("Notifications:Default"));
     
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -118,7 +119,7 @@ public sealed class ConsoleNotificationType
             // entry-point app.
             NotificationConfigurationProvider.RegisterDomainConfiguration(builder.Services);
 
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 

@@ -99,14 +99,14 @@ public sealed class HttpConnectionType : ConnectionTypeBase<IGenericConnection, 
             headerProvider.Register(Name, configProvider);
 
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Configuration(builder =>
         {
 
     
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -137,7 +137,7 @@ public sealed class HttpConnectionType : ConnectionTypeBase<IGenericConnection, 
             // provider for the whole Connections domain) to already be registered. TryAddSingleton makes
             // this idempotent — every connection-kind option calls it, harmlessly redundant after the first.
             ConnectionConfigurationProvider.RegisterDomainConfiguration(builder.Services);
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 

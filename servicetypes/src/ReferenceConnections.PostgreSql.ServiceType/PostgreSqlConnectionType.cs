@@ -94,14 +94,14 @@ public sealed class PostgreSqlConnectionType
             _discoverer = services.GetService<IPostgreSqlSchemaDiscoverer>();
 
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Configuration(builder =>
         {
 
     
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -131,7 +131,7 @@ public sealed class PostgreSqlConnectionType
             // Why here: DiscoverSchema() on this type resolves the discoverer, so this type registers it.
             builder.Services.AddSingleton<IPostgreSqlSchemaDiscoverer, PostgreSqlSchemaDiscoverer>();
 
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
 
         });
 

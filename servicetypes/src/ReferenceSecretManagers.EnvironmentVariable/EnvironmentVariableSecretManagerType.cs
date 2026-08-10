@@ -18,6 +18,7 @@ using Fdw.Services.SecretManagers.EnvironmentVariable.Commands;
 using Fdw.Services.SecretManagers.EnvironmentVariable.Configuration;
 using Fdw.Services;
 using Fdw;
+using Fdw.Results;
 
 namespace ReferenceSecretManagers.EnvironmentVariable;
 
@@ -88,7 +89,7 @@ public sealed class EnvironmentVariableSecretManagerType
 
             // Register factory instance with provider
             var factoryResult = provider.Register(Name, factory);
-            if (!factoryResult.IsSuccess) return host;
+            if (!factoryResult.IsSuccess) return factoryResult.ToNewResult<IHost>();
 
             // Why: Typed body providers are registered with the header provider (SecretManagerConfigurationProvider)
             // via discriminator dispatch. EnvironmentVariableConfiguration no longer inherits
@@ -96,16 +97,16 @@ public sealed class EnvironmentVariableSecretManagerType
             // The generic overload wraps via ConfigurationProviderAdapter so the marker-interface dict accepts it.
             var headerProvider = services.GetRequiredService<SecretManagerConfigurationProvider>();
             var configProvider = services.GetRequiredService<DefaultConfigurationProvider<EnvironmentVariableConfiguration, EnvironmentVariableConfigurationCommand>>();
-            headerProvider.RegisterTypedProvider<EnvironmentVariableConfiguration>(Name, configProvider);
+            headerProvider.Register<EnvironmentVariableConfiguration>(Name, configProvider);
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Configuration(builder =>
         {
 
     
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -132,7 +133,7 @@ public sealed class EnvironmentVariableSecretManagerType
             // RegisterDomainConfiguration makes this idempotent — every secret manager option calls it, first
             // registration wins.
             SecretManagerConfigurationProvider.RegisterDomainConfiguration(builder.Services);
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 

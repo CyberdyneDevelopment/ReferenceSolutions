@@ -22,6 +22,7 @@ using Microsoft.Extensions.Options;
 
 using ReferenceCredentials.Sql;
 using ReferenceConnections.MsSql.DataVault;
+using Fdw.Results;
 
 namespace ReferenceConnections.MsSql.DataVault.Registration;
 
@@ -96,7 +97,7 @@ public sealed class CredentialVaultType
             // can delegate without re-resolving from DI on hot paths.
             _typedBodyProvider = configProvider;
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Configuration(builder =>
@@ -108,7 +109,7 @@ public sealed class CredentialVaultType
             builder.Services.AddOptions<List<DefaultDataVaultConfiguration>>()
                 .BindConfiguration("DataVaults:Default");
     
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -142,7 +143,7 @@ public sealed class CredentialVaultType
             // provider for the whole DataVault domain) to already be registered. TryAddSingleton inside
             // RegisterDomainConfiguration makes this idempotent — harmless if another vault option also calls it.
             DataVaultConfigurationProvider.RegisterDomainConfiguration(builder.Services);
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 

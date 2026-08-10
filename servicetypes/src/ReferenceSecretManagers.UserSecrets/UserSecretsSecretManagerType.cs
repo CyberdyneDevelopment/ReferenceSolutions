@@ -19,6 +19,7 @@ using Fdw.Services.SecretManagers.UserSecrets.Commands;
 using Fdw.Services.SecretManagers.UserSecrets.Configuration;
 using Fdw.Services;
 using Fdw;
+using Fdw.Results;
 
 namespace ReferenceSecretManagers.UserSecrets;
 
@@ -91,7 +92,7 @@ public sealed class UserSecretsSecretManagerType
 
             // Register factory instance with provider
             var factoryResult = provider.Register(Name, factory);
-            if (!factoryResult.IsSuccess) return host;
+            if (!factoryResult.IsSuccess) return factoryResult.ToNewResult<IHost>();
 
             // Why: IOptionsMonitor<List<UserSecretsConfiguration>> now contains ctrl data
             // (from SqlServerConfigurationProvider) and appsettings.json data. cfg data is served
@@ -110,9 +111,9 @@ public sealed class UserSecretsSecretManagerType
             // via discriminator dispatch. UserSecretsConfiguration no longer inherits
             // SecretManagerConfiguration — it implements ISecretManagerConfiguration directly.
             var headerProvider = services.GetRequiredService<SecretManagerConfigurationProvider>();
-            headerProvider.RegisterTypedProvider<UserSecretsConfiguration>(Name, configProvider);
+            headerProvider.Register<UserSecretsConfiguration>(Name, configProvider);
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Configuration(builder =>
@@ -121,7 +122,7 @@ public sealed class UserSecretsSecretManagerType
             builder.Services.AddOptions<List<UserSecretsConfiguration>>()
                 .BindConfiguration("SecretManagers:UserSecrets");
     
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -135,7 +136,7 @@ public sealed class UserSecretsSecretManagerType
             // RegisterDomainConfiguration makes this idempotent — every secret manager option calls it, first
             // registration wins.
             SecretManagerConfigurationProvider.RegisterDomainConfiguration(builder.Services);
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 

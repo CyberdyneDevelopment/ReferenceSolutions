@@ -18,6 +18,7 @@ using Fdw.Services.SecretManagers.Sqlite.Commands;
 using Fdw.Services.SecretManagers.Sqlite.Configuration;
 using Fdw.Services;
 using Fdw;
+using Fdw.Results;
 
 namespace ReferenceSecretManagers.Sqlite;
 
@@ -76,7 +77,7 @@ public sealed class SqliteSecretManagerType
             var factoryResult = provider.Register(Name, factory);
             if (!factoryResult.IsSuccess)
             {
-                return host;
+                return GenericResult<IHost>.Success(host);
             }
 
             // Why: Typed body providers are registered with the header provider (SecretManagerConfigurationProvider)
@@ -84,16 +85,16 @@ public sealed class SqliteSecretManagerType
             // SecretManagerConfiguration — it implements ISecretManagerConfiguration directly.
             var headerProvider = services.GetRequiredService<SecretManagerConfigurationProvider>();
             var configProvider = services.GetRequiredService<DefaultConfigurationProvider<SqliteSecretManagerConfiguration, SqliteSecretManagerConfigurationCommand>>();
-            headerProvider.RegisterTypedProvider<SqliteSecretManagerConfiguration>(Name, configProvider);
+            headerProvider.Register<SqliteSecretManagerConfiguration>(Name, configProvider);
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Configuration(builder =>
         {
 
     
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -117,7 +118,7 @@ public sealed class SqliteSecretManagerType
             // RegisterDomainConfiguration makes this idempotent — every secret manager option calls it, first
             // registration wins.
             SecretManagerConfigurationProvider.RegisterDomainConfiguration(builder.Services);
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 

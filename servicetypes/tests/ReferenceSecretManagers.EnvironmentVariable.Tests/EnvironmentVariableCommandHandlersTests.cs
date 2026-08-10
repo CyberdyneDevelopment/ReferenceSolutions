@@ -76,7 +76,10 @@ public class EnvironmentVariableCommandHandlersTests
         // Assert
         handler.ShouldBeSameAs(EnvironmentVariableCommandHandlers.NotFound);
         handler.Id.ShouldBe(0);
-        handler.Name.ShouldBe("NotFound");
+        // Why not "NotFound": the sentinel is the generator's, and it names it "_Empty". The name it
+        // carries is incidental — callers identify it by reference, never by name, because a handler
+        // could legitimately be called anything.
+        handler.Name.ShouldBe("_Empty");
     }
 
     [Theory]
@@ -108,13 +111,15 @@ public class EnvironmentVariableCommandHandlersTests
     [Fact]
     [Trait("Priority", "P2")]
     [Trait("Category", "CoreFramework")]
-    public void AllReturnsExactlyThreeRegisteredHandlers()
+    public void AllReturnsExactlyTheRegisteredHandlers()
     {
         // Act
         var all = EnvironmentVariableCommandHandlers.All();
 
-        // Assert
-        all.Count.ShouldBe(3);
+        // Assert — GetSecret and ListSecrets. It was three while a hand-written NotFound option was
+        // registered as a member; the sentinel now sits outside the set, which is the point of it.
+        all.Count.ShouldBe(2);
+        all.ShouldNotContain(h => ReferenceEquals(h, EnvironmentVariableCommandHandlers.NotFound));
     }
 
     // ── EnvironmentVariableGetSecretHandler ────────────────────────────────
@@ -281,55 +286,52 @@ public class EnvironmentVariableCommandHandlersTests
         result.IsSuccess.ShouldBeFalse();
     }
 
-    // ── EnvironmentVariableNotFoundHandler ─────────────────────────────────
+    // ── the collection's NotFound sentinel ────────────────────────────────
 
+    /// <summary>
+    /// A miss returns the sentinel rather than null, which is the contract every caller relies on:
+    /// the managers test the result with ReferenceEquals against it.
+    /// </summary>
     [Fact]
     [Trait("Priority", "P2")]
     [Trait("Category", "CoreFramework")]
-    public void NotFoundHandlerValidateAlwaysFails()
+    public void ByNameReturnsTheSentinelForAnUnknownCommand()
     {
-        // Arrange
-        var handler = new EnvironmentVariableNotFoundHandler();
-        var command = new GetSecretManagerCommand(null, "X");
+        var handler = EnvironmentVariableCommandHandlers.ByName("NoSuchCommand");
 
-        // Act
-        var result = handler.Validate(command);
-
-        // Assert
-        result.IsSuccess.ShouldBeFalse();
+        ReferenceEquals(handler, EnvironmentVariableCommandHandlers.NotFound).ShouldBeTrue();
     }
 
+    /// <summary>
+    /// The sentinel is not a member of the collection. It exists to be returned when nothing matched,
+    /// so anything enumerating the handlers must not encounter it — a hand-registered stand-in would
+    /// appear here, and every caller iterating All() would have to know to skip it.
+    /// </summary>
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "CoreFramework")]
+    public void TheSentinelIsNotOneOfTheHandlers()
+    {
+        var all = EnvironmentVariableCommandHandlers.All();
+
+        all.ShouldNotContain(h => ReferenceEquals(h, EnvironmentVariableCommandHandlers.NotFound));
+        all.ShouldNotContain(h => h.Name == "NotFound");
+        all.ShouldNotBeEmpty();
+    }
+
+    /// <summary>
+    /// Every member is a real handler: it names the command it processes and the type of that command.
+    /// </summary>
     [Fact]
     [Trait("Priority", "P2")]
     [Trait("Category", "CoreFramework")]
-    public async System.Threading.Tasks.Task NotFoundHandlerInvokeBoxedReturnsFailureNamingTheCommandType()
+    public void EveryMemberIsARealHandler()
     {
-        // Arrange
-        var handler = new EnvironmentVariableNotFoundHandler();
-        var command = new GetSecretManagerCommand(null, "X");
-        var context = MakeContext();
-
-        // Act
-        var result = await handler.InvokeBoxed(command, context, TestContext.Current.CancellationToken);
-
-        // Assert
-        result.IsSuccess.ShouldBeFalse();
-        result.CurrentMessage!.ShouldContain("GetSecret");
-    }
-
-    [Fact]
-    [Trait("Priority", "P3")]
-    [Trait("Category", "CoreFramework")]
-    public void NotFoundHandlerIdentityIsZeroAndNotFound()
-    {
-        // Arrange
-        var handler = new EnvironmentVariableNotFoundHandler();
-
-        // Assert
-        handler.Id.ShouldBe(0);
-        handler.Name.ShouldBe("NotFound");
-        handler.CommandTypeClass.ShouldBe(typeof(void));
-        handler.ResultType.ShouldBe(typeof(void));
+        foreach (var handler in EnvironmentVariableCommandHandlers.All())
+        {
+            handler.Name.ShouldNotBeNullOrWhiteSpace();
+            handler.CommandTypeClass.ShouldNotBe(typeof(void), $"{handler.Name} declares no command type");
+        }
     }
 
     // Why: a minimal ISecretManagerExecutionContext that is deliberately NOT an

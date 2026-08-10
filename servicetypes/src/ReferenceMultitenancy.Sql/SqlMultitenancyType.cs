@@ -26,6 +26,7 @@ using Fdw.Services.Multitenancy.Sql.Logging;
 using Fdw.Services.Multitenancy;
 using Fdw.Services;
 using Fdw;
+using Fdw.Results;
 
 namespace ReferenceMultitenancy.Sql;
 
@@ -53,7 +54,7 @@ public sealed class SqlMultitenancyType : MultitenancyTypeBase<ISqlMultitenancyF
         {
             var services = host.Services;
         _ = services.GetRequiredService<SqlTenantConfiguration>();
-        return host;
+        return GenericResult<IHost>.Success(host);
         });
 
         // Why no Configuration phase: this option used to bind a `Multitenancy` IConfiguration section
@@ -117,7 +118,7 @@ public sealed class SqlMultitenancyType : MultitenancyTypeBase<ISqlMultitenancyF
                     sp.GetRequiredService<TenantOrgAccessConfigurationProvider>(),
                     sp.GetService<ILogger<DefaultOrgAccessProvider>>()));
 
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 

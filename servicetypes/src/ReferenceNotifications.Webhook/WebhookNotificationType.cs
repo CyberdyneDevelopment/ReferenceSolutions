@@ -18,6 +18,7 @@ using ReferenceNotifications.Webhook;
 using Fdw.Services.Notifications.Webhook;
 using Fdw.Services;
 using Fdw;
+using Fdw.Results;
 
 namespace ReferenceNotifications.Webhook;
 
@@ -80,14 +81,14 @@ public sealed class WebhookNotificationType
 
             // Register factory instance with provider
             var factoryResult = provider.Register(Name, factory);
-            if (!factoryResult.IsSuccess) return host;
+            if (!factoryResult.IsSuccess) return factoryResult.ToNewResult<IHost>();
 
             // Why: Resolve from DI — provider was registered with Lazy<IConfigurationGateway> in the Registration phase body.
             var configProvider = services.GetRequiredService<DefaultConfigurationProvider<WebhookNotificationConfiguration, WebhookNotificationConfigurationCommand>>();
             services.GetRequiredService<NotificationConfigurationProvider>()
                 .Register(Name, configProvider);
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Configuration(builder =>
@@ -95,7 +96,7 @@ public sealed class WebhookNotificationType
 
             builder.Services.Configure<List<NotificationConfiguration>>(builder.Configuration.GetSection("Notifications:Default"));
     
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -118,7 +119,7 @@ public sealed class WebhookNotificationType
             // entry-point app.
             NotificationConfigurationProvider.RegisterDomainConfiguration(builder.Services);
 
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 

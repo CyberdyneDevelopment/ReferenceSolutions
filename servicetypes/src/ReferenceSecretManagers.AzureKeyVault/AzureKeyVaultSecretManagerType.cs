@@ -19,6 +19,7 @@ using Fdw.Services.SecretManagers.AzureKeyVault.CredentialTypes;
 using Fdw.Services.SecretManagers.AzureKeyVault.Commands;
 using Fdw.Services;
 using Fdw;
+using Fdw.Results;
 
 namespace ReferenceSecretManagers.AzureKeyVault;
 
@@ -85,7 +86,7 @@ public sealed class AzureKeyVaultSecretManagerType
 
             // Register factory instance with provider
             var factoryResult = provider.Register(Name, factory);
-            if (!factoryResult.IsSuccess) return host;
+            if (!factoryResult.IsSuccess) return factoryResult.ToNewResult<IHost>();
 
             var configLogger = services.GetRequiredService<ILoggerFactory>()
                 .CreateLogger<DefaultConfigurationProvider<AzureKeyVaultConfiguration, AzureKeyVaultConfigurationCommand>>();
@@ -102,16 +103,16 @@ public sealed class AzureKeyVaultSecretManagerType
             // via discriminator dispatch. AzureKeyVaultConfiguration no longer inherits
             // SecretManagerConfiguration — it implements ISecretManagerConfiguration directly.
             var headerProvider = services.GetRequiredService<SecretManagerConfigurationProvider>();
-            headerProvider.RegisterTypedProvider<AzureKeyVaultConfiguration>(Name, configProvider);
+            headerProvider.Register<AzureKeyVaultConfiguration>(Name, configProvider);
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Configuration(builder =>
         {
 
     
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -128,7 +129,7 @@ public sealed class AzureKeyVaultSecretManagerType
             // RegisterDomainConfiguration makes this idempotent — every secret manager option calls it, first
             // registration wins.
             SecretManagerConfigurationProvider.RegisterDomainConfiguration(builder.Services);
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 

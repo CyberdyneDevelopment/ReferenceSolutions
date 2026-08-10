@@ -59,7 +59,9 @@ public sealed class ConsoleNotificationTypeTests
         var result = sut.Register(builder, null, "TestStore", "TestPath", "TestContainer");
 
         // Assert
-        result.ShouldBe(builder);
+        // The phase reports whether it ran, and hands back what it was given.
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBe(builder);
         var provider = services.BuildServiceProvider();
         var factory = provider.GetService<IConsoleNotificationFactory>();
         factory.ShouldNotBeNull();

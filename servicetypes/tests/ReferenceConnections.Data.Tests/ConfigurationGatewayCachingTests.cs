@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Fdw.Commands.Data.Abstractions;
 using Fdw.Configuration;
+using Fdw.Messages;
 using Fdw.Results;
 using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Data.Abstractions;
@@ -28,6 +29,13 @@ public sealed class ConfigurationGatewayCachingTests
     private readonly Mock<IConnectionFactory> _factoryMock;
     private readonly ConfigurationSchema _emptySchema;
 
+    // Why the partition is asked of the connection kind rather than written out: it is the kind that
+    // composes it, from whatever the calling scope turns out to be. Spelling it here would pin the
+    // test to today's format and start failing the next time the scheme changes, which is not what
+    // these tests are about. No accessor is supplied to the gateway, so the scope is the null one.
+    private static readonly string _partition =
+        ConnectionTypes.ByName("MsSql").CachePartition(null);
+
     public ConfigurationGatewayCachingTests()
     {
         _cache = new DataGatewayResultCache(
@@ -35,11 +43,27 @@ public sealed class ConfigurationGatewayCachingTests
             NullLoggerFactory.Instance);
 
         _factoryMock = new Mock<IConnectionFactory>();
+        // Why Create is configured rather than left bare: the schema below declares a connection, so
+        // BuildConnection now reaches the factory instead of stopping at "no ConfigurationDb entry". A
+        // bare Mock returns a null Task from Create, and awaiting that throws NullReferenceException
+        // inside the gateway — an exception from the harness, not a result from the code under test.
+        // Returning a failure gives BuildConnection the clean miss these tests are written against.
+        _factoryMock
+            .Setup(f => f.Create(It.IsAny<IGenericConfiguration>(), It.IsAny<ISecretManager?>(), It.IsAny<System.Threading.CancellationToken>()))
+            .ReturnsAsync(GenericResult<IGenericConnection>.Failure(new GenericMessage("no connection in this test")));
 
-        // Why: Empty schema means BuildConnection returns ConnectionNotFound failure before
-        // ever calling IConnectionFactory.Create. Cache-hit tests never reach ExecuteCore;
-        // cache-miss tests reach it and get a clean failure result — the expected outcome.
-        _emptySchema = new ConfigurationSchema();
+        // Why the schema declares a connection rather than being empty: the gateway resolves the
+        // ConfigurationDb connection's kind before it touches the cache, because the kind is what
+        // computes the partition the key is built from. Without one it fails the read outright — by
+        // design, since it cannot otherwise tell which callers may share a result. An empty schema
+        // therefore never reaches the cache at all, and a caching test against it proves nothing.
+        //
+        // Nothing beyond the kind is needed: BuildConnection still fails before IConnectionFactory
+        // .Create, so cache-hit tests short-circuit and cache-miss tests get a clean failure.
+        _emptySchema = new ConfigurationSchema
+        {
+            Connections = { new ConnectionConfiguration { Name = "ConfigurationDb", ServiceOptionType = "MsSql" } },
+        };
     }
 
     // =========================================================================
@@ -65,7 +89,7 @@ public sealed class ConfigurationGatewayCachingTests
 
         // Pre-seed the cache at the exact key ConfigurationGateway will compute for Execute<IEnumerable<string>>.
         var expectedKey = string.Concat(
-            "_cfg|",
+            _partition, "|_cfg|",
             CacheKeyBuilder.ComputeCacheKey(commandMock.Object, target),
             ":",
             typeof(IEnumerable<string>).FullName);
@@ -108,7 +132,7 @@ public sealed class ConfigurationGatewayCachingTests
 
         // Pre-seed the cache — represents a previously cached config read.
         var cacheKey = string.Concat(
-            "_cfg|",
+            _partition, "|_cfg|",
             CacheKeyBuilder.ComputeCacheKey(commandMock.Object, target),
             ":",
             typeof(string).FullName);
@@ -155,7 +179,7 @@ public sealed class ConfigurationGatewayCachingTests
 
         // Pre-seed the cache — should be ignored when EnableCache=false.
         var cacheKey = string.Concat(
-            "_cfg|",
+            _partition, "|_cfg|",
             CacheKeyBuilder.ComputeCacheKey(commandMock.Object, target),
             ":",
             typeof(string).FullName);
@@ -192,7 +216,7 @@ public sealed class ConfigurationGatewayCachingTests
 
         // Pre-seed the cache — should be SKIPPED when useCache=false.
         var cacheKey = string.Concat(
-            "_cfg|",
+            _partition, "|_cfg|",
             CacheKeyBuilder.ComputeCacheKey(commandMock.Object, target),
             ":",
             typeof(string).FullName);

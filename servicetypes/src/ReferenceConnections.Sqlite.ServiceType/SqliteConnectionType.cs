@@ -68,7 +68,7 @@ public sealed class SqliteConnectionType
 
             // without re-resolving from DI each call.
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -94,7 +94,7 @@ public sealed class SqliteConnectionType
             // provider for the whole Connections domain) to already be registered. TryAddSingleton makes
             // this idempotent — every connection-kind option calls it, harmlessly redundant after the first.
             ConnectionConfigurationProvider.RegisterDomainConfiguration(builder.Services);
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 

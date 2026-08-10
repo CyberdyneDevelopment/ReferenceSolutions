@@ -5,6 +5,7 @@ using Fdw.Services.SecretManagers.Abstractions.Handlers;
 using Fdw.Services.SecretManagers.EnvironmentVariable.Commands;
 using Fdw.Services.SecretManagers.EnvironmentVariable.Configuration;
 using Fdw.Services.SecretManagers;
+using Fdw.Services.SecretManagers.Handlers;
 using Fdw.Services;
 using Fdw;
 
@@ -14,7 +15,7 @@ namespace ReferenceSecretManagers.EnvironmentVariable.Handlers;
 /// TypeCollection of Environment Variable secret manager command handlers.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(ISecretManagerCommandHandler), typeof(ISecretManagerCommandHandler), typeof(EnvironmentVariableCommandHandlers))]
-public abstract partial class EnvironmentVariableCommandHandlers : TypeCollectionBase<ISecretManagerCommandHandler>
+[TypeCollection(typeof(SecretManagerCommandHandlerBase), typeof(ISecretManagerCommandHandler), typeof(EnvironmentVariableCommandHandlers))]
+public abstract partial class EnvironmentVariableCommandHandlers : TypeCollectionBase<SecretManagerCommandHandlerBase, ISecretManagerCommandHandler>
 {
 }

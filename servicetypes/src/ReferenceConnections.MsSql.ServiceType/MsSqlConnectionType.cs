@@ -132,7 +132,7 @@ public sealed class MsSqlConnectionType
             _discoverer = services.GetService<IMsSqlSchemaDiscoverer>();
 
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -181,7 +181,7 @@ public sealed class MsSqlConnectionType
             // Why here: DiscoverSchema() on this type resolves the discoverer, so this type registers it.
             builder.Services.AddSingleton<IMsSqlSchemaDiscoverer, MsSqlSchemaDiscoverer>();
 
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
 
         });
 

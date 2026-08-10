@@ -7,6 +7,7 @@ using Fdw.Services.SecretManagers.AzureKeyVault.Configuration;
 using Fdw.Services.SecretManagers.AzureKeyVault.CredentialTypes;
 using Fdw.Services.SecretManagers.AzureKeyVault.Commands;
 using Fdw.Services.SecretManagers;
+using Fdw.Services.SecretManagers.Handlers;
 using Fdw.Services;
 using Fdw;
 
@@ -17,7 +18,7 @@ namespace ReferenceSecretManagers.AzureKeyVault.Handlers;
 /// Each handler processes a specific command type (GetSecret, SetSecret, etc.).
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(ISecretManagerCommandHandler), typeof(ISecretManagerCommandHandler), typeof(AzureKeyVaultCommandHandlers))]
-public abstract partial class AzureKeyVaultCommandHandlers : TypeCollectionBase<ISecretManagerCommandHandler>
+[TypeCollection(typeof(SecretManagerCommandHandlerBase), typeof(ISecretManagerCommandHandler), typeof(AzureKeyVaultCommandHandlers))]
+public abstract partial class AzureKeyVaultCommandHandlers : TypeCollectionBase<SecretManagerCommandHandlerBase, ISecretManagerCommandHandler>
 {
 }

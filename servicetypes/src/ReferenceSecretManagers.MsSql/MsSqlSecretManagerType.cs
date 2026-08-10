@@ -19,6 +19,7 @@ using Fdw.Services.SecretManagers.MsSql.Commands;
 using Fdw.Services.SecretManagers.MsSql.Configuration;
 using Fdw.Services;
 using Fdw;
+using Fdw.Results;
 
 namespace ReferenceSecretManagers.MsSql;
 
@@ -77,7 +78,7 @@ public sealed class MsSqlSecretManagerType
             var factoryResult = provider.Register(Name, factory);
             if (!factoryResult.IsSuccess)
             {
-                return host;
+                return GenericResult<IHost>.Success(host);
             }
 
             // Why: Typed body providers are registered with the header provider (SecretManagerConfigurationProvider)
@@ -85,16 +86,16 @@ public sealed class MsSqlSecretManagerType
             // SecretManagerConfiguration — it implements ISecretManagerConfiguration directly.
             var headerProvider = services.GetRequiredService<SecretManagerConfigurationProvider>();
             var configProvider = services.GetRequiredService<DefaultConfigurationProvider<MsSqlSecretManagerConfiguration, MsSqlSecretManagerConfigurationCommand>>();
-            headerProvider.RegisterTypedProvider<MsSqlSecretManagerConfiguration>(Name, configProvider);
+            headerProvider.Register<MsSqlSecretManagerConfiguration>(Name, configProvider);
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Configuration(builder =>
         {
 
     
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -127,7 +128,7 @@ public sealed class MsSqlSecretManagerType
             // RegisterDomainConfiguration makes this idempotent — every secret manager option calls it, first
             // registration wins.
             SecretManagerConfigurationProvider.RegisterDomainConfiguration(builder.Services);
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 

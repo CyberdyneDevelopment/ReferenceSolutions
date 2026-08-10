@@ -66,14 +66,21 @@ public class SqlMultitenancyTypeTests
     }
 
     [Fact]
-    public void InitializeWithNoRowsThrowsNamingSettingsSqlTenantProvider()
+    public void InitializeWithNoRowsFailsNamingSettingsSqlTenantProvider()
     {
         var host = BuildHost(MockGatewayReturning());
         var option = new SqlMultitenancyType();
 
-        var ex = Should.Throw<InvalidOperationException>(() => option.Initialize(host, null));
+        var result = option.Initialize(host, null);
 
-        ex.Message.ShouldContain("settings.SqlTenantProvider");
+        // Why a failed result and not a thrown exception: ServiceTypeBase.RunPhase catches a throwing
+        // phase body and returns the failure instead. Its reasoning is that ending the process is the
+        // application's call, not the framework's — the host may want to abort on a failed domain or
+        // run without it, and it can only choose if the failure arrives as a value. The guarantee this
+        // test exists for is unchanged: an empty settings.SqlTenantProvider does not boot silently, and
+        // the reason names the table to look in.
+        result.IsSuccess.ShouldBeFalse();
+        result.CurrentMessage!.ToString().ShouldContain("settings.SqlTenantProvider");
     }
 
     // Why: Register never registers IConfiguration at all — if resolving

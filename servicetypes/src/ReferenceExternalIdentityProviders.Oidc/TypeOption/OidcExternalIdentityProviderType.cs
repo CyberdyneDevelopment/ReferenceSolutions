@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Fdw.Results;
 
 namespace Fdw.Services.ExternalIdentityProviders.Oidc;
 
@@ -53,17 +54,17 @@ public sealed class OidcExternalIdentityProviderType
             // provider (unlike TokenManagers' single-active domain) — RegisterParentProvider is safe to
             // call from every option since they all point at the one auth.ExternalIdentityProvider table.
             var parentResult = provider.Register(headerProvider);
-            if (!parentResult.IsSuccess) return host;
+            if (!parentResult.IsSuccess) return parentResult.ToNewResult<IHost>();
 
             var factoryResult = provider.Register("Oidc", factory);
-            if (!factoryResult.IsSuccess) return host;
+            if (!factoryResult.IsSuccess) return factoryResult.ToNewResult<IHost>();
 
             var headerResult = provider.Register("Oidc", headerProvider);
-            if (!headerResult.IsSuccess) return host;
+            if (!headerResult.IsSuccess) return headerResult.ToNewResult<IHost>();
 
             ExternalIdentityProviderLog.ProviderRegistered(logger, "Oidc");
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -87,7 +88,7 @@ public sealed class OidcExternalIdentityProviderType
             builder.Services.TryAddSingleton<IExternalIdentityProviderFactory<IExternalIdentityProvider, ExternalIdentityProviderConfiguration>>(
                 sp => sp.GetRequiredService<OidcExternalIdentityProviderFactory>());
 
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 

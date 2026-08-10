@@ -38,6 +38,7 @@ using Fdw.Services.Authentication.OpenIddict;
 using Fdw.Services.Authentication;
 using Fdw.Services;
 using Fdw;
+using Fdw.Results;
 
 namespace ReferenceAuthentication.OpenIddict;
 
@@ -86,17 +87,17 @@ public sealed class OpenIddictTokenManagerType
             // determine the parent provider. Single active OpenIddict config: register the header provider
             // explicitly as the parent.
             var parentResult = provider.Register(headerProvider);
-            if (!parentResult.IsSuccess) return host;
+            if (!parentResult.IsSuccess) return parentResult.ToNewResult<IHost>();
 
             var factoryResult = provider.Register("OpenIddict", factory);
-            if (!factoryResult.IsSuccess) return host;
+            if (!factoryResult.IsSuccess) return factoryResult.ToNewResult<IHost>();
 
             var headerResult = provider.Register("OpenIddict", headerProvider);
-            if (!headerResult.IsSuccess) return host;
+            if (!headerResult.IsSuccess) return headerResult.ToNewResult<IHost>();
 
             OpenIddictProviderLog.ProviderRegistered(logger, "OpenIddict", "TokenManager");
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
@@ -104,7 +105,7 @@ public sealed class OpenIddictTokenManagerType
 
             RegisterConfigurationProviders(builder.Services, dataStoreName, pathName);
             RegisterRuntimeServices(builder.Services);
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 

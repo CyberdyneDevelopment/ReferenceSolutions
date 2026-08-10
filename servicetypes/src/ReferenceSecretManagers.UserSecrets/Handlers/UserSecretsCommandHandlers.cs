@@ -5,6 +5,7 @@ using Fdw.Services.SecretManagers.Abstractions.Handlers;
 using Fdw.Services.SecretManagers.UserSecrets.Commands;
 using Fdw.Services.SecretManagers.UserSecrets.Configuration;
 using Fdw.Services.SecretManagers;
+using Fdw.Services.SecretManagers.Handlers;
 using Fdw.Services;
 using Fdw;
 
@@ -14,7 +15,7 @@ namespace ReferenceSecretManagers.UserSecrets.Handlers;
 /// TypeCollection of User Secrets command handlers.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(ISecretManagerCommandHandler), typeof(ISecretManagerCommandHandler), typeof(UserSecretsCommandHandlers))]
-public abstract partial class UserSecretsCommandHandlers : TypeCollectionBase<ISecretManagerCommandHandler>
+[TypeCollection(typeof(SecretManagerCommandHandlerBase), typeof(ISecretManagerCommandHandler), typeof(UserSecretsCommandHandlers))]
+public abstract partial class UserSecretsCommandHandlers : TypeCollectionBase<SecretManagerCommandHandlerBase, ISecretManagerCommandHandler>
 {
 }

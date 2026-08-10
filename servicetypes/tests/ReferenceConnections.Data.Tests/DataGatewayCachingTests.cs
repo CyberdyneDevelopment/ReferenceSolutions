@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading;
 using Fdw.Commands.Data.Abstractions;
 using Fdw.Commands.Data.Abstractions.Caching;
@@ -13,7 +12,7 @@ using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Data.Caching;
-using Microsoft.AspNetCore.Http;
+using Fdw.Services.Authentication.Abstractions.Security;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -42,6 +41,7 @@ public sealed class DataGatewayCachingTests
     private readonly Mock<IDataSetConfigurationProvider> _dataSetProviderMock;
     private readonly Mock<DataStoreConfigurationProvider> _dataStoreConfigProviderMock;
     private readonly Mock<IDataStoreProvider> _dataStoreProviderMock;
+    private readonly Mock<ConnectionConfigurationProvider> _connectionConfigProviderMock;
     // Why: Real DataGatewayResultCache + real IMemoryCache so cache mechanics (tag tracking,
     // eviction, TryGet/Set) work correctly. Mocking the cache would hide implementation bugs.
     private readonly DataGatewayResultCache _cache;
@@ -75,6 +75,22 @@ public sealed class DataGatewayCachingTests
             .ReturnsAsync(GenericResult<DataStoreConfiguration?>.Success(null));
 #pragma warning restore CS8620
 
+        // Why the header and not a typed body: the gateway reads the connection HEADER and dispatches
+        // on its ServiceOptionType. A typed body (MsSqlConnectionConfiguration) implements the marker
+        // interface rather than deriving from the header, so it is not what this provider returns.
+        // "MsSql" is what makes the lookup land on a kind whose session contexts compose a per-caller
+        // partition — the behaviour these tests are about.
+        _connectionConfigProviderMock = new Mock<ConnectionConfigurationProvider>(
+            NullLogger<ConnectionConfigurationProvider>.Instance,
+            new Lazy<Fdw.Services.Data.Abstractions.IConfigurationGateway>(() => null!),
+            "ConfigurationDb",
+            "conn",
+            null!) { CallBase = false };
+        _connectionConfigProviderMock
+            .Setup(p => p.Get(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<ConnectionConfiguration>.Success(
+                new ConnectionConfiguration { ServiceOptionType = "MsSql" }));
+
         _dataStoreProviderMock = new Mock<IDataStoreProvider>();
         // Why: default to "not found" so unconfigured container routing fails loud instead of NRE.
         _dataStoreProviderMock
@@ -99,17 +115,19 @@ public sealed class DataGatewayCachingTests
         var target = new DataStoreTarget("test-store", null, "TestContainer");
         var commandMock = BuildCachingCommand();
 
-        // Pre-seed the cache at the exact key the gateway computes.
-        // TenantDiscriminator() = "_" when no IHttpContextAccessor is provided.
-        var cacheKey = string.Concat(
-            "_|",
-            CacheKeyBuilder.ComputeCacheKey(commandMock.Object, target),
-            ":", typeof(string).FullName);
-        _cache.Set(cacheKey, GenericResult<string>.Success("cached-value"), ["test-store.TestContainer"], TimeSpan.FromMinutes(5));
+        // Why the entry is written through the service rather than placed at a computed key: the key
+        // carries a partition the connection kind composes from the calling scope, so a test that
+        // spells the key itself is asserting today's partition format, not the caching behaviour.
+        // Executing once populates it at whatever key the gateway actually uses.
+        var connectionId = BuildDataStoreTree("test-store", "TestContainer");
+        BuildSuccessConnection("cached-value", connectionId);
 
         var service = BuildCacheEnabledService();
+        var seeded = await service.Execute<string>(commandMock.Object, target, TestContext.Current.CancellationToken);
+        seeded.IsSuccess.ShouldBeTrue();
+        _connectionProviderMock.Invocations.Clear();
 
-        // Act — cache hit should be returned without reaching ExecuteCore
+        // Act — the same question again, which must be served from cache
         var result = await service.Execute<string>(commandMock.Object, target, TestContext.Current.CancellationToken);
 
         // Assert
@@ -138,14 +156,24 @@ public sealed class DataGatewayCachingTests
         var target = new DataStoreTarget("test-store", null, "TestContainer");
         var commandMock = BuildCachingCommand();
 
-        // Pre-seed the cache with a stale value — useCache:false must bypass this read.
-        var cacheKey = string.Concat(
-            "_|",
-            CacheKeyBuilder.ComputeCacheKey(commandMock.Object, target),
-            ":", typeof(string).FullName);
-        _cache.Set(cacheKey, GenericResult<string>.Success("stale-value"), ["test-store.TestContainer"], TimeSpan.FromMinutes(5));
-
         var service = BuildCacheEnabledService();
+
+        // Why the stale entry is written through the service: the cache key carries a partition the
+        // connection kind composes, so spelling the key here would test the partition format instead
+        // of the force-refresh behaviour. One execution against a connection returning the stale value
+        // puts it at the key the gateway itself uses; the connection then starts returning the fresh
+        // one, so a bypassed read and a served read are distinguishable by value alone.
+        connectionMock
+            .Setup(c => c.Execute<string>(It.IsAny<IDataCommand>(), It.IsAny<IDataContainer>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<string>.Success("stale-value"));
+        var seeded = await service.Execute<string>(commandMock.Object, target, TestContext.Current.CancellationToken);
+        seeded.IsSuccess.ShouldBeTrue();
+        seeded.Value.ShouldBe("stale-value");
+
+        connectionMock
+            .Setup(c => c.Execute<string>(It.IsAny<IDataCommand>(), It.IsAny<IDataContainer>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<string>.Success("fresh-value"));
+        connectionMock.Invocations.Clear();
 
         // Act 1 — force-refresh: useCache:false bypasses the stale cache read and writes the fresh result
         var forceRefreshResult = await service.Execute<string>(commandMock.Object, target, useCache: false, TestContext.Current.CancellationToken);
@@ -214,59 +242,37 @@ public sealed class DataGatewayCachingTests
     [Trait("Category", "DataIntegrity")]
     public async Task CrossTenantIsolation_TenantAEntryNotVisibleToTenantB()
     {
-        // Arrange — pre-seed cache for the "no-context" partition (discriminator key = "_")
+        // Arrange — one query, two callers whose only difference is the tenant they are active in.
         var target = new DataStoreTarget("test-store", null, "TestContainer");
         var commandMock = BuildCachingCommand();
-
-        var noContextCacheKey = string.Concat(
-            "_|",
-            CacheKeyBuilder.ComputeCacheKey(commandMock.Object, target),
-            ":", typeof(string).FullName);
-        _cache.Set(noContextCacheKey, GenericResult<string>.Success("no-context-value"), ["test-store.TestContainer"], TimeSpan.FromMinutes(5));
-
-        // Set up the data store tree so tenant B's cache miss can complete a fresh execution.
         var connectionId = BuildDataStoreTree("test-store", "TestContainer");
-        var connectionMock = BuildSuccessConnection("tenant-b-fresh", connectionId);
+        var connectionMock = BuildSuccessConnection("fresh-per-tenant", connectionId);
 
-        // Why: mock an HTTP context carrying tenant_id="tenant-b", org_id="org-1" so
-        // TenantDiscriminator() returns "tenant-b/org-1" (different from the no-context "_").
-        var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(
-        [
-            new Claim("tenant_id", "tenant-b"),
-            new Claim("org_id", "org-1")
-        ]));
-        var httpContextMock = new Mock<HttpContext>();
-        httpContextMock.Setup(c => c.User).Returns(claimsPrincipal);
-        var accessorMock = new Mock<IHttpContextAccessor>();
-        accessorMock.Setup(a => a.HttpContext).Returns(httpContextMock.Object);
+        var tenantA = AccessorFor(Guid.Parse("11111111-1111-1111-1111-111111111111"), Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001"));
+        var tenantB = AccessorFor(Guid.Parse("22222222-2222-2222-2222-222222222222"), Guid.Parse("bbbbbbbb-0000-0000-0000-000000000002"));
 
-        // Tenant B service: discriminator "tenant-b/org-1"
-        var tenantBService = BuildCacheEnabledService(httpContextAccessor: accessorMock.Object);
-        // No-context service: discriminator "_" — matches the pre-seeded key
-        var noContextService = BuildCacheEnabledService();
+        var serviceA = BuildCacheEnabledService(authenticationContextAccessor: tenantA);
+        var serviceB = BuildCacheEnabledService(authenticationContextAccessor: tenantB);
 
-        // Act 1 — tenant B should NOT get the no-context cache entry (different tenant key → cache miss)
-        var tenantBResult = await tenantBService.Execute<string>(commandMock.Object, target, TestContext.Current.CancellationToken);
+        // Act — A populates the cache, then B asks the same question.
+        var firstA = await serviceA.Execute<string>(commandMock.Object, target, TestContext.Current.CancellationToken);
+        var secondA = await serviceA.Execute<string>(commandMock.Object, target, TestContext.Current.CancellationToken);
+        var firstB = await serviceB.Execute<string>(commandMock.Object, target, TestContext.Current.CancellationToken);
 
-        // Act 2 — no-context service SHOULD hit the pre-seeded entry (same "_" key)
-        var noContextResult = await noContextService.Execute<string>(commandMock.Object, target, TestContext.Current.CancellationToken);
+        // Assert — every read succeeds and returns the same value; the point is where it came from.
+        firstA.IsSuccess.ShouldBeTrue();
+        secondA.IsSuccess.ShouldBeTrue();
+        firstB.IsSuccess.ShouldBeTrue();
 
-        // Assert — tenant B missed the cache and got a fresh connection result
-        tenantBResult.IsSuccess.ShouldBeTrue();
-        tenantBResult.Value.ShouldBe("tenant-b-fresh",
-            "tenant B must not receive the entry keyed for tenant _ — the cache is tenant-discriminated");
-
-        // Why: connection.Execute was called exactly once, for the tenant-B cache miss.
-        // Act 2 (no-context) was a cache hit, so the connection was not called again.
+        // Why the count is the assertion: A's second read is a hit, so it does not reach the
+        // connection. B's first read is a miss despite asking the identical question, because the
+        // entry A wrote is keyed to A's scope. Two executions, not one and not three: one for A's
+        // miss, one for B's, none for A's hit.
         connectionMock.Verify(
             c => c.Execute<string>(It.IsAny<IDataCommand>(), It.IsAny<IDataContainer>(), It.IsAny<CancellationToken>()),
-            Times.Once,
-            "connection.Execute must be called once for the tenant-B miss; no-context call hits the pre-seeded cache entry");
-
-        // Assert — no-context service got the pre-seeded value (same tenant key "_")
-        noContextResult.IsSuccess.ShouldBeTrue();
-        noContextResult.Value.ShouldBe("no-context-value",
-            "no-context service must hit the pre-seeded cache entry keyed for tenant _");
+            Times.Exactly(2),
+            "tenant B must not read the entry tenant A wrote — the cache key carries the caller's scope, "
+            + "and A's own repeat must still hit, or the test proves nothing about isolation");
     }
 
     // =========================================================================
@@ -311,18 +317,49 @@ public sealed class DataGatewayCachingTests
     // Helpers
     // =========================================================================
 
+    // Why the connection config provider is always supplied: the gateway resolves the store's
+    // connection kind to get a cache partition, and fails the read outright when it cannot — without
+    // a partition it cannot tell which callers may share a result. A test that omits it exercises
+    // that failure path, not caching.
     private DataGatewayService BuildCacheEnabledService(
         bool enableCache = true,
-        IHttpContextAccessor? httpContextAccessor = null)
+        IAuthenticationContextAccessor? authenticationContextAccessor = null)
         => new DataGatewayService(
             NullLoggerFactory.Instance,
             _connectionProviderMock.Object,
             new Lazy<IDataSetConfigurationProvider>(() => _dataSetProviderMock.Object),
             _dataStoreConfigProviderMock.Object,
-            httpContextAccessor: httpContextAccessor,
             dataStoreProvider: _dataStoreProviderMock.Object,
             cache: _cache,
-            options: Options.Create(new DataGatewayOptions { EnableCache = enableCache }));
+            options: Options.Create(new DataGatewayOptions { EnableCache = enableCache }),
+            authenticationContextAccessor: authenticationContextAccessor,
+            connectionConfigProvider: _connectionConfigProviderMock.Object);
+
+    /// <summary>
+    /// An accessor whose Current is a context active in the given tenant. The partition the MsSql
+    /// scheme composes includes the tenant, so two of these with different ids are two scopes.
+    /// </summary>
+    // Why the user id is a Guid: the MsSql scheme routes a caller to ForUserSessionContext only when
+    // IsResolvedUser holds, and that requires UserId to parse as one. A non-Guid falls to
+    // DenySessionContext, whose partition is constant — so two "different" tenants would share a cache
+    // entry and this test would pass for the wrong reason.
+    private static IAuthenticationContextAccessor AccessorFor(Guid tenantId, Guid userId)
+    {
+        var context = new Mock<IAuthenticationContext>();
+        context.SetupGet(c => c.IsAuthenticated).Returns(true);
+        context.SetupGet(c => c.UserId).Returns(userId.ToString());
+        context.SetupGet(c => c.ActiveTenantId).Returns(tenantId);
+        context.SetupGet(c => c.ActiveOrgId).Returns((Guid?)null);
+        context.SetupGet(c => c.IsCrossTenant).Returns(false);
+        context.SetupGet(c => c.IsSystemContext).Returns(false);
+        context.SetupGet(c => c.Roles).Returns([]);
+        context.SetupGet(c => c.Permissions).Returns([]);
+        context.SetupGet(c => c.Claims).Returns(new Dictionary<string, object>());
+
+        var accessor = new Mock<IAuthenticationContextAccessor>();
+        accessor.SetupGet(a => a.Current).Returns(context.Object);
+        return accessor.Object;
+    }
 
     // Why: Sets up _dataStoreProviderMock and _dataStoreConfigProviderMock so that
     // ExecuteCore can resolve the container and the DataStore's ConnectionId.

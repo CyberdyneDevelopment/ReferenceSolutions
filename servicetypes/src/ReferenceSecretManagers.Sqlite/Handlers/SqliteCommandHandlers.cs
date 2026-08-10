@@ -5,6 +5,7 @@ using Fdw.Services.SecretManagers.Abstractions.Handlers;
 using Fdw.Services.SecretManagers.Sqlite.Commands;
 using Fdw.Services.SecretManagers.Sqlite.Configuration;
 using Fdw.Services.SecretManagers;
+using Fdw.Services.SecretManagers.Handlers;
 using Fdw.Services;
 using Fdw;
 
@@ -14,7 +15,7 @@ namespace ReferenceSecretManagers.Sqlite.Handlers;
 /// TypeCollection of SQLite secret manager command handlers.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(ISecretManagerCommandHandler), typeof(ISecretManagerCommandHandler), typeof(SqliteCommandHandlers))]
-public abstract partial class SqliteCommandHandlers : TypeCollectionBase<ISecretManagerCommandHandler>
+[TypeCollection(typeof(SecretManagerCommandHandlerBase), typeof(ISecretManagerCommandHandler), typeof(SqliteCommandHandlers))]
+public abstract partial class SqliteCommandHandlers : TypeCollectionBase<SecretManagerCommandHandlerBase, ISecretManagerCommandHandler>
 {
 }

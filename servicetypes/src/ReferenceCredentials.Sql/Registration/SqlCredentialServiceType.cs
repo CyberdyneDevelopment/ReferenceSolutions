@@ -26,6 +26,7 @@ using Fdw.Services.DataVault;
 using Fdw.Services.DataVault.Logging;
 using Fdw.Services;
 using Fdw;
+using Fdw.Results;
 
 namespace ReferenceCredentials.Sql.Registration;
 
@@ -100,7 +101,7 @@ public sealed class SqlCredentialServiceType
             // header provider for the whole CredentialService domain) to already be registered.
             // TryAddSingleton inside RegisterDomainConfiguration makes this idempotent.
             CredentialServiceConfigurationProvider.RegisterDomainConfiguration(builder.Services);
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });
 
@@ -136,7 +137,7 @@ public sealed class SqlCredentialServiceType
             var configProvider = services.GetRequiredService<IServiceConfigurationProvider<SqlCredentialServiceConfiguration>>();
             headerProvider.Register(Name, configProvider);
     
-            return host;
+            return GenericResult<IHost>.Success(host);
         });
 
         Configuration(builder =>
@@ -154,7 +155,7 @@ public sealed class SqlCredentialServiceType
             builder.Services.Configure<CredentialsSqlOptions>(
                 builder.Configuration.GetSection(CredentialsSqlOptions.SectionName));
     
-            return builder;
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
     }
