@@ -248,8 +248,21 @@ public static class Program
             // single option named by ConfigurationSchema.Multitenancy (configurationSchema.json) and
             // drives that ONE option's Configure/RegisterRequiredServices, so it participates in this
             // same sweep without a separate manual block.
-            PlatformServices.Configure(builder, loggerFactory);
-            PlatformServices.Register(builder, loggerFactory);
+            // Why each phase is checked: they report failure by returning it, not by throwing, so a
+            // discarded result means this host starts on top of a domain that did not come up. The
+            // documented contract for a host is that a non-success phase ends the process.
+            var configured = PlatformServices.Configure(builder, loggerFactory);
+            if (configured.IsFailure)
+            {
+                Log.Fatal("PlatformServices.Configure failed: {Reason}", configured.CurrentMessage);
+                return 1;
+            }
+            var registered = PlatformServices.Register(builder, loggerFactory);
+            if (registered.IsFailure)
+            {
+                Log.Fatal("PlatformServices.Register failed: {Reason}", registered.CurrentMessage);
+                return 1;
+            }
 
             // Why: DataflowGraphConfigurationProvider is an endpoint-only config provider living in
             // Fdw.Operations.Endpoints (which the Operations domain assembly can't reference),
@@ -408,7 +421,12 @@ public static class Program
             // PlatformServices.Initialize runs every swept domain's Initialize in Group order
             // (SecretManager→Connection→DataGateway→DataVault→CredentialService→…→DataStore→DataSet→rest);
             // the Group DAG encodes the dependency order, so no hand-driven prerequisite pre-calls are needed.
-            PlatformServices.Initialize(app, loggerFactory);
+            var initialized = PlatformServices.Initialize(app, loggerFactory);
+            if (initialized.IsFailure)
+            {
+                Log.Fatal("PlatformServices.Initialize failed: {Reason}", initialized.CurrentMessage);
+                return 1;
+            }
 
             dataSetQueryDocProcessor.Initialize(app.Services);
             permissionFilterProcessor.Initialize(app.Services);
