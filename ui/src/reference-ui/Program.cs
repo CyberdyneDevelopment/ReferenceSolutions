@@ -304,7 +304,7 @@ public static class Program
                 // them. Distinct() is still needed — the reorg consolidated 19 *.UI.Pages into one assembly, so many
                 // page groups yield the same assembly, and Blazor's component discovery throws "Assembly already
                 // defined" on duplicates (same as the Router in Routes.razor).
-                .AddAdditionalAssemblies(Fdw.UI.Registration.PageTypes.All()
+                .AddAdditionalAssemblies(Fdw.UI.Navigation.PageTypes.All()
                     .SelectMany(p => p.PageAssemblies).Distinct().ToArray())
                 .AddInteractiveServerRenderMode();
 

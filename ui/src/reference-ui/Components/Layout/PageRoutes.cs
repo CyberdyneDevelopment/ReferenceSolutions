@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using Fdw.Results;
-using Fdw.UI.Registration;
+using Fdw.UI.Navigation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Reference.Ui.Logging;

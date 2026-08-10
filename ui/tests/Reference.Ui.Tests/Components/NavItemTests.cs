@@ -1,14 +1,12 @@
 using Microsoft.Extensions.Logging;
 
-// Why: Fdw.UI.Registration.NavItem (the DECLARATION) and Components.Layout.NavItem (the COMPONENT that
+// Why: Fdw.UI.Navigation.NavItem (the DECLARATION) and Components.Layout.NavItem (the COMPONENT that
 // renders it) share a name. Aliasing the declaration side keeps bare `NavItem` meaning the component,
-// which is what every Render<T> below is about.
-namespace Reference.Ui.Tests.Components;
+// which is what every Render<T> below is about. Nav, not Navigation: the host has its own
+// Reference.Ui.Navigation, and an alias sharing that name would lose to the enclosing-namespace walk.
+using Nav = Fdw.UI.Navigation;
 
-// Why the alias sits inside the namespace: the host declares its own Reference.Ui.Registration, and
-// from inside Reference.Ui.Tests.Components the enclosing-namespace walk finds that one before it
-// consults a compilation-unit alias. Declared here, the alias is in the innermost scope and wins.
-using Registration = Fdw.UI.Registration;
+namespace Reference.Ui.Tests.Components;
 
 public sealed class NavItemTests : BunitContext
 {
@@ -29,18 +27,18 @@ public sealed class NavItemTests : BunitContext
     [Route("/datasets/{Name}/edit")]
     private sealed class ParameterisedOnlyPage : ComponentBase;
 
-    private sealed class TestPage(Type component, string label, string icon) : Registration.IPage
+    private sealed class TestPage(Type component, string label, string icon) : Nav.IPage
     {
         public string Name => "test-page";
 
         public Type Component { get; } = component;
 
-        public Registration.INavItem NavItem { get; } = new Registration.NavItem(label, icon, null, 0);
+        public Nav.INavItem NavItem { get; } = new Nav.NavItem(label, icon, null, 0);
 
         // Why Authenticated rather than Anonymous: these tests render the nav ITEM directly, never through
         // NavTree's filter, so the value is not exercised — and the honest stand-in for a console page is
         // the rule every page in this console actually declares.
-        public Registration.IPageAccess Access => Registration.PageAccess.Authenticated;
+        public Nav.IPageAccess Access => Nav.PageAccess.Authenticated;
     }
 
     // Why: the component injects ILogger<NavItem> so a bad declaration is reported rather than thrown;

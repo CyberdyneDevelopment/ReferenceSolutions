@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Fdw.UI.Registration;
+using Fdw.UI.Navigation;
 
-namespace Reference.Ui.Registration;
+namespace Reference.Ui.Navigation;
 
 /// <summary>
 /// The pages this host owns, declared the same way a package declares its own.

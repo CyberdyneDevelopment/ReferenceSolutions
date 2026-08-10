@@ -23,7 +23,7 @@ public sealed class MainLayoutTests : BunitContext
 
     // Why this list: these are the NavSections titles the hosted page packages actually
     // contribute. The former list (Schema/Calculations/Lineage/Messaging/Account/System) named
-    // sections that no longer exist in Fdw.UI.Registration.NavSections. "Scheduling" is a real
+    // sections that no longer exist in Fdw.UI.Navigation.NavSections. "Scheduling" is a real
     // section but is deliberately absent: no page in this host's package set declares it, so
     // an empty section renders nothing.
     private static readonly string[] ExpectedSections =

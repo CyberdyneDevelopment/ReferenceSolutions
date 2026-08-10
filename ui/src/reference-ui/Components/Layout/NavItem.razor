@@ -28,7 +28,7 @@ else
     // declaration then costs no change here. The route is READ FROM THE COMPONENT's [Route] attribute
     // (what @page compiles to) rather than being declared a second time, so a page whose route moves
     // cannot leave a stale sidebar link behind.
-    [Parameter, EditorRequired] public Fdw.UI.Registration.IPage Page { get; set; } = default!;
+    [Parameter, EditorRequired] public Fdw.UI.Navigation.IPage Page { get; set; } = default!;
 
     // Why: NavTree.Build already excluded pages whose NavItem is Empty, so these are read directly —
     // no null guard, and nothing to throw about. The route is resolved by PageRoutes, which reports a

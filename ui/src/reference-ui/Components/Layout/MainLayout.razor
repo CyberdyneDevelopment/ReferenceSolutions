@@ -113,7 +113,7 @@
     private bool _isFullscreen;
     private bool _noPadding;
 
-    private IReadOnlyList<Fdw.UI.Registration.NavGroup> _nav = [];
+    private IReadOnlyList<Fdw.UI.Navigation.NavGroup> _nav = [];
 
     [CascadingParameter]
     private Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState>? AuthState { get; set; }
@@ -132,10 +132,10 @@
     {
         var user = AuthState is null ? null : (await AuthState).User;
 
-        _nav = Fdw.UI.Registration.NavTree.Build(
-            Fdw.UI.Registration.PageTypes.All()
+        _nav = Fdw.UI.Navigation.NavTree.Build(
+            Fdw.UI.Navigation.PageTypes.All()
                 .SelectMany(pageType => pageType.Pages)
-                .Concat(Registration.HostPages.All),
+                .Concat(Navigation.HostPages.All),
             user?.Identity?.IsAuthenticated is true,
             permission => user is not null
                 && user.FindAll("perm").Any(c => string.Equals(c.Value, permission, StringComparison.Ordinal)));
