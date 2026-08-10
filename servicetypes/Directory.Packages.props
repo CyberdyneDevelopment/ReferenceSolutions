@@ -97,7 +97,7 @@
     <PackageVersion Include="Fdw.UI.Components" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Web.Http.Authentication" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Authentication.Abstractions" Version="$(FdwVersion)" />
-    <PackageVersion Include="Fdw.UI.Pipelines.Clients.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.UI.Pipelines.Clients.Models" Version="$(FdwVersion)" />
     <!-- Fdw Hosting -->
     <PackageVersion Include="Fdw.Hosting" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Hosting.Abstractions" Version="$(FdwVersion)" />
