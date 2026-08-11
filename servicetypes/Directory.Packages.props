@@ -7,7 +7,7 @@
     - the private package feed for CI builds
   -->
   <PropertyGroup>
-    <FdwVersion>1.0.0-rc.1.*</FdwVersion>
+    <FdwVersion>1.0.0-rc.2.build.52</FdwVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <!-- Why: enables NuGet CPM transitive pinning so PackageVersion entries also override
          transitive dependencies — required to resolve pre-release FDW packages that appear
@@ -241,5 +241,41 @@
     <PackageVersion Include="JunitXml.TestLogger" Version="6.1.0" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="Moq" Version="4.20.72" />
+      <PackageVersion Include="Fdw.Calculations.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Calculations.Endpoints" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Calculations.SignalR" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Configuration.Endpoints" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Operations.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Schema.Clients" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Agents" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Agents.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Audit" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Audit.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Calculations" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Connections.FileSystem" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Connections.RoslynWorkspace" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Data.Clients" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Data.SignalR" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Messaging" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Messaging.Endpoints" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Notifications.Endpoints" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Pipelines.Clients" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Quality" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.RateLimiting" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Scheduling.Components" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.SecretManagers.Endpoints" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.SessionState" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.SessionState.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Settings.Endpoints" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Users" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Users.Clients" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.UI.Pipelines.Endpoints" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.UI.Themes" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.UI.Themes.Clients" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Web.Analytics.Clients.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Web.Api" Version="$(FdwVersion)" />
+      <PackageVersion Include="Fdw.Web.RestEndpoints" Version="$(FdwVersion)" />
+      <PackageVersion Include="Microsoft.Build.Framework" Version="18.6.3" />
+      <PackageVersion Include="Microsoft.NET.StringTools" Version="18.6.3" />
   </ItemGroup>
 </Project>

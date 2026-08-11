@@ -1,0 +1,105 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Description>Endpoints that sit across domains rather than inside one: theme, catalog, search, dataflow, type-collection and the auth demonstration endpoints.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Configuration.Endpoints" />
+    <PackageReference Include="Fdw.Data.Abstractions" />
+    <PackageReference Include="Fdw.Data.DataPaths" />
+    <PackageReference Include="Fdw.Data.RowSources.Json" />
+    <PackageReference Include="Fdw.Data.RowSources.Xml" />
+    <PackageReference Include="Fdw.Data.RowSources.Delimited" />
+    <PackageReference Include="Fdw.Data.RowSources.FixedWidth" />
+    <PackageReference Include="Fdw.Data.RowSources.Http" />
+    <PackageReference Include="Fdw.Schema.Clients" />
+    <PackageReference Include="Fdw.Security.Hashing" />
+    <PackageReference Include="Fdw.Services.Agents" />
+    <PackageReference Include="Fdw.Services.Agents.Abstractions" />
+    <PackageReference Include="Fdw.Services.Data.Clients" />
+    <PackageReference Include="Fdw.Services.Messaging.Endpoints" />
+    <PackageReference Include="Fdw.Services.Connections.Http" />
+    <PackageReference Include="Fdw.Services.Connections.FileSystem" />
+    <PackageReference Include="Fdw.Services.Connections.RoslynWorkspace" />
+    <PackageReference Include="Fdw.Services.Multitenancy" />
+    <PackageReference Include="Fdw.Services.Registration" />
+    <PackageReference Include="Fdw.Services.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Services.Users.Clients" />
+    <PackageReference Include="Fdw.Services.Quality" />
+    <PackageReference Include="Fdw.Services.Settings.Endpoints" />
+    <PackageReference Include="Fdw.Services.Users.Abstractions" />
+    <PackageReference Include="Fdw.Web.Api" />
+    <PackageReference Include="FastEndpoints" />
+    <PackageReference Include="FastEndpoints.Swagger" />
+    <PackageReference Include="Fdw.Hosting.MsSql" />
+    <PackageReference Include="Fdw.Operations.Endpoints" />
+    <PackageReference Include="Fdw.Services.SecretManagers.Endpoints" />
+    <PackageReference Include="Fdw.UI.Themes" />
+    <PackageReference Include="Fdw.UI.Themes.Clients" />
+    <PackageReference Include="Fdw.UI.Pipelines.Endpoints" />
+    <PackageReference Include="Fdw.Services.Pipelines.Clients" />
+    <PackageReference Include="Fdw.Services.Notifications.Endpoints" />
+    <PackageReference Include="Fdw.Services.Data.Abstractions" />
+    <PackageReference Include="Fdw.Services.Scheduling.Components" />
+    <PackageReference Include="Fdw.Services.Connections" />
+    <PackageReference Include="Fdw.Services.Pipelines" />
+    <PackageReference Include="Fdw.Services.Connections.PostgreSql" />
+    <PackageReference Include="Fdw.Services.SecretManagers" />
+    <PackageReference Include="Fdw.Services.Data" />
+    <PackageReference Include="Fdw.Services.Messaging" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Data.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Configuration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Messages" />
+    <PackageReference Include="Fdw.Services.Authentication" />
+    <PackageReference Include="Fdw.Web.Http.Authentication" />
+    <PackageReference Include="Fdw.Services.Authorization" />
+    <PackageReference Include="Fdw.Services.Authorization.Abstractions" />
+    <PackageReference Include="Fdw.Services.RateLimiting" />
+    <PackageReference Include="Fdw.Services.Resiliency" />
+    <PackageReference Include="Fdw.Services.Users" />
+    <PackageReference Include="Fdw.Services.Etl" />
+    <PackageReference Include="Fdw.Services.Etl.Projects" />
+    <PackageReference Include="Fdw.Operations" />
+    <PackageReference Include="Fdw.Operations.Abstractions" />
+    <PackageReference Include="Fdw.Services.Transformations.Abstractions" />
+    <PackageReference Include="Fdw.Calculations.Abstractions" />
+    <PackageReference Include="Fdw.Calculations.Endpoints" />
+    <PackageReference Include="Fdw.Calculations.SignalR" />
+    <PackageReference Include="Fdw.Services.Calculations" />
+    <PackageReference Include="Fdw.Services.Calculations.Abstractions" />
+    <PackageReference Include="Fdw.SignalR" />
+    <PackageReference Include="Fdw.Services.Data.SignalR" />
+    <PackageReference Include="Fdw.Schema.Abstractions" />
+    <PackageReference Include="Fdw.Schema.Ddl" />
+    <PackageReference Include="Fdw.Schema.Ddl.MsSql" />
+    <PackageReference Include="Fdw.Types.Abstractions" />
+    <PackageReference Include="Fdw.Services.Audit.Abstractions" />
+    <PackageReference Include="Fdw.Services.Audit" />
+    <PackageReference Include="Fdw.Services.SessionState.Abstractions" />
+    <PackageReference Include="Fdw.Services.SessionState" />
+    <PackageReference Include="Fdw.Web.Analytics.Clients.Abstractions" />
+    <PackageReference Include="Fdw.Web.Analytics.Clients" />
+    <!-- Why: MSBuildWorkspace arrives transitively through the Roslyn connection and pins
+         Microsoft.Build.Framework + Microsoft.NET.StringTools. Microsoft.Build.Locator refuses
+         (MSBL001) any Microsoft.Build.* reference not marked runtime-excluded, because loading a
+         second copy of MSBuild's assemblies at run time breaks its resolver. -->
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.StringTools" ExcludeAssets="runtime" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReferenceAuth.Endpoints\ReferenceAuth.Endpoints.csproj" />
+  </ItemGroup>
+
+</Project>

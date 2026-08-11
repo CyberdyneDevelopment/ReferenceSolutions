@@ -1,0 +1,18 @@
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Fdw.Collections.Attributes;
+using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+
+namespace ReferenceSettings.Endpoints.ServerSettingEndpointOptions;
+
+/// <summary>
+/// The endpoints over the server-setting resource.
+/// </summary>
+[ExcludeFromCodeCoverage]
+[TypeCollection(typeof(ServerSettingEndpointBase), typeof(IEndpointTypeOption), typeof(ServerSettingEndpoints))]
+public partial class ServerSettingEndpoints : EndpointTypeCollectionBase<ServerSettingEndpointBase>
+{
+    /// <inheritdoc />
+    public override IEnumerable<IEndpointTypeOption> Members => All();
+
+}
