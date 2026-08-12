@@ -1,3 +1,5 @@
+using Fdw.Services.Scheduling.Abstractions.OptionTypes;
+using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 using System;
 using FastEndpoints;
@@ -30,11 +32,17 @@ public sealed class ScheduleNameRequestValidator : Validator<ScheduleNameRequest
 public sealed class CreateScheduleRequestValidator : Validator<CreateScheduleRequest>
 {
     /// <summary>
-    /// Valid scheduler types.
+    /// The trigger types a schedule may declare.
     /// </summary>
-    // Why: canonical names from the FDW ScheduleTypes TypeCollection options
-    // (CronScheduleType/IntervalScheduleType/OneTimeScheduleType/EventScheduleType) — the UI sends these exact strings.
-    private static readonly string[] ValidSchedulerTypes = ["Cron", "Interval", "Manual", "OneTime", "Event"];
+    /// <remarks>
+    /// Read from the collection rather than listed here, because a second list of the same names
+    /// drifts from the first. That is precisely what happened before: a separate ScheduleTypes
+    /// collection named four of these without carrying any behaviour, and a schedule had to be
+    /// translated into a TriggerType before anything could evaluate it. Reading TriggerTypes.All()
+    /// means a new trigger type is accepted the moment it is declared, with nothing to update here.
+    /// </remarks>
+    private static readonly string[] ValidSchedulerTypes =
+        TriggerTypes.All().Select(t => t.Name).ToArray();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateScheduleRequestValidator"/> class.
@@ -85,7 +93,7 @@ public sealed class CreateScheduleRequestValidator : Validator<CreateScheduleReq
 
         // Why: OneTimeScheduleType sets requiresOneTimeDateTime: true — mirror that here so creation
         // fails loudly without the date instead of persisting an unschedulable row.
-        When(x => string.Equals(x.SchedulerType, "OneTime", StringComparison.OrdinalIgnoreCase), () =>
+        When(x => string.Equals(x.SchedulerType, "Once", StringComparison.OrdinalIgnoreCase), () =>
         {
             RuleFor(x => x.OneTimeDateTime)
                 .NotNull()
@@ -158,7 +166,9 @@ public sealed class UpdateScheduleRequestValidator : Validator<UpdateScheduleReq
     /// <summary>
     /// Valid scheduler types.
     /// </summary>
-    private static readonly string[] ValidSchedulerTypes = ["Cron", "Interval", "Manual", "OneTime", "Event"];
+    /// <remarks>Read from the collection, for the same reason as above.</remarks>
+    private static readonly string[] ValidSchedulerTypes =
+        TriggerTypes.All().Select(t => t.Name).ToArray();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UpdateScheduleRequestValidator"/> class.
