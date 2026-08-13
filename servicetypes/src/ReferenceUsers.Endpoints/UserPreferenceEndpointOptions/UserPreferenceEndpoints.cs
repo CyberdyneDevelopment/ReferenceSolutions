@@ -10,10 +10,8 @@ namespace ReferenceUsers.Endpoints.UserPreferenceEndpointOptions;
 /// The endpoints over the user-preference resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "UserPreferenceEndpoints")]
-[TypeCollection(typeof(UserPreferenceEndpointBase), typeof(IEndpointTypeOption), typeof(UserPreferenceEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "UserPreferenceEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "UserPreferenceEndpoints")]
+[TypeCollection(typeof(UserPreferenceEndpointBase), typeof(IEndpointTypeOption), typeof(UserPreferenceEndpoints))]
 public partial class UserPreferenceEndpoints : EndpointTypeCollectionBase<UserPreferenceEndpointBase>
 {
     /// <inheritdoc />

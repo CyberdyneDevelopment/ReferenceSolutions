@@ -8,10 +8,8 @@ namespace ReferenceConfiguration.Endpoints.ConfigurationInstanceEndpointOptions;
 
 /// <summary>The endpoints over the configuration-instance resource.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "ConfigurationInstanceEndpoints")]
-[TypeCollection(typeof(ConfigurationInstanceEndpointBase), typeof(IEndpointTypeOption), typeof(ConfigurationInstanceEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "ConfigurationInstanceEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "ConfigurationInstanceEndpoints")]
+[TypeCollection(typeof(ConfigurationInstanceEndpointBase), typeof(IEndpointTypeOption), typeof(ConfigurationInstanceEndpoints))]
 public partial class ConfigurationInstanceEndpoints : EndpointTypeCollectionBase<ConfigurationInstanceEndpointBase>
 {
     /// <inheritdoc />

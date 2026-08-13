@@ -8,10 +8,8 @@ namespace ReferenceSchema.Endpoints.SchemaEndpointOptions;
 
 /// <summary>The endpoints over the schema resource.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "SchemaEndpoints")]
-[TypeCollection(typeof(SchemaEndpointBase), typeof(IEndpointTypeOption), typeof(SchemaEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "SchemaEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "SchemaEndpoints")]
+[TypeCollection(typeof(SchemaEndpointBase), typeof(IEndpointTypeOption), typeof(SchemaEndpoints))]
 public partial class SchemaEndpoints : EndpointTypeCollectionBase<SchemaEndpointBase>
 {
     /// <inheritdoc />

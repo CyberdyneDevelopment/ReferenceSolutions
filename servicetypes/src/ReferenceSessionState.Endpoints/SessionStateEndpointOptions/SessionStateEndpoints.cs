@@ -8,10 +8,8 @@ namespace ReferenceSessionState.Endpoints.SessionStateEndpointOptions;
 
 /// <summary>The endpoints over the session-state resource.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "SessionStateEndpoints")]
-[TypeCollection(typeof(SessionStateEndpointBase), typeof(IEndpointTypeOption), typeof(SessionStateEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "SessionStateEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "SessionStateEndpoints")]
+[TypeCollection(typeof(SessionStateEndpointBase), typeof(IEndpointTypeOption), typeof(SessionStateEndpoints))]
 public partial class SessionStateEndpoints : EndpointTypeCollectionBase<SessionStateEndpointBase>
 {
     /// <inheritdoc />

@@ -10,10 +10,8 @@ namespace ReferencePromotion.Endpoints.EnvironmentEndpointOptions;
 /// The endpoints over the environment resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "EnvironmentEndpoints")]
-[TypeCollection(typeof(EnvironmentEndpointBase), typeof(IEndpointTypeOption), typeof(EnvironmentEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "EnvironmentEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "EnvironmentEndpoints")]
+[TypeCollection(typeof(EnvironmentEndpointBase), typeof(IEndpointTypeOption), typeof(EnvironmentEndpoints))]
 public partial class EnvironmentEndpoints : EndpointTypeCollectionBase<EnvironmentEndpointBase>
 {
     /// <inheritdoc />

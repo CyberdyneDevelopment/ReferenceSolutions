@@ -10,10 +10,8 @@ namespace ReferenceUsers.Endpoints.UserEndpointOptions;
 /// The endpoints over the user resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "UserEndpoints")]
-[TypeCollection(typeof(UserEndpointBase), typeof(IEndpointTypeOption), typeof(UserEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "UserEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "UserEndpoints")]
+[TypeCollection(typeof(UserEndpointBase), typeof(IEndpointTypeOption), typeof(UserEndpoints))]
 public partial class UserEndpoints : EndpointTypeCollectionBase<UserEndpointBase>
 {
     /// <inheritdoc />

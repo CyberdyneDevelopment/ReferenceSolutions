@@ -10,10 +10,8 @@ namespace ReferenceQuality.Endpoints.QualityRuleEndpointOptions;
 /// The endpoints over the quality-rule resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "QualityRuleEndpoints")]
-[TypeCollection(typeof(QualityRuleEndpointBase), typeof(IEndpointTypeOption), typeof(QualityRuleEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "QualityRuleEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "QualityRuleEndpoints")]
+[TypeCollection(typeof(QualityRuleEndpointBase), typeof(IEndpointTypeOption), typeof(QualityRuleEndpoints))]
 public partial class QualityRuleEndpoints : EndpointTypeCollectionBase<QualityRuleEndpointBase>
 {
     /// <inheritdoc />

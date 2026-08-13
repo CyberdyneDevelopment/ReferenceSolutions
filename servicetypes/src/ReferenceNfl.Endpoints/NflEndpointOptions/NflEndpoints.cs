@@ -8,10 +8,8 @@ namespace ReferenceNfl.Endpoints.NflEndpointOptions;
 
 /// <summary>The endpoints over the nfl surface.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "NflEndpoints")]
-[TypeCollection(typeof(NflEndpointBase), typeof(IEndpointTypeOption), typeof(NflEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "NflEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "NflEndpoints")]
+[TypeCollection(typeof(NflEndpointBase), typeof(IEndpointTypeOption), typeof(NflEndpoints))]
 public partial class NflEndpoints : EndpointTypeCollectionBase<NflEndpointBase>
 {
     /// <inheritdoc />

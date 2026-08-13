@@ -8,10 +8,8 @@ namespace ReferenceTenants.Endpoints.TenantsEndpointOptions;
 
 /// <summary>The endpoints over the tenants surface.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "TenantsEndpoints")]
-[TypeCollection(typeof(TenantsEndpointBase), typeof(IEndpointTypeOption), typeof(TenantsEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "TenantsEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "TenantsEndpoints")]
+[TypeCollection(typeof(TenantsEndpointBase), typeof(IEndpointTypeOption), typeof(TenantsEndpoints))]
 public partial class TenantsEndpoints : EndpointTypeCollectionBase<TenantsEndpointBase>
 {
     /// <inheritdoc />

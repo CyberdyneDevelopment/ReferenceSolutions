@@ -8,10 +8,8 @@ namespace ReferenceExecution.Endpoints.ExecutionEndpointOptions;
 
 /// <summary>The endpoints over the execution resource.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "ExecutionEndpoints")]
-[TypeCollection(typeof(ExecutionEndpointBase), typeof(IEndpointTypeOption), typeof(ExecutionEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "ExecutionEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "ExecutionEndpoints")]
+[TypeCollection(typeof(ExecutionEndpointBase), typeof(IEndpointTypeOption), typeof(ExecutionEndpoints))]
 public partial class ExecutionEndpoints : EndpointTypeCollectionBase<ExecutionEndpointBase>
 {
     /// <inheritdoc />

@@ -8,10 +8,8 @@ namespace ReferenceAnalytics.Endpoints.AnalyticsEndpointOptions;
 
 /// <summary>The endpoints over the analytics surface.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "AnalyticsEndpoints")]
-[TypeCollection(typeof(AnalyticsEndpointBase), typeof(IEndpointTypeOption), typeof(AnalyticsEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "AnalyticsEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "AnalyticsEndpoints")]
+[TypeCollection(typeof(AnalyticsEndpointBase), typeof(IEndpointTypeOption), typeof(AnalyticsEndpoints))]
 public partial class AnalyticsEndpoints : EndpointTypeCollectionBase<AnalyticsEndpointBase>
 {
     /// <inheritdoc />

@@ -8,10 +8,8 @@ namespace ReferenceAudit.Endpoints.AuditEndpointOptions;
 
 /// <summary>The endpoints over the audit surface.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "AuditEndpoints")]
-[TypeCollection(typeof(AuditEndpointBase), typeof(IEndpointTypeOption), typeof(AuditEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "AuditEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "AuditEndpoints")]
+[TypeCollection(typeof(AuditEndpointBase), typeof(IEndpointTypeOption), typeof(AuditEndpoints))]
 public partial class AuditEndpoints : EndpointTypeCollectionBase<AuditEndpointBase>
 {
     /// <inheritdoc />

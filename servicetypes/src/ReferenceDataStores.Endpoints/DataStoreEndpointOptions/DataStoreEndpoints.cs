@@ -8,10 +8,8 @@ namespace ReferenceDataStores.Endpoints.DataStoreEndpointOptions;
 
 /// <summary>The endpoints over the data-store resource.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "DataStoreEndpoints")]
-[TypeCollection(typeof(DataStoreEndpointBase), typeof(IEndpointTypeOption), typeof(DataStoreEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "DataStoreEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "DataStoreEndpoints")]
+[TypeCollection(typeof(DataStoreEndpointBase), typeof(IEndpointTypeOption), typeof(DataStoreEndpoints))]
 public partial class DataStoreEndpoints : EndpointTypeCollectionBase<DataStoreEndpointBase>
 {
     /// <inheritdoc />

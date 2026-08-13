@@ -8,10 +8,8 @@ namespace ReferenceEscalation.Endpoints.EscalationEndpointOptions;
 
 /// <summary>The endpoints over the escalation surface.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "EscalationEndpoints")]
-[TypeCollection(typeof(EscalationEndpointBase), typeof(IEndpointTypeOption), typeof(EscalationEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "EscalationEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "EscalationEndpoints")]
+[TypeCollection(typeof(EscalationEndpointBase), typeof(IEndpointTypeOption), typeof(EscalationEndpoints))]
 public partial class EscalationEndpoints : EndpointTypeCollectionBase<EscalationEndpointBase>
 {
     /// <inheritdoc />

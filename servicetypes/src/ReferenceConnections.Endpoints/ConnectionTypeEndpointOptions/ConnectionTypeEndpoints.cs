@@ -10,10 +10,8 @@ namespace ReferenceConnections.Endpoints.ConnectionTypeEndpointOptions;
 /// The endpoints over the connection-type resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "ConnectionTypeEndpoints")]
-[TypeCollection(typeof(ConnectionTypeEndpointBase), typeof(IEndpointTypeOption), typeof(ConnectionTypeEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "ConnectionTypeEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "ConnectionTypeEndpoints")]
+[TypeCollection(typeof(ConnectionTypeEndpointBase), typeof(IEndpointTypeOption), typeof(ConnectionTypeEndpoints))]
 public partial class ConnectionTypeEndpoints : EndpointTypeCollectionBase<ConnectionTypeEndpointBase>
 {
     /// <inheritdoc />

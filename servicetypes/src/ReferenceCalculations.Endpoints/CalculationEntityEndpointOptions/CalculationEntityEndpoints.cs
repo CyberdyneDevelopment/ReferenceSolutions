@@ -8,10 +8,8 @@ namespace ReferenceCalculations.Endpoints.CalculationEntityEndpointOptions;
 
 /// <summary>The endpoints over the calculation-entity resource.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "CalculationEntityEndpoints")]
-[TypeCollection(typeof(CalculationEntityEndpointBase), typeof(IEndpointTypeOption), typeof(CalculationEntityEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "CalculationEntityEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "CalculationEntityEndpoints")]
+[TypeCollection(typeof(CalculationEntityEndpointBase), typeof(IEndpointTypeOption), typeof(CalculationEntityEndpoints))]
 public partial class CalculationEntityEndpoints : EndpointTypeCollectionBase<CalculationEntityEndpointBase>
 {
     /// <inheritdoc />

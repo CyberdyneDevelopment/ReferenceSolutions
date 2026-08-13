@@ -8,10 +8,8 @@ namespace ReferenceMessages.Endpoints.MessageEndpointOptions;
 
 /// <summary>The endpoints over the message resource.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "MessageEndpoints")]
-[TypeCollection(typeof(MessageEndpointBase), typeof(IEndpointTypeOption), typeof(MessageEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "MessageEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "MessageEndpoints")]
+[TypeCollection(typeof(MessageEndpointBase), typeof(IEndpointTypeOption), typeof(MessageEndpoints))]
 public partial class MessageEndpoints : EndpointTypeCollectionBase<MessageEndpointBase>
 {
     /// <inheritdoc />

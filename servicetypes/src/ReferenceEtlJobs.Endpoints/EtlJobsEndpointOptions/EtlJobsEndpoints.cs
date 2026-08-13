@@ -8,10 +8,8 @@ namespace ReferenceEtlJobs.Endpoints.EtlJobsEndpointOptions;
 
 /// <summary>The ETL server's jobs endpoints.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "EtlJobsEndpoints")]
-[TypeCollection(typeof(EtlJobsEndpointBase), typeof(IEndpointTypeOption), typeof(EtlJobsEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "EtlJobsEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "EtlJobsEndpoints")]
+[TypeCollection(typeof(EtlJobsEndpointBase), typeof(IEndpointTypeOption), typeof(EtlJobsEndpoints))]
 public partial class EtlJobsEndpoints : EndpointTypeCollectionBase<EtlJobsEndpointBase>
 {
     /// <inheritdoc />

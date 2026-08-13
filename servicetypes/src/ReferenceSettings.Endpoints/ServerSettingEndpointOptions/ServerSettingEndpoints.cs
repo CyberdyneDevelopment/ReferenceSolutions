@@ -10,10 +10,8 @@ namespace ReferenceSettings.Endpoints.ServerSettingEndpointOptions;
 /// The endpoints over the server-setting resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "ServerSettingEndpoints")]
-[TypeCollection(typeof(ServerSettingEndpointBase), typeof(IEndpointTypeOption), typeof(ServerSettingEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "ServerSettingEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "ServerSettingEndpoints")]
+[TypeCollection(typeof(ServerSettingEndpointBase), typeof(IEndpointTypeOption), typeof(ServerSettingEndpoints))]
 public partial class ServerSettingEndpoints : EndpointTypeCollectionBase<ServerSettingEndpointBase>
 {
     /// <inheritdoc />

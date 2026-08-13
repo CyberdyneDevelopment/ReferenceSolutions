@@ -10,10 +10,8 @@ namespace ReferencePromotion.Endpoints.PromotionEndpointOptions;
 /// The endpoints over the promotion resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "PromotionEndpoints")]
-[TypeCollection(typeof(PromotionEndpointBase), typeof(IEndpointTypeOption), typeof(PromotionEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "PromotionEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "PromotionEndpoints")]
+[TypeCollection(typeof(PromotionEndpointBase), typeof(IEndpointTypeOption), typeof(PromotionEndpoints))]
 public partial class PromotionEndpoints : EndpointTypeCollectionBase<PromotionEndpointBase>
 {
     /// <inheritdoc />

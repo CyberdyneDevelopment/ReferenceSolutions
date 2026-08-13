@@ -8,10 +8,8 @@ namespace ReferenceDdl.Endpoints.DdlEndpointOptions;
 
 /// <summary>The endpoints over the ddl surface.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "DdlEndpoints")]
-[TypeCollection(typeof(DdlEndpointBase), typeof(IEndpointTypeOption), typeof(DdlEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "DdlEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "DdlEndpoints")]
+[TypeCollection(typeof(DdlEndpointBase), typeof(IEndpointTypeOption), typeof(DdlEndpoints))]
 public partial class DdlEndpoints : EndpointTypeCollectionBase<DdlEndpointBase>
 {
     /// <inheritdoc />

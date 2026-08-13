@@ -8,10 +8,8 @@ namespace ReferenceSchedules.Endpoints.ScheduleEndpointOptions;
 
 /// <summary>The endpoints over the schedule resource.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "ScheduleEndpoints")]
-[TypeCollection(typeof(ScheduleEndpointBase), typeof(IEndpointTypeOption), typeof(ScheduleEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "ScheduleEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "ScheduleEndpoints")]
+[TypeCollection(typeof(ScheduleEndpointBase), typeof(IEndpointTypeOption), typeof(ScheduleEndpoints))]
 public partial class ScheduleEndpoints : EndpointTypeCollectionBase<ScheduleEndpointBase>
 {
     /// <inheritdoc />

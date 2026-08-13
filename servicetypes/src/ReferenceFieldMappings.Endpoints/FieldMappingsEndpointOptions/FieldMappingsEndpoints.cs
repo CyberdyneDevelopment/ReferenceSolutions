@@ -8,10 +8,8 @@ namespace ReferenceFieldMappings.Endpoints.FieldMappingsEndpointOptions;
 
 /// <summary>The endpoints over the fieldmappings surface.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "FieldMappingsEndpoints")]
-[TypeCollection(typeof(FieldMappingsEndpointBase), typeof(IEndpointTypeOption), typeof(FieldMappingsEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "FieldMappingsEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "FieldMappingsEndpoints")]
+[TypeCollection(typeof(FieldMappingsEndpointBase), typeof(IEndpointTypeOption), typeof(FieldMappingsEndpoints))]
 public partial class FieldMappingsEndpoints : EndpointTypeCollectionBase<FieldMappingsEndpointBase>
 {
     /// <inheritdoc />

@@ -8,10 +8,8 @@ namespace ReferenceExecution.Endpoints.WorkflowEndpointOptions;
 
 /// <summary>The endpoints over the workflow resource.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "WorkflowEndpoints")]
-[TypeCollection(typeof(WorkflowEndpointBase), typeof(IEndpointTypeOption), typeof(WorkflowEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "WorkflowEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "WorkflowEndpoints")]
+[TypeCollection(typeof(WorkflowEndpointBase), typeof(IEndpointTypeOption), typeof(WorkflowEndpoints))]
 public partial class WorkflowEndpoints : EndpointTypeCollectionBase<WorkflowEndpointBase>
 {
     /// <inheritdoc />

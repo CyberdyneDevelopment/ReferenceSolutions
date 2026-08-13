@@ -8,10 +8,8 @@ namespace ReferenceAgentActions.Endpoints.AgentActionsEndpointOptions;
 
 /// <summary>The endpoints over the agentactions surface.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "AgentActionsEndpoints")]
-[TypeCollection(typeof(AgentActionsEndpointBase), typeof(IEndpointTypeOption), typeof(AgentActionsEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "AgentActionsEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "AgentActionsEndpoints")]
+[TypeCollection(typeof(AgentActionsEndpointBase), typeof(IEndpointTypeOption), typeof(AgentActionsEndpoints))]
 public partial class AgentActionsEndpoints : EndpointTypeCollectionBase<AgentActionsEndpointBase>
 {
     /// <inheritdoc />

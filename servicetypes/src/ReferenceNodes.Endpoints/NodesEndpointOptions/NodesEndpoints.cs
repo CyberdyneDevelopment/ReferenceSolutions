@@ -8,10 +8,8 @@ namespace ReferenceNodes.Endpoints.NodesEndpointOptions;
 
 /// <summary>The endpoints over the nodes surface.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "NodesEndpoints")]
-[TypeCollection(typeof(NodesEndpointBase), typeof(IEndpointTypeOption), typeof(NodesEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "NodesEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "NodesEndpoints")]
+[TypeCollection(typeof(NodesEndpointBase), typeof(IEndpointTypeOption), typeof(NodesEndpoints))]
 public partial class NodesEndpoints : EndpointTypeCollectionBase<NodesEndpointBase>
 {
     /// <inheritdoc />

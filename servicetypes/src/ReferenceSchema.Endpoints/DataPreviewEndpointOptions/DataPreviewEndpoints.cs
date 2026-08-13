@@ -8,10 +8,8 @@ namespace ReferenceSchema.Endpoints.DataPreviewEndpointOptions;
 
 /// <summary>The endpoints over the data-preview resource.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "DataPreviewEndpoints")]
-[TypeCollection(typeof(DataPreviewEndpointBase), typeof(IEndpointTypeOption), typeof(DataPreviewEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "DataPreviewEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "DataPreviewEndpoints")]
+[TypeCollection(typeof(DataPreviewEndpointBase), typeof(IEndpointTypeOption), typeof(DataPreviewEndpoints))]
 public partial class DataPreviewEndpoints : EndpointTypeCollectionBase<DataPreviewEndpointBase>
 {
     /// <inheritdoc />

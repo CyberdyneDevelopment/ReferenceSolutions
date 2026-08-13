@@ -10,10 +10,8 @@ namespace ReferencePipelines.Endpoints.PipelineTypeEndpointOptions;
 /// The endpoints over the pipeline-type resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "PipelineTypeEndpoints")]
-[TypeCollection(typeof(PipelineTypeEndpointBase), typeof(IEndpointTypeOption), typeof(PipelineTypeEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "PipelineTypeEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "PipelineTypeEndpoints")]
+[TypeCollection(typeof(PipelineTypeEndpointBase), typeof(IEndpointTypeOption), typeof(PipelineTypeEndpoints))]
 public partial class PipelineTypeEndpoints : EndpointTypeCollectionBase<PipelineTypeEndpointBase>
 {
     /// <inheritdoc />

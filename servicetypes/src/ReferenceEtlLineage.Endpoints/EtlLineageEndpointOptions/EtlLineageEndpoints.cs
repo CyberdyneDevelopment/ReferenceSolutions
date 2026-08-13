@@ -8,10 +8,8 @@ namespace ReferenceEtlLineage.Endpoints.EtlLineageEndpointOptions;
 
 /// <summary>The ETL server's lineage endpoints.</summary>
 [ExcludeFromCodeCoverage]
-[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "EtlLineageEndpoints")]
-[TypeCollection(typeof(EtlLineageEndpointBase), typeof(IEndpointTypeOption), typeof(EtlLineageEndpoints),
-    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
-    TypeOptionName = "EtlLineageEndpoints")]
+[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "EtlLineageEndpoints")]
+[TypeCollection(typeof(EtlLineageEndpointBase), typeof(IEndpointTypeOption), typeof(EtlLineageEndpoints))]
 public partial class EtlLineageEndpoints : EndpointTypeCollectionBase<EtlLineageEndpointBase>
 {
     /// <inheritdoc />
