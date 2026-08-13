@@ -8,6 +8,7 @@ using Fdw.Results;
 using Fdw.Results.Abstractions;
 using ReferenceAuthentication.OpenIddict.Logging;
 using Fdw.Services.Data.Abstractions;
+using Fdw.Services.Authentication.Abstractions.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using CmdBuilders = Fdw.Commands.Data.Extensions;
@@ -43,12 +44,29 @@ internal abstract class OpenIddictStoreBase
     protected readonly ILogger<OpenIddictStoreBase> Logger;
 
     /// <summary>Initializes a new instance of <see cref="OpenIddictStoreBase"/>.</summary>
-    protected OpenIddictStoreBase(Lazy<IDataGateway> dataGateway, ILogger<OpenIddictStoreBase>? logger)
+    // Why the accessor is here: every read below happens before anyone is authenticated - validating a
+    // client, finding a scope, checking a token - so there is no principal to filter rows by. Row-level
+    // security sets SESSION_CONTEXT UserId to the reserved no-access principal when no context is
+    // established, and its predicate then matches nothing, so these queries returned zero rows and the
+    // AuthDb connection came back unresolvable. The predicate's own system-bypass mode is UserId IS
+    // NULL, which is exactly what SystemAuthenticationContextScope produces.
+    private readonly IAuthenticationContextAccessor _authContext;
+
+    protected OpenIddictStoreBase(
+        Lazy<IDataGateway> dataGateway,
+        IAuthenticationContextAccessor authContext,
+        ILogger<OpenIddictStoreBase>? logger)
     {
         ArgumentNullException.ThrowIfNull(dataGateway);
+        ArgumentNullException.ThrowIfNull(authContext);
         _dataGateway = dataGateway;
+        _authContext = authContext;
         Logger = logger ?? NullLogger<OpenIddictStoreBase>.Instance;
     }
+
+    /// <summary>Runs the store's own reads and writes as the system, not as the caller.</summary>
+    /// <returns>A scope to dispose when the operation completes.</returns>
+    protected SystemAuthenticationContextScope AsSystem() => new(_authContext);
 
     // ── Protected helpers ─────────────────────────────────────────────────────────────
 
@@ -68,6 +86,7 @@ internal abstract class OpenIddictStoreBase
         CancellationToken cancellationToken)
         where T : class
     {
+        using var systemScope = AsSystem();
         var result = await _dataGateway.Value
             .Execute<IEnumerable<T>>(call, cancellationToken)
             .ConfigureAwait(false);
@@ -94,6 +113,7 @@ internal abstract class OpenIddictStoreBase
             .Path(PathName)
             .Value(record);
 
+        using var systemScope = AsSystem();
         var result = await _dataGateway.Value
             .Execute<int>(command, cancellationToken)
             .ConfigureAwait(false);
@@ -151,6 +171,7 @@ internal abstract class OpenIddictStoreBase
             .Where(idColumnName, id)
             .Value(record);
 
+        using var systemScope = AsSystem();
         var result = await _dataGateway.Value
             .Execute<int>(command, cancellationToken)
             .ConfigureAwait(false);
@@ -181,6 +202,7 @@ internal abstract class OpenIddictStoreBase
             .Where(idColumnName, id)
             .Build();
 
+        using var systemScope = AsSystem();
         var result = await _dataGateway.Value
             .Execute<int>(command, cancellationToken)
             .ConfigureAwait(false);
@@ -241,6 +263,7 @@ internal abstract class OpenIddictStoreBase
             .Where("IsCurrent", true)
             .Value(supersededValue);
 
+        using var systemScope = AsSystem();
         var result = await _dataGateway.Value
             .Execute<int>(command, cancellationToken)
             .ConfigureAwait(false);

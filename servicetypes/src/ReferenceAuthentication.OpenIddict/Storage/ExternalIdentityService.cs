@@ -6,6 +6,7 @@ using Fdw.Results;
 using ReferenceAuthentication.OpenIddict.Logging;
 using ReferenceAuthentication.OpenIddict.Storage.Models;
 using Fdw.Services.Data.Abstractions;
+using Fdw.Services.Authentication.Abstractions.Security;
 using Microsoft.Extensions.Logging;
 using Query = Fdw.Commands.Data.DataQuery;
 using ReferenceAuthentication.OpenIddict;
@@ -28,8 +29,8 @@ internal sealed class ExternalIdentityService : OpenIddictStoreBase
 {
     private const string ExternalIdentityContainer = "ExternalIdentity";
 
-    public ExternalIdentityService(Lazy<IDataGateway> dataGateway, ILogger<ExternalIdentityService>? logger)
-        : base(dataGateway, logger)
+    public ExternalIdentityService(Lazy<IDataGateway> dataGateway, IAuthenticationContextAccessor authContext, ILogger<ExternalIdentityService>? logger)
+        : base(dataGateway, authContext, logger)
     {
     }
 

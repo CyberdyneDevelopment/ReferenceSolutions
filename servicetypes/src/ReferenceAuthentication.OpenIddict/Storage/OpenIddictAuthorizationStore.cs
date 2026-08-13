@@ -10,6 +10,7 @@ using Fdw.Results;
 using ReferenceAuthentication.OpenIddict.Logging;
 using ReferenceAuthentication.OpenIddict.Storage.Models;
 using Fdw.Services.Data.Abstractions;
+using Fdw.Services.Authentication.Abstractions.Security;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 using Query = Fdw.Commands.Data.DataQuery;
@@ -43,8 +44,8 @@ internal sealed class OpenIddictAuthorizationStore : OpenIddictStoreBase, IOpenI
     private static readonly ConditionalWeakTable<OpenIddictAuthorizationRecord, PendingScopes> _pendingScopes = new();
 
     /// <summary>Initializes a new instance of <see cref="OpenIddictAuthorizationStore"/>.</summary>
-    public OpenIddictAuthorizationStore(Lazy<IDataGateway> dataGateway, ILogger<OpenIddictAuthorizationStore>? logger)
-        : base(dataGateway, logger)
+    public OpenIddictAuthorizationStore(Lazy<IDataGateway> dataGateway, IAuthenticationContextAccessor authContext, ILogger<OpenIddictAuthorizationStore>? logger)
+        : base(dataGateway, authContext, logger)
     {
     }
 

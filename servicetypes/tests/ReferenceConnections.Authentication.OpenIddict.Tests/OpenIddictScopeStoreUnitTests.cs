@@ -1,3 +1,4 @@
+using Fdw.Services.Authentication.Abstractions.Security;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -37,7 +38,7 @@ public sealed class OpenIddictScopeStoreUnitTests
             .ReturnsAsync(GenericResult<int>.Success(1));
 
         var lazyGateway = new Lazy<IDataGateway>(() => _gatewayMock.Object);
-        _store = new OpenIddictScopeStore(lazyGateway, NullLogger<OpenIddictScopeStore>.Instance);
+        _store = new OpenIddictScopeStore(lazyGateway, new AuthenticationContextAccessor(), NullLogger<OpenIddictScopeStore>.Instance);
     }
 
     // ── CreateAsync ────────────────────────────────────────────────────────────────

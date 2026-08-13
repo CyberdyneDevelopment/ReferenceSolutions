@@ -1,3 +1,4 @@
+using Fdw.Services.Authentication.Abstractions.Security;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -193,6 +194,7 @@ public sealed class OpenIddictScopeStoreIntegrationTests
         var gateway = new DirectDataGateway(msSqlConnection, containers);
         var store = new OpenIddictScopeStore(
             new Lazy<IDataGateway>(() => gateway),
+            new AuthenticationContextAccessor(),
             NullLogger<OpenIddictScopeStore>.Instance);
 
         return (store, msSqlConnection, gateway);

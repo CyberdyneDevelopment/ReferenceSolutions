@@ -6,6 +6,7 @@ using Fdw.Results;
 using ReferenceAuthentication.OpenIddict.Logging;
 using ReferenceAuthentication.OpenIddict.Storage.Models;
 using Fdw.Services.Data.Abstractions;
+using Fdw.Services.Authentication.Abstractions.Security;
 using Microsoft.Extensions.Logging;
 using Query = Fdw.Commands.Data.DataQuery;
 using ReferenceAuthentication.OpenIddict;
@@ -31,8 +32,8 @@ internal sealed class RevokedAccessTokenStore : OpenIddictStoreBase
 {
     private const string RevokedAccessTokenContainer = "RevokedAccessToken";
 
-    public RevokedAccessTokenStore(Lazy<IDataGateway> dataGateway, ILogger<RevokedAccessTokenStore>? logger)
-        : base(dataGateway, logger)
+    public RevokedAccessTokenStore(Lazy<IDataGateway> dataGateway, IAuthenticationContextAccessor authContext, ILogger<RevokedAccessTokenStore>? logger)
+        : base(dataGateway, authContext, logger)
     {
     }
 

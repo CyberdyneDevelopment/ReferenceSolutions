@@ -1,3 +1,4 @@
+using Fdw.Services.Authentication.Abstractions.Security;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -86,7 +87,7 @@ public sealed class OpenIdTokenManagerExternalIdentityTests
             .ReturnsAsync(GenericResult<IEnumerable<ExternalIdentityRecord>>.Success(records));
 
         return new ExternalIdentityService(
-            new Lazy<IDataGateway>(() => gatewayMock.Object), NullLogger<ExternalIdentityService>.Instance);
+            new Lazy<IDataGateway>(() => gatewayMock.Object), new AuthenticationContextAccessor(), NullLogger<ExternalIdentityService>.Instance);
     }
 
     // Why: ExternalIdentityProvisionerBindingConfigurationProvider's own read methods are not virtual
@@ -126,9 +127,9 @@ public sealed class OpenIdTokenManagerExternalIdentityTests
         var secretManagerProviderMock = new Mock<IFdwServiceProvider<ISecretManager, SecretManagerConfiguration>>(MockBehavior.Strict);
 
         var revokedTokenStore = new RevokedAccessTokenStore(
-            new Lazy<IDataGateway>(() => null!), NullLogger<RevokedAccessTokenStore>.Instance);
+            new Lazy<IDataGateway>(() => null!), new AuthenticationContextAccessor(), NullLogger<RevokedAccessTokenStore>.Instance);
         var authorizationStore = new OpenIddictAuthorizationStore(
-            new Lazy<IDataGateway>(() => null!), NullLogger<OpenIddictAuthorizationStore>.Instance);
+            new Lazy<IDataGateway>(() => null!), new AuthenticationContextAccessor(), NullLogger<OpenIddictAuthorizationStore>.Instance);
 
         return new OpenIdTokenManager(
             header,
