@@ -7,7 +7,9 @@ namespace ReferenceExecution.Endpoints.ExecutionEndpointOptions;
 
 /// <summary>The endpoints over the execution resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(ExecutionEndpointBase), typeof(IEndpointTypeOption), typeof(ExecutionEndpoints))]
+[TypeCollection(typeof(ExecutionEndpointBase), typeof(IEndpointTypeOption), typeof(ExecutionEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "ExecutionEndpoints")]
 public partial class ExecutionEndpoints : EndpointTypeCollectionBase<ExecutionEndpointBase>
 {
     /// <inheritdoc />

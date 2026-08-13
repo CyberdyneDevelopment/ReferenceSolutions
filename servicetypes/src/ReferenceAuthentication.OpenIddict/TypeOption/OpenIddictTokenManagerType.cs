@@ -100,10 +100,10 @@ public sealed class OpenIddictTokenManagerType
             return GenericResult<IHost>.Success(host);
         });
 
-        Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
+        Registration((builder, loggerFactory) =>
         {
 
-            RegisterConfigurationProviders(builder.Services, dataStoreName, pathName);
+            RegisterConfigurationProviders(builder.Services, DataStore, PathName);
             RegisterRuntimeServices(builder.Services);
             return GenericResult<IHostApplicationBuilder>.Success(builder);
     

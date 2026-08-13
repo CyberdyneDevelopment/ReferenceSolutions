@@ -67,7 +67,7 @@ public sealed class OidcExternalIdentityProviderType
             return GenericResult<IHost>.Success(host);
         });
 
-        Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
+        Registration((builder, loggerFactory) =>
         {
 
             // Why: registers the option-agnostic domain builder.Services this option depends on (header config
@@ -80,8 +80,8 @@ public sealed class OidcExternalIdentityProviderType
                 new OidcExternalIdentityProviderConfigurationProvider(
                     sp.GetService<ILogger<OidcExternalIdentityProviderConfigurationProvider>>()!,
                     sp.GetRequiredService<Lazy<IConfigurationGateway>>(),
-                    dataStoreName,
-                    pathName,
+                    DataStore,
+                    PathName,
                     new Lazy<ICacheInvalidator?>(() => sp.GetService<ICacheInvalidator>())));
 
             builder.Services.TryAddSingleton<OidcExternalIdentityProviderFactory>();

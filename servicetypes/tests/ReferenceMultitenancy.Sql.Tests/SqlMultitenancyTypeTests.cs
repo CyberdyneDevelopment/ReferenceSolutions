@@ -153,7 +153,7 @@ public class SqlMultitenancyTypeTests
         var services = builder.Services;
         services.AddSingleton(new Lazy<IConfigurationGateway>(() => gateway));
         var option = new SqlMultitenancyType();
-        option.Register(builder, loggerFactory: null, "ConfigurationDb", "settings", "SqlTenantProvider");
+        option.Register(builder, loggerFactory: null);
         return builder.Build();
     }
 

@@ -9,7 +9,9 @@ namespace ReferencePipelines.Endpoints.PipelineExecutionEndpointOptions;
 /// The endpoints over the pipeline-execution resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(PipelineExecutionEndpointBase), typeof(IEndpointTypeOption), typeof(PipelineExecutionEndpoints))]
+[TypeCollection(typeof(PipelineExecutionEndpointBase), typeof(IEndpointTypeOption), typeof(PipelineExecutionEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "PipelineExecutionEndpoints")]
 public partial class PipelineExecutionEndpoints : EndpointTypeCollectionBase<PipelineExecutionEndpointBase>
 {
     /// <inheritdoc />

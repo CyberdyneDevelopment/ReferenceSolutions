@@ -469,7 +469,7 @@ public sealed class DataSetProviderTests
             ConnectionType = "MsSql",
             DataStoreName = "TestStore",
             Priority = 1,
-            Path = "dbo",
+            PathValue = "dbo",
             ContainerName = "TestTable",
             FieldMappingIds = new List<Guid> { Guid.NewGuid() }
         };

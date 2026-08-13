@@ -7,7 +7,9 @@ namespace ReferenceExecution.Endpoints.WorkflowEndpointOptions;
 
 /// <summary>The endpoints over the workflow resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(WorkflowEndpointBase), typeof(IEndpointTypeOption), typeof(WorkflowEndpoints))]
+[TypeCollection(typeof(WorkflowEndpointBase), typeof(IEndpointTypeOption), typeof(WorkflowEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "WorkflowEndpoints")]
 public partial class WorkflowEndpoints : EndpointTypeCollectionBase<WorkflowEndpointBase>
 {
     /// <inheritdoc />

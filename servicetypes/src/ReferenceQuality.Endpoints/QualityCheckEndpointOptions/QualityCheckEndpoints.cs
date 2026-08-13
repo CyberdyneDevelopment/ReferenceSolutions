@@ -9,7 +9,9 @@ namespace ReferenceQuality.Endpoints.QualityCheckEndpointOptions;
 /// The endpoints over the quality-check resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(QualityCheckEndpointBase), typeof(IEndpointTypeOption), typeof(QualityCheckEndpoints))]
+[TypeCollection(typeof(QualityCheckEndpointBase), typeof(IEndpointTypeOption), typeof(QualityCheckEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "QualityCheckEndpoints")]
 public partial class QualityCheckEndpoints : EndpointTypeCollectionBase<QualityCheckEndpointBase>
 {
     /// <inheritdoc />

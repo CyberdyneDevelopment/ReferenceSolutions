@@ -63,7 +63,7 @@ public sealed class SqlMultitenancyType : MultitenancyTypeBase<ISqlMultitenancyF
         // option is selected from ConfigurationSchema.Multitenancy (configurationSchema.json) — so the
         // binding was a lever that looked live and was not. Removed rather than left in place.
 
-        Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
+        Registration((builder, loggerFactory) =>
         {
 
             RegisterAlwaysOnContexts(builder.Services);

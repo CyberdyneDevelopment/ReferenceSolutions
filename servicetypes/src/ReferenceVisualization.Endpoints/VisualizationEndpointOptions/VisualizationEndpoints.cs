@@ -7,7 +7,9 @@ namespace ReferenceVisualization.Endpoints.VisualizationEndpointOptions;
 
 /// <summary>The endpoints over the visualization surface.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(VisualizationEndpointBase), typeof(IEndpointTypeOption), typeof(VisualizationEndpoints))]
+[TypeCollection(typeof(VisualizationEndpointBase), typeof(IEndpointTypeOption), typeof(VisualizationEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "VisualizationEndpoints")]
 public partial class VisualizationEndpoints : EndpointTypeCollectionBase<VisualizationEndpointBase>
 {
     /// <inheritdoc />

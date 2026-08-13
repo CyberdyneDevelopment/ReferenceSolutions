@@ -7,7 +7,9 @@ namespace ReferenceNodes.Endpoints.NodesEndpointOptions;
 
 /// <summary>The endpoints over the nodes surface.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(NodesEndpointBase), typeof(IEndpointTypeOption), typeof(NodesEndpoints))]
+[TypeCollection(typeof(NodesEndpointBase), typeof(IEndpointTypeOption), typeof(NodesEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "NodesEndpoints")]
 public partial class NodesEndpoints : EndpointTypeCollectionBase<NodesEndpointBase>
 {
     /// <inheritdoc />

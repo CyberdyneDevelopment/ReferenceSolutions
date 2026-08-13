@@ -7,7 +7,9 @@ namespace ReferenceCalculations.Endpoints.CalculationEntityEndpointOptions;
 
 /// <summary>The endpoints over the calculation-entity resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(CalculationEntityEndpointBase), typeof(IEndpointTypeOption), typeof(CalculationEntityEndpoints))]
+[TypeCollection(typeof(CalculationEntityEndpointBase), typeof(IEndpointTypeOption), typeof(CalculationEntityEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "CalculationEntityEndpoints")]
 public partial class CalculationEntityEndpoints : EndpointTypeCollectionBase<CalculationEntityEndpointBase>
 {
     /// <inheritdoc />

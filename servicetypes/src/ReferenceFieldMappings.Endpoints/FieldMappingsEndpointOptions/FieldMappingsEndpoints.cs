@@ -7,7 +7,9 @@ namespace ReferenceFieldMappings.Endpoints.FieldMappingsEndpointOptions;
 
 /// <summary>The endpoints over the fieldmappings surface.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(FieldMappingsEndpointBase), typeof(IEndpointTypeOption), typeof(FieldMappingsEndpoints))]
+[TypeCollection(typeof(FieldMappingsEndpointBase), typeof(IEndpointTypeOption), typeof(FieldMappingsEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "FieldMappingsEndpoints")]
 public partial class FieldMappingsEndpoints : EndpointTypeCollectionBase<FieldMappingsEndpointBase>
 {
     /// <inheritdoc />

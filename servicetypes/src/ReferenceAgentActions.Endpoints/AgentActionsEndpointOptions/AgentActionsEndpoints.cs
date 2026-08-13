@@ -7,7 +7,9 @@ namespace ReferenceAgentActions.Endpoints.AgentActionsEndpointOptions;
 
 /// <summary>The endpoints over the agentactions surface.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(AgentActionsEndpointBase), typeof(IEndpointTypeOption), typeof(AgentActionsEndpoints))]
+[TypeCollection(typeof(AgentActionsEndpointBase), typeof(IEndpointTypeOption), typeof(AgentActionsEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "AgentActionsEndpoints")]
 public partial class AgentActionsEndpoints : EndpointTypeCollectionBase<AgentActionsEndpointBase>
 {
     /// <inheritdoc />

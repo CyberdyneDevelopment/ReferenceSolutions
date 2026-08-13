@@ -7,7 +7,9 @@ namespace ReferenceShared.Endpoints.SharedEndpointOptions;
 
 /// <summary>The endpoints over the shared surface.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(SharedEndpointBase), typeof(IEndpointTypeOption), typeof(SharedEndpoints))]
+[TypeCollection(typeof(SharedEndpointBase), typeof(IEndpointTypeOption), typeof(SharedEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "SharedEndpoints")]
 public partial class SharedEndpoints : EndpointTypeCollectionBase<SharedEndpointBase>
 {
     /// <inheritdoc />

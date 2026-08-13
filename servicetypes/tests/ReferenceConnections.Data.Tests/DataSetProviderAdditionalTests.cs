@@ -83,7 +83,7 @@ public sealed class DataSetProviderAdditionalTests
             ConnectionName = "TestConn",
             ConnectionType = "MsSql",
             DataStoreName = "TestStore",
-            Path = path ?? string.Empty,
+            PathValue = path ?? string.Empty,
             ContainerName = containerName ?? string.Empty,
             HttpEndpoint = httpEndpoint,
             HttpMethod = httpMethod,

@@ -98,7 +98,7 @@ public class AddDataStorePathEndpoint : Endpoint<AddDataStorePathRequest, DataSt
             // for an HTTP store the URL suffix appended to the base address (e.g. "all_hour.geojson").
             // Persist the caller's value verbatim; an absent Path is the empty string, matching
             // DataPathConfiguration.Path's own empty default (no value is invented).
-            Path = req.Path,
+            PathValue = req.Path,
             // Why: PathType is the DataPath discriminator ("Schema", "UrlSuffix", ...). Persist exactly
             // what the caller supplied so the type is never silently assumed.
             PathType = req.PathType,
@@ -127,7 +127,7 @@ public class AddDataStorePathEndpoint : Endpoint<AddDataStorePathRequest, DataSt
             // → non-null DTO) used in GetDataStoreEndpointBase / CreateDataStoreEndpoint — DTO presentation
             // shape, not a configuration fallback; the persisted DataPathConfiguration.PathType stays null.
             PathType = path.PathType ?? string.Empty,
-            Path = path.Path,
+            PathValue = path.PathValue,
             Containers = [],
         }, 201, ct).ConfigureAwait(false);
     }

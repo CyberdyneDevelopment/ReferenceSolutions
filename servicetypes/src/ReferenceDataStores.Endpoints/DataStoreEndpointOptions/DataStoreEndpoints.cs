@@ -7,7 +7,9 @@ namespace ReferenceDataStores.Endpoints.DataStoreEndpointOptions;
 
 /// <summary>The endpoints over the data-store resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(DataStoreEndpointBase), typeof(IEndpointTypeOption), typeof(DataStoreEndpoints))]
+[TypeCollection(typeof(DataStoreEndpointBase), typeof(IEndpointTypeOption), typeof(DataStoreEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "DataStoreEndpoints")]
 public partial class DataStoreEndpoints : EndpointTypeCollectionBase<DataStoreEndpointBase>
 {
     /// <inheritdoc />

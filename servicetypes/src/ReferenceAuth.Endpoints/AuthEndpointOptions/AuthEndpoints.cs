@@ -7,7 +7,9 @@ namespace ReferenceAuth.Endpoints.AuthEndpointOptions;
 
 /// <summary>The endpoints over the auth resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(AuthEndpointBase), typeof(IEndpointTypeOption), typeof(AuthEndpoints))]
+[TypeCollection(typeof(AuthEndpointBase), typeof(IEndpointTypeOption), typeof(AuthEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "AuthEndpoints")]
 public partial class AuthEndpoints : EndpointTypeCollectionBase<AuthEndpointBase>
 {
     /// <inheritdoc />

@@ -9,7 +9,9 @@ namespace ReferenceRoles.Endpoints.RolePermissionEndpointOptions;
 /// The endpoints over the role-permission resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(RolePermissionEndpointBase), typeof(IEndpointTypeOption), typeof(RolePermissionEndpoints))]
+[TypeCollection(typeof(RolePermissionEndpointBase), typeof(IEndpointTypeOption), typeof(RolePermissionEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "RolePermissionEndpoints")]
 public partial class RolePermissionEndpoints : EndpointTypeCollectionBase<RolePermissionEndpointBase>
 {
     /// <inheritdoc />

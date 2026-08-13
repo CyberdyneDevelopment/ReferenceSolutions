@@ -7,7 +7,9 @@ namespace ReferenceSecretManagers.Endpoints.SecretManagerEndpointOptions;
 
 /// <summary>The endpoints over the secret-manager resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(SecretManagerEndpointBase), typeof(IEndpointTypeOption), typeof(SecretManagerEndpoints))]
+[TypeCollection(typeof(SecretManagerEndpointBase), typeof(IEndpointTypeOption), typeof(SecretManagerEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "SecretManagerEndpoints")]
 public partial class SecretManagerEndpoints : EndpointTypeCollectionBase<SecretManagerEndpointBase>
 {
     /// <inheritdoc />

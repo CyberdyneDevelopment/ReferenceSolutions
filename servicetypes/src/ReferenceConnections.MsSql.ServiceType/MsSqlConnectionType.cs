@@ -135,7 +135,7 @@ public sealed class MsSqlConnectionType
             return GenericResult<IHost>.Success(host);
         });
 
-        Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
+        Registration((builder, loggerFactory) =>
         {
 
             // Why Singleton: MsSqlConnectionFactory is itself Singleton (required for the three-phase
@@ -168,8 +168,8 @@ public sealed class MsSqlConnectionType
                 new MsSqlConnectionConfigurationProvider(
                     sp.GetService<ILogger<MsSqlConnectionConfigurationProvider>>()!,
                     sp.GetRequiredService<Lazy<IConfigurationGateway>>(),
-                    dataStoreName,
-                    pathName,
+                    DataStore,
+                    PathName,
                     new Lazy<ICacheInvalidator?>(() => sp.GetService<ICacheInvalidator>())));
             builder.Services.TryAddSingleton<IServiceConfigurationProvider<MsSqlConnectionConfiguration>>(
                 sp => sp.GetRequiredService<MsSqlConnectionConfigurationProvider>());

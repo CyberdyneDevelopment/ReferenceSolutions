@@ -97,7 +97,7 @@ public sealed class SqliteSecretManagerType
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
-        Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
+        Registration((builder, loggerFactory) =>
         {
 
             // Register the factory as singleton - DI handles all constructor dependencies
@@ -105,12 +105,12 @@ public sealed class SqliteSecretManagerType
 
             // Why: Lazy<IConfigurationGateway> defers cfg resolution until first runtime query, avoiding
             // circular dependency with the DataGateway that hasn't been built yet at registration time.
-            // dataStoreName flows from TypeCollection.Configure() so "ConfigurationDb" is never hardcoded here.
+            // DataStore flows from TypeCollection.Configure() so "ConfigurationDb" is never hardcoded here.
             builder.Services.AddSingleton(sp => new DefaultConfigurationProvider<SqliteSecretManagerConfiguration, SqliteSecretManagerConfigurationCommand>(
                 sp.GetRequiredService<ILoggerFactory>().CreateLogger<DefaultConfigurationProvider<SqliteSecretManagerConfiguration, SqliteSecretManagerConfigurationCommand>>(),
                 sp.GetRequiredService<Lazy<IConfigurationGateway>>(),
-                dataStoreName,
-                pathName,
+                DataStore,
+                PathName,
                 new Lazy<ICacheInvalidator?>(() => sp.GetService<ICacheInvalidator>())));
 
             // Why: RegisterFactory (below) requires SecretManagerConfigurationProvider (the shared header

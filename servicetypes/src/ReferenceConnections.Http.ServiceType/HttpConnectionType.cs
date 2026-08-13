@@ -109,7 +109,7 @@ public sealed class HttpConnectionType : ConnectionTypeBase<IGenericConnection, 
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
-        Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
+        Registration((builder, loggerFactory) =>
         {
 
             // HTTP client factory is typically already registered, but ensure it's available
@@ -123,13 +123,13 @@ public sealed class HttpConnectionType : ConnectionTypeBase<IGenericConnection, 
                 sp.GetRequiredService<IHttpClientFactory>(),
                 sp.GetRequiredService<ILoggerFactory>(),
                 sp.GetRequiredService<ISecretManagerProvider>()));
-            // Why: Factory lambda captures dataStoreName so cfg queries hit the correct DataStore.
+            // Why: Factory lambda captures DataStore so cfg queries hit the correct DataStore.
             builder.Services.TryAddSingleton<HttpConnectionConfigurationProvider>(sp =>
                 new HttpConnectionConfigurationProvider(
                     sp.GetService<ILogger<HttpConnectionConfigurationProvider>>()!,
                     sp.GetRequiredService<Lazy<IConfigurationGateway>>(),
-                    dataStoreName,
-                    pathName,
+                    DataStore,
+                    PathName,
                     new Lazy<ICacheInvalidator?>(() => sp.GetService<ICacheInvalidator>())));
             builder.Services.TryAddSingleton<Fdw.Services.Abstractions.IServiceConfigurationProvider<HttpConnectionConfiguration>>(
                 sp => sp.GetRequiredService<HttpConnectionConfigurationProvider>());

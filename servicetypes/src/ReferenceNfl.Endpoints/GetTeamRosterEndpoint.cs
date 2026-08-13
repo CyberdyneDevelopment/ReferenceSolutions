@@ -67,7 +67,7 @@ public sealed class GetTeamRosterEndpoint : Endpoint<ListRosterRequest, List<Pla
             return;
         }
 
-        var builder = DataQuery.From<PlayerRecord>(src.DataStoreName, src.Path, src.ContainerName)
+        var builder = DataQuery.From<PlayerRecord>(src.DataStoreName, src.PathValue, src.ContainerName)
             .Where("TeamId", req.TeamId);
 
         if (!string.IsNullOrWhiteSpace(req.Position))

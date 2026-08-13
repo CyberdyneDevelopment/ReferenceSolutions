@@ -67,7 +67,7 @@ public sealed class ListTeamsEndpoint : Endpoint<ListTeamsRequest, List<TeamReco
             return;
         }
 
-        var builder = DataQuery.From<TeamRecord>(src.DataStoreName, src.Path, src.ContainerName);
+        var builder = DataQuery.From<TeamRecord>(src.DataStoreName, src.PathValue, src.ContainerName);
 
         if (!string.IsNullOrWhiteSpace(req.Conference))
         {

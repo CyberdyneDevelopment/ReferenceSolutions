@@ -9,7 +9,9 @@ namespace ReferenceConnections.Endpoints.ConnectionEndpointOptions;
 /// The endpoints over the connection resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(ConnectionEndpointBase), typeof(IEndpointTypeOption), typeof(ConnectionEndpoints))]
+[TypeCollection(typeof(ConnectionEndpointBase), typeof(IEndpointTypeOption), typeof(ConnectionEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "ConnectionEndpoints")]
 public partial class ConnectionEndpoints : EndpointTypeCollectionBase<ConnectionEndpointBase>
 {
     /// <inheritdoc />

@@ -67,7 +67,7 @@ public sealed class GetPlayerStatsEndpoint : Endpoint<PlayerStatsRequest, List<P
             return;
         }
 
-        var command = DataQuery.From<PlayerGameStatRecord>(src.DataStoreName, src.Path, src.ContainerName)
+        var command = DataQuery.From<PlayerGameStatRecord>(src.DataStoreName, src.PathValue, src.ContainerName)
             .Where("PlayerId", req.PlayerId)
             .Build();
 

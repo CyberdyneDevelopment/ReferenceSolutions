@@ -97,19 +97,19 @@ public sealed class SystemNotificationType
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
-        Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
+        Registration((builder, loggerFactory) =>
         {
 
             builder.Services.AddSingleton<ISystemNotificationFactory, SystemNotificationFactory>();
 
             // Why: Lazy<IConfigurationGateway> defers cfg resolution until first runtime query, avoiding
             // circular dependency with the DataGateway that hasn't been built yet at registration time.
-            // dataStoreName flows from TypeCollection.Configure() so "ConfigurationDb" is never hardcoded here.
+            // DataStore flows from TypeCollection.Configure() so "ConfigurationDb" is never hardcoded here.
             builder.Services.AddSingleton(sp => new DefaultConfigurationProvider<SystemNotificationConfiguration, SystemNotificationConfigurationCommand>(
                 sp.GetRequiredService<ILoggerFactory>().CreateLogger<DefaultConfigurationProvider<SystemNotificationConfiguration, SystemNotificationConfigurationCommand>>(),
                 sp.GetRequiredService<Lazy<IConfigurationGateway>>(),
-                dataStoreName,
-                pathName,
+                DataStore,
+                PathName,
                 new Lazy<ICacheInvalidator?>(() => sp.GetService<ICacheInvalidator>())));
 
             // Why: register the domain header provider (idempotent) it depends on, instead of the

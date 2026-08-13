@@ -7,7 +7,9 @@ namespace ReferenceNfl.Endpoints.NflEndpointOptions;
 
 /// <summary>The endpoints over the nfl surface.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(NflEndpointBase), typeof(IEndpointTypeOption), typeof(NflEndpoints))]
+[TypeCollection(typeof(NflEndpointBase), typeof(IEndpointTypeOption), typeof(NflEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "NflEndpoints")]
 public partial class NflEndpoints : EndpointTypeCollectionBase<NflEndpointBase>
 {
     /// <inheritdoc />

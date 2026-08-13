@@ -9,7 +9,9 @@ namespace ReferenceQuality.Endpoints.QualityDashboardEndpointOptions;
 /// The endpoints over the quality-dashboard resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(QualityDashboardEndpointBase), typeof(IEndpointTypeOption), typeof(QualityDashboardEndpoints))]
+[TypeCollection(typeof(QualityDashboardEndpointBase), typeof(IEndpointTypeOption), typeof(QualityDashboardEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "QualityDashboardEndpoints")]
 public partial class QualityDashboardEndpoints : EndpointTypeCollectionBase<QualityDashboardEndpointBase>
 {
     /// <inheritdoc />

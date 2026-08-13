@@ -67,7 +67,7 @@ public sealed class ListGamesEndpoint : Endpoint<ListGamesRequest, List<GameReco
             return;
         }
 
-        var builder = DataQuery.From<GameRecord>(src.DataStoreName, src.Path, src.ContainerName);
+        var builder = DataQuery.From<GameRecord>(src.DataStoreName, src.PathValue, src.ContainerName);
 
         if (req.Season.HasValue)
         {

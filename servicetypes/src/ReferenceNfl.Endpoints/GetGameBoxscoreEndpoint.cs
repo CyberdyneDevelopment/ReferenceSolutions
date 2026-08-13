@@ -67,7 +67,7 @@ public sealed class GetGameBoxscoreEndpoint : Endpoint<GameIdRequest, List<Playe
             return;
         }
 
-        var command = DataQuery.From<PlayerGameStatRecord>(src.DataStoreName, src.Path, src.ContainerName)
+        var command = DataQuery.From<PlayerGameStatRecord>(src.DataStoreName, src.PathValue, src.ContainerName)
             .Where("GameId", req.GameId)
             .Build();
 

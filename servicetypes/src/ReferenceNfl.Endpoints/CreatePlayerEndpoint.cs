@@ -92,7 +92,7 @@ public sealed class CreatePlayerEndpoint : Endpoint<CreatePlayerRequest, PlayerR
         };
 
         var command = Insert.Into<PlayerRecord>(src.ContainerName)
-            .DataStore(src.DataStoreName).Path(src.Path).Value(record);
+            .DataStore(src.DataStoreName).Path(src.PathValue).Value(record);
 
         var result = await _dataGateway.Execute<int>(command, ct);
 

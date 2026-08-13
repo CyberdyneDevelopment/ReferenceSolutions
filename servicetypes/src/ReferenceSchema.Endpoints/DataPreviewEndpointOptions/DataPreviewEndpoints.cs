@@ -7,7 +7,9 @@ namespace ReferenceSchema.Endpoints.DataPreviewEndpointOptions;
 
 /// <summary>The endpoints over the data-preview resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(DataPreviewEndpointBase), typeof(IEndpointTypeOption), typeof(DataPreviewEndpoints))]
+[TypeCollection(typeof(DataPreviewEndpointBase), typeof(IEndpointTypeOption), typeof(DataPreviewEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "DataPreviewEndpoints")]
 public partial class DataPreviewEndpoints : EndpointTypeCollectionBase<DataPreviewEndpointBase>
 {
     /// <inheritdoc />

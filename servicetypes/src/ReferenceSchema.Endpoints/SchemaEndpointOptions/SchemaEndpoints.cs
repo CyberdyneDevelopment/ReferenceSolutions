@@ -7,7 +7,9 @@ namespace ReferenceSchema.Endpoints.SchemaEndpointOptions;
 
 /// <summary>The endpoints over the schema resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(SchemaEndpointBase), typeof(IEndpointTypeOption), typeof(SchemaEndpoints))]
+[TypeCollection(typeof(SchemaEndpointBase), typeof(IEndpointTypeOption), typeof(SchemaEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "SchemaEndpoints")]
 public partial class SchemaEndpoints : EndpointTypeCollectionBase<SchemaEndpointBase>
 {
     /// <inheritdoc />

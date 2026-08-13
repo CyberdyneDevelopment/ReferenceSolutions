@@ -125,7 +125,7 @@ public sealed class UserSecretsSecretManagerType
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
-        Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
+        Registration((builder, loggerFactory) =>
         {
 
             // Register the factory as singleton - DI handles all constructor dependencies

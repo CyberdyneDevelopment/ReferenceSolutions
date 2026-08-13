@@ -59,7 +59,7 @@ public sealed class WebhookNotificationTypeTests
         services.AddHttpClient();
 
         // Act
-        var result = sut.Register(builder, null, "TestStore", "TestPath", "TestContainer");
+        var result = sut.Register(builder, null);
 
         // Assert
         // The phase reports whether it ran, and hands back what it was given.

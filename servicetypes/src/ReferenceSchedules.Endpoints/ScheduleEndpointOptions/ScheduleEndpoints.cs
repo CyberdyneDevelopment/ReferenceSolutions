@@ -7,7 +7,9 @@ namespace ReferenceSchedules.Endpoints.ScheduleEndpointOptions;
 
 /// <summary>The endpoints over the schedule resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(ScheduleEndpointBase), typeof(IEndpointTypeOption), typeof(ScheduleEndpoints))]
+[TypeCollection(typeof(ScheduleEndpointBase), typeof(IEndpointTypeOption), typeof(ScheduleEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "ScheduleEndpoints")]
 public partial class ScheduleEndpoints : EndpointTypeCollectionBase<ScheduleEndpointBase>
 {
     /// <inheritdoc />

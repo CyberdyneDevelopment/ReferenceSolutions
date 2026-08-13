@@ -67,7 +67,7 @@ public sealed class DeletePlayerEndpoint : Endpoint<PlayerIdRequest>
 
         var command = new DeleteCommandBuilder(src.ContainerName)
             .DataStore(src.DataStoreName)
-            .Path(src.Path)
+            .Path(src.PathValue)
             .Where("Id", req.PlayerId)
             .Build();
 

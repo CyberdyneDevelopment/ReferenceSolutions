@@ -7,7 +7,9 @@ namespace ReferenceHealth.Endpoints.HealthEndpointOptions;
 
 /// <summary>The endpoints over the health surface.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(HealthEndpointBase), typeof(IEndpointTypeOption), typeof(HealthEndpoints))]
+[TypeCollection(typeof(HealthEndpointBase), typeof(IEndpointTypeOption), typeof(HealthEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "HealthEndpoints")]
 public partial class HealthEndpoints : EndpointTypeCollectionBase<HealthEndpointBase>
 {
     /// <inheritdoc />

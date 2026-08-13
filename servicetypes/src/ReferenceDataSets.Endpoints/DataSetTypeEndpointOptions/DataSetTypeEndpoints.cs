@@ -14,7 +14,9 @@ namespace ReferenceDataSets.Endpoints.DataSetTypeEndpointOptions;
 /// solely because an abstract collection cannot be instantiated.
 /// </remarks>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(DataSetTypeEndpointBase), typeof(IEndpointTypeOption), typeof(DataSetTypeEndpoints))]
+[TypeCollection(typeof(DataSetTypeEndpointBase), typeof(IEndpointTypeOption), typeof(DataSetTypeEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "DataSetTypeEndpoints")]
 public partial class DataSetTypeEndpoints : EndpointTypeCollectionBase<DataSetTypeEndpointBase>
 {
     /// <inheritdoc />

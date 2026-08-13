@@ -89,7 +89,7 @@ public class UpdateDataStoreEndpoint : UpdateDataStoreEndpointBase<DataStoreConf
                 Id = p.Id,
                 Name = p.Name,
                 PathType = p.PathType ?? string.Empty,
-                Path = p.Path,
+                PathValue = p.PathValue,
                 Description = p.Description
             }).ToList() ?? []
         };

@@ -9,7 +9,9 @@ namespace ReferenceSettings.Endpoints.ServerSettingEndpointOptions;
 /// The endpoints over the server-setting resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(ServerSettingEndpointBase), typeof(IEndpointTypeOption), typeof(ServerSettingEndpoints))]
+[TypeCollection(typeof(ServerSettingEndpointBase), typeof(IEndpointTypeOption), typeof(ServerSettingEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "ServerSettingEndpoints")]
 public partial class ServerSettingEndpoints : EndpointTypeCollectionBase<ServerSettingEndpointBase>
 {
     /// <inheritdoc />

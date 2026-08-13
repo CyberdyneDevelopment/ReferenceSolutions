@@ -104,7 +104,7 @@ public sealed class PostgreSqlConnectionType
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
-        Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
+        Registration((builder, loggerFactory) =>
         {
 
             // Why: this option registers its factory WITH WHAT THAT FACTORY NEEDS, exactly as
@@ -118,8 +118,8 @@ public sealed class PostgreSqlConnectionType
                 new PostgreSqlConnectionConfigurationProvider(
                     sp.GetService<ILogger<PostgreSqlConnectionConfigurationProvider>>()!,
                     sp.GetRequiredService<Lazy<IConfigurationGateway>>(),
-                    dataStoreName,
-                    pathName,
+                    DataStore,
+                    PathName,
                     new Lazy<ICacheInvalidator?>(() => sp.GetService<ICacheInvalidator>())));
             builder.Services.TryAddSingleton<Fdw.Services.Abstractions.IServiceConfigurationProvider<PostgreSqlConnectionConfiguration>>(
                 sp => sp.GetRequiredService<PostgreSqlConnectionConfigurationProvider>());

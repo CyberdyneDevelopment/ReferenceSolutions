@@ -9,7 +9,9 @@ namespace ReferenceUsers.Endpoints.UserRoleEndpointOptions;
 /// The endpoints over the user-role resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(UserRoleEndpointBase), typeof(IEndpointTypeOption), typeof(UserRoleEndpoints))]
+[TypeCollection(typeof(UserRoleEndpointBase), typeof(IEndpointTypeOption), typeof(UserRoleEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "UserRoleEndpoints")]
 public partial class UserRoleEndpoints : EndpointTypeCollectionBase<UserRoleEndpointBase>
 {
     /// <inheritdoc />

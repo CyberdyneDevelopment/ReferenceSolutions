@@ -98,16 +98,16 @@ public sealed class MsSqlSecretManagerType
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
-        Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
+        Registration((builder, loggerFactory) =>
         {
 
             // Why: the factory reads/writes through IConfigurationGateway (ConfigurationDb) rather than a
-            // hand-built IDataConnection — dataStoreName flows from TypeCollection.Configure() so
+            // hand-built IDataConnection — DataStore flows from TypeCollection.Configure() so
             // "ConfigurationDb" is never hardcoded here, mirroring the DefaultConfigurationProvider registration below.
             builder.Services.AddSingleton<IMsSqlSecretManagerFactory>(sp => new MsSqlSecretManagerFactory(
                 sp.GetRequiredService<ILoggerFactory>(),
                 sp.GetRequiredService<Lazy<IConfigurationGateway>>(),
-                dataStoreName,
+                DataStore,
                 sp.GetService<IPasswordHasher>(),
                 sp.GetService<IPersonalAccessTokenHasher>(),
                 sp.GetService<IPersonalAccessTokenGenerator>(),
@@ -115,12 +115,12 @@ public sealed class MsSqlSecretManagerType
 
             // Why: Lazy<IDataGateway> defers cfg resolution until first runtime query, avoiding
             // circular dependency with the DataGateway that hasn't been built yet at registration time.
-            // dataStoreName flows from TypeCollection.Configure() so "ConfigurationDb" is never hardcoded here.
+            // DataStore flows from TypeCollection.Configure() so "ConfigurationDb" is never hardcoded here.
             builder.Services.AddSingleton(sp => new DefaultConfigurationProvider<MsSqlSecretManagerConfiguration, MsSqlSecretManagerConfigurationCommand>(
                 sp.GetRequiredService<ILoggerFactory>().CreateLogger<DefaultConfigurationProvider<MsSqlSecretManagerConfiguration, MsSqlSecretManagerConfigurationCommand>>(),
                 sp.GetRequiredService<Lazy<IConfigurationGateway>>(),
-                dataStoreName,
-                pathName,
+                DataStore,
+                PathName,
                 new Lazy<ICacheInvalidator?>(() => sp.GetService<ICacheInvalidator>())));
 
             // Why: RegisterFactory (below) requires SecretManagerConfigurationProvider (the shared header

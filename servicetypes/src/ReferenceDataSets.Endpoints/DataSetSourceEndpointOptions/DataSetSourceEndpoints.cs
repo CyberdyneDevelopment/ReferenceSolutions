@@ -9,7 +9,9 @@ namespace ReferenceDataSets.Endpoints.DataSetSourceEndpointOptions;
 /// The endpoints over the data-set-source resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(DataSetSourceEndpointBase), typeof(IEndpointTypeOption), typeof(DataSetSourceEndpoints))]
+[TypeCollection(typeof(DataSetSourceEndpointBase), typeof(IEndpointTypeOption), typeof(DataSetSourceEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "DataSetSourceEndpoints")]
 public partial class DataSetSourceEndpoints : EndpointTypeCollectionBase<DataSetSourceEndpointBase>
 {
     /// <inheritdoc />

@@ -7,7 +7,9 @@ namespace ReferenceMessages.Endpoints.MessageEndpointOptions;
 
 /// <summary>The endpoints over the message resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(MessageEndpointBase), typeof(IEndpointTypeOption), typeof(MessageEndpoints))]
+[TypeCollection(typeof(MessageEndpointBase), typeof(IEndpointTypeOption), typeof(MessageEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "MessageEndpoints")]
 public partial class MessageEndpoints : EndpointTypeCollectionBase<MessageEndpointBase>
 {
     /// <inheritdoc />

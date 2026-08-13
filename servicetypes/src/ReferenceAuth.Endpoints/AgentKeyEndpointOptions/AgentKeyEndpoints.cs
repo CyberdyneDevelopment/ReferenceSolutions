@@ -7,7 +7,9 @@ namespace ReferenceAuth.Endpoints.AgentKeyEndpointOptions;
 
 /// <summary>The endpoints over the agent-key resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(AgentKeyEndpointBase), typeof(IEndpointTypeOption), typeof(AgentKeyEndpoints))]
+[TypeCollection(typeof(AgentKeyEndpointBase), typeof(IEndpointTypeOption), typeof(AgentKeyEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "AgentKeyEndpoints")]
 public partial class AgentKeyEndpoints : EndpointTypeCollectionBase<AgentKeyEndpointBase>
 {
     /// <inheritdoc />

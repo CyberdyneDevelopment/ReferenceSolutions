@@ -115,7 +115,7 @@ public sealed class AzureKeyVaultSecretManagerType
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
-        Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
+        Registration((builder, loggerFactory) =>
         {
 
             // No special infrastructure dependencies needed for Azure Key Vault

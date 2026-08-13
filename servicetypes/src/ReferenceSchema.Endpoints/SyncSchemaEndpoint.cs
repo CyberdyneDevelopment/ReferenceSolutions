@@ -137,7 +137,7 @@ public class SyncSchemaEndpoint : SyncSchemaEndpointBase
         {
             foreach (var container in path.Containers)
             {
-                tables.Add($"{path.Path}.{container.Name}");
+                tables.Add($"{path.PathValue}.{container.Name}");
             }
         }
 

@@ -7,7 +7,9 @@ namespace ReferenceEtlLineage.Endpoints.EtlLineageEndpointOptions;
 
 /// <summary>The ETL server's lineage endpoints.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(EtlLineageEndpointBase), typeof(IEndpointTypeOption), typeof(EtlLineageEndpoints))]
+[TypeCollection(typeof(EtlLineageEndpointBase), typeof(IEndpointTypeOption), typeof(EtlLineageEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "EtlLineageEndpoints")]
 public partial class EtlLineageEndpoints : EndpointTypeCollectionBase<EtlLineageEndpointBase>
 {
     /// <inheritdoc />

@@ -151,7 +151,7 @@ public class QueryDataSetEndpoint : Endpoint<QueryDataSetRequest, QueryDataSetRe
         // ExpandoObject/Dictionary rows. The cursor describes its columns ONCE (a shared schema flyweight)
         // and yields each row as a DataRecord over a single object?[] — no per-row name→value dictionary.
         var cursorResult = await _dataGateway
-            .OpenRecordSource(command, new DataStoreTarget(dataStoreName, primarySource.Path, primarySource.ContainerName), ct)
+            .OpenRecordSource(command, new DataStoreTarget(dataStoreName, primarySource.PathValue, primarySource.ContainerName), ct)
             .ConfigureAwait(false);
 
         if (cursorResult.IsFailure || cursorResult.Value is null)

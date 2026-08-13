@@ -7,7 +7,9 @@ namespace ReferenceAuth.Endpoints.PersonalAccessTokenEndpointOptions;
 
 /// <summary>The endpoints over the personal-access-token resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(PersonalAccessTokenEndpointBase), typeof(IEndpointTypeOption), typeof(PersonalAccessTokenEndpoints))]
+[TypeCollection(typeof(PersonalAccessTokenEndpointBase), typeof(IEndpointTypeOption), typeof(PersonalAccessTokenEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "PersonalAccessTokenEndpoints")]
 public partial class PersonalAccessTokenEndpoints : EndpointTypeCollectionBase<PersonalAccessTokenEndpointBase>
 {
     /// <inheritdoc />

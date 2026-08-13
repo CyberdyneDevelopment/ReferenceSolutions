@@ -10,7 +10,6 @@
   <Folder Name="/src/">
     <Project Path="src/ReferenceAgentActions.Endpoints/ReferenceAgentActions.Endpoints.csproj" />
     <Project Path="src/ReferenceAnalytics.Endpoints/ReferenceAnalytics.Endpoints.csproj" />
-    <Project Path="src/ReferenceApiHost/ReferenceApiHost.csproj" />
     <Project Path="src/ReferenceAudit.Endpoints/ReferenceAudit.Endpoints.csproj" />
     <Project Path="src/ReferenceAuth.Endpoints/ReferenceAuth.Endpoints.csproj" />
     <Project Path="src/ReferenceAuthentication.OpenIddict/ReferenceAuthentication.OpenIddict.csproj" />
@@ -34,7 +33,6 @@
     <Project Path="src/ReferenceDdl.Endpoints/ReferenceDdl.Endpoints.csproj" />
     <Project Path="src/ReferenceEscalation.Endpoints/ReferenceEscalation.Endpoints.csproj" />
     <Project Path="src/ReferenceEtlExecutions.Endpoints/ReferenceEtlExecutions.Endpoints.csproj" />
-    <Project Path="src/ReferenceEtlHost/ReferenceEtlHost.csproj" />
     <Project Path="src/ReferenceEtlJobs.Endpoints/ReferenceEtlJobs.Endpoints.csproj" />
     <Project Path="src/ReferenceEtlLineage.Endpoints/ReferenceEtlLineage.Endpoints.csproj" />
     <Project Path="src/ReferenceEtlNodes.Endpoints/ReferenceEtlNodes.Endpoints.csproj" />
@@ -59,7 +57,6 @@
     <Project Path="src/ReferenceProxy.Endpoints/ReferenceProxy.Endpoints.csproj" />
     <Project Path="src/ReferenceQuality.Endpoints/ReferenceQuality.Endpoints.csproj" />
     <Project Path="src/ReferenceRoles.Endpoints/ReferenceRoles.Endpoints.csproj" />
-    <Project Path="src/ReferenceSchedulerHost/ReferenceSchedulerHost.csproj" />
     <Project Path="src/ReferenceSchedules.Endpoints/ReferenceSchedules.Endpoints.csproj" />
     <Project Path="src/ReferenceSchema.Endpoints/ReferenceSchema.Endpoints.csproj" />
     <Project Path="src/ReferenceSecretManagers.AzureKeyVault/ReferenceSecretManagers.AzureKeyVault.csproj" />

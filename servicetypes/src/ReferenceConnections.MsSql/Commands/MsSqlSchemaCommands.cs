@@ -403,7 +403,7 @@ public static class MsSqlSchemaCommands
                         Id = Guid.NewGuid(),
                         Name = discoveredPath.SchemaName,
                         DataStoreId = dataStoreId,
-                        Path = discoveredPath.SchemaName,
+                        PathValue = discoveredPath.SchemaName,
                         PathType = "Schema"
                     };
 

@@ -9,7 +9,9 @@ namespace ReferencePromotion.Endpoints.EnvironmentEndpointOptions;
 /// The endpoints over the environment resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(EnvironmentEndpointBase), typeof(IEndpointTypeOption), typeof(EnvironmentEndpoints))]
+[TypeCollection(typeof(EnvironmentEndpointBase), typeof(IEndpointTypeOption), typeof(EnvironmentEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "EnvironmentEndpoints")]
 public partial class EnvironmentEndpoints : EndpointTypeCollectionBase<EnvironmentEndpointBase>
 {
     /// <inheritdoc />

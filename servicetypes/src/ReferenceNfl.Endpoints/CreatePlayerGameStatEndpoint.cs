@@ -93,7 +93,7 @@ public sealed class CreatePlayerGameStatEndpoint : Endpoint<CreateStatRequest, P
         };
 
         var command = Insert.Into<PlayerGameStatRecord>(src.ContainerName)
-            .DataStore(src.DataStoreName).Path(src.Path).Value(record);
+            .DataStore(src.DataStoreName).Path(src.PathValue).Value(record);
 
         var result = await _dataGateway.Execute<int>(command, ct);
 

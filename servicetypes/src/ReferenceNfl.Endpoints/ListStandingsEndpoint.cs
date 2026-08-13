@@ -67,7 +67,7 @@ public sealed class ListStandingsEndpoint : Endpoint<ListStandingsRequest, List<
             return;
         }
 
-        var builder = DataQuery.From<SeasonStandingRecord>(src.DataStoreName, src.Path, src.ContainerName);
+        var builder = DataQuery.From<SeasonStandingRecord>(src.DataStoreName, src.PathValue, src.ContainerName);
 
         if (req.Season.HasValue)
         {

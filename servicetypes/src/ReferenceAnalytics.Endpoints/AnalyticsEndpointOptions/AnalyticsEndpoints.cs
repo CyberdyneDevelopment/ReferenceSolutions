@@ -7,7 +7,9 @@ namespace ReferenceAnalytics.Endpoints.AnalyticsEndpointOptions;
 
 /// <summary>The endpoints over the analytics surface.</summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(AnalyticsEndpointBase), typeof(IEndpointTypeOption), typeof(AnalyticsEndpoints))]
+[TypeCollection(typeof(AnalyticsEndpointBase), typeof(IEndpointTypeOption), typeof(AnalyticsEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "AnalyticsEndpoints")]
 public partial class AnalyticsEndpoints : EndpointTypeCollectionBase<AnalyticsEndpointBase>
 {
     /// <inheritdoc />

@@ -9,7 +9,9 @@ namespace ReferenceQuality.Endpoints.QualityRuleEndpointOptions;
 /// The endpoints over the quality-rule resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(QualityRuleEndpointBase), typeof(IEndpointTypeOption), typeof(QualityRuleEndpoints))]
+[TypeCollection(typeof(QualityRuleEndpointBase), typeof(IEndpointTypeOption), typeof(QualityRuleEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "QualityRuleEndpoints")]
 public partial class QualityRuleEndpoints : EndpointTypeCollectionBase<QualityRuleEndpointBase>
 {
     /// <inheritdoc />

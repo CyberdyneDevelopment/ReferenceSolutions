@@ -9,7 +9,9 @@ namespace ReferenceNotifications.Endpoints.NotificationPreferenceEndpointOptions
 /// The endpoints over the user-preference resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeCollection(typeof(NotificationPreferenceEndpointBase), typeof(IEndpointTypeOption), typeof(NotificationPreferenceEndpoints))]
+[TypeCollection(typeof(NotificationPreferenceEndpointBase), typeof(IEndpointTypeOption), typeof(NotificationPreferenceEndpoints),
+    TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
+    TypeOptionName = "NotificationPreferenceEndpoints")]
 public partial class NotificationPreferenceEndpoints : EndpointTypeCollectionBase<NotificationPreferenceEndpointBase>
 {
     /// <inheritdoc />

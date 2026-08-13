@@ -112,7 +112,7 @@ public sealed class CredentialVaultType
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
-        Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
+        Registration((builder, loggerFactory) =>
         {
 
             // Why: the factory is a PURE constructor — it takes no providers. The connection + pepper are
@@ -132,8 +132,8 @@ public sealed class CredentialVaultType
                 new DefaultConfigurationProvider<DefaultDataVaultConfiguration, DefaultDataVaultConfigurationCommand>(
                     sp.GetService<ILogger<DefaultConfigurationProvider<DefaultDataVaultConfiguration, DefaultDataVaultConfigurationCommand>>>(),
                     sp.GetRequiredService<Lazy<IConfigurationGateway>>(),
-                    dataStoreName,
-                    pathName,
+                    DataStore,
+                    PathName,
                     new Lazy<ICacheInvalidator?>(() => sp.GetService<ICacheInvalidator>())));
 
             builder.Services.TryAddSingleton<IServiceConfigurationProvider<DefaultDataVaultConfiguration>>(

@@ -59,7 +59,7 @@ public sealed class SqlCredentialServiceType
     {
         // Why: dataStoreName/pathName flow from the collection sweep so location strings are
         // never hardcoded in the provider construction.
-        Registration((builder, loggerFactory, dataStoreName, pathName, containerName) =>
+        Registration((builder, loggerFactory) =>
         {
 
             // Why: SqlCredentialServiceFactory holds the SCOPED IDataVaultProvider, so the factory is
@@ -80,8 +80,8 @@ public sealed class SqlCredentialServiceType
                 new DefaultConfigurationProvider<SqlCredentialServiceConfiguration, SqlCredentialServiceConfigurationCommand>(
                     sp.GetService<ILogger<DefaultConfigurationProvider<SqlCredentialServiceConfiguration, SqlCredentialServiceConfigurationCommand>>>(),
                     sp.GetRequiredService<Lazy<IConfigurationGateway>>(),
-                    dataStoreName,
-                    pathName,
+                    DataStore,
+                    PathName,
                     new Lazy<ICacheInvalidator?>(() => sp.GetService<ICacheInvalidator>())));
 
             builder.Services.TryAddSingleton<IServiceConfigurationProvider<SqlCredentialServiceConfiguration>>(

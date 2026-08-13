@@ -69,7 +69,7 @@ public sealed class TransferPlayerEndpoint : Endpoint<TransferPlayerRequest, Pla
         }
 
         // Query existing player
-        var getCommand = DataQuery.From<PlayerRecord>(src.DataStoreName, src.Path, src.ContainerName)
+        var getCommand = DataQuery.From<PlayerRecord>(src.DataStoreName, src.PathValue, src.ContainerName)
             .Where("Id", req.PlayerId)
             .Build();
 
@@ -119,7 +119,7 @@ public sealed class TransferPlayerEndpoint : Endpoint<TransferPlayerRequest, Pla
 
         var updateCommand = new UpdateCommandBuilder<PlayerRecord>(src.ContainerName)
             .DataStore(src.DataStoreName)
-            .Path(src.Path)
+            .Path(src.PathValue)
             .Where("Id", req.PlayerId)
             .Value(updated);
 
