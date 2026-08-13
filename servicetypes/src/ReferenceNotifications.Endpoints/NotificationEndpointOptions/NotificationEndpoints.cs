@@ -1,3 +1,4 @@
+using Fdw.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
@@ -9,6 +10,7 @@ namespace ReferenceNotifications.Endpoints.NotificationEndpointOptions;
 /// The endpoints over the notification resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
+[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "NotificationEndpoints")]
 [TypeCollection(typeof(NotificationEndpointBase), typeof(IEndpointTypeOption), typeof(NotificationEndpoints),
     TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
     TypeOptionName = "NotificationEndpoints")]

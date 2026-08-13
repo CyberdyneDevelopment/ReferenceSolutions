@@ -1,3 +1,4 @@
+using Fdw.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
@@ -7,6 +8,7 @@ namespace ReferenceCalculations.Endpoints.CalculationEntityEndpointOptions;
 
 /// <summary>The endpoints over the calculation-entity resource.</summary>
 [ExcludeFromCodeCoverage]
+[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "CalculationEntityEndpoints")]
 [TypeCollection(typeof(CalculationEntityEndpointBase), typeof(IEndpointTypeOption), typeof(CalculationEntityEndpoints),
     TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
     TypeOptionName = "CalculationEntityEndpoints")]

@@ -1,3 +1,4 @@
+using Fdw.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
@@ -7,6 +8,7 @@ namespace ReferenceAnalytics.Endpoints.AnalyticsEndpointOptions;
 
 /// <summary>The endpoints over the analytics surface.</summary>
 [ExcludeFromCodeCoverage]
+[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "AnalyticsEndpoints")]
 [TypeCollection(typeof(AnalyticsEndpointBase), typeof(IEndpointTypeOption), typeof(AnalyticsEndpoints),
     TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
     TypeOptionName = "AnalyticsEndpoints")]

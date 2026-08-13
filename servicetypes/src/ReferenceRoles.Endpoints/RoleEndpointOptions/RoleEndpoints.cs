@@ -1,3 +1,4 @@
+using Fdw.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
@@ -9,6 +10,7 @@ namespace ReferenceRoles.Endpoints.RoleEndpointOptions;
 /// The endpoints over the role resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
+[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "RoleEndpoints")]
 [TypeCollection(typeof(RoleEndpointBase), typeof(IEndpointTypeOption), typeof(RoleEndpoints),
     TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
     TypeOptionName = "RoleEndpoints")]

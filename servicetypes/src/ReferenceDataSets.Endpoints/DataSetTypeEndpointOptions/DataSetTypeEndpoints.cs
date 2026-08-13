@@ -1,3 +1,4 @@
+using Fdw.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
@@ -14,6 +15,7 @@ namespace ReferenceDataSets.Endpoints.DataSetTypeEndpointOptions;
 /// solely because an abstract collection cannot be instantiated.
 /// </remarks>
 [ExcludeFromCodeCoverage]
+[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "DataSetTypeEndpoints")]
 [TypeCollection(typeof(DataSetTypeEndpointBase), typeof(IEndpointTypeOption), typeof(DataSetTypeEndpoints),
     TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
     TypeOptionName = "DataSetTypeEndpoints")]

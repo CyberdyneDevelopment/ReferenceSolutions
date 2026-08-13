@@ -1,3 +1,4 @@
+using Fdw.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
@@ -7,6 +8,7 @@ namespace ReferenceConfiguration.Endpoints.ConfigurationCategoryEndpointOptions;
 
 /// <summary>The endpoints over the configuration-category resource.</summary>
 [ExcludeFromCodeCoverage]
+[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "ConfigurationCategoryEndpoints")]
 [TypeCollection(typeof(ConfigurationCategoryEndpointBase), typeof(IEndpointTypeOption), typeof(ConfigurationCategoryEndpoints),
     TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
     TypeOptionName = "ConfigurationCategoryEndpoints")]

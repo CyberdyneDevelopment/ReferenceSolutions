@@ -1,3 +1,4 @@
+using Fdw.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
@@ -7,6 +8,7 @@ namespace ReferenceAuth.Endpoints.PersonalAccessTokenEndpointOptions;
 
 /// <summary>The endpoints over the personal-access-token resource.</summary>
 [ExcludeFromCodeCoverage]
+[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "PersonalAccessTokenEndpoints")]
 [TypeCollection(typeof(PersonalAccessTokenEndpointBase), typeof(IEndpointTypeOption), typeof(PersonalAccessTokenEndpoints),
     TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
     TypeOptionName = "PersonalAccessTokenEndpoints")]

@@ -1,3 +1,4 @@
+using Fdw.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
@@ -7,6 +8,7 @@ namespace ReferenceDataStores.Endpoints.DataStoreContainerEndpointOptions;
 
 /// <summary>The endpoints over the data-store-container resource.</summary>
 [ExcludeFromCodeCoverage]
+[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "DataStoreContainerEndpoints")]
 [TypeCollection(typeof(DataStoreContainerEndpointBase), typeof(IEndpointTypeOption), typeof(DataStoreContainerEndpoints),
     TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
     TypeOptionName = "DataStoreContainerEndpoints")]

@@ -1,3 +1,4 @@
+using Fdw.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
@@ -7,6 +8,7 @@ namespace ReferenceEtlJobs.Endpoints.EtlJobsEndpointOptions;
 
 /// <summary>The ETL server's jobs endpoints.</summary>
 [ExcludeFromCodeCoverage]
+[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "EtlJobsEndpoints")]
 [TypeCollection(typeof(EtlJobsEndpointBase), typeof(IEndpointTypeOption), typeof(EtlJobsEndpoints),
     TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
     TypeOptionName = "EtlJobsEndpoints")]

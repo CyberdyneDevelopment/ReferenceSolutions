@@ -1,3 +1,4 @@
+using Fdw.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
@@ -7,6 +8,7 @@ namespace ReferenceTenants.Endpoints.TenantsEndpointOptions;
 
 /// <summary>The endpoints over the tenants surface.</summary>
 [ExcludeFromCodeCoverage]
+[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "TenantsEndpoints")]
 [TypeCollection(typeof(TenantsEndpointBase), typeof(IEndpointTypeOption), typeof(TenantsEndpoints),
     TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
     TypeOptionName = "TenantsEndpoints")]

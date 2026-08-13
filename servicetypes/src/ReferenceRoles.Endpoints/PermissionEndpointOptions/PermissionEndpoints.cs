@@ -1,3 +1,4 @@
+using Fdw.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
@@ -9,6 +10,7 @@ namespace ReferenceRoles.Endpoints.PermissionEndpointOptions;
 /// The endpoints over the permission resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
+[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "PermissionEndpoints")]
 [TypeCollection(typeof(PermissionEndpointBase), typeof(IEndpointTypeOption), typeof(PermissionEndpoints),
     TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
     TypeOptionName = "PermissionEndpoints")]

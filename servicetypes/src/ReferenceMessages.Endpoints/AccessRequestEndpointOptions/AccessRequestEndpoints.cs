@@ -1,3 +1,4 @@
+using Fdw.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
@@ -7,6 +8,7 @@ namespace ReferenceMessages.Endpoints.AccessRequestEndpointOptions;
 
 /// <summary>The endpoints over the access-request resource.</summary>
 [ExcludeFromCodeCoverage]
+[ServiceTypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints), "AccessRequestEndpoints")]
 [TypeCollection(typeof(AccessRequestEndpointBase), typeof(IEndpointTypeOption), typeof(AccessRequestEndpoints),
     TypeOption = typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.Endpoints),
     TypeOptionName = "AccessRequestEndpoints")]
