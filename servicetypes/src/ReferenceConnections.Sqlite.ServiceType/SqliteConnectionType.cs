@@ -60,8 +60,6 @@ public sealed class SqliteConnectionType
         Initialization((host, loggerFactory) =>
         {
             var services = host.Services;
-            var provider = (DefaultConnectionProvider)services.GetRequiredService<IConnectionProvider>();
-
             var headerProvider = services.GetRequiredService<ConnectionConfigurationProvider>();
             var configProvider = services.GetRequiredService<SqliteConnectionConfigurationProvider>();
             headerProvider.Register(Name, configProvider);
@@ -71,7 +69,12 @@ public sealed class SqliteConnectionType
             return GenericResult<IHost>.Success(host);
         });
 
-        Registration((builder, loggerFactory) =>
+        // Why Append and not Registration: Registration REPLACES the phase body, and
+        // ConnectionTypeBase's constructor has already prepended this option's factory registration
+        // onto it. Replacing therefore silently discards the base's contribution — which is exactly
+        // how every connection kind stopped being creatable while each option's own wiring kept
+        // working and logging success. Appending composes onto what the base put there.
+        AppendRegistration((builder, loggerFactory) =>
         {
 
             // Why: this option registers its factory WITH WHAT THAT FACTORY NEEDS, exactly as
@@ -90,10 +93,6 @@ public sealed class SqliteConnectionType
                     new Lazy<ICacheInvalidator?>(() => sp.GetService<ICacheInvalidator>())));
             builder.Services.TryAddSingleton<IServiceConfigurationProvider<SqliteConnectionConfiguration>>(
                 sp => sp.GetRequiredService<SqliteConnectionConfigurationProvider>());
-            // Why: RegisterFactory (below) requires ConnectionConfigurationProvider (the shared header
-            // provider for the whole Connections domain) to already be registered. TryAddSingleton makes
-            // this idempotent — every connection-kind option calls it, harmlessly redundant after the first.
-            ConnectionConfigurationProvider.RegisterDomainConfiguration(builder.Services);
             return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });

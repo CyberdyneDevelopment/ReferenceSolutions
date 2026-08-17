@@ -60,6 +60,12 @@ internal sealed class FakeContainerSchema : IContainerSchema
     public IReadOnlyList<IField> GetIdentityFields() =>
         Fields.Where(f => f.Role.IsKeyRole).ToList();
 
+    // Mirrors ContainerSchema.GetProjectableFields exactly — a fake that returned every field
+    // regardless of visibility would let a translator that ignores Visibility pass here and emit a
+    // NotVisible storage column in a real SELECT.
+    public IReadOnlyList<IField> GetProjectableFields() =>
+        Fields.Where(f => f.Visibility.AllowsProjection).ToList();
+
     public IReadOnlyList<IField> GetAttributeFields() =>
         Fields.Where(f => !f.Role.IsKeyRole && !f.Role.IsAggregatable).ToList();
 

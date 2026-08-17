@@ -83,8 +83,6 @@ public sealed class HttpConnectionType : ConnectionTypeBase<IGenericConnection, 
         Initialization((host, loggerFactory) =>
         {
             var services = host.Services;
-            var provider = (DefaultConnectionProvider)services.GetRequiredService<IConnectionProvider>();
-
             var logger = (services.GetService<ILoggerFactory>()?.CreateLogger<HttpConnectionType>())
                 ?? NullLogger<HttpConnectionType>.Instance;
 
@@ -109,7 +107,12 @@ public sealed class HttpConnectionType : ConnectionTypeBase<IGenericConnection, 
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
-        Registration((builder, loggerFactory) =>
+        // Why Append and not Registration: Registration REPLACES the phase body, and
+        // ConnectionTypeBase's constructor has already prepended this option's factory registration
+        // onto it. Replacing therefore silently discards the base's contribution — which is exactly
+        // how every connection kind stopped being creatable while each option's own wiring kept
+        // working and logging success. Appending composes onto what the base put there.
+        AppendRegistration((builder, loggerFactory) =>
         {
 
             // HTTP client factory is typically already registered, but ensure it's available
@@ -133,10 +136,6 @@ public sealed class HttpConnectionType : ConnectionTypeBase<IGenericConnection, 
                     new Lazy<ICacheInvalidator?>(() => sp.GetService<ICacheInvalidator>())));
             builder.Services.TryAddSingleton<Fdw.Services.Abstractions.IServiceConfigurationProvider<HttpConnectionConfiguration>>(
                 sp => sp.GetRequiredService<HttpConnectionConfigurationProvider>());
-            // Why: RegisterFactory (below) requires ConnectionConfigurationProvider (the shared header
-            // provider for the whole Connections domain) to already be registered. TryAddSingleton makes
-            // this idempotent — every connection-kind option calls it, harmlessly redundant after the first.
-            ConnectionConfigurationProvider.RegisterDomainConfiguration(builder.Services);
             return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });

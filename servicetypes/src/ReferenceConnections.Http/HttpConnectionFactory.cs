@@ -723,7 +723,7 @@ public sealed class HttpConnectionFactory : IHttpConnectionFactory
         var client = httpClientFactory.CreateClient(clientName);
 
         // Configure client from configuration
-        client.BaseAddress = new Uri(configuration.BaseUrl);
+        client.BaseAddress = BuildBaseAddress(configuration.BaseUrl);
         client.Timeout = TimeSpan.FromSeconds(configuration.TimeoutSeconds);
 
         // Add default headers - use protocol's content type if not specified in config
@@ -731,11 +731,42 @@ public sealed class HttpConnectionFactory : IHttpConnectionFactory
         var contentType = configuration.ContentType ?? protocol.DefaultContentType;
         client.DefaultRequestHeaders.Add("Accept", contentType);
         client.DefaultRequestHeaders.Add("User-Agent", "Fdw-HTTP-Client/1.0");
+        ApplyConfiguredHeaders(client, configuration);
 
         HttpConnectionFactoryLogger.ConfiguringHttpClient(_logger, connectionName, configuration.BaseUrl, configuration.TimeoutSeconds);
 
         return client;
     }
+
+    // Why configured headers are applied LAST, replacing rather than adding: the two set above are what
+    // the framework can guess, and a connection that names the same header means to override it. Add
+    // would keep both values on the wire, which for User-Agent is how a request gets rejected by a host
+    // that inspects it. A null value removes the header outright, so a connection can also say "send no
+    // Accept" — that is a real requirement for some APIs and there is no other way to express it.
+    private static void ApplyConfiguredHeaders(HttpClient client, HttpConnectionConfiguration configuration)
+    {
+        if (configuration.Headers.Count == 0)
+            return;
+
+        foreach (var header in configuration.Headers)
+        {
+            if (string.IsNullOrWhiteSpace(header.Key))
+                continue;
+
+            client.DefaultRequestHeaders.Remove(header.Key);
+            if (header.Value is not null)
+                client.DefaultRequestHeaders.Add(header.Key, header.Value);
+        }
+    }
+
+    // Why the trailing slash is forced: HttpClient resolves a relative request path against
+    // BaseAddress by RFC 3986, which REPLACES the base's last segment when the base does not end in
+    // '/'. A base of ".../api/v1" with the path "teams" therefore requests ".../api/teams" — the
+    // version segment silently disappears and the host answers 404 for a URL that is correct
+    // everywhere it is written down. A DataPath is appended to a base, never substituted into it,
+    // so the base is normalized to say that.
+    private static Uri BuildBaseAddress(string baseUrl)
+        => new Uri(baseUrl.EndsWith('/') ? baseUrl : baseUrl + "/");
 
     /// <summary>
     /// Creates an HTTP client configured for HTTP requests using the injected factory.
@@ -754,12 +785,13 @@ public sealed class HttpConnectionFactory : IHttpConnectionFactory
         var handler = new HttpClientHandler();
         handler.ClientCertificates.Add(clientCertificate);
         var client = new HttpClient(handler);
-        client.BaseAddress = new Uri(configuration.BaseUrl);
+        client.BaseAddress = BuildBaseAddress(configuration.BaseUrl);
         client.Timeout = TimeSpan.FromSeconds(configuration.TimeoutSeconds);
         client.DefaultRequestHeaders.Clear();
         var contentType = configuration.ContentType ?? protocol.DefaultContentType;
         client.DefaultRequestHeaders.Add("Accept", contentType);
         client.DefaultRequestHeaders.Add("User-Agent", "Fdw-HTTP-Client/1.0");
+        ApplyConfiguredHeaders(client, configuration);
         return client;
     }
 

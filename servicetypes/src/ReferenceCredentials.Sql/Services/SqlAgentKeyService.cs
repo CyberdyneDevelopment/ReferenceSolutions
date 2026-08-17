@@ -97,6 +97,17 @@ public sealed class SqlAgentKeyService : IAgentKeyService, IDisposable
     }
 
     /// <inheritdoc />
+    public async Task<IGenericResult<AgentKeyValidationResult>> ValidateKey(
+        string rawKey, CancellationToken cancellationToken = default)
+    {
+        var resolve = await Resolve(cancellationToken).ConfigureAwait(false);
+        if (!resolve.IsSuccess || resolve.Value is null)
+            return resolve.ToNewResult<AgentKeyValidationResult>();
+
+        return await resolve.Value.Validate(rawKey, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task<IGenericResult<IReadOnlyList<AgentKeySummary>>> ListKeys(
         Guid userId, CancellationToken cancellationToken = default)
     {

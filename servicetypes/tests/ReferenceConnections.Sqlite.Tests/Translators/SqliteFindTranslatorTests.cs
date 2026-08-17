@@ -27,6 +27,7 @@ public sealed class SqliteFindTranslatorTests
 
         var schema = new Mock<IContainerSchema>();
         schema.Setup(s => s.Fields).Returns(fields ?? Array.Empty<IField>());
+        schema.Setup(s => s.GetProjectableFields()).Returns(fields ?? Array.Empty<IField>());
 
         var container = new Mock<IStorageContainer>();
         container.Setup(c => c.Name).Returns(tableName);
@@ -43,6 +44,7 @@ public sealed class SqliteFindTranslatorTests
 
         var field = new Mock<IField>();
         field.Setup(f => f.Name).Returns(name);
+        field.Setup(f => f.Visibility).Returns(FieldVisibilities.ByName("Visible"));
         field.Setup(f => f.FieldType).Returns(fieldType.Object);
         return field.Object;
     }

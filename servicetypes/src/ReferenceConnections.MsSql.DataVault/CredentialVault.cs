@@ -363,6 +363,80 @@ public sealed class CredentialVault : MsSqlDataVaultBase, ICredentialVault, IPat
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Explicit implementation: <see cref="IPatVault.Validate"/> has the identical signature, and a
+    /// presented secret is only meaningful against the store it was minted for.
+    /// </remarks>
+    async Task<IGenericResult<AgentKeyValidationResult>> IAgentKeyVault.Validate(string rawKey, CancellationToken cancellationToken)
+    {
+        AgentKeyLog.ValidatingKey(Logger);
+
+        if (string.IsNullOrWhiteSpace(rawKey))
+            return GenericResult<AgentKeyValidationResult>.Failure(AgentKeyLog.ValidationFailed(Logger));
+
+        var rows = await QueryRows(
+            "SELECT KeyId, UserId, IsActive, ExpiresAt FROM auth.AgentKey WHERE KeyHash=@h",
+            r => new AgentKeyRow(
+                (Guid)r["KeyId"]!,
+                (string)r["UserId"]!,
+                (bool)r["IsActive"]!,
+                r["ExpiresAt"] as DateTimeOffset?),
+            cancellationToken, ("@h", PepperSecret(rawKey))).ConfigureAwait(false);
+        if (!rows.IsSuccess)
+            return rows.ToNewResult<AgentKeyValidationResult>();
+
+        // Why three messages and not one: an unrecognised key, a deactivated key and an expired key
+        // are the same answer to the caller and three different things to whoever is looking at the
+        // log. Collapsing them means an operator cannot tell a revoked agent from a typo.
+        var row = rows.Value is { Count: > 0 } list ? list[0] : null;
+        if (row is null)
+        {
+            AgentKeyLog.KeyNotRecognised(Logger);
+            return GenericResult<AgentKeyValidationResult>.Success(new AgentKeyValidationResult { IsValid = false });
+        }
+
+        if (!row.IsActive)
+        {
+            AgentKeyLog.KeyInactive(Logger, row.KeyId);
+            return GenericResult<AgentKeyValidationResult>.Success(new AgentKeyValidationResult { IsValid = false });
+        }
+
+        if (row.ExpiresAt is not null && row.ExpiresAt.Value <= DateTimeOffset.UtcNow)
+        {
+            AgentKeyLog.KeyExpired(Logger, row.KeyId, row.ExpiresAt.Value);
+            return GenericResult<AgentKeyValidationResult>.Success(new AgentKeyValidationResult { IsValid = false });
+        }
+
+        // Why: UserId is stored as the Guid's string form. A row that will not parse back is corrupt
+        // data, not a failed match — fail loud rather than reporting it as an invalid key.
+        if (!Guid.TryParse(row.UserId, out var ownerId))
+        {
+            return GenericResult<AgentKeyValidationResult>.Failure(
+                AgentKeyLog.DatabaseError(Logger, new InvalidOperationException("Agent key UserId is not a Guid."), "ValidateKey"));
+        }
+
+        // Why: best-effort LastUsedAt touch — a failed update must not reject an otherwise-valid key.
+        // Why it is still logged: discarding the result silently means a column that has quietly
+        // stopped updating looks identical to a key nobody has used.
+        var touched = await NonQuery(
+            "UPDATE auth.AgentKey SET LastUsedAt=sysdatetimeoffset() WHERE KeyId=@k",
+            cancellationToken, ("@k", row.KeyId)).ConfigureAwait(false);
+        if (!touched.IsSuccess)
+        {
+            AgentKeyLog.LastUsedNotRecorded(Logger, row.KeyId);
+        }
+
+        AgentKeyLog.KeyValidated(Logger, row.KeyId, ownerId);
+
+        return GenericResult<AgentKeyValidationResult>.Success(new AgentKeyValidationResult
+        {
+            IsValid = true,
+            UserId = ownerId,
+            KeyId = row.KeyId,
+        });
+    }
+
+    /// <inheritdoc />
     Task<IGenericResult<IReadOnlyList<AgentKeySummary>>> IAgentKeyVault.List(Guid userId, CancellationToken cancellationToken)
         => QueryRows(
             "SELECT KeyId, Label, CreateDate, ExpiresAt, LastUsedAt FROM auth.AgentKey " +
@@ -403,4 +477,6 @@ public sealed class CredentialVault : MsSqlDataVaultBase, ICredentialVault, IPat
 
     // Why: minimal projection for PAT validation — carries only non-secret identity/status fields.
     private sealed record TokenRow(Guid Id, Guid UserId, bool IsRevoked, DateTimeOffset? ExpiresAt);
+
+    private sealed record AgentKeyRow(Guid KeyId, string UserId, bool IsActive, DateTimeOffset? ExpiresAt);
 }

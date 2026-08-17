@@ -22,6 +22,10 @@ internal sealed class FakeField : IField
     public bool IsComputed { get; init; }
     public bool IsSystemProvided { get; init; }
 
+    // Why the same default as the canonical Field: a fake that defaulted to NotVisible would drop
+    // every field out of GetProjectableFields() and turn "projection is broken" into a passing test.
+    public IFieldVisibility Visibility { get; init; } = FieldVisibilities.ByName("Visible");
+
     public static FakeField Create(string name, int? converterTypeId = null)
     {
         return new FakeField

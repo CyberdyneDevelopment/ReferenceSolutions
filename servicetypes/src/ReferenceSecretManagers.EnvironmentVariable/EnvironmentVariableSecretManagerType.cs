@@ -132,7 +132,6 @@ public sealed class EnvironmentVariableSecretManagerType
             // provider for the whole SecretManager domain) to already be registered. TryAddSingleton inside
             // RegisterDomainConfiguration makes this idempotent — every secret manager option calls it, first
             // registration wins.
-            SecretManagerConfigurationProvider.RegisterDomainConfiguration(builder.Services);
             return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });

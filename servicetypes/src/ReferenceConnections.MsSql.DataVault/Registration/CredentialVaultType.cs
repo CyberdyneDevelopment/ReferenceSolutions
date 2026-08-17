@@ -142,7 +142,6 @@ public sealed class CredentialVaultType
             // Why: RegisterFactory (below) requires DataVaultConfigurationProvider (the shared header
             // provider for the whole DataVault domain) to already be registered. TryAddSingleton inside
             // RegisterDomainConfiguration makes this idempotent — harmless if another vault option also calls it.
-            DataVaultConfigurationProvider.RegisterDomainConfiguration(builder.Services);
             return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });

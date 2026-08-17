@@ -75,8 +75,6 @@ public sealed class PostgreSqlConnectionType
         Initialization((host, hostLoggerFactory) =>
         {
             var services = host.Services;
-            var provider = (DefaultConnectionProvider)services.GetRequiredService<IConnectionProvider>();
-
             var loggerFactory = services.GetService<ILoggerFactory>();
             _logger = loggerFactory?.CreateLogger<PostgreSqlConnectionType>() ?? NullLogger<PostgreSqlConnectionType>.Instance;
 
@@ -104,7 +102,12 @@ public sealed class PostgreSqlConnectionType
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
-        Registration((builder, loggerFactory) =>
+        // Why Append and not Registration: Registration REPLACES the phase body, and
+        // ConnectionTypeBase's constructor has already prepended this option's factory registration
+        // onto it. Replacing therefore silently discards the base's contribution — which is exactly
+        // how every connection kind stopped being creatable while each option's own wiring kept
+        // working and logging success. Appending composes onto what the base put there.
+        AppendRegistration((builder, loggerFactory) =>
         {
 
             // Why: this option registers its factory WITH WHAT THAT FACTORY NEEDS, exactly as
@@ -123,10 +126,6 @@ public sealed class PostgreSqlConnectionType
                     new Lazy<ICacheInvalidator?>(() => sp.GetService<ICacheInvalidator>())));
             builder.Services.TryAddSingleton<Fdw.Services.Abstractions.IServiceConfigurationProvider<PostgreSqlConnectionConfiguration>>(
                 sp => sp.GetRequiredService<PostgreSqlConnectionConfigurationProvider>());
-            // Why: RegisterFactory (below) requires ConnectionConfigurationProvider (the shared header
-            // provider for the whole Connections domain) to already be registered. TryAddSingleton makes
-            // this idempotent — every connection-kind option calls it, harmlessly redundant after the first.
-            ConnectionConfigurationProvider.RegisterDomainConfiguration(builder.Services);
 
             // Why here: DiscoverSchema() on this type resolves the discoverer, so this type registers it.
             builder.Services.AddSingleton<IPostgreSqlSchemaDiscoverer, PostgreSqlSchemaDiscoverer>();

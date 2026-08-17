@@ -78,6 +78,15 @@ public class UpdateHttpConnectionEndpoint : UpdateConnectionEndpointBase<HttpCon
             }
         }
 
+        // Why merged rather than replaced, same as auth above: a caller that sends one header means to
+        // set that header, not to drop every other one the connection already carries.
+        var mergedHeaders = new Dictionary<string, string?>(existingBody.Headers, StringComparer.OrdinalIgnoreCase);
+        if (request.Headers is not null)
+        {
+            foreach (var kvp in request.Headers)
+                mergedHeaders[kvp.Key] = kvp.Value;
+        }
+
         // Why: parent connection record is not mutated — name updates are unsupported via this
         // endpoint (name is the route key). Only typed body fields are merged from the request.
         var updatedBody = new HttpConnectionConfiguration
@@ -89,6 +98,7 @@ public class UpdateHttpConnectionEndpoint : UpdateConnectionEndpointBase<HttpCon
             TimeoutSeconds = request.TimeoutSeconds ?? existingBody.TimeoutSeconds,
             AuthenticationType = request.AuthenticationType ?? existingBody.AuthenticationType,
             AdditionalProperties = mergedAuth,
+            Headers = mergedHeaders,
             UseMtls = request.UseMtls ?? existingBody.UseMtls,
             Lifetime = existingBody.Lifetime,
             ContentType = existingBody.ContentType,

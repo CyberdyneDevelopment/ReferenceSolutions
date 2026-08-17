@@ -107,8 +107,6 @@ public sealed class MsSqlConnectionType
             using var systemScope = new SystemAuthenticationContextScope(
                 services.GetRequiredService<IAuthenticationContextAccessor>());
 
-            var provider = (DefaultConnectionProvider)services.GetRequiredService<IConnectionProvider>();
-
             var loggerFactory = services.GetService<ILoggerFactory>();
             _logger = loggerFactory?.CreateLogger<MsSqlConnectionType>() ?? NullLogger<MsSqlConnectionType>.Instance;
 
@@ -135,7 +133,12 @@ public sealed class MsSqlConnectionType
             return GenericResult<IHost>.Success(host);
         });
 
-        Registration((builder, loggerFactory) =>
+        // Why Append and not Registration: Registration REPLACES the phase body, and
+        // ConnectionTypeBase's constructor has already prepended this option's factory registration
+        // onto it. Replacing therefore silently discards the base's contribution — which is exactly
+        // how every connection kind stopped being creatable while each option's own wiring kept
+        // working and logging success. Appending composes onto what the base put there.
+        AppendRegistration((builder, loggerFactory) =>
         {
 
             // Why Singleton: MsSqlConnectionFactory is itself Singleton (required for the three-phase
@@ -173,10 +176,6 @@ public sealed class MsSqlConnectionType
                     new Lazy<ICacheInvalidator?>(() => sp.GetService<ICacheInvalidator>())));
             builder.Services.TryAddSingleton<IServiceConfigurationProvider<MsSqlConnectionConfiguration>>(
                 sp => sp.GetRequiredService<MsSqlConnectionConfigurationProvider>());
-            // Why: RegisterFactory (below) requires ConnectionConfigurationProvider (the shared header
-            // provider for the whole Connections domain) to already be registered. TryAddSingleton makes
-            // this idempotent — every connection-kind option calls it, harmlessly redundant after the first.
-            ConnectionConfigurationProvider.RegisterDomainConfiguration(builder.Services);
 
             // Why here: DiscoverSchema() on this type resolves the discoverer, so this type registers it.
             builder.Services.AddSingleton<IMsSqlSchemaDiscoverer, MsSqlSchemaDiscoverer>();

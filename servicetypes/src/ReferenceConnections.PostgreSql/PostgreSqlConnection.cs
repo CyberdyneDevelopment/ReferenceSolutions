@@ -462,6 +462,10 @@ public sealed class PostgreSqlConnection : ConnectionBase<NpgsqlCommand, Postgre
 
         if (IsCollectionType(targetType, out var itemType))
         {
+            if (IsDataRowType(itemType!))
+                return (T)ConvertToCollectionType(
+                    await ReadDataRows(reader, cancellationToken).ConfigureAwait(false), targetType, itemType!);
+
             var list = CreateElementList(itemType!);
             while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 list.Add(MapReaderRowToObject(reader, itemType!, container));
@@ -567,6 +571,37 @@ public sealed class PostgreSqlConnection : ConnectionBase<NpgsqlCommand, Postgre
             return (T)(object)(value > 0);
 
         return default!;
+    }
+
+
+    // Why: IDataRow is the framework's row — a query whose columns are known only at runtime (a DataSet
+    // query, a preview) asks for it, and it needs no generated mapper because it carries its own schema.
+    private static bool IsDataRowType(Type t) => t == typeof(global::Fdw.Data.DataContainers.Abstractions.IDataRow) || t == typeof(global::Fdw.Data.DataContainers.Abstractions.DataRow);
+
+    // Why the schema is built once and shared: every row of a result set has the same columns, and
+    // DataRow addresses its values positionally against that schema, so building one per row would be
+    // both wasteful and a chance for the two to disagree. Column names and CLR types come from the
+    // reader itself, which is the only thing that knows the shape of an ad-hoc result set.
+    private static async Task<System.Collections.IList> ReadDataRows(
+        DbDataReader reader, CancellationToken cancellationToken)
+    {
+        var fields = new ISchemaField[reader.FieldCount];
+        for (var i = 0; i < reader.FieldCount; i++)
+            fields[i] = new global::Fdw.Data.DataContainers.Abstractions.SchemaField(reader.GetName(i), reader.GetFieldType(i), i);
+
+        var schema = global::Fdw.Data.DataContainers.Abstractions.DataSchema.FromFields(fields);
+        var rows = new List<global::Fdw.Data.DataContainers.Abstractions.IDataRow>();
+
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            var values = new object?[reader.FieldCount];
+            for (var i = 0; i < reader.FieldCount; i++)
+                values[i] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+
+            rows.Add(new global::Fdw.Data.DataContainers.Abstractions.DataRow(schema, values));
+        }
+
+        return rows;
     }
 
     private static bool IsCollectionType(Type type, out Type? itemType)

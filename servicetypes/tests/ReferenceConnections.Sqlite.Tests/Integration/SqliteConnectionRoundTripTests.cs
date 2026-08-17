@@ -170,6 +170,7 @@ public sealed class SqliteConnectionRoundTripTests : IAsyncLifetime
 
         var schema = new Mock<IContainerSchema>();
         schema.Setup(s => s.Fields).Returns(new IField[] { idField.Object, nameField.Object, ageField.Object });
+        schema.Setup(s => s.GetProjectableFields()).Returns(new IField[] { idField.Object, nameField.Object, ageField.Object });
 
         var metadata = new Dictionary<string, object>(System.StringComparer.Ordinal)
         {
@@ -191,6 +192,7 @@ public sealed class SqliteConnectionRoundTripTests : IAsyncLifetime
     {
         var f = new Mock<IField>();
         f.Setup(x => x.Name).Returns(name);
+        f.Setup(x => x.Visibility).Returns(FieldVisibilities.ByName("Visible"));
         f.Setup(x => x.IsIdentity).Returns(isIdentity);
         f.Setup(x => x.IsComputed).Returns(false);
         f.Setup(x => x.IsSystemProvided).Returns(false);

@@ -34,6 +34,7 @@ public sealed class SqliteQueryTranslatorTests
         var containerSchema = new Mock<IContainerSchema>();
         containerSchema.Setup(s => s.Fields)
             .Returns(fields ?? new[] { CreateField("id").Object });
+        containerSchema.Setup(s => s.GetProjectableFields()).Returns(fields ?? new[] { CreateField("id").Object });
 
         var container = new Mock<IDataContainer>();
         container.Setup(c => c.Name).Returns(name);
@@ -51,6 +52,7 @@ public sealed class SqliteQueryTranslatorTests
     {
         var field = new Mock<IField>();
         field.Setup(f => f.Name).Returns(name);
+        field.Setup(f => f.Visibility).Returns(FieldVisibilities.ByName("Visible"));
         field.Setup(f => f.IsIdentity).Returns(false);
         field.Setup(f => f.IsComputed).Returns(false);
         return field;
@@ -350,6 +352,7 @@ public sealed class SqliteQueryTranslatorTests
         var dbPath = new SqliteDatabasePath("orders");
         var schema = new Mock<IContainerSchema>();
         schema.Setup(s => s.Fields).Returns(Array.Empty<IField>());
+        schema.Setup(s => s.GetProjectableFields()).Returns(Array.Empty<IField>());
 
         var container = new Mock<IStorageContainer>();
         container.Setup(c => c.Name).Returns("orders");

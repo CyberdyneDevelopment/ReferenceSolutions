@@ -112,7 +112,6 @@ public sealed class EmailNotificationType
 
             // Why: register the domain header provider (idempotent) it depends on, instead of the
             // entry-point app.
-            NotificationConfigurationProvider.RegisterDomainConfiguration(builder.Services);
 
             return GenericResult<IHostApplicationBuilder>.Success(builder);
     

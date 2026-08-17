@@ -32,6 +32,7 @@ public sealed class SqliteTranslatorTests
         var containerSchema = new Mock<IContainerSchema>();
         containerSchema.Setup(s => s.Fields)
             .Returns(fields ?? new[] { CreateField("id").Object, CreateField("amount").Object });
+        containerSchema.Setup(s => s.GetProjectableFields()).Returns(fields ?? new[] { CreateField("id").Object, CreateField("amount").Object });
 
         var container = new Mock<IDataContainer>();
         container.Setup(c => c.Name).Returns(name);
@@ -49,6 +50,7 @@ public sealed class SqliteTranslatorTests
     {
         var field = new Mock<IField>();
         field.Setup(f => f.Name).Returns(name);
+        field.Setup(f => f.Visibility).Returns(FieldVisibilities.ByName("Visible"));
         field.Setup(f => f.IsIdentity).Returns(isIdentity);
         field.Setup(f => f.IsComputed).Returns(isComputed);
         return field;

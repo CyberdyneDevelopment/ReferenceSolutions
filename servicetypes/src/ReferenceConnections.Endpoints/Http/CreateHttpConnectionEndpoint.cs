@@ -63,6 +63,9 @@ public class CreateHttpConnectionEndpoint : CreateConnectionEndpointBase<HttpCon
             AdditionalProperties = request.Authentication != null
                 ? new Dictionary<string, string?>(request.Authentication, StringComparer.OrdinalIgnoreCase)
                 : new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase),
+            Headers = request.Headers != null
+                ? new Dictionary<string, string?>(request.Headers, StringComparer.OrdinalIgnoreCase)
+                : new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase),
             UseMtls = request.UseMtls
         };
     }

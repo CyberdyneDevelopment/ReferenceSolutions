@@ -7,7 +7,7 @@
     - the private package feed for CI builds
   -->
   <PropertyGroup>
-    <FdwVersion>1.0.0-rc.2.build.68</FdwVersion>
+    <FdwVersion>1.0.0-rc.3.*</FdwVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <!-- Why: enables NuGet CPM transitive pinning so PackageVersion entries also override
          transitive dependencies — required to resolve pre-release FDW packages that appear
@@ -101,7 +101,6 @@
     <!-- Fdw Hosting -->
     <PackageVersion Include="Fdw.Hosting" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Hosting.Abstractions" Version="$(FdwVersion)" />
-    <PackageVersion Include="Fdw.Hosting.MsSql" Version="$(FdwVersion)" />
     <!-- Fdw Resiliency -->
     <PackageVersion Include="Fdw.Services.Resiliency" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Resiliency.Abstractions" Version="$(FdwVersion)" />

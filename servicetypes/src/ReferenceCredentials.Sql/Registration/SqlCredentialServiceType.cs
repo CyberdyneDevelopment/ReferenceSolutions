@@ -97,10 +97,6 @@ public sealed class SqlCredentialServiceType
             builder.Services.TryAddScoped<IPersonalAccessTokenService, SqlPersonalAccessTokenService>();
             builder.Services.TryAddScoped<IAgentKeyService, SqlAgentKeyService>();
 
-            // Why: RegisterFactory (below) requires CredentialServiceConfigurationProvider (the shared
-            // header provider for the whole CredentialService domain) to already be registered.
-            // TryAddSingleton inside RegisterDomainConfiguration makes this idempotent.
-            CredentialServiceConfigurationProvider.RegisterDomainConfiguration(builder.Services);
             return GenericResult<IHostApplicationBuilder>.Success(builder);
     
         });

@@ -280,6 +280,20 @@ public sealed partial class HttpConnection
         if (processResult.Value is T typedResult)
             return GenericResult<T>.Success(typedResult);
 
+        // Why: the row-extraction path always yields List<Dictionary<string,object?>>, but a DataSet
+        // query asks for IEnumerable<IDataRow> — the framework's row. Convert here, where the
+        // requested T is known; Convert.ChangeType below cannot produce a row and the plain
+        // deserializer cannot construct an interface at all.
+        if (processResult.Value is IReadOnlyList<IDictionary<string, object?>> dictRows
+            && typeof(T).IsGenericType
+            && typeof(T).GetGenericArguments()[0] is { } element
+            && (element.Equals(typeof(global::Fdw.Data.DataContainers.Abstractions.IDataRow))
+                || element.Equals(typeof(global::Fdw.Data.DataContainers.Abstractions.DataRow))))
+        {
+            return GenericResult<T>.Success(
+                (T)global::Fdw.Data.DataContainers.Abstractions.DataRow.FromDictionaries(dictRows));
+        }
+
         try
         {
             var converted = (T)Convert.ChangeType(processResult.Value, typeof(T), System.Globalization.CultureInfo.InvariantCulture);

@@ -38,7 +38,6 @@
     <PackageReference Include="Fdw.Web.Api" />
     <PackageReference Include="FastEndpoints" />
     <PackageReference Include="FastEndpoints.Swagger" />
-    <PackageReference Include="Fdw.Hosting.MsSql" />
     <PackageReference Include="Fdw.Operations.Endpoints" />
     <PackageReference Include="Fdw.Services.SecretManagers.Endpoints" />
     <PackageReference Include="Fdw.UI.Themes" />

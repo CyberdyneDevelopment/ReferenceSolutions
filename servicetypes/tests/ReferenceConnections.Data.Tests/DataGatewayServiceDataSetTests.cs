@@ -46,10 +46,51 @@ public sealed class DataGatewayServiceDataSetTests
 
         // Why: default success container resolution so individual tests only override when testing the
         // failure path. Resolution goes through the dot-walk Get(store, path, container) overload.
-        var containerMock = new Mock<IDataContainer>();
+        //
+        // Why the container carries a Parent.Store: a strategy takes its connection from the container
+        // it just resolved, walking Parent.Store.ConnectionId, because the DataStore owns the
+        // connection and a source does not repeat it. A bare Mock<IDataContainer> returns null for
+        // Parent, which is not a container any provider would hand back — it is a double that omits
+        // the link the code reads. Wiring it here keeps every test on the real shape.
+        // Why the container is built PER DataStore name rather than once: a federated dataset reads
+        // two sources from two stores, and each source's connection is whatever ITS store points at.
+        // One shared container would give both sources the same connection, the second stub would
+        // overwrite the first, and a join would silently read one side twice and match nothing.
         _dataStoreProviderMock
             .Setup(p => p.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(GenericResult<IDataContainer>.Success(containerMock.Object));
+            .ReturnsAsync((string store, string _, string _, CancellationToken _) =>
+                GenericResult<IDataContainer>.Success(BuildContainer(ConnectionIdFor(store))));
+    }
+
+    /// <summary>
+    /// The connection id a DataStore of this name points at — stable per name, distinct across names.
+    /// </summary>
+    /// <remarks>
+    /// Derived rather than assigned so a test naming a new store gets a distinct connection without
+    /// having to register one, and so the container mock and the connection stub agree by
+    /// construction instead of by two edits staying in step.
+    /// </remarks>
+    private static Guid ConnectionIdFor(string dataStoreName)
+    {
+        var bytes = new byte[16];
+        var name = System.Text.Encoding.UTF8.GetBytes(dataStoreName);
+        for (var i = 0; i < name.Length; i++)
+            bytes[i % 16] ^= name[i];
+        return new Guid(bytes);
+    }
+
+    /// <summary>Builds a container whose DataStore points at <paramref name="connectionId"/>.</summary>
+    private static IDataContainer BuildContainer(Guid connectionId)
+    {
+        var storeMock = new Mock<IDataStore>();
+        storeMock.Setup(s => s.ConnectionId).Returns(connectionId);
+
+        var pathMock = new Mock<IDataPath>();
+        pathMock.Setup(p => p.Store).Returns(storeMock.Object);
+
+        var containerMock = new Mock<IDataContainer>();
+        containerMock.Setup(c => c.Parent).Returns(pathMock.Object);
+        return containerMock.Object;
     }
 
     private DataSetExecutionContext BuildContext(DataSetConfiguration config)
@@ -102,7 +143,7 @@ public sealed class DataGatewayServiceDataSetTests
     {
         var dataset = CreateDataSetConfig("ApiProducts",
             [CreateSourceConfig("RestSource", "conn1", httpEndpoint: "/api/products")]);
-        SetupExecuteConnection("conn1", "rest-result");
+        SetupExecuteConnection("RestSourceStore", "rest-result");
 
         var result = await new SimpleDataSetType().Execute<string>(BuildContext(dataset), CreateCommand().Object, TestContext.Current.CancellationToken);
 
@@ -118,7 +159,7 @@ public sealed class DataGatewayServiceDataSetTests
         var dataset = CreateDataSetConfig("ConnFail",
             [CreateSourceConfig("RestSource", "missing-conn", httpEndpoint: "/api/data")]);
         _connectionProviderMock
-            .Setup(p => p.Get<IDataConnection>("missing-conn", It.IsAny<CancellationToken>()))
+            .Setup(p => p.Get(ConnectionIdFor("RestSourceStore"), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IDataConnection>.Failure(new GenericMessage("Connection not found")));
 
         var result = await new SimpleDataSetType().Execute<string>(BuildContext(dataset), CreateCommand().Object, TestContext.Current.CancellationToken);
@@ -139,7 +180,7 @@ public sealed class DataGatewayServiceDataSetTests
             .Setup(p => p.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IDataContainer>.Failure(new GenericMessage("DataStore not found")));
         _connectionProviderMock
-            .Setup(p => p.Get<IDataConnection>("conn1", It.IsAny<CancellationToken>()))
+            .Setup(p => p.Get(ConnectionIdFor("UnknownStore"), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IDataConnection>.Success(new Mock<IDataConnection>().Object));
 
         var result = await new SimpleDataSetType().Execute<string>(BuildContext(dataset), CreateCommand().Object, TestContext.Current.CancellationToken);
@@ -169,7 +210,7 @@ public sealed class DataGatewayServiceDataSetTests
         {
             new(StringComparer.OrdinalIgnoreCase) { { "properties.mag", 3.5 }, { "id", "us7000abc1" }, { "time", 1700000000000L } },
         };
-        SetupExecuteRows("quake-conn", physicalRows);
+        SetupExecuteRows("EarthquakeSourceStore", physicalRows);
 
         var result = await new SimpleDataSetType().Execute<IEnumerable<Dictionary<string, object?>>>(
             BuildContext(dataset), CreateCommand().Object, TestContext.Current.CancellationToken);
@@ -198,7 +239,7 @@ public sealed class DataGatewayServiceDataSetTests
         {
             new(StringComparer.OrdinalIgnoreCase) { { "mag", 2.1 }, { "place", "California" } },
         };
-        SetupExecuteRows("raw-conn", rawRows);
+        SetupExecuteRows("RawSourceStore", rawRows);
 
         var result = await new SimpleDataSetType().Execute<IEnumerable<Dictionary<string, object?>>>(
             BuildContext(dataset), CreateCommand().Object, TestContext.Current.CancellationToken);
@@ -253,7 +294,7 @@ public sealed class DataGatewayServiceDataSetTests
             CreateSourceConfig("S1", "conn1", containerName: "T1", dataStoreName: "StoreA"),
             CreateSourceConfig("S2", "conn1", containerName: "T2", dataStoreName: "StoreA"),
         ]);
-        SetupExecuteConnection("conn1", "compound-result");
+        SetupExecuteConnection("StoreA", "compound-result");
 
         var result = await new CompoundDataSetType().Execute<string>(BuildContext(dataset), CreateCommand().Object, TestContext.Current.CancellationToken);
 
@@ -286,7 +327,7 @@ public sealed class DataGatewayServiceDataSetTests
             .Callback<IDataCommand, IDataContainer, CancellationToken>((cmd, _, _) => capturedCommand = cmd)
             .ReturnsAsync(GenericResult<string>.Success("joined-result"));
         _connectionProviderMock
-            .Setup(p => p.Get<IDataConnection>("conn1", It.IsAny<CancellationToken>()))
+            .Setup(p => p.Get(ConnectionIdFor("StoreA"), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IDataConnection>.Success(connectionMock.Object));
 
         // Act
@@ -360,7 +401,7 @@ public sealed class DataGatewayServiceDataSetTests
 
         // A plain IDataConnection that does NOT implement IRecordSourceConnection.
         _connectionProviderMock
-            .Setup(p => p.Get<IDataConnection>("plain-conn", It.IsAny<CancellationToken>()))
+            .Setup(p => p.Get(ConnectionIdFor("StoreA"), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IDataConnection>.Success(new Mock<IDataConnection>().Object));
 
         var result = await new FederatedDataSetType().Execute<IEnumerable<DataRecord>>(BuildContext(dataset), CreateCommand().Object, TestContext.Current.CancellationToken);
@@ -383,8 +424,8 @@ public sealed class DataGatewayServiceDataSetTests
 
         var (schema1, rows1) = BuildRecords(["Name"], ["Alice"]);
         var (schema2, rows2) = BuildRecords(["Name"], ["Bob"]);
-        SetupRecordConnection("conn1", schema1, rows1);
-        SetupRecordConnection("conn2", schema2, rows2);
+        SetupRecordConnection("RS1", schema1, rows1);
+        SetupRecordConnection("RS2", schema2, rows2);
 
         var result = await new FederatedDataSetType().Execute<IEnumerable<DataRecord>>(BuildContext(dataset), CreateCommand().Object, TestContext.Current.CancellationToken);
 
@@ -410,8 +451,8 @@ public sealed class DataGatewayServiceDataSetTests
 
         var (custSchema, customers) = BuildRecords(["Id", "Name"], [1, "Alice"], [2, "Bob"], [3, "Charlie"]);
         var (ordSchema, orders) = BuildRecords(["CustomerId", "Amount"], [1, 100m], [2, 200m]);
-        SetupRecordConnection("conn1", custSchema, customers);
-        SetupRecordConnection("conn2", ordSchema, orders);
+        SetupRecordConnection("CustStore", custSchema, customers);
+        SetupRecordConnection("OrdStore", ordSchema, orders);
 
         var result = await new FederatedDataSetType().Execute<IEnumerable<DataRecord>>(BuildContext(dataset), CreateCommand().Object, TestContext.Current.CancellationToken);
 
@@ -440,8 +481,8 @@ public sealed class DataGatewayServiceDataSetTests
 
         var (custSchema, customers) = BuildRecords(["Id", "Name"], [1, "Alice"], [2, "Bob"]);
         var (ordSchema, orders) = BuildRecords(["CustomerId", "Amount"], [1, 100m]);
-        SetupRecordConnection("conn1", custSchema, customers);
-        SetupRecordConnection("conn2", ordSchema, orders);
+        SetupRecordConnection("CustStore2", custSchema, customers);
+        SetupRecordConnection("OrdStore2", ordSchema, orders);
 
         var result = await new FederatedDataSetType().Execute<IEnumerable<DataRecord>>(BuildContext(dataset), CreateCommand().Object, TestContext.Current.CancellationToken);
 
@@ -467,8 +508,8 @@ public sealed class DataGatewayServiceDataSetTests
 
         var (custSchema, customers) = BuildRecords(["Id"], [1]);
         var (ordSchema, orders) = BuildRecords(["CustomerId"], [1]);
-        SetupRecordConnection("conn1", custSchema, customers);
-        SetupRecordConnection("conn2", ordSchema, orders);
+        SetupRecordConnection("BS1", custSchema, customers);
+        SetupRecordConnection("BS2", ordSchema, orders);
 
         var result = await new FederatedDataSetType().Execute<IEnumerable<DataRecord>>(BuildContext(dataset), CreateCommand().Object, TestContext.Current.CancellationToken);
 
@@ -488,9 +529,9 @@ public sealed class DataGatewayServiceDataSetTests
         ], federationStrategy: "Sequential");
 
         var (schema1, rows1) = BuildRecords(["Name"], ["Alice"]);
-        SetupRecordConnection("conn1", schema1, rows1);
+        SetupRecordConnection("F1", schema1, rows1);
         _connectionProviderMock
-            .Setup(p => p.Get<IDataConnection>("missing", It.IsAny<CancellationToken>()))
+            .Setup(p => p.Get(ConnectionIdFor("F2"), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IDataConnection>.Failure(new GenericMessage("Connection timeout")));
 
         var result = await new FederatedDataSetType().Execute<IEnumerable<DataRecord>>(BuildContext(dataset), CreateCommand().Object, TestContext.Current.CancellationToken);
@@ -546,18 +587,18 @@ public sealed class DataGatewayServiceDataSetTests
         };
     }
 
-    private void SetupExecuteConnection(string connectionName, string value)
+    private void SetupExecuteConnection(string dataStoreName, string value)
     {
         var connectionMock = new Mock<IDataConnection>();
         connectionMock
             .Setup(c => c.Execute<string>(It.IsAny<IDataCommand>(), It.IsAny<IDataContainer>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<string>.Success(value));
         _connectionProviderMock
-            .Setup(p => p.Get<IDataConnection>(connectionName, It.IsAny<CancellationToken>()))
+            .Setup(p => p.Get(ConnectionIdFor(dataStoreName), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IDataConnection>.Success(connectionMock.Object));
     }
 
-    private void SetupExecuteRows(string connectionName, IEnumerable<Dictionary<string, object?>> rows)
+    private void SetupExecuteRows(string dataStoreName, IEnumerable<Dictionary<string, object?>> rows)
     {
         var connectionMock = new Mock<IDataConnection>();
         connectionMock
@@ -565,18 +606,18 @@ public sealed class DataGatewayServiceDataSetTests
                 It.IsAny<IDataCommand>(), It.IsAny<IDataContainer>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IEnumerable<Dictionary<string, object?>>>.Success(rows));
         _connectionProviderMock
-            .Setup(p => p.Get<IDataConnection>(connectionName, It.IsAny<CancellationToken>()))
+            .Setup(p => p.Get(ConnectionIdFor(dataStoreName), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IDataConnection>.Success(connectionMock.Object));
     }
 
-    private void SetupRecordConnection(string connectionName, RecordSchema schema, IReadOnlyList<DataRecord> records)
+    private void SetupRecordConnection(string dataStoreName, RecordSchema schema, IReadOnlyList<DataRecord> records)
     {
         var connectionMock = new Mock<IDataConnection>();
         connectionMock.As<IRecordSourceConnection>()
             .Setup(c => c.OpenRecordSource(It.IsAny<IDataCommand>(), It.IsAny<IDataContainer>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IRecordSource<DataRecord>>.Success(new FakeRecordSource(schema, records)));
         _connectionProviderMock
-            .Setup(p => p.Get<IDataConnection>(connectionName, It.IsAny<CancellationToken>()))
+            .Setup(p => p.Get(ConnectionIdFor(dataStoreName), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IDataConnection>.Success(connectionMock.Object));
     }
 
