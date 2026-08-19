@@ -303,8 +303,18 @@ public partial class Endpoints : ServiceTypeCollectionBase<IEndpointTypeCollecti
     // UseFastEndpoints call this collection makes, so there is no way to wire endpoints and miss them
     // — which is what happened when the framework called UseFastEndpoints with no config at all and
     // every host had to re-issue it to get the route prefix and the roles claim type back.
-    private static void ApplyEndpointConventions(Config config, ILogger logger)
+    /// <summary>Applies this ecosystem's endpoint conventions to a FastEndpoints configuration.</summary>
+    /// <remarks>
+    /// Public because a host that composes its own request pipeline still needs the conventions. The
+    /// reference API interleaves tenant and organization resolution between authorization and the
+    /// rate limiter, so it cannot take the block the Initialize phase composes, but the
+    /// conventions are the collection's knowledge either way and must not be restated by the host.
+    /// </remarks>
+    /// <param name="config">The FastEndpoints configuration to apply the conventions to.</param>
+    /// <param name="logger">Reports each convention as it is applied; optional.</param>
+    public static void ApplyEndpointConventions(Config config, ILogger? logger = null)
     {
+        logger ??= NullLogger.Instance;
         config.Endpoints.RoutePrefix = RoutePrefix;
         EndpointRegistrationLog.EndpointConventionApplied(
             logger, 1, "Endpoints.RoutePrefix", RoutePrefix, "the version prefix every FDW service surface is served under");
