@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ReferenceEndpoints\ReferenceEndpoints.csproj" />
     <PackageReference Include="Fdw.Configuration.Endpoints" />
     <PackageReference Include="Fdw.Data.Abstractions" />
     <PackageReference Include="Fdw.Data.DataPaths" />

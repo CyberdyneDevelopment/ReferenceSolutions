@@ -1,3 +1,4 @@
+using Fdw.Services.Connections;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -65,6 +66,12 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
         return mock;
     }
 
+    // Why the header and not the typed body alone: the factory takes the connection's name from
+    // the header that wraps the body, and refuses a connection that has none. Handing it a bare
+    // MsSqlConnectionConfiguration is the nameless case, which is exactly what it now rejects.
+    private static ConnectionConfiguration Named(MsSqlConnectionConfiguration body, string name = "TestConnection")
+        => new() { Name = name, Configuration = body };
+
     private static MsSqlConnectionConfiguration SqlAuthConfig(string? secretManagerName = null)
         => new()
         {
@@ -88,7 +95,7 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
         var provider = ProviderReturning("Default", manager.Object);
 
         var result = await NewFactory(provider.Object).Create(
-            SqlAuthConfig("Default"), TestContext.Current.CancellationToken);
+            Named(SqlAuthConfig("Default")), TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldNotBeNull();
@@ -104,7 +111,7 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
         var provider = ProviderReturning("AzureKeyVault", manager.Object);
 
         var result = await NewFactory(provider.Object).Create(
-            SqlAuthConfig("AzureKeyVault"), TestContext.Current.CancellationToken);
+            Named(SqlAuthConfig("AzureKeyVault")), TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         provider.Verify(p => p.Get("AzureKeyVault", It.IsAny<CancellationToken>()), Times.Once);
@@ -120,7 +127,7 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
             .ReturnsAsync(GenericResult<ISecretManager>.Failure(new GenericMessage("Secret manager not found")));
 
         var result = await NewFactory(provider.Object).Create(
-            SqlAuthConfig("Default"), TestContext.Current.CancellationToken);
+            Named(SqlAuthConfig("Default")), TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeFalse();
     }
@@ -137,7 +144,7 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
         var provider = ProviderReturning("Default", manager.Object);
 
         var result = await NewFactory(provider.Object).Create(
-            SqlAuthConfig("Default"), TestContext.Current.CancellationToken);
+            Named(SqlAuthConfig("Default")), TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeFalse();
     }
@@ -166,7 +173,7 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
     public async Task CreateFailsLoudWhenFactoryHasNoSecretManagerProvider()
     {
         var result = await NewFactory().Create(
-            SqlAuthConfig("Default"), TestContext.Current.CancellationToken);
+            Named(SqlAuthConfig("Default")), TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeFalse();
         result.Messages.ShouldNotBeEmpty();
@@ -193,7 +200,7 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
         var manager = SecretManagerReturning(new SecretValue("sql-password", "async-pass-456"));
 
         var result = await NewFactory().Create(
-            SqlAuthConfig("Default"),
+            Named(SqlAuthConfig("Default")),
             manager.Object,
             TestContext.Current.CancellationToken);
 

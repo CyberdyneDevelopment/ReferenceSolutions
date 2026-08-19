@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceDataSets.Endpoints.DataSetSourceEndpointOptions;
 
@@ -10,7 +11,7 @@ namespace ReferenceDataSets.Endpoints.DataSetSourceEndpointOptions;
 /// The endpoints over the data-set-source resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "DataSetSourceEndpoints")]
+[TypeOption(typeof(EndpointGroups), "DataSetSourceEndpoints")]
 [TypeCollection(typeof(DataSetSourceEndpointBase), typeof(IEndpointTypeOption), typeof(DataSetSourceEndpoints))]
 public partial class DataSetSourceEndpoints : EndpointTypeCollectionBase<DataSetSourceEndpointBase>
 {

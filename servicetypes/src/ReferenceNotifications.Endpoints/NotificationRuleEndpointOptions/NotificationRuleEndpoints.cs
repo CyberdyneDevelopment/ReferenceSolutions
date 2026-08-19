@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceNotifications.Endpoints.NotificationRuleEndpointOptions;
 
@@ -10,7 +11,7 @@ namespace ReferenceNotifications.Endpoints.NotificationRuleEndpointOptions;
 /// The endpoints over the notification-rule resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "NotificationRuleEndpoints")]
+[TypeOption(typeof(EndpointGroups), "NotificationRuleEndpoints")]
 [TypeCollection(typeof(NotificationRuleEndpointBase), typeof(IEndpointTypeOption), typeof(NotificationRuleEndpoints))]
 public partial class NotificationRuleEndpoints : EndpointTypeCollectionBase<NotificationRuleEndpointBase>
 {

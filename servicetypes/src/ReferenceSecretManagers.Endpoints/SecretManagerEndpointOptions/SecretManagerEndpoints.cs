@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceSecretManagers.Endpoints.SecretManagerEndpointOptions;
 
 /// <summary>The endpoints over the secret-manager resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "SecretManagerEndpoints")]
+[TypeOption(typeof(EndpointGroups), "SecretManagerEndpoints")]
 [TypeCollection(typeof(SecretManagerEndpointBase), typeof(IEndpointTypeOption), typeof(SecretManagerEndpoints))]
 public partial class SecretManagerEndpoints : EndpointTypeCollectionBase<SecretManagerEndpointBase>
 {

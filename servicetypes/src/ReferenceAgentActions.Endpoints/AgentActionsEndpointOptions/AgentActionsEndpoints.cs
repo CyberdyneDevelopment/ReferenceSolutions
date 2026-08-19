@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceAgentActions.Endpoints.AgentActionsEndpointOptions;
 
 /// <summary>The endpoints over the agentactions surface.</summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "AgentActionsEndpoints")]
+[TypeOption(typeof(EndpointGroups), "AgentActionsEndpoints")]
 [TypeCollection(typeof(AgentActionsEndpointBase), typeof(IEndpointTypeOption), typeof(AgentActionsEndpoints))]
 public partial class AgentActionsEndpoints : EndpointTypeCollectionBase<AgentActionsEndpointBase>
 {

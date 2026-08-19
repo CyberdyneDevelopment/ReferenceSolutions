@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace ReferenceHosting.Middleware;
+namespace ReferenceEndpoints.Configuration;
 
 /// <summary>
-/// The routes a host considers legitimately body-less, for <see cref="EmptyBodyBadRequestMiddleware"/>.
+/// The routes a host considers legitimately body-less, for <see cref="Middleware.EmptyBodyBadRequestMiddleware"/>.
 /// </summary>
 /// <remarks>
 /// Why this is configuration rather than a constant: which routes may arrive without a body is a

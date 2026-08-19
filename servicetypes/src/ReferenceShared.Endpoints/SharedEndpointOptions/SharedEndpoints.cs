@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceShared.Endpoints.SharedEndpointOptions;
 
 /// <summary>The endpoints over the shared surface.</summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "SharedEndpoints")]
+[TypeOption(typeof(EndpointGroups), "SharedEndpoints")]
 [TypeCollection(typeof(SharedEndpointBase), typeof(IEndpointTypeOption), typeof(SharedEndpoints))]
 public partial class SharedEndpoints : EndpointTypeCollectionBase<SharedEndpointBase>
 {

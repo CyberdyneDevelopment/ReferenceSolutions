@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceQuality.Endpoints.QualityRuleEndpointOptions;
 
@@ -10,7 +11,7 @@ namespace ReferenceQuality.Endpoints.QualityRuleEndpointOptions;
 /// The endpoints over the quality-rule resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "QualityRuleEndpoints")]
+[TypeOption(typeof(EndpointGroups), "QualityRuleEndpoints")]
 [TypeCollection(typeof(QualityRuleEndpointBase), typeof(IEndpointTypeOption), typeof(QualityRuleEndpoints))]
 public partial class QualityRuleEndpoints : EndpointTypeCollectionBase<QualityRuleEndpointBase>
 {

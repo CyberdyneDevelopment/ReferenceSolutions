@@ -7,16 +7,15 @@ using Fdw.Messages;
 using Fdw.Results;
 using Fdw.Services.Authentication.Abstractions;
 using Fdw.Services.Multitenancy.Abstractions;
-using Fdw.Services.Multitenancy.Sql.Middleware;
-using Fdw.Services.Multitenancy.Sql.Models;
+using ReferenceMultitenancy.Sql.Middleware;
+using ReferenceMultitenancy.Sql.Models;
 using Microsoft.AspNetCore.Http;
 using Fdw;
 using Fdw.Services;
 using Fdw.Services.Multitenancy;
-using Fdw.Services.Multitenancy.Sql;
-using Fdw.Services.Multitenancy.Sql.Extensions;
-using Fdw.Services.Multitenancy.Sql.Logging;
-using Fdw.Services.Multitenancy.Sql.Results;
+using ReferenceMultitenancy.Sql;
+using ReferenceMultitenancy.Sql.Logging;
+using ReferenceMultitenancy.Sql.Results;
 
 namespace ReferenceMultitenancy.Sql.Tests.Middleware;
 

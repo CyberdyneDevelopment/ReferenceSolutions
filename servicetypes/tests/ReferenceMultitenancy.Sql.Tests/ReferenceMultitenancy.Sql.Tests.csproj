@@ -21,8 +21,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
   <PropertyGroup>
-    <!-- Only include Fdw.Services.Multitenancy.Sql in coverage -->
-    <Include>[Fdw.Services.Multitenancy.Sql]*</Include>
+    <!-- Only include ReferenceMultitenancy.Sql in coverage -->
+    <Include>[ReferenceMultitenancy.Sql]*</Include>
     <Exclude>[xunit.*]*,[Moq]*,[Shouldly]*</Exclude>
   </PropertyGroup>
 </Project>

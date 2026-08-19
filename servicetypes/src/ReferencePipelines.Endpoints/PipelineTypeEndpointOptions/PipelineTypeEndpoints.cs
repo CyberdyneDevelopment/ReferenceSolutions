@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferencePipelines.Endpoints.PipelineTypeEndpointOptions;
 
@@ -10,7 +11,7 @@ namespace ReferencePipelines.Endpoints.PipelineTypeEndpointOptions;
 /// The endpoints over the pipeline-type resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "PipelineTypeEndpoints")]
+[TypeOption(typeof(EndpointGroups), "PipelineTypeEndpoints")]
 [TypeCollection(typeof(PipelineTypeEndpointBase), typeof(IEndpointTypeOption), typeof(PipelineTypeEndpoints))]
 public partial class PipelineTypeEndpoints : EndpointTypeCollectionBase<PipelineTypeEndpointBase>
 {

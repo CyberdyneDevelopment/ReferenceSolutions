@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceAudit.Endpoints.AuditEndpointOptions;
 
 /// <summary>The endpoints over the audit surface.</summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "AuditEndpoints")]
+[TypeOption(typeof(EndpointGroups), "AuditEndpoints")]
 [TypeCollection(typeof(AuditEndpointBase), typeof(IEndpointTypeOption), typeof(AuditEndpoints))]
 public partial class AuditEndpoints : EndpointTypeCollectionBase<AuditEndpointBase>
 {

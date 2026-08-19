@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferencePromotion.Endpoints.EnvironmentEndpointOptions;
 
@@ -10,7 +11,7 @@ namespace ReferencePromotion.Endpoints.EnvironmentEndpointOptions;
 /// The endpoints over the environment resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "EnvironmentEndpoints")]
+[TypeOption(typeof(EndpointGroups), "EnvironmentEndpoints")]
 [TypeCollection(typeof(EnvironmentEndpointBase), typeof(IEndpointTypeOption), typeof(EnvironmentEndpoints))]
 public partial class EnvironmentEndpoints : EndpointTypeCollectionBase<EnvironmentEndpointBase>
 {

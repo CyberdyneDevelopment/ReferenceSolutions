@@ -20,7 +20,7 @@
 
     <!-- Hand-set product version (SemVer 2.0), lockstep across the workspace. No MinVer, no git tags. -->
     <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>rc.3</VersionSuffix>
+    <VersionSuffix>rc.5</VersionSuffix>
 
     <Authors>Cyberdyne Development</Authors>
     <Company>Cyberdyne Development</Company>

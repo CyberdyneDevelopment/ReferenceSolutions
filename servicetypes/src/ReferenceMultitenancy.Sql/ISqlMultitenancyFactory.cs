@@ -1,12 +1,9 @@
 using Fdw.Services.Multitenancy;
 using ReferenceMultitenancy.Sql;
-using Fdw.Services.Multitenancy.Sql.Extensions;
 using ReferenceMultitenancy.Sql.Logging;
-using Fdw.Services.Multitenancy.Sql.Middleware;
-using Fdw.Services.Multitenancy.Sql.Models;
-using Fdw.Services.Multitenancy.Sql.Results;
-using Fdw.Services.Multitenancy.Sql;
-using Fdw.Services.Multitenancy.Sql.Logging;
+using ReferenceMultitenancy.Sql.Middleware;
+using ReferenceMultitenancy.Sql.Models;
+using ReferenceMultitenancy.Sql.Results;
 using Fdw.Services;
 using Fdw;
 

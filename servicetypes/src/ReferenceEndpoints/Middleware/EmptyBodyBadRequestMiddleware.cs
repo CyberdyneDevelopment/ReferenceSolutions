@@ -3,8 +3,9 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using ReferenceEndpoints.Configuration;
 
-namespace ReferenceHosting.Middleware;
+namespace ReferenceEndpoints.Middleware;
 
 /// <summary>
 /// Answers a body-bearing request that arrived with no body at all with <c>400</c> rather than

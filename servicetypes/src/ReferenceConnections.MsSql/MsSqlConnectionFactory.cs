@@ -192,24 +192,29 @@ public sealed class MsSqlConnectionFactory : IMsSqlConnectionFactory
             return GenericResult<IGenericConnection>.Failure(
                 MsSqlConnectionFactoryLogger.InvalidConfigurationType(_logger, configuration.GetType().Name));
 
-        var effectiveName = EffectiveName(typedBody, name);
+        // NO FALLBACKS: a connection with no name cannot be reported, correlated in a log, or
+        // referenced by the caller that asked for it. Substituting the id hid that and left readers
+        // hunting an identifier that appears in no configuration.
+        if (name.Length == 0)
+            return GenericResult<IGenericConnection>.Failure(
+                MsSqlConnectionFactoryLogger.ConnectionNameMissing(_logger, typedBody.ConnectionId.ToString()));
 
         if (string.IsNullOrEmpty(typedBody.AuthenticationType))
             return GenericResult<IGenericConnection>.Failure(
-                MsSqlConnectionFactoryLogger.AuthenticationTypeNotSpecified(_logger, effectiveName));
+                MsSqlConnectionFactoryLogger.AuthenticationTypeNotSpecified(_logger, name));
 
         // Why: ByName returns the NotFound sentinel (empty Name) for an unrecognized type — never null.
         // An unknown authentication type is a configuration defect, not "no authentication".
         if (MsSqlAuthenticationTypes.ByName(typedBody.AuthenticationType).IsEmpty)
             return GenericResult<IGenericConnection>.Failure(
-                MsSqlConnectionFactoryLogger.AuthenticationTypeUnknown(_logger, effectiveName, typedBody.AuthenticationType!));
+                MsSqlConnectionFactoryLogger.AuthenticationTypeUnknown(_logger, name, typedBody.AuthenticationType!));
 
         var manager = await ResolveSecretManager(
             typedBody,
             MsSqlAuthenticationTypes.ByName(typedBody.AuthenticationType),
             supplied,
             _secretManagerProvider,
-            effectiveName,
+            name,
             cancellationToken).ConfigureAwait(false);
         if (!manager.IsSuccess)
             return manager.ToNewResult<IGenericConnection>();
@@ -227,8 +232,6 @@ public sealed class MsSqlConnectionFactory : IMsSqlConnectionFactory
             _ => (null, string.Empty),
         };
 
-    private static string EffectiveName(MsSqlConnectionConfiguration configuration, string connectionName)
-        => connectionName.Length > 0 ? connectionName : configuration.ConnectionId.ToString();
 
     /// <summary>
     /// Creates a SQL Server connection using the generic configuration interface.
@@ -300,7 +303,7 @@ public sealed class MsSqlConnectionFactory : IMsSqlConnectionFactory
         catch (Exception ex)
         {
             return GenericResult<IGenericConnection>.Failure(
-                MsSqlConnectionFactoryLogger.CreationFailed(_logger, EffectiveName(msSqlCfg, connectionName), ex.Message));
+                MsSqlConnectionFactoryLogger.CreationFailed(_logger, connectionName, ex.Message));
         }
     }
 
@@ -335,8 +338,8 @@ public sealed class MsSqlConnectionFactory : IMsSqlConnectionFactory
 #pragma warning disable MA0051, FDW007
     private IGenericResult<IGenericConnection> CreateInternal(MsSqlConnectionConfiguration configuration, string connectionName)
     {
-        var effectiveName = connectionName.Length > 0 ? connectionName : configuration?.ConnectionId.ToString() ?? "null";
-        MsSqlConnectionFactoryLogger.TraceCreateEntry(_logger, effectiveName);
+        var name = connectionName.Length > 0 ? connectionName : configuration?.ConnectionId.ToString() ?? "null";
+        MsSqlConnectionFactoryLogger.TraceCreateEntry(_logger, name);
 
         if (configuration == null)
         {
@@ -346,7 +349,7 @@ public sealed class MsSqlConnectionFactory : IMsSqlConnectionFactory
 
         try
         {
-            MsSqlConnectionFactoryLogger.CreatingConnection(_logger, effectiveName);
+            MsSqlConnectionFactoryLogger.CreatingConnection(_logger, name);
 
             // Why: AuthenticationType is a first-class column on MsSqlConnection — never read it from the KVP dict.
             var authTypeName = configuration.AuthenticationType;
@@ -354,7 +357,7 @@ public sealed class MsSqlConnectionFactory : IMsSqlConnectionFactory
             if (string.IsNullOrEmpty(authTypeName))
             {
                 return GenericResult<IGenericConnection>.Failure(
-                    MsSqlConnectionFactoryLogger.AuthenticationTypeNotSpecified(_logger, effectiveName));
+                    MsSqlConnectionFactoryLogger.AuthenticationTypeNotSpecified(_logger, name));
             }
 
             // Why: Normalize to OrdinalIgnoreCase so TypeOption TryGetValue lookups don't miss
@@ -362,7 +365,7 @@ public sealed class MsSqlConnectionFactory : IMsSqlConnectionFactory
             var authValues = NormalizeAuthValues(configuration.AdditionalProperties);
 
             var auth = MsSqlAuthenticationTypes.ByName(authTypeName);
-            MsSqlConnectionFactoryLogger.TraceAuthTypeResolved(_logger, authTypeName!, effectiveName);
+            MsSqlConnectionFactoryLogger.TraceAuthTypeResolved(_logger, authTypeName!, name);
 
             // Why: the SYNC path never resolves a secret — secret resolution is async. The
             // AUTHENTICATION TYPE owns the answer through the properties it declares as
@@ -371,17 +374,17 @@ public sealed class MsSqlConnectionFactory : IMsSqlConnectionFactory
             if (auth.SecretPropertyNames.Count > 0)
             {
                 return GenericResult<IGenericConnection>.Failure(
-                    MsSqlConnectionFactoryLogger.SecretManagerRequiredButNotProvided(_logger, effectiveName, auth.Name));
+                    MsSqlConnectionFactoryLogger.SecretManagerRequiredButNotProvided(_logger, name, auth.Name));
             }
 
             // Log resolved configuration
             MsSqlConnectionFactoryLogger.TraceConnectionConfig(
-                _logger, effectiveName, configuration.Server, configuration.Database,
+                _logger, name, configuration.Server, configuration.Database,
                 configuration.Port, authTypeName!, configuration.Encrypt, configuration.TrustServerCertificate);
 
             // Build connection string using authentication processor
-            MsSqlConnectionFactoryLogger.TraceBuildingConnectionString(_logger, effectiveName, authTypeName!);
-            var connectionStringResult = BuildConnectionString(configuration, auth, authValues, resolvedPassword: null, effectiveName);
+            MsSqlConnectionFactoryLogger.TraceBuildingConnectionString(_logger, name, authTypeName!);
+            var connectionStringResult = BuildConnectionString(configuration, auth, authValues, resolvedPassword: null, name);
             if (!connectionStringResult.IsSuccess)
             {
                 return connectionStringResult.ToNewResult<IGenericConnection>();
@@ -395,14 +398,14 @@ public sealed class MsSqlConnectionFactory : IMsSqlConnectionFactory
                 connectionStringResult.Value.AccessToken,
                 _authenticationContextAccessor);
 
-            MsSqlConnectionFactoryLogger.ConnectionCreated(_logger, effectiveName, configuration.Server ?? "unknown");
+            MsSqlConnectionFactoryLogger.ConnectionCreated(_logger, name, configuration.Server ?? "unknown");
 
             return GenericResult<IGenericConnection>.Success(connection);
         }
         catch (Exception ex)
         {
             return GenericResult<IGenericConnection>.Failure(
-                MsSqlConnectionFactoryLogger.CreationFailed(_logger, effectiveName, ex.Message));
+                MsSqlConnectionFactoryLogger.CreationFailed(_logger, name, ex.Message));
         }
     }
 #pragma warning restore MA0051, FDW007

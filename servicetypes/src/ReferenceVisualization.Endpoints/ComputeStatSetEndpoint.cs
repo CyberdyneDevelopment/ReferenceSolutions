@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FastEndpoints;
-using Fdw.Hosting.Extensions;
+using ReferenceEndpoints.Extensions;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Abstractions.Visualization;
 

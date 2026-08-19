@@ -31,6 +31,7 @@
     <Project Path="src/ReferenceDataSets.Endpoints/ReferenceDataSets.Endpoints.csproj" />
     <Project Path="src/ReferenceDataStores.Endpoints/ReferenceDataStores.Endpoints.csproj" />
     <Project Path="src/ReferenceDdl.Endpoints/ReferenceDdl.Endpoints.csproj" />
+    <Project Path="src/ReferenceEndpoints/ReferenceEndpoints.csproj" />
     <Project Path="src/ReferenceEscalation.Endpoints/ReferenceEscalation.Endpoints.csproj" />
     <Project Path="src/ReferenceEtlExecutions.Endpoints/ReferenceEtlExecutions.Endpoints.csproj" />
     <Project Path="src/ReferenceEtlJobs.Endpoints/ReferenceEtlJobs.Endpoints.csproj" />
@@ -40,7 +41,7 @@
     <Project Path="src/ReferenceExternalIdentityProviders.Oidc/ReferenceExternalIdentityProviders.Oidc.csproj" />
     <Project Path="src/ReferenceFieldMappings.Endpoints/ReferenceFieldMappings.Endpoints.csproj" />
     <Project Path="src/ReferenceHealth.Endpoints/ReferenceHealth.Endpoints.csproj" />
-    <Project Path="src/ReferenceHosting.Middleware/ReferenceHosting.Middleware.csproj" />
+    <Project Path="src/ReferenceIdentity.Endpoints/ReferenceIdentity.Endpoints.csproj" />
     <Project Path="src/ReferenceLineage.Endpoints/ReferenceLineage.Endpoints.csproj" />
     <Project Path="src/ReferenceMessages.Endpoints/ReferenceMessages.Endpoints.csproj" />
     <Project Path="src/ReferenceMultitenancy.Sql/ReferenceMultitenancy.Sql.csproj" />
@@ -93,12 +94,6 @@
       <BuildType Solution="Release-Local|*" Project="Debug" />
     </Project>
     <Project Path="tests/ReferenceExternalIdentityProviders.Oidc.Tests/ReferenceExternalIdentityProviders.Oidc.Tests.csproj">
-      <BuildType Solution="Debug-Local|*" Project="Debug" />
-      <BuildType Solution="Develop-Local|*" Project="Debug" />
-      <BuildType Solution="Develop|*" Project="Debug" />
-      <BuildType Solution="Release-Local|*" Project="Debug" />
-    </Project>
-    <Project Path="tests/ReferenceHosting.Middleware.Tests/ReferenceHosting.Middleware.Tests.csproj">
       <BuildType Solution="Debug-Local|*" Project="Debug" />
       <BuildType Solution="Develop-Local|*" Project="Debug" />
       <BuildType Solution="Develop|*" Project="Debug" />

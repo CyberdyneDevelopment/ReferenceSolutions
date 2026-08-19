@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceDataStores.Endpoints.DataStoreContainerEndpointOptions;
 
 /// <summary>The endpoints over the data-store-container resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "DataStoreContainerEndpoints")]
+[TypeOption(typeof(EndpointGroups), "DataStoreContainerEndpoints")]
 [TypeCollection(typeof(DataStoreContainerEndpointBase), typeof(IEndpointTypeOption), typeof(DataStoreContainerEndpoints))]
 public partial class DataStoreContainerEndpoints : EndpointTypeCollectionBase<DataStoreContainerEndpointBase>
 {

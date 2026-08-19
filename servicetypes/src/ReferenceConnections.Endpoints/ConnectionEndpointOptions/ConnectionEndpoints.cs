@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceConnections.Endpoints.ConnectionEndpointOptions;
 
@@ -10,7 +11,7 @@ namespace ReferenceConnections.Endpoints.ConnectionEndpointOptions;
 /// The endpoints over the connection resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "ConnectionEndpoints")]
+[TypeOption(typeof(EndpointGroups), "ConnectionEndpoints")]
 [TypeCollection(typeof(ConnectionEndpointBase), typeof(IEndpointTypeOption), typeof(ConnectionEndpoints))]
 public partial class ConnectionEndpoints : EndpointTypeCollectionBase<ConnectionEndpointBase>
 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceUsers.Endpoints.UserEndpointOptions;
 
@@ -10,7 +11,7 @@ namespace ReferenceUsers.Endpoints.UserEndpointOptions;
 /// The endpoints over the user resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "UserEndpoints")]
+[TypeOption(typeof(EndpointGroups), "UserEndpoints")]
 [TypeCollection(typeof(UserEndpointBase), typeof(IEndpointTypeOption), typeof(UserEndpoints))]
 public partial class UserEndpoints : EndpointTypeCollectionBase<UserEndpointBase>
 {

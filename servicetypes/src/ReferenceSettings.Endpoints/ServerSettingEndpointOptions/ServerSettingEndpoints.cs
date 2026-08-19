@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceSettings.Endpoints.ServerSettingEndpointOptions;
 
@@ -10,7 +11,7 @@ namespace ReferenceSettings.Endpoints.ServerSettingEndpointOptions;
 /// The endpoints over the server-setting resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "ServerSettingEndpoints")]
+[TypeOption(typeof(EndpointGroups), "ServerSettingEndpoints")]
 [TypeCollection(typeof(ServerSettingEndpointBase), typeof(IEndpointTypeOption), typeof(ServerSettingEndpoints))]
 public partial class ServerSettingEndpoints : EndpointTypeCollectionBase<ServerSettingEndpointBase>
 {

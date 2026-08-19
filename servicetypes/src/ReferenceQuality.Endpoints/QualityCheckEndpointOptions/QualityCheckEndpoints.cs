@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceQuality.Endpoints.QualityCheckEndpointOptions;
 
@@ -10,7 +11,7 @@ namespace ReferenceQuality.Endpoints.QualityCheckEndpointOptions;
 /// The endpoints over the quality-check resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "QualityCheckEndpoints")]
+[TypeOption(typeof(EndpointGroups), "QualityCheckEndpoints")]
 [TypeCollection(typeof(QualityCheckEndpointBase), typeof(IEndpointTypeOption), typeof(QualityCheckEndpoints))]
 public partial class QualityCheckEndpoints : EndpointTypeCollectionBase<QualityCheckEndpointBase>
 {

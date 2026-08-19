@@ -36,6 +36,12 @@ public static partial class MsSqlConnectionFactoryLogger
     public static partial IGenericMessage InvalidConfigurationType(ILogger<MsSqlConnectionFactory> logger, string actualType);
 
     /// <summary>
+    /// Logs when a connection configuration arrives with no name.
+    /// </summary>
+    [MessageLogging(EventId = 21002, Level = LogLevel.Error, Message = "Connection configuration {connectionId} has no name")]
+    public static partial IGenericMessage ConnectionNameMissing(ILogger<MsSqlConnectionFactory> logger, string connectionId);
+
+    /// <summary>
     /// Logs when factory fails to create a connection.
     /// </summary>
     [MessageLogging(EventId = 71000, Level = LogLevel.Error, Message = "Failed to create MsSql connection for '{connectionName}': {errorMessage}")]

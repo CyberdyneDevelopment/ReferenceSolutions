@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceDataSets.Endpoints.DataSetTypeEndpointOptions;
 
@@ -15,7 +16,7 @@ namespace ReferenceDataSets.Endpoints.DataSetTypeEndpointOptions;
 /// solely because an abstract collection cannot be instantiated.
 /// </remarks>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "DataSetTypeEndpoints")]
+[TypeOption(typeof(EndpointGroups), "DataSetTypeEndpoints")]
 [TypeCollection(typeof(DataSetTypeEndpointBase), typeof(IEndpointTypeOption), typeof(DataSetTypeEndpoints))]
 public partial class DataSetTypeEndpoints : EndpointTypeCollectionBase<DataSetTypeEndpointBase>
 {

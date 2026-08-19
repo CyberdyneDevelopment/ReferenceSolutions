@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceSessionState.Endpoints.SessionStateEndpointOptions;
 
 /// <summary>The endpoints over the session-state resource.</summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "SessionStateEndpoints")]
+[TypeOption(typeof(EndpointGroups), "SessionStateEndpoints")]
 [TypeCollection(typeof(SessionStateEndpointBase), typeof(IEndpointTypeOption), typeof(SessionStateEndpoints))]
 public partial class SessionStateEndpoints : EndpointTypeCollectionBase<SessionStateEndpointBase>
 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceQuality.Endpoints.QualityDashboardEndpointOptions;
 
@@ -10,7 +11,7 @@ namespace ReferenceQuality.Endpoints.QualityDashboardEndpointOptions;
 /// The endpoints over the quality-dashboard resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "QualityDashboardEndpoints")]
+[TypeOption(typeof(EndpointGroups), "QualityDashboardEndpoints")]
 [TypeCollection(typeof(QualityDashboardEndpointBase), typeof(IEndpointTypeOption), typeof(QualityDashboardEndpoints))]
 public partial class QualityDashboardEndpoints : EndpointTypeCollectionBase<QualityDashboardEndpointBase>
 {

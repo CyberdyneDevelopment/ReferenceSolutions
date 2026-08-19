@@ -1,3 +1,4 @@
+using Fdw.Services.Connections;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -278,7 +279,7 @@ public sealed class MsSqlConnectionFactoryTests
         };
 
         var result = await factory.Create(
-            config,
+            new ConnectionConfiguration { Name = "TestConnection", Configuration = config },
             null,
             TestContext.Current.CancellationToken);
 

@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceLineage.Endpoints.LineageEndpointOptions;
 
 /// <summary>The endpoints over the lineage surface.</summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "LineageEndpoints")]
+[TypeOption(typeof(EndpointGroups), "LineageEndpoints")]
 [TypeCollection(typeof(LineageEndpointBase), typeof(IEndpointTypeOption), typeof(LineageEndpoints))]
 public partial class LineageEndpoints : EndpointTypeCollectionBase<LineageEndpointBase>
 {

@@ -7,7 +7,7 @@
     - the private package feed for CI builds
   -->
   <PropertyGroup>
-    <FdwVersion>1.0.0-rc.3.*</FdwVersion>
+    <FdwVersion>1.0.0-rc.5.*</FdwVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <!-- Why: enables NuGet CPM transitive pinning so PackageVersion entries also override
          transitive dependencies — required to resolve pre-release FDW packages that appear
@@ -174,9 +174,10 @@
     <PackageVersion Include="Fdw.Services.ExternalIdentityProviders.Oidc" Version="$(FdwVersion)" />
     <!-- Why: pinned to match the versions FDW itself uses (its Directory.Packages.props), so the
          OIDC discovery/validation stack cannot drift between the contract and this aggregation. -->
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.18.0" />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.18.0" />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.18.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.22.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.22.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.22.0" />
     <PackageVersion Include="Fdw.Services.Messaging.Abstractions" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Multitenancy" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Multitenancy.Sql" Version="$(FdwVersion)" />
@@ -274,6 +275,10 @@
     <PackageVersion Include="Fdw.Web.Analytics.Clients.Abstractions" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Web.Api" Version="$(FdwVersion)" />
       <PackageVersion Include="Fdw.Web.RestEndpoints" Version="$(FdwVersion)" />
+      <PackageVersion Include="Fdw.Services.Identity" Version="$(FdwVersion)" />
+      <PackageVersion Include="Fdw.Services.Identity.Abstractions" Version="$(FdwVersion)" />
+      <PackageVersion Include="Fdw.Services.Identity.Authentik" Version="$(FdwVersion)" />
+      <PackageVersion Include="Fdw.Services.Identity.Endpoints" Version="$(FdwVersion)" />
       <PackageVersion Include="Microsoft.Build.Framework" Version="18.6.3" />
       <PackageVersion Include="Microsoft.NET.StringTools" Version="18.6.3" />
   </ItemGroup>

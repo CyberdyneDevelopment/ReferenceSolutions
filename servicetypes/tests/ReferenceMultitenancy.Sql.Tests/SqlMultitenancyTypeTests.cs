@@ -16,12 +16,11 @@ using Xunit;
 using Fdw;
 using Fdw.Services;
 using Fdw.Services.Multitenancy;
-using Fdw.Services.Multitenancy.Sql;
-using Fdw.Services.Multitenancy.Sql.Extensions;
-using Fdw.Services.Multitenancy.Sql.Logging;
-using Fdw.Services.Multitenancy.Sql.Middleware;
-using Fdw.Services.Multitenancy.Sql.Models;
-using Fdw.Services.Multitenancy.Sql.Results;
+using ReferenceMultitenancy.Sql;
+using ReferenceMultitenancy.Sql.Logging;
+using ReferenceMultitenancy.Sql.Middleware;
+using ReferenceMultitenancy.Sql.Models;
+using ReferenceMultitenancy.Sql.Results;
 
 namespace ReferenceMultitenancy.Sql.Tests;
 

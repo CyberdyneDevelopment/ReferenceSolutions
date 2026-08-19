@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections.Attributes;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using ReferenceEndpoints;
 
 namespace ReferenceRoles.Endpoints.RoleEndpointOptions;
 
@@ -10,7 +11,7 @@ namespace ReferenceRoles.Endpoints.RoleEndpointOptions;
 /// The endpoints over the role resource.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[TypeOption(typeof(Fdw.Web.RestEndpoints.EndpointTypeOptions.EndpointGroups), "RoleEndpoints")]
+[TypeOption(typeof(EndpointGroups), "RoleEndpoints")]
 [TypeCollection(typeof(RoleEndpointBase), typeof(IEndpointTypeOption), typeof(RoleEndpoints))]
 public partial class RoleEndpoints : EndpointTypeCollectionBase<RoleEndpointBase>
 {
