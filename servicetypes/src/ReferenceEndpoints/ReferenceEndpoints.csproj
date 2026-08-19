@@ -16,6 +16,7 @@
   <ItemGroup>
     <PackageReference Include="Fdw.Web.RestEndpoints" />
     <PackageReference Include="Fdw.Services.Abstractions" />
+    <PackageReference Include="Fdw.Services.RateLimiting" />
     <PackageReference Include="Fdw.Services.Authentication.Abstractions" />
     <PackageReference Include="Fdw.Collections" />
     <PackageReference Include="Fdw.Results" />

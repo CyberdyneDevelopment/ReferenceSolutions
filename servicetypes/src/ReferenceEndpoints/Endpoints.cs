@@ -15,6 +15,7 @@ using FastEndpoints;
 using FastEndpoints.Swagger;
 using System.Linq;
 
+using Fdw.Services.RateLimiting.Extensions;
 using Fdw.Web.RestEndpoints.EndpointTypeOptions;
 
 namespace ReferenceEndpoints;
@@ -184,6 +185,28 @@ public partial class Endpoints : ServiceTypeCollectionBase<IEndpointTypeCollecti
             // either one is visibly deleting half a pair.
             builder.Services.AddHttpContextAccessor();
 
+            // Why these are registered here and not by the host: each is the other half of something
+            // this collection already composes, and a host that mounts the pipeline without them gets
+            // a surface that is wired but inert.
+            //
+            // UseProblemDetails is applied as a convention beside UseFastEndpoints, and covers
+            // validation failures; the .NET producer covers what it does not — unhandled exceptions
+            // and bare status codes — so a caller never has to branch on which layer refused it.
+            builder.Services.AddProblemDetails();
+
+            // UseRateLimiter is placed in the pipeline here too, and a limiter with no policies
+            // registered lets every request through while looking configured.
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddFrameworkRateLimiting(loggerFactory ?? NullLoggerFactory.Instance);
+
+            // The error envelope this surface returns carries the support contact, and the proxy
+            // endpoints read their peers' addresses from these. Both option types live beside the
+            // middleware that reads them.
+            builder.Services.Configure<ReferenceEndpoints.Models.SupportOptions>(
+                builder.Configuration.GetSection("Support"));
+            builder.Services.Configure<ReferenceEndpoints.Configuration.ServiceEndpointsOptions>(
+                builder.Configuration.GetSection(ReferenceEndpoints.Configuration.ServiceEndpointsOptions.SectionName));
+
             RegisterOpenApiDocument(builder, loggerFactory);
 
             return GenericResult<IHostApplicationBuilder>.Success(builder);
@@ -291,7 +314,31 @@ public partial class Endpoints : ServiceTypeCollectionBase<IEndpointTypeCollecti
         EndpointRegistrationLog.PipelineMiddlewareAdded(
             logger, 3, "UseRateLimiter", "placed after both so a policy can key on an identified caller");
 
-        app.UseFastEndpoints(config => ApplyEndpointConventions(config, logger));
+        app.UseFastEndpoints(config =>
+        {
+            config.Endpoints.RoutePrefix = RoutePrefix;
+            EndpointRegistrationLog.EndpointConventionApplied(
+                logger, 1, "Endpoints.RoutePrefix", RoutePrefix, "the version prefix every FDW service surface is served under");
+
+            config.Security.RoleClaimType = RoleClaimType;
+            EndpointRegistrationLog.EndpointConventionApplied(
+                logger, 2, "Security.RoleClaimType", RoleClaimType,
+                "FDW bakes role names under this claim; at the framework default every role-gated endpoint denies while the token carries the role");
+
+            config.Errors.UseProblemDetails();
+            EndpointRegistrationLog.EndpointConventionApplied(
+                logger, 3, "Errors", "ProblemDetails", "the error shape every FDW service surface returns");
+
+            // Why the collection attaches this and not each endpoint base: a Policies("resource:action")
+            // declaration that nothing checks FAILS OPEN, so the check cannot depend on an endpoint
+            // deriving from the right base or a host remembering the call.
+            config.Endpoints.Configurator = ep => ep.PreProcessors(Order.Before, new PermissionClaimsPreProcessor());
+            EndpointRegistrationLog.EndpointConventionApplied(
+                logger, 4, "Endpoints.Configurator", nameof(PermissionClaimsPreProcessor),
+                "checks each endpoint's declared permission; without it Policies(resource:action) fails open");
+
+            EndpointRegistrationLog.PermissionPreProcessorAttached(logger);
+        });
         EndpointRegistrationLog.PipelineMiddlewareAdded(
             logger, 4, "UseFastEndpoints", "endpoints run last, once the caller is established and limited");
 
@@ -303,44 +350,6 @@ public partial class Endpoints : ServiceTypeCollectionBase<IEndpointTypeCollecti
     // UseFastEndpoints call this collection makes, so there is no way to wire endpoints and miss them
     // — which is what happened when the framework called UseFastEndpoints with no config at all and
     // every host had to re-issue it to get the route prefix and the roles claim type back.
-    /// <summary>Applies this ecosystem's endpoint conventions to a FastEndpoints configuration.</summary>
-    /// <remarks>
-    /// Public because a host that composes its own request pipeline still needs the conventions. The
-    /// reference API interleaves tenant and organization resolution between authorization and the
-    /// rate limiter, so it cannot take the block the Initialize phase composes, but the
-    /// conventions are the collection's knowledge either way and must not be restated by the host.
-    /// </remarks>
-    /// <param name="config">The FastEndpoints configuration to apply the conventions to.</param>
-    /// <param name="logger">Reports each convention as it is applied; optional.</param>
-    public static void ApplyEndpointConventions(Config config, ILogger? logger = null)
-    {
-        logger ??= NullLogger.Instance;
-        config.Endpoints.RoutePrefix = RoutePrefix;
-        EndpointRegistrationLog.EndpointConventionApplied(
-            logger, 1, "Endpoints.RoutePrefix", RoutePrefix, "the version prefix every FDW service surface is served under");
-
-        config.Security.RoleClaimType = RoleClaimType;
-        EndpointRegistrationLog.EndpointConventionApplied(
-            logger, 2, "Security.RoleClaimType", RoleClaimType,
-            "FDW bakes role names under this claim; at the framework default every role-gated endpoint denies while the token carries the role");
-
-        config.Errors.UseProblemDetails();
-        EndpointRegistrationLog.EndpointConventionApplied(
-            logger, 3, "Errors", "ProblemDetails", "the error shape every FDW service surface returns");
-
-        // Why the collection attaches this and not each endpoint base: a Policies("resource:action")
-        // declaration that nothing checks FAILS OPEN, so the check cannot depend on an endpoint
-        // deriving from the right base or a host remembering the call. Two of the three reference
-        // hosts set it and one did not, precisely because its endpoints came from an FDW base that
-        // attached it per-endpoint — two mechanisms for one guarantee, and the gap between them is
-        // silent. One global attachment covers every endpoint however it was declared.
-        config.Endpoints.Configurator = ep => ep.PreProcessors(Order.Before, new PermissionClaimsPreProcessor());
-        EndpointRegistrationLog.EndpointConventionApplied(
-            logger, 4, "Endpoints.Configurator", nameof(PermissionClaimsPreProcessor),
-            "checks each endpoint's declared permission; without it Policies(resource:action) fails open");
-
-        EndpointRegistrationLog.PermissionPreProcessorAttached(logger);
-    }
 
     /// <summary>Gets the claim type authorization reads role names from.</summary>
     /// <remarks>FDW bakes role names under the plural "roles" claim; the framework default finds none.</remarks>
