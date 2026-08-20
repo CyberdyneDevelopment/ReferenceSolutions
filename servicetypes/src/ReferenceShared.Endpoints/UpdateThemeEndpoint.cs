@@ -38,7 +38,7 @@ public class UpdateThemeEndpoint : UpdateThemeEndpoint<UpdateThemeByNameRequest,
     /// <inheritdoc/>
     public override void Configure()
     {
-        Put("/themes/{Name}");
+        Patch("/themes/{Name}");
         Policies("configurations:write");
         Summary(s =>
         {

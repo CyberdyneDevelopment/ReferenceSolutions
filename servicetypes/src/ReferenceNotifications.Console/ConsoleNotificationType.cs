@@ -63,7 +63,7 @@ public sealed class ConsoleNotificationType
     public ConsoleNotificationType()
         : base(
             name: "Console",
-            channel: NotificationChannels.ByName("Console"),
+            channelName: "Console",
             displayName: "Console Notifications",
             description: "Development/test channel that logs notification content via structured logging",
             defaultContainerName: "ConsoleNotification")

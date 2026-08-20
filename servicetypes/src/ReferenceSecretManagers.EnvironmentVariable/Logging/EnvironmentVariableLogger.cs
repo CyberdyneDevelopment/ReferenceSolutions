@@ -44,7 +44,9 @@ public static partial class EnvironmentVariableLogger
     [MessageLogging(EventId = 31000, Level = LogLevel.Error, Message = "Environment variable '{variableName}' not found")]
     public static partial IGenericMessage EnvironmentVariableNotFound(ILogger logger, string variableName);
 
-    [MessageLogging(EventId = 11000, Level = LogLevel.Information, Message = "Environment Variable secret manager initialized with prefix '{prefix}'")]
+    // Why Debug, not Information: the secret manager is reconstructed on every health-check cycle, so this
+    // is not a once-at-startup lifecycle record. (The reconstruction itself is tracked separately.)
+    [MessageLogging(EventId = 11000, Level = LogLevel.Debug, Message = "Environment Variable secret manager initialized with prefix '{prefix}'")]
     public static partial IGenericMessage ManagerInitialized(ILogger logger, string prefix);
 
     [MessageLogging(EventId = 11001, Level = LogLevel.Debug, Message = "Executing Environment Variable command '{commandType}' for secret '{secretKey}'")]

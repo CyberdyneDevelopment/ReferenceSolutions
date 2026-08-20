@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <Description>Microsoft Teams notification service — the aggregation over FDW's Notifications machinery, plus its service type registration.</Description>
+  </PropertyGroup>
+
+  <!-- Why: the AGGREGATION lives here; the components it composes stay in FDW. Reference
+       implementations get NO InternalsVisibleTo — anything needed to compose this service
+       has to be public API. See fractaldataworks 7201fb0fa. -->
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.Configuration" />
+    <PackageReference Include="Fdw.Data.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Services.Abstractions" />
+    <PackageReference Include="Fdw.Services.Connections.Abstractions" />
+    <PackageReference Include="Fdw.Services.Notifications" />
+    <PackageReference Include="Fdw.Services.Notifications.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Configuration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Data.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+</Project>

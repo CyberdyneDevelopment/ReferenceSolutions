@@ -25,6 +25,9 @@ internal static partial class OpenIddictProviderLog
         Message = "Loading RS256 signing key from secret manager '{managerName}' key '{keyName}'.")]
     internal static partial IGenericMessage SigningKeyLoadStarted(ILogger logger, string managerName, string keyName);
 
+    // Why Information: the RS256 signing key is load-bearing — without it every request 500s. Loaded
+    // once; an operator confirming a host came up correctly needs it at default verbosity. Its failure
+    // twin SigningKeyStartupNoConfig is Critical.
     [MessageLogging(EventId = 11001, Level = LogLevel.Information,
         Message = "RS256 signing key loaded from secret manager '{managerName}' key '{keyName}'; keyId={keyId}.")]
     internal static partial IGenericMessage SigningKeyLoaded(ILogger logger, string managerName, string keyName, string keyId);
@@ -218,6 +221,7 @@ internal static partial class OpenIddictProviderLog
         Message = "OpenIddict signing key load failed at startup for configName='{configName}'. Auth server will not issue tokens until resolved.")]
     internal static partial IGenericMessage SigningKeyStartupFailed(ILogger logger, string configName);
 
+    // Why Information: startup milestone for a load-bearing key; see SigningKeyLoaded.
     [MessageLogging(EventId = 11015, Level = LogLevel.Information,
         Message = "OpenIddict signing key loaded at startup for configName='{configName}'.")]
     internal static partial IGenericMessage SigningKeyStartupLoaded(ILogger logger, string configName);

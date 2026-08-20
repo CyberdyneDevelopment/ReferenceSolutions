@@ -56,7 +56,7 @@ public sealed class UpdateProjectEndpoint : Endpoint<UpdateProjectRequest, Proje
     /// <inheritdoc />
     public override void Configure()
     {
-        Put("/projects/{id}");
+        Patch("/projects/{id}");
 #if DEVELOP
         AllowAnonymous();
 #else

@@ -72,11 +72,22 @@ public class ExecutePipelineEndpoint : ExecutePipelineEndpointBase
                 PipelineLog.PipelineRetrieved(_logger, $"{request.Name} completed successfully");
                 await _statusBroadcaster.BroadcastStatusChange(request.Name, executionId, "Completed").ConfigureAwait(false);
 
+                // Why the execution's own id and counts and not the one generated above: the
+                // pipeline reports what it actually moved, and reporting zero next to a successful
+                // run reads as "nothing was there to copy" — the one answer a caller cannot tell
+                // from a working ingest without going to the database to check.
+                var executed = execResult.Value;
+
                 return new ExecutePipelineResponse
                 {
                     Success = true,
-                    ExecutionId = executionId,
-                    Message = "Pipeline executed successfully"
+                    ExecutionId = executed?.ExecutionId ?? executionId,
+                    Message = "Pipeline executed successfully",
+                    RecordsExtracted = executed?.RecordsExtracted ?? 0,
+                    RecordsTransformed = executed?.RecordsTransformed ?? 0,
+                    RecordsLoaded = executed?.RecordsLoaded ?? 0,
+                    RecordsFailed = executed?.RecordsFailed ?? 0,
+                    TotalDurationMs = executed?.TotalDuration.TotalMilliseconds ?? 0
                 };
             }
             else
@@ -87,11 +98,20 @@ public class ExecutePipelineEndpoint : ExecutePipelineEndpointBase
                 PipelineLog.PipelineUpdateFailed(_logger, request.Name, error);
                 await _statusBroadcaster.BroadcastStatusChange(request.Name, executionId, "Failed", error).ConfigureAwait(false);
 
+                // A failed run still moved whatever it moved before it stopped, and that is the
+                // number that says which phase gave out.
+                var partial = execResult.Value;
+
                 return new ExecutePipelineResponse
                 {
                     Success = false,
-                    ExecutionId = executionId,
-                    Message = error
+                    ExecutionId = partial?.ExecutionId ?? executionId,
+                    Message = error,
+                    RecordsExtracted = partial?.RecordsExtracted ?? 0,
+                    RecordsTransformed = partial?.RecordsTransformed ?? 0,
+                    RecordsLoaded = partial?.RecordsLoaded ?? 0,
+                    RecordsFailed = partial?.RecordsFailed ?? 0,
+                    TotalDurationMs = partial?.TotalDuration.TotalMilliseconds ?? 0
                 };
             }
         }

@@ -14,7 +14,7 @@ namespace ReferenceDataStores.Endpoints.Logging;
 public static partial class DataStoreLog
 {
     // List operations (5300-5309)
-    [MessageLogging(EventId = 5300, Level = LogLevel.Information, Message = "Listing DataStores")]
+    [MessageLogging(EventId = 5300, Level = LogLevel.Trace, Message = "Listing DataStores")]
     public static partial IGenericMessage ListingDataStores(ILogger logger);
 
     [MessageLogging(EventId = 5301, Level = LogLevel.Information, Message = "Found {count} DataStores")]
@@ -24,7 +24,7 @@ public static partial class DataStoreLog
     public static partial IGenericMessage ListDataStoresFailed(ILogger logger, string message);
 
     // Read operations (5310-5319)
-    [MessageLogging(EventId = 5310, Level = LogLevel.Information, Message = "Fetching DataStore '{name}'")]
+    [MessageLogging(EventId = 5310, Level = LogLevel.Trace, Message = "Fetching DataStore '{name}'")]
     public static partial IGenericMessage FetchingDataStore(ILogger logger, string name);
 
     [MessageLogging(EventId = 5311, Level = LogLevel.Information, Message = "DataStore '{name}' retrieved with {pathCount} paths")]
@@ -37,7 +37,7 @@ public static partial class DataStoreLog
     public static partial IGenericMessage DataStoreFetchFailed(ILogger logger, string name, string message);
 
     // Container operations (5320-5329)
-    [MessageLogging(EventId = 5320, Level = LogLevel.Information, Message = "Fetching container '{containerName}' in {storeName}/{pathName}")]
+    [MessageLogging(EventId = 5320, Level = LogLevel.Trace, Message = "Fetching container '{containerName}' in {storeName}/{pathName}")]
     public static partial IGenericMessage FetchingContainer(ILogger logger, string containerName, string storeName, string pathName);
 
     [MessageLogging(EventId = 5321, Level = LogLevel.Information, Message = "Container '{containerName}' retrieved with {fieldCount} fields")]
@@ -46,7 +46,7 @@ public static partial class DataStoreLog
     [MessageLogging(EventId = 5322, Level = LogLevel.Warning, Message = "Container '{containerName}' not found in {storeName}/{pathName}")]
     public static partial IGenericMessage ContainerNotFound(ILogger logger, string containerName, string storeName, string pathName);
 
-    [MessageLogging(EventId = 5323, Level = LogLevel.Information, Message = "Adding container '{containerName}'")]
+    [MessageLogging(EventId = 5323, Level = LogLevel.Trace, Message = "Adding container '{containerName}'")]
     public static partial IGenericMessage AddingContainer(ILogger logger, string containerName);
 
     [MessageLogging(EventId = 5324, Level = LogLevel.Warning, Message = "Container '{containerName}' already exists")]
@@ -56,13 +56,13 @@ public static partial class DataStoreLog
     public static partial IGenericMessage ContainerAddedSuccessfully(ILogger logger, string containerName);
 
     // Path operations (5330-5339)
-    [MessageLogging(EventId = 5330, Level = LogLevel.Information, Message = "Fetching paths for DataStore '{name}'")]
+    [MessageLogging(EventId = 5330, Level = LogLevel.Trace, Message = "Fetching paths for DataStore '{name}'")]
     public static partial IGenericMessage FetchingPaths(ILogger logger, string name);
 
     [MessageLogging(EventId = 5331, Level = LogLevel.Information, Message = "Found {count} paths for DataStore '{name}'")]
     public static partial IGenericMessage PathsRetrieved(ILogger logger, string name, int count);
 
-    [MessageLogging(EventId = 5332, Level = LogLevel.Information, Message = "Adding path '{pathName}' to DataStore '{storeName}'")]
+    [MessageLogging(EventId = 5332, Level = LogLevel.Trace, Message = "Adding path '{pathName}' to DataStore '{storeName}'")]
     public static partial IGenericMessage AddingPath(ILogger logger, string pathName, string storeName);
 
     [MessageLogging(EventId = 5333, Level = LogLevel.Warning, Message = "Path '{pathName}' already exists in DataStore '{storeName}'")]
@@ -75,7 +75,7 @@ public static partial class DataStoreLog
     public static partial IGenericMessage AddPathFailed(ILogger logger, string pathName, string storeName, string? message);
 
     // Update operations (5340-5349)
-    [MessageLogging(EventId = 5340, Level = LogLevel.Information, Message = "Updating DataStore '{name}'")]
+    [MessageLogging(EventId = 5340, Level = LogLevel.Trace, Message = "Updating DataStore '{name}'")]
     public static partial IGenericMessage UpdatingDataStore(ILogger logger, string name);
 
     [MessageLogging(EventId = 5341, Level = LogLevel.Error, Message = "Failed to update DataStore '{name}': {message}")]
@@ -85,17 +85,17 @@ public static partial class DataStoreLog
     public static partial IGenericMessage DataStoreUpdated(ILogger logger, string name);
 
     // Container list operations (5350-5359)
-    [MessageLogging(EventId = 5350, Level = LogLevel.Information, Message = "Listing containers for DataStore '{name}'")]
+    [MessageLogging(EventId = 5350, Level = LogLevel.Trace, Message = "Listing containers for DataStore '{name}'")]
     public static partial IGenericMessage ListingContainers(ILogger logger, string name);
 
     [MessageLogging(EventId = 5351, Level = LogLevel.Information, Message = "Listed {count} containers for DataStore '{name}'")]
     public static partial IGenericMessage ContainersListed(ILogger logger, int count, string name);
 
-    [MessageLogging(EventId = 5352, Level = LogLevel.Information, Message = "Fetching container by ID '{id}'")]
+    [MessageLogging(EventId = 5352, Level = LogLevel.Trace, Message = "Fetching container by ID '{id}'")]
     public static partial IGenericMessage FetchingContainerById(ILogger logger, Guid id);
 
     // Create operations (5360-5369)
-    [MessageLogging(EventId = 5360, Level = LogLevel.Information, Message = "Creating DataStore '{name}'")]
+    [MessageLogging(EventId = 5360, Level = LogLevel.Trace, Message = "Creating DataStore '{name}'")]
     public static partial IGenericMessage CreatingDataStore(ILogger logger, string name);
 
     [MessageLogging(EventId = 5361, Level = LogLevel.Warning, Message = "DataStore '{name}' already exists")]
@@ -108,7 +108,7 @@ public static partial class DataStoreLog
     public static partial IGenericMessage DataStoreCreated(ILogger logger, string name);
 
     // Delete operations (5370-5379)
-    [MessageLogging(EventId = 5370, Level = LogLevel.Information, Message = "Deleting DataStore '{name}'")]
+    [MessageLogging(EventId = 5370, Level = LogLevel.Trace, Message = "Deleting DataStore '{name}'")]
     public static partial IGenericMessage DeletingDataStore(ILogger logger, string name);
 
     [MessageLogging(EventId = 5371, Level = LogLevel.Error, Message = "Failed to delete DataStore '{name}': {message}")]
@@ -118,7 +118,7 @@ public static partial class DataStoreLog
     public static partial IGenericMessage DataStoreDeleted(ILogger logger, string name);
 
     // Discovery operations (5380-5389)
-    [MessageLogging(EventId = 5380, Level = LogLevel.Information, Message = "Starting discovery for DataStore '{name}'")]
+    [MessageLogging(EventId = 5380, Level = LogLevel.Trace, Message = "Starting discovery for DataStore '{name}'")]
     public static partial IGenericMessage StartingDiscovery(ILogger logger, string name);
 
     [MessageLogging(EventId = 5381, Level = LogLevel.Error, Message = "Discovery failed for DataStore '{name}': {message}")]

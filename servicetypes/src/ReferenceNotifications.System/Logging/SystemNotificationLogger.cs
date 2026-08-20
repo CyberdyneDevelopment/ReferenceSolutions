@@ -22,7 +22,7 @@ public static partial class SystemNotificationLogger
     /// </summary>
     [MessageLogging(
         EventId = 11000,
-        Level = LogLevel.Information,
+        Level = LogLevel.Trace,
         Message = "[NOTIFICATION] [System] Sending notification via '{channel}': {subject}")]
     public static partial IGenericMessage SendingNotification(
         ILogger<SystemNotificationService> logger,

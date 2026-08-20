@@ -140,9 +140,14 @@ public sealed class UpdateConnectionRequestValidator : Validator<UpdateConnectio
             .NotEmpty()
             .WithMessage("Connection name is required in the route");
 
-        // Why: PUT with an empty body or only the route-bound Name field is a no-op. At least
-        // one updateable property must be supplied so the caller gets a structured 400 instead
-        // of a silent 200.
+        // Why: a request with an empty body or only the route-bound Name is a no-op. At least one
+        // updateable property must be supplied so the caller gets a structured 400 instead of a
+        // silent 200.
+        //
+        // Why every field and not the relational ones: this guard listed Server, Port, Database and
+        // the rest of the MsSql set, so an HTTP connection updated with the fields it actually has —
+        // a base url, a protocol, a timeout — supplied nothing the guard could see and was refused.
+        // The request is shared across connection types; the check has to be too.
         RuleFor(x => x)
             .Must(req => req.Server is not null
                 || req.Port.HasValue
@@ -151,8 +156,18 @@ public sealed class UpdateConnectionRequestValidator : Validator<UpdateConnectio
                 || req.Authentication is not null
                 || req.TrustServerCertificate.HasValue
                 || req.Encrypt.HasValue
-                || req.IsActive.HasValue)
-            .WithMessage("At least one updateable field must be supplied (Server, Port, Database, AuthenticationType, Authentication, TrustServerCertificate, Encrypt, or IsActive)");
+                || req.IsActive.HasValue
+                || req.BaseUrl is not null
+                || req.Protocol is not null
+                || req.TimeoutSeconds.HasValue
+                || req.Headers is not null
+                || req.SecurityType is not null
+                || req.Security is not null
+                || req.UseMtls.HasValue
+                || req.HealthCheckEnabled.HasValue
+                || req.HealthCheckOnStartup.HasValue
+                || req.HealthCheckIntervalSeconds.HasValue)
+            .WithMessage("At least one updateable field must be supplied.");
 
         When(x => x.Server is not null, () =>
         {

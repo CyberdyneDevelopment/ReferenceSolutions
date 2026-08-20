@@ -17,7 +17,7 @@ public static partial class PipelineLog
     // Execution History operations (8150-8169)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    [MessageLogging(EventId = 8150, Level = LogLevel.Information, Message = "Recording execution start for pipeline '{pipelineName}' with execution ID '{executionId}'")]
+    [MessageLogging(EventId = 8150, Level = LogLevel.Trace, Message = "Recording execution start for pipeline '{pipelineName}' with execution ID '{executionId}'")]
     public static partial IGenericMessage RecordingExecutionStart(ILogger logger, string pipelineName, Guid executionId);
 
     [MessageLogging(EventId = 8151, Level = LogLevel.Information, Message = "Execution record created for pipeline '{pipelineName}'")]
@@ -63,7 +63,7 @@ public static partial class PipelineLog
     public static partial IGenericMessage PipelineAlreadyExists(ILogger logger, string name);
 
     // Read operations (8210-8219)
-    [MessageLogging(EventId = 8210, Level = LogLevel.Information, Message = "Fetching pipeline '{name}'")]
+    [MessageLogging(EventId = 8210, Level = LogLevel.Trace, Message = "Fetching pipeline '{name}'")]
     public static partial IGenericMessage FetchingPipeline(ILogger logger, string name);
 
     [MessageLogging(EventId = 8211, Level = LogLevel.Information, Message = "Pipeline '{name}' retrieved")]

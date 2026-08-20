@@ -45,7 +45,9 @@ public static partial class MsSqlSecretManagerLogger
     [MessageLogging(EventId = 31001, Level = LogLevel.Error, Message = "Secret '{secretKey}' not found in [{schema}].[{tableName}]")]
     public static partial IGenericMessage SecretNotFound(ILogger logger, string secretKey, string schema, string tableName);
 
-    [MessageLogging(EventId = 11005, Level = LogLevel.Information, Message = "MsSql secret manager initialized for [{schema}].[{tableName}]")]
+    // Why Debug, not Information: the secret manager is reconstructed on every health-check cycle, so this
+    // is not a once-at-startup lifecycle record. (The reconstruction itself is tracked separately.)
+    [MessageLogging(EventId = 11005, Level = LogLevel.Debug, Message = "MsSql secret manager initialized for [{schema}].[{tableName}]")]
     public static partial IGenericMessage ManagerInitialized(ILogger logger, string schema, string tableName);
 
     [MessageLogging(EventId = 11006, Level = LogLevel.Debug, Message = "Executing MsSql command '{commandType}' for secret '{secretKey}'")]

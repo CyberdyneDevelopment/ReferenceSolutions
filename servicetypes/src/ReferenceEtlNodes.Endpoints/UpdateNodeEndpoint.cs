@@ -53,7 +53,7 @@ public sealed class UpdateNodeEndpoint : Endpoint<UpdateNodeRequest, NodeDto>
 
     public override void Configure()
     {
-        Put("etl/nodes/{id}");
+        Patch("etl/nodes/{id}");
 #if DEVELOP
         AllowAnonymous();
 #else

@@ -18,7 +18,7 @@ public static partial class ThemeLog
     /// </summary>
     [MessageLogging(
         EventId = 1770,
-        Level = LogLevel.Information,
+        Level = LogLevel.Trace,
         Message = "Listing available themes")]
     public static partial IGenericMessage ListingThemes(ILogger logger);
 
@@ -36,7 +36,7 @@ public static partial class ThemeLog
     /// </summary>
     [MessageLogging(
         EventId = 1772,
-        Level = LogLevel.Information,
+        Level = LogLevel.Trace,
         Message = "Getting theme: {name}")]
     public static partial IGenericMessage GettingTheme(ILogger logger, string name);
 
@@ -54,7 +54,7 @@ public static partial class ThemeLog
     /// </summary>
     [MessageLogging(
         EventId = 1774,
-        Level = LogLevel.Information,
+        Level = LogLevel.Trace,
         Message = "Getting default theme")]
     public static partial IGenericMessage GettingDefaultTheme(ILogger logger);
 
@@ -63,7 +63,7 @@ public static partial class ThemeLog
     /// </summary>
     [MessageLogging(
         EventId = 1775,
-        Level = LogLevel.Information,
+        Level = LogLevel.Trace,
         Message = "Creating theme: {name}")]
     public static partial IGenericMessage CreatingTheme(ILogger logger, string name);
 
@@ -90,7 +90,7 @@ public static partial class ThemeLog
     /// </summary>
     [MessageLogging(
         EventId = 1778,
-        Level = LogLevel.Information,
+        Level = LogLevel.Trace,
         Message = "Updating theme: {name}")]
     public static partial IGenericMessage UpdatingTheme(ILogger logger, string name);
 
@@ -144,7 +144,7 @@ public static partial class ThemeLog
     /// </summary>
     [MessageLogging(
         EventId = 1784,
-        Level = LogLevel.Information,
+        Level = LogLevel.Trace,
         Message = "Setting default theme: {name}")]
     public static partial IGenericMessage SettingDefaultTheme(ILogger logger, string name);
 

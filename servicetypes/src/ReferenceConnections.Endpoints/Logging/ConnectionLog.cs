@@ -94,7 +94,7 @@ public static partial class ConnectionLog
     public static partial IGenericMessage ServiceOptionTypeMissing(ILogger logger, string name);
 
     // Test config operations (5260-5269)
-    [MessageLogging(EventId = 5260, Level = LogLevel.Information, Message = "Testing connection config for '{name}' in-memory")]
+    [MessageLogging(EventId = 5260, Level = LogLevel.Trace, Message = "Testing connection config for '{name}' in-memory")]
     public static partial IGenericMessage TestingConnectionConfig(ILogger logger, string name);
 
     [MessageLogging(EventId = 5261, Level = LogLevel.Information, Message = "Connection config test succeeded for '{name}'")]
@@ -107,7 +107,7 @@ public static partial class ConnectionLog
     public static partial IGenericMessage ConnectionConfigBuildFailed(ILogger logger, string name, string message);
 
     // Capabilities operations (5270-5279)
-    [MessageLogging(EventId = 5270, Level = LogLevel.Information, Message = "Loading capabilities for connection type '{connectionTypeName}'")]
+    [MessageLogging(EventId = 5270, Level = LogLevel.Trace, Message = "Loading capabilities for connection type '{connectionTypeName}'")]
     public static partial IGenericMessage LoadingCapabilities(ILogger logger, string connectionTypeName);
 
     [MessageLogging(EventId = 5271, Level = LogLevel.Information, Message = "Capabilities loaded for connection type '{connectionTypeName}'")]

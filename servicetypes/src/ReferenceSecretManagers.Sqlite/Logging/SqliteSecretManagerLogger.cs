@@ -89,7 +89,9 @@ public static partial class SqliteSecretManagerLogger
 
     // ─── Info — successful state transitions (11005-11016) ──────────────────
 
-    [MessageLogging(EventId = 11005, Level = LogLevel.Information, Message = "SQLite secret manager initialized for table '{tableName}' in '{dataSource}'")]
+    // Why Debug, not Information: the secret manager is reconstructed on every health-check cycle, so this
+    // is not a once-at-startup lifecycle record. (The reconstruction itself is tracked separately.)
+    [MessageLogging(EventId = 11005, Level = LogLevel.Debug, Message = "SQLite secret manager initialized for table '{tableName}' in '{dataSource}'")]
     public static partial IGenericMessage ManagerInitialized(ILogger logger, string tableName, string dataSource);
 
     [MessageLogging(EventId = 11013, Level = LogLevel.Information, Message = "Secret '{secretKey}' set in table '{tableName}'")]

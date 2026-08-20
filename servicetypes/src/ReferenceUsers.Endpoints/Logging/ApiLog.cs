@@ -14,7 +14,7 @@ namespace ReferenceUsers.Endpoints.Logging;
 public static partial class ApiLog
 {
     // Generic fetch operations (5700-5709)
-    [MessageLogging(EventId = 5700, Level = LogLevel.Information, Message = "Fetching {resourceType}")]
+    [MessageLogging(EventId = 5700, Level = LogLevel.Trace, Message = "Fetching {resourceType}")]
     public static partial IGenericMessage FetchingData(ILogger logger, string resourceType);
 
     [MessageLogging(EventId = 5701, Level = LogLevel.Information, Message = "Retrieved {count} {resourceType}")]
@@ -27,7 +27,7 @@ public static partial class ApiLog
     public static partial IGenericMessage ResourceNotFound(ILogger logger, string resourceType);
 
     // Generic create operations (5710-5719)
-    [MessageLogging(EventId = 5710, Level = LogLevel.Information, Message = "Creating {resourceType}")]
+    [MessageLogging(EventId = 5710, Level = LogLevel.Trace, Message = "Creating {resourceType}")]
     public static partial IGenericMessage CreatingResource(ILogger logger, string resourceType);
 
     [MessageLogging(EventId = 5711, Level = LogLevel.Information, Message = "{resourceType} created successfully")]
@@ -37,7 +37,7 @@ public static partial class ApiLog
     public static partial IGenericMessage CreateFailed(ILogger logger, string resourceType, string message);
 
     // Generic update operations (5720-5729)
-    [MessageLogging(EventId = 5720, Level = LogLevel.Information, Message = "Updating {resourceType}")]
+    [MessageLogging(EventId = 5720, Level = LogLevel.Trace, Message = "Updating {resourceType}")]
     public static partial IGenericMessage UpdatingResource(ILogger logger, string resourceType);
 
     [MessageLogging(EventId = 5721, Level = LogLevel.Information, Message = "{resourceType} updated successfully")]
@@ -47,7 +47,7 @@ public static partial class ApiLog
     public static partial IGenericMessage UpdateFailed(ILogger logger, string resourceType, string message);
 
     // Generic delete operations (5730-5739)
-    [MessageLogging(EventId = 5730, Level = LogLevel.Information, Message = "Deleting {resourceType}")]
+    [MessageLogging(EventId = 5730, Level = LogLevel.Trace, Message = "Deleting {resourceType}")]
     public static partial IGenericMessage DeletingResource(ILogger logger, string resourceType);
 
     [MessageLogging(EventId = 5731, Level = LogLevel.Information, Message = "{resourceType} deleted successfully")]
@@ -84,7 +84,7 @@ public static partial class ApiLog
     [MessageLogging(EventId = 5773, Level = LogLevel.Warning, Message = "{resourceType} not found: {category}/{type}")]
     public static partial IGenericMessage ResourceDetailNotFound(ILogger logger, string resourceType, string category, string type);
 
-    [MessageLogging(EventId = 5774, Level = LogLevel.Information, Message = "Getting {resourceType}")]
+    [MessageLogging(EventId = 5774, Level = LogLevel.Trace, Message = "Getting {resourceType}")]
     public static partial IGenericMessage GettingResource(ILogger logger, string resourceType);
 
     [MessageLogging(EventId = 5775, Level = LogLevel.Information, Message = "Getting {resourceType} for parent: {parent}")]

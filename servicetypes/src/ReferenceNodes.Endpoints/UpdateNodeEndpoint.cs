@@ -56,7 +56,7 @@ public sealed class UpdateNodeEndpoint : Endpoint<UpdateNodeRequest, Orchestrati
     /// <inheritdoc />
     public override void Configure()
     {
-        Put("/nodes/{id}");
+        Patch("/nodes/{id}");
 #if DEVELOP
         AllowAnonymous();
 #else

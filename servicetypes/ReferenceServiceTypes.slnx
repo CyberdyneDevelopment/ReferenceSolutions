@@ -51,6 +51,7 @@
     <Project Path="src/ReferenceNotifications.Email/ReferenceNotifications.Email.csproj" />
     <Project Path="src/ReferenceNotifications.Endpoints/ReferenceNotifications.Endpoints.csproj" />
     <Project Path="src/ReferenceNotifications.System/ReferenceNotifications.System.csproj" />
+    <Project Path="src/ReferenceNotifications.Teams/ReferenceNotifications.Teams.csproj" />
     <Project Path="src/ReferenceNotifications.Webhook/ReferenceNotifications.Webhook.csproj" />
     <Project Path="src/ReferencePipelines.Endpoints/ReferencePipelines.Endpoints.csproj" />
     <Project Path="src/ReferenceProjects.Endpoints/ReferenceProjects.Endpoints.csproj" />
@@ -101,6 +102,12 @@
     </Project>
     <Project Path="tests/ReferenceMultitenancy.Sql.Tests/ReferenceMultitenancy.Sql.Tests.csproj" />
     <Project Path="tests/ReferenceNotifications.Console.Tests/ReferenceNotifications.Console.Tests.csproj" />
+    <Project Path="tests/ReferenceNotifications.Teams.Tests/ReferenceNotifications.Teams.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
     <Project Path="tests/ReferenceNotifications.Webhook.Tests/ReferenceNotifications.Webhook.Tests.csproj" />
     <Project Path="tests/ReferenceSecretManagers.AzureKeyVault.Tests/ReferenceSecretManagers.AzureKeyVault.Tests.csproj" />
     <Project Path="tests/ReferenceSecretManagers.EnvironmentVariable.Tests/ReferenceSecretManagers.EnvironmentVariable.Tests.csproj" />

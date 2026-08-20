@@ -13,7 +13,7 @@ namespace ReferenceSchema.Endpoints.Logging;
 public static partial class SchemaLog
 {
     // Discovery operations (5500-5519)
-    [MessageLogging(EventId = 5500, Level = LogLevel.Information, Message = "Discovering schema for connection '{connectionName}'")]
+    [MessageLogging(EventId = 5500, Level = LogLevel.Trace, Message = "Discovering schema for connection '{connectionName}'")]
     public static partial IGenericMessage DiscoveringSchema(ILogger logger, string connectionName);
 
     [MessageLogging(EventId = 5501, Level = LogLevel.Information, Message = "Schema discovery completed for '{connectionName}' - found {schemaCount} schemas")]

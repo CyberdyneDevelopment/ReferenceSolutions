@@ -64,7 +64,7 @@ public sealed class WebhookNotificationType
     public WebhookNotificationType()
         : base(
             name: "Webhook",
-            channel: NotificationChannels.ByName("Webhook"),
+            channelName: "Webhook",
             displayName: "Webhook Notifications",
             description: "Send notifications via generic HTTP webhook",
             defaultContainerName: "WebhookNotification")

@@ -65,7 +65,7 @@ public sealed class SystemNotificationType
     public SystemNotificationType()
         : base(
             name: "System",
-            channel: NotificationChannels.ByName("System"),
+            channelName: "System",
             displayName: "System Notifications",
             description: "In-system message channel that delivers notifications as tracked messages with lifecycle support",
             defaultContainerName: "SystemNotification")

@@ -279,7 +279,7 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
             PipelineName = pipelineName
         };
         var insertCommand = Insert.Into<EtlPipelineExecutionRecord>(EtlContainerName)
-            .DataStore("EtlDb")
+            .DataStore("OpsDb")
             .Path("etl")
             .Value(etlRecord);
         var insertResult = await _dataGateway.Execute<int>(insertCommand, ct).ConfigureAwait(false);

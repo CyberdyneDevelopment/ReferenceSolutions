@@ -59,7 +59,7 @@ public sealed class EmailNotificationType
     public EmailNotificationType()
         : base(
             name: "Email",
-            channel: NotificationChannels.ByName("Email"),
+            channelName: "Email",
             displayName: "Email Notifications",
             description: "Send notifications via SMTP email",
             defaultContainerName: "EmailNotification")

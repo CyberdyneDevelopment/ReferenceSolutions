@@ -33,7 +33,7 @@ public sealed class SetDefaultTenantEndpoint : Endpoint<SetDefaultTenantRequest,
     /// <inheritdoc />
     public override void Configure()
     {
-        Put("/tenants/{id}/default");
+        Post("/tenants/{id}/default");
         Policies("tenants:write");
         Tags("Tenants");
     }

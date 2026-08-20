@@ -78,7 +78,7 @@ public sealed class GetJobStatusEndpoint : Endpoint<JobStatusRequest, JobStatusR
         var item = itemResult.Value;
 
         // Why: fully qualified to avoid conflict with FastEndpoints Endpoint<T,R>.Query<T>()
-        var queryCommand = Fdw.Commands.Data.Query.From<EtlPipelineExecutionRecord>("EtlDb", "etl", "PipelineExecution")
+        var queryCommand = Fdw.Commands.Data.Query.From<EtlPipelineExecutionRecord>("OpsDb", "etl", "PipelineExecution")
             .Where("Id", req.ExecutionId)
             .Build();
 
