@@ -25,7 +25,7 @@
     <PackageReference Include="Fdw.Messages" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ReferenceConnections.MsSql.ServiceType\ReferenceConnections.MsSql.ServiceType.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceConnections.MsSql.Registration\ReferenceConnections.MsSql.Registration.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <!-- Temporarily disable coverage due to symbol mismatch issues -->

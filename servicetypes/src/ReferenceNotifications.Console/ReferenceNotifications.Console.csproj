@@ -22,7 +22,6 @@
     <PackageReference Include="Fdw.Services.Connections.Abstractions" />
     <PackageReference Include="Fdw.Services.Notifications" />
     <PackageReference Include="Fdw.Services.Notifications.Abstractions" />
-    <PackageReference Include="Fdw.Services.Notifications.Console" />
   </ItemGroup>
 
   <ItemGroup>

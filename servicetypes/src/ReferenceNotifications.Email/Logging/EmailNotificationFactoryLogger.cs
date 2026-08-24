@@ -2,8 +2,6 @@ using Microsoft.Extensions.Logging;
 using Fdw.Messages;
 using Fdw.MessageLogging;
 using ReferenceNotifications.Email;
-using Fdw.Services.Notifications.Email.Commands;
-using Fdw.Services.Notifications.Email;
 using Fdw.Services.Notifications;
 using Fdw.Services;
 using Fdw;

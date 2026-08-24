@@ -21,6 +21,7 @@ using ReferenceMultitenancy.Sql.Logging;
 using ReferenceMultitenancy.Sql.Middleware;
 using ReferenceMultitenancy.Sql.Models;
 using ReferenceMultitenancy.Sql.Results;
+using ReferenceMultitenancy.Sql.Registration;
 
 namespace ReferenceMultitenancy.Sql.Tests;
 

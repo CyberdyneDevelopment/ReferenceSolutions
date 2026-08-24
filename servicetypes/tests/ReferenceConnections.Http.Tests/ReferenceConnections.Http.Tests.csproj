@@ -17,6 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ReferenceConnections.Http\ReferenceConnections.Http.csproj" />
-    <ProjectReference Include="..\..\src\ReferenceConnections.Http.ServiceType\ReferenceConnections.Http.ServiceType.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceConnections.Http.Registration\ReferenceConnections.Http.Registration.csproj" />
   </ItemGroup>
 </Project>

@@ -61,6 +61,9 @@ namespace ReferenceAuthentication.OpenIddict;
 public sealed class OpenIddictTokenManagerType
     : TokenManagerTypeBase<ITokenManager, TokenManagerConfiguration, ITokenManagerFactory<ITokenManager, TokenManagerConfiguration>>
 {
+    /// <summary>The confidential service clients this auth server issues to.</summary>
+    private static readonly string[] ServiceClientIds = ["fdw.api", "fdw.etl", "fdw.scheduler"];
+
     /// <summary>Initializes a new instance of <see cref="OpenIddictTokenManagerType"/>.</summary>
     public OpenIddictTokenManagerType() : base(name: "OpenIddict", defaultContainerName: "TokenManager")
     {
@@ -94,6 +97,16 @@ public sealed class OpenIddictTokenManagerType
 
             var headerResult = provider.Register("OpenIddict", headerProvider);
             if (!headerResult.IsSuccess) return headerResult.ToNewResult<IHost>();
+
+            // Why here: a confidential client seeded by SQL has no usable secret -- OpenIddict compares
+            // against a hash only its own manager can produce -- so every client_credentials exchange
+            // fails with "The credentials provided are invalid" until this runs. Initialize is the first
+            // point the manager can be resolved.
+            var provisionResult = new OpenIddictClientSecretProvisioner(
+                    loggerFactory.CreateLogger<OpenIddictClientSecretProvisioner>())
+                .Provision(services, "MsSqlSecrets", ServiceClientIds)
+                .GetAwaiter().GetResult();
+            if (provisionResult.IsFailure) return provisionResult.ToNewResult<IHost>();
 
             OpenIddictProviderLog.ProviderRegistered(logger, "OpenIddict", "TokenManager");
     

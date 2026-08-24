@@ -14,7 +14,7 @@
        has to be public API. See fractaldataworks 7201fb0fa. -->
   <ItemGroup>
     <PackageReference Include="Fdw.Commands.Data" />
-    <PackageReference Include="Fdw.Commands.Data.Extensions" />
+    <PackageReference Include="Fdw.Commands.Data.Fluency" />
     <PackageReference Include="Fdw.Data.Abstractions" />
     <PackageReference Include="Fdw.MessageLogging.Abstractions" />
     <PackageReference Include="Fdw.Results" />

@@ -8,8 +8,6 @@ using Fdw.Services.Notifications.Abstractions;
 using ReferenceNotifications.Webhook.Logging;
 using Microsoft.Extensions.Logging;
 using ReferenceNotifications.Webhook;
-using Fdw.Services.Notifications.Webhook.Commands;
-using Fdw.Services.Notifications.Webhook;
 using Fdw.Services.Notifications;
 using Fdw.Services;
 using Fdw;

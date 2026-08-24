@@ -9,8 +9,6 @@ using Fdw.Services.Notifications.Logging;
 using Fdw.Services.Notifications.Results;
 using Microsoft.Extensions.Logging;
 using ReferenceNotifications.Console;
-using Fdw.Services.Notifications.Console.Commands;
-using Fdw.Services.Notifications.Console;
 using Fdw.Services.Notifications;
 using Fdw.Services;
 using Fdw;

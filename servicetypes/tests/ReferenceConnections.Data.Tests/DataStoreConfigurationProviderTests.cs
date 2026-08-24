@@ -187,15 +187,13 @@ public sealed class DataStoreConfigurationProviderTests
 
         // Why: registers a typed-body provider for "Failing" whose Get(Guid) always fails, forcing
         // ComposeTypedBody -> ComposeAggregate -> the Get(ct) override to fail for header2 specifically.
-        var failingTypedProvider = new Mock<IServiceConfigurationProvider<IGenericConfiguration>>();
+        // Why the erased interface and not IServiceConfigurationProvider{IGenericConfiguration}: the
+        // registry holds typed bodies erased and ComposeTypedBody dispatches through this Get(Guid),
+        // so it is the only member the stand-in needs. The two interfaces are separate, so the
+        // generic one over IGenericConfiguration is no longer a way to spell the erased view.
+        var failingTypedProvider = new Mock<IServiceConfigurationProvider>();
         failingTypedProvider
             .Setup(p => p.Get(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(GenericResult<IGenericConfiguration>.Failure(new GenericMessage("typed body read failed")));
-        // Why GetUntyped too: ComposeTypedBody dispatches through the NON-generic
-        // IServiceConfigurationProvider.GetUntyped, so leaving it unstubbed returns null and the
-        // await throws NullReferenceException before the failure path under test is reached.
-        failingTypedProvider
-            .Setup(p => p.GetUntyped(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IGenericConfiguration>.Failure(new GenericMessage("typed body read failed")));
         provider.Register("Failing", failingTypedProvider.Object);
 

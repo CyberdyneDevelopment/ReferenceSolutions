@@ -17,15 +17,17 @@
     <Project Path="src/ReferenceCalculations.Endpoints/ReferenceCalculations.Endpoints.csproj" />
     <Project Path="src/ReferenceConfiguration.Endpoints/ReferenceConfiguration.Endpoints.csproj" />
     <Project Path="src/ReferenceConnections.Endpoints/ReferenceConnections.Endpoints.csproj" />
-    <Project Path="src/ReferenceConnections.Http.ServiceType/ReferenceConnections.Http.ServiceType.csproj" />
+    <Project Path="src/ReferenceConnections.Http.Registration/ReferenceConnections.Http.Registration.csproj" />
     <Project Path="src/ReferenceConnections.Http/ReferenceConnections.Http.csproj" />
-    <Project Path="src/ReferenceConnections.MsSql.ServiceType/ReferenceConnections.MsSql.ServiceType.csproj" />
+    <Project Path="src/ReferenceConnections.MsSql.Registration/ReferenceConnections.MsSql.Registration.csproj" />
     <Project Path="src/ReferenceConnections.MsSql/ReferenceConnections.MsSql.csproj" />
+    <Project Path="src/ReferenceConnections.MsSql.DataVault.Registration/ReferenceConnections.MsSql.DataVault.Registration.csproj" />
     <Project Path="src/ReferenceConnections.MsSql.DataVault/ReferenceConnections.MsSql.DataVault.csproj" />
-    <Project Path="src/ReferenceConnections.PostgreSql.ServiceType/ReferenceConnections.PostgreSql.ServiceType.csproj" />
+    <Project Path="src/ReferenceConnections.PostgreSql.Registration/ReferenceConnections.PostgreSql.Registration.csproj" />
     <Project Path="src/ReferenceConnections.PostgreSql/ReferenceConnections.PostgreSql.csproj" />
-    <Project Path="src/ReferenceConnections.Sqlite.ServiceType/ReferenceConnections.Sqlite.ServiceType.csproj" />
+    <Project Path="src/ReferenceConnections.Sqlite.Registration/ReferenceConnections.Sqlite.Registration.csproj" />
     <Project Path="src/ReferenceConnections.Sqlite/ReferenceConnections.Sqlite.csproj" />
+    <Project Path="src/ReferenceCredentials.Sql.Registration/ReferenceCredentials.Sql.Registration.csproj" />
     <Project Path="src/ReferenceCredentials.Sql/ReferenceCredentials.Sql.csproj" />
     <Project Path="src/ReferenceDataPaths.Templates/ReferenceDataPaths.Templates.csproj" />
     <Project Path="src/ReferenceDataSets.Endpoints/ReferenceDataSets.Endpoints.csproj" />
@@ -44,14 +46,20 @@
     <Project Path="src/ReferenceIdentity.Endpoints/ReferenceIdentity.Endpoints.csproj" />
     <Project Path="src/ReferenceLineage.Endpoints/ReferenceLineage.Endpoints.csproj" />
     <Project Path="src/ReferenceMessages.Endpoints/ReferenceMessages.Endpoints.csproj" />
+    <Project Path="src/ReferenceMultitenancy.Sql.Registration/ReferenceMultitenancy.Sql.Registration.csproj" />
     <Project Path="src/ReferenceMultitenancy.Sql/ReferenceMultitenancy.Sql.csproj" />
     <Project Path="src/ReferenceNfl.Endpoints/ReferenceNfl.Endpoints.csproj" />
     <Project Path="src/ReferenceNodes.Endpoints/ReferenceNodes.Endpoints.csproj" />
+    <Project Path="src/ReferenceNotifications.Console.Registration/ReferenceNotifications.Console.Registration.csproj" />
     <Project Path="src/ReferenceNotifications.Console/ReferenceNotifications.Console.csproj" />
+    <Project Path="src/ReferenceNotifications.Email.Registration/ReferenceNotifications.Email.Registration.csproj" />
     <Project Path="src/ReferenceNotifications.Email/ReferenceNotifications.Email.csproj" />
     <Project Path="src/ReferenceNotifications.Endpoints/ReferenceNotifications.Endpoints.csproj" />
+    <Project Path="src/ReferenceNotifications.System.Registration/ReferenceNotifications.System.Registration.csproj" />
     <Project Path="src/ReferenceNotifications.System/ReferenceNotifications.System.csproj" />
+    <Project Path="src/ReferenceNotifications.Teams.Registration/ReferenceNotifications.Teams.Registration.csproj" />
     <Project Path="src/ReferenceNotifications.Teams/ReferenceNotifications.Teams.csproj" />
+    <Project Path="src/ReferenceNotifications.Webhook.Registration/ReferenceNotifications.Webhook.Registration.csproj" />
     <Project Path="src/ReferenceNotifications.Webhook/ReferenceNotifications.Webhook.csproj" />
     <Project Path="src/ReferencePipelines.Endpoints/ReferencePipelines.Endpoints.csproj" />
     <Project Path="src/ReferenceProjects.Endpoints/ReferenceProjects.Endpoints.csproj" />
@@ -61,11 +69,16 @@
     <Project Path="src/ReferenceRoles.Endpoints/ReferenceRoles.Endpoints.csproj" />
     <Project Path="src/ReferenceSchedules.Endpoints/ReferenceSchedules.Endpoints.csproj" />
     <Project Path="src/ReferenceSchema.Endpoints/ReferenceSchema.Endpoints.csproj" />
+    <Project Path="src/ReferenceSecretManagers.AzureKeyVault.Registration/ReferenceSecretManagers.AzureKeyVault.Registration.csproj" />
     <Project Path="src/ReferenceSecretManagers.AzureKeyVault/ReferenceSecretManagers.AzureKeyVault.csproj" />
     <Project Path="src/ReferenceSecretManagers.Endpoints/ReferenceSecretManagers.Endpoints.csproj" />
+    <Project Path="src/ReferenceSecretManagers.EnvironmentVariable.Registration/ReferenceSecretManagers.EnvironmentVariable.Registration.csproj" />
     <Project Path="src/ReferenceSecretManagers.EnvironmentVariable/ReferenceSecretManagers.EnvironmentVariable.csproj" />
+    <Project Path="src/ReferenceSecretManagers.MsSql.Registration/ReferenceSecretManagers.MsSql.Registration.csproj" />
     <Project Path="src/ReferenceSecretManagers.MsSql/ReferenceSecretManagers.MsSql.csproj" />
+    <Project Path="src/ReferenceSecretManagers.Sqlite.Registration/ReferenceSecretManagers.Sqlite.Registration.csproj" />
     <Project Path="src/ReferenceSecretManagers.Sqlite/ReferenceSecretManagers.Sqlite.csproj" />
+    <Project Path="src/ReferenceSecretManagers.UserSecrets.Registration/ReferenceSecretManagers.UserSecrets.Registration.csproj" />
     <Project Path="src/ReferenceSecretManagers.UserSecrets/ReferenceSecretManagers.UserSecrets.csproj" />
     <Project Path="src/ReferenceSessionState.Endpoints/ReferenceSessionState.Endpoints.csproj" />
     <Project Path="src/ReferenceSettings.Endpoints/ReferenceSettings.Endpoints.csproj" />
@@ -112,5 +125,11 @@
     <Project Path="tests/ReferenceSecretManagers.AzureKeyVault.Tests/ReferenceSecretManagers.AzureKeyVault.Tests.csproj" />
     <Project Path="tests/ReferenceSecretManagers.EnvironmentVariable.Tests/ReferenceSecretManagers.EnvironmentVariable.Tests.csproj" />
     <Project Path="tests/ReferenceSecretManagers.Sqlite.Tests/ReferenceSecretManagers.Sqlite.Tests.csproj" />
+    <Project Path="tests/RegistrationGate/RegistrationGate.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
   </Folder>
 </Solution>

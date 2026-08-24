@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ReferenceNotifications.Console\ReferenceNotifications.Console.csproj" />
+    <PackageReference Include="Fdw.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ReferenceNotifications.Console.Registration\ReferenceNotifications.Console.Registration.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceNotifications.Email.Registration\ReferenceNotifications.Email.Registration.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceNotifications.System.Registration\ReferenceNotifications.System.Registration.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceNotifications.Teams.Registration\ReferenceNotifications.Teams.Registration.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceNotifications.Webhook.Registration\ReferenceNotifications.Webhook.Registration.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceSecretManagers.AzureKeyVault.Registration\ReferenceSecretManagers.AzureKeyVault.Registration.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceSecretManagers.EnvironmentVariable.Registration\ReferenceSecretManagers.EnvironmentVariable.Registration.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceSecretManagers.MsSql.Registration\ReferenceSecretManagers.MsSql.Registration.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceSecretManagers.Sqlite.Registration\ReferenceSecretManagers.Sqlite.Registration.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceSecretManagers.UserSecrets.Registration\ReferenceSecretManagers.UserSecrets.Registration.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceConnections.MsSql.DataVault.Registration\ReferenceConnections.MsSql.DataVault.Registration.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceCredentials.Sql.Registration\ReferenceCredentials.Sql.Registration.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceMultitenancy.Sql.Registration\ReferenceMultitenancy.Sql.Registration.csproj" />
+  </ItemGroup>
+</Project>

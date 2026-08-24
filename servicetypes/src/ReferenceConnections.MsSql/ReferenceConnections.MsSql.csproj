@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
-    <Description>MsSql connection — the aggregation over FDW's MsSql dialect, translators and components. The service-type registration lives in the sibling ReferenceConnections.MsSql.ServiceType package.</Description>
+    <Description>MsSql connection — the aggregation over FDW's MsSql dialect, translators and components. The service-type registration lives in the sibling ReferenceConnections.MsSql.Registration package.</Description>
   </PropertyGroup>
 
   <!-- Why: a connection is a COMPOSITION. The dialect, translators, converters, native types,

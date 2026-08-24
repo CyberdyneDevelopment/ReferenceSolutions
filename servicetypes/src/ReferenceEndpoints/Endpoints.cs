@@ -81,7 +81,7 @@ public partial class Endpoints : ServiceTypeCollectionBase<IEndpointTypeCollecti
         // registered - which is required, not stylistic: AddFastEndpoints performs endpoint discovery
         // eagerly inside its own call, so every DeclaredEndpoints.Declare must already have happened.
         // Run it first and it throws 'unable to find any endpoint declarations'.
-        AppendConfiguration((builder, loggerFactory) =>
+        Configuration((builder, loggerFactory) =>
         {
             foreach (var group in Groups())
             {
@@ -95,7 +95,7 @@ public partial class Endpoints : ServiceTypeCollectionBase<IEndpointTypeCollecti
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
-        AppendRegistration((builder, loggerFactory) =>
+        Registration((builder, loggerFactory) =>
         {
             // Why the groups are cycled here rather than being this collection's own members: a group
             // joins EndpointGroups, which is membership and crosses packages. This collection is what
@@ -212,7 +212,7 @@ public partial class Endpoints : ServiceTypeCollectionBase<IEndpointTypeCollecti
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 
-        AppendInitialization((host, loggerFactory) =>
+        Initialization((host, loggerFactory) =>
         {
             foreach (var group in Groups())
             {

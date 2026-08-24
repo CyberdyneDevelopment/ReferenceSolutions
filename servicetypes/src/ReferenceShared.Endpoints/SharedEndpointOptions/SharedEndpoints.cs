@@ -32,7 +32,7 @@ public partial class SharedEndpoints : EndpointTypeCollectionBase<SharedEndpoint
     /// and a host that forgets cannot activate the endpoint at all.
     /// </remarks>
     public SharedEndpoints()
-        => AppendRegistration((builder, loggerFactory) =>
+        => Registration((builder, loggerFactory) =>
         {
             DataflowGraphConfigurationProvider.RegisterDomainConfiguration(builder.Services);
 

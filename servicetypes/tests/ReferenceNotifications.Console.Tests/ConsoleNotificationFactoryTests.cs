@@ -10,8 +10,6 @@ using Xunit;
 using Fdw;
 using Fdw.Services;
 using Fdw.Services.Notifications;
-using Fdw.Services.Notifications.Console;
-using Fdw.Services.Notifications.Console.Commands;
 
 namespace ReferenceNotifications.Console.Tests;
 

@@ -15,8 +15,6 @@ using Xunit;
 using Fdw;
 using Fdw.Services;
 using Fdw.Services.Notifications;
-using Fdw.Services.Notifications.Webhook;
-using Fdw.Services.Notifications.Webhook.Commands;
 
 namespace ReferenceNotifications.Webhook.Tests;
 

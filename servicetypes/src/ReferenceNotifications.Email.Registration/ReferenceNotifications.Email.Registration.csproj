@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>ReferenceNotifications.Email.Registration</RootNamespace>
+
+    <PackageId>ReferenceNotifications.Email.Registration</PackageId>
+    <Description>The Email notification service-type registration: the [ServiceTypeOption] only. References the implementation, so referencing THIS package brings the implementation with it and registers the option.</Description>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Why the implementation and not the reverse: referencing the implementation gets you its
+         factory, service and configuration with no registration; referencing this package gets you
+         the registration as well. Registration is opt-in, so a library can depend on the
+         implementation without silently registering an option into its consumer's collection. -->
+    <ProjectReference Include="..\ReferenceNotifications.Email\ReferenceNotifications.Email.csproj" />
+  </ItemGroup>
+
+</Project>

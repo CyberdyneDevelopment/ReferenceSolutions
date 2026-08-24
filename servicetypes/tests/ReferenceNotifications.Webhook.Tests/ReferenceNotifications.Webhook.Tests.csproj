@@ -7,6 +7,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ReferenceNotifications.Webhook\ReferenceNotifications.Webhook.csproj" />
+    <ProjectReference Include="..\..\src\ReferenceNotifications.Webhook.Registration\ReferenceNotifications.Webhook.Registration.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -17,7 +18,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
   <PropertyGroup>
-    <Include>[Fdw.Services.Notifications.Webhook]*</Include>
+    <Include>[ReferenceNotifications.Webhook]*</Include>
     <Exclude>[xunit.*]*,[Moq]*,[Shouldly]*</Exclude>
   </PropertyGroup>
 </Project>

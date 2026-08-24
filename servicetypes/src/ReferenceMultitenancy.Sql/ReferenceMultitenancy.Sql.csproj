@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Fdw.Collections" />
     <PackageReference Include="Fdw.Commands.Data" />
-    <PackageReference Include="Fdw.Commands.Data.Extensions" />
+    <PackageReference Include="Fdw.Commands.Data.Fluency" />
     <PackageReference Include="Fdw.Configuration" />
     <PackageReference Include="Fdw.Data.Abstractions" />
     <PackageReference Include="Fdw.Hosting.Abstractions" />

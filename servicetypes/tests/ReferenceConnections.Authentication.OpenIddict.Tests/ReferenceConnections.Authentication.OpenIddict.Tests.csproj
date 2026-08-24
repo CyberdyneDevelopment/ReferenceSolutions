@@ -27,7 +27,7 @@
     <ProjectReference Include="..\..\src\ReferenceAuthentication.OpenIddict\ReferenceAuthentication.OpenIddict.csproj" />
     <PackageReference Include="Fdw.Commands.Data" />
     <PackageReference Include="Fdw.Commands.Data.Abstractions" />
-    <PackageReference Include="Fdw.Commands.Data.Extensions" />
+    <PackageReference Include="Fdw.Commands.Data.Fluency" />
     <PackageReference Include="Fdw.Results" />
     <PackageReference Include="Fdw.Services.Authentication.Abstractions" />
     <PackageReference Include="Fdw.Services.Authorization.Abstractions" />

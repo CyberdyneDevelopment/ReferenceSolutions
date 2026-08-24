@@ -14,7 +14,7 @@
     <ProjectReference Include="..\ReferenceEndpoints\ReferenceEndpoints.csproj" />
     <PackageReference Include="Fdw.Services.Identity" />
     <PackageReference Include="Fdw.Services.Identity.Abstractions" />
-    <PackageReference Include="Fdw.Services.Identity.Authentik" />
+    <PackageReference Include="Fdw.Services.Identity.ClientCredentials" />
     <PackageReference Include="Fdw.Services.Identity.Endpoints" />
     <PackageReference Include="Fdw.Web.RestEndpoints" />
     <PackageReference Include="Fdw.Collections" />
