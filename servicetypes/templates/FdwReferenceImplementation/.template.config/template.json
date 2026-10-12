@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Fdw",
+  "classifications": [
+    "Fdw",
+    "Service",
+    "Reference Implementation"
+  ],
+  "identity": "Fdw.Templates.FdwReferenceServiceType",
+  "name": "Reference implementation (service + service type projects)",
+  "shortName": "fdw-ref-implementation",
+  "description": "Creates a reference implementation of an FDW service kind as a PAIR of projects: the aggregation, and the service-type registration that registers it. The service-type project references the aggregation, so referencing it brings the aggregation with it; referencing the aggregation alone gets the composition and none of the registration.",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "preferNameDirectory": false,
+  "symbols": {
+    "ImplName": {
+      "type": "parameter",
+      "datatype": "string",
+      "isRequired": true,
+      "description": "The kind being implemented (e.g. MsSql, Sqlite, Http, AzureKeyVault)",
+      "replaces": "ImplName",
+      "fileRename": "ImplName"
+    },
+    "ServiceName": {
+      "type": "parameter",
+      "datatype": "string",
+      "isRequired": true,
+      "description": "The service domain, singular (e.g. Connection, SecretManager, Notification)",
+      "replaces": "ServiceName",
+      "fileRename": "ServiceName"
+    },
+    "ServiceNamePlural": {
+      "type": "parameter",
+      "datatype": "string",
+      "isRequired": true,
+      "description": "The FDW package/namespace segment for the domain, usually plural (e.g. Connections, SecretManagers, Notifications)",
+      "replaces": "ServiceNamePlural",
+      "fileRename": "ServiceNamePlural"
+    }
+  },
+  "postActions": [
+    {
+      "description": "Restore NuGet packages",
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    },
+    {
+      "description": "Open the README",
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "README.md"
+      },
+      "continueOnError": true
+    }
+  ]
+}

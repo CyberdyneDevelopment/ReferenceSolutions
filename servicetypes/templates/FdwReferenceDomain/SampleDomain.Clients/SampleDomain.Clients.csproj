@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Web.Clients" />
+    <PackageReference Include="Fdw.Web.Http.Authentication" />
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.Collections.SourceGenerators" />
+    <PackageReference Include="Fdw.Results" />
+    <!-- Why Microsoft.Extensions.Http and DependencyInjection.Abstractions are NOT listed: they
+         arrive transitively from Fdw.Web.Clients, which requires a higher patch than any version
+         pinned here would name. Restating them pins the lower one and the restore fails as a
+         package downgrade. Take the paired dependency from the package that pairs it. -->
+  </ItemGroup>
+
+</Project>

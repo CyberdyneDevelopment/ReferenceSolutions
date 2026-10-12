@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "FractalDataWorks",
+  "classifications": [
+    "Reference",
+    "API",
+    "Endpoints"
+  ],
+  "identity": "FdwReference.EndpointGroup",
+  "name": "Reference endpoint group",
+  "shortName": "fdw-ref-endpoint-group",
+  "description": "An endpoint group package: the group collection, its EndpointBase, one endpoint and its declaring TypeOption. The option is what puts the route on the wire \u2014 an endpoint without one compiles and 404s.",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "SampleGroup",
+  "preferNameDirectory": true,
+  "symbols": {
+    "RoutePrefix": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "samples",
+      "replaces": "ROUTE_PREFIX",
+      "description": "The URL segment this group's endpoints live under, e.g. api/v1/samples."
+    },
+    "Operation": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "List",
+      "description": "Which operation this endpoint performs. Sets the verb and route to the convention the reference stack uses: GET lists and single reads, POST creates, PATCH modifies, DELETE removes. There is no PUT.",
+      "choices": [
+        {
+          "choice": "List",
+          "description": "GET api/v1/{prefix} \u2014 returns a collection."
+        },
+        {
+          "choice": "Read",
+          "description": "GET api/v1/{prefix}/{id} \u2014 returns one."
+        },
+        {
+          "choice": "Create",
+          "description": "POST api/v1/{prefix} \u2014 creates one."
+        },
+        {
+          "choice": "Update",
+          "description": "PATCH api/v1/{prefix}/{id} \u2014 modifies one; the request DTO is nullable throughout."
+        },
+        {
+          "choice": "Delete",
+          "description": "DELETE api/v1/{prefix}/{id} \u2014 removes one."
+        }
+      ]
+    },
+    "IsList": {
+      "type": "computed",
+      "value": "(Operation == \"List\")"
+    },
+    "IsRead": {
+      "type": "computed",
+      "value": "(Operation == \"Read\")"
+    },
+    "IsCreate": {
+      "type": "computed",
+      "value": "(Operation == \"Create\")"
+    },
+    "IsUpdate": {
+      "type": "computed",
+      "value": "(Operation == \"Update\")"
+    },
+    "IsDelete": {
+      "type": "computed",
+      "value": "(Operation == \"Delete\")"
+    }
+  }
+}

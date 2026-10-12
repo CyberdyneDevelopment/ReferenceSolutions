@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "FractalDataWorks",
+  "classifications": [
+    "Reference",
+    "Connections"
+  ],
+  "identity": "FdwReference.Connection",
+  "name": "Reference connection (wire + service type)",
+  "shortName": "fdw-ref-connection",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Sample",
+  "preferNameDirectory": true,
+  "symbols": {
+    "connectionName": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "SAMPLE_CONNECTION",
+      "defaultValue": "Sample",
+      "description": "The name this connection type registers under. A connection configuration names it in Implementation."
+    },
+    "category": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "SAMPLE_CATEGORY",
+      "defaultValue": "Database",
+      "description": "The category this connection is grouped under, e.g. Database or Api."
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "Sample.Connection/Sample.Connection.csproj"
+    },
+    {
+      "path": "Sample.Connection.ServiceType/Sample.Connection.ServiceType.csproj"
+    }
+  ]
+}

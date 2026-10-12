@@ -1,0 +1,11 @@
+[
+  {
+    "RowId": 1,
+    "AegisCommandRowId": 1,
+    "ConnectionName": "synthetic-echo",
+    "SecretManagerName": "EnvSecrets",
+    "SecretKeyName": "AEGIS_SYNTHETIC_TOKEN",
+    "IsCurrent": true,
+    "IsDeleted": false
+  }
+]

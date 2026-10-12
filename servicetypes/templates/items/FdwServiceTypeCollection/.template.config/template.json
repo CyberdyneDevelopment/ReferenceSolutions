@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "FractalDataWorks",
+  "classifications": [ "FDW", "ServiceType", "Collection" ],
+  "identity": "Fdw.ServiceTypeCollection",
+  "name": "FDW service type collection",
+  "shortName": "fdw-collection",
+  "tags": { "language": "C#", "type": "item" },
+  "sourceName": "SampleDomain",
+  "preferNameDirectory": false,
+  "symbols": {
+    "category": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "SAMPLE_CATEGORY",
+      "description": "The ServiceCategory this collection registers under. PlatformServices keys its entry by this, and the generated accessor takes its name from it.",
+      "isRequired": true
+    },
+    "namespace": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "SampleNamespace",
+      "description": "The namespace. By convention it is the collection name with the plural turned singular plus Options.",
+      "isRequired": true
+    }
+  }
+}

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>FdwReferenceHosts.SqlServerEndpoint.Registration</RootNamespace>
+    <PackageId>FdwReferenceHosts.SqlServerEndpoint.Registration</PackageId>
+    <Description>The SQL Server endpoint host-option registration: the [Implementation] only. Referencing it gives a host a TDS listener presenting its workspaces as a SQL Server database.</Description>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.Services.Workspaces.Tds" />
+    <PackageReference Include="Fdw.Services.Hosts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FdwReferenceHosts.SqlServerEndpoint\FdwReferenceHosts.SqlServerEndpoint.csproj" />
+  </ItemGroup>
+
+</Project>

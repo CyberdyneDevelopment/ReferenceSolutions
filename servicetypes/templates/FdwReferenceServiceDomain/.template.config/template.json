@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "FractalDataWorks",
+  "classifications": [
+    "Reference",
+    "Service",
+    "Domain"
+  ],
+  "identity": "FdwReference.ServiceDomain",
+  "name": "Reference service domain (ServiceTypeCollection + configuration providers)",
+  "shortName": "fdw-ref-service-domain",
+  "description": "A ServiceTypeCollection domain with the two-tier configuration provider pattern: a domain provider over the shared DomainConfiguration row, and one implementation option with its own ManagedConfiguration and implementation provider, registered the way the FDW-727 domains are. Covers configuration only \u2014 see the README for the scoped service-provider layer.",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "SampleDomain",
+  "preferNameDirectory": true,
+  "symbols": {
+    "DomainCategory": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "SampleDomain",
+      "replaces": "SAMPLE_CATEGORY",
+      "description": "The ServiceCategory this domain registers under \u2014 becomes the PlatformServices accessor name, the domain's schema and table name, and the ConfigurationCommands TypeOption name. Matches the generated project name by default."
+    },
+    "ImplementationOption": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "SampleImplementation",
+      "replaces": "SAMPLE_OPTION",
+      "description": "The Implementation discriminator for the one example implementation this template generates \u2014 becomes its [Implementation] name and its typed body's ManagedConfiguration ServiceType. A real domain has more than one; add siblings by copying SampleImplementation/ under a new discriminator."
+    },
+    "EventIdBase": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "93000",
+      "replaces": "EVENTID_BASE",
+      "description": "First EventId for this domain's MessageLogging (domain + implementation share one contiguous range of 20). Must not collide with an existing range \u2014 see RESULTCODE-CATALOG.md."
+    }
+  }
+}

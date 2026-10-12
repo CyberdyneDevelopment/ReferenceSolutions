@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <Description>Multitenancy over HTTP — resolving the tenant and org a request is for, from its claims and headers. Reads the Multitenancy abstractions only, so the collection that composes the request pipeline can place this without naming which provider stores the tenants.</Description>
+  </PropertyGroup>
+
+  <!-- Why this is not in FdwReferenceMultitenancy.Sql: nothing here is SQL. These read JWT claims and
+       X-Tenant-Id/X-Org-Id headers and call ITenantProvider/IOrganizationProvider. Living in the Sql
+       package meant the endpoints collection could only place them by referencing a specific
+       provider implementation, so each host hand-wrote the pipeline instead. -->
+  <ItemGroup>
+    <PackageReference Include="Fdw.Claims.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Services.Authentication.Abstractions" />
+    <PackageReference Include="Fdw.Services.Multitenancy.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+</Project>

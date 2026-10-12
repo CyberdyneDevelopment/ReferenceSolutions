@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>fdw-schema</AssemblyName>
+    <RootNamespace>Fdw.SchemaDump</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <IsPackable>false</IsPackable>
+    <Description>Connects to a database and writes out the schema it finds, as the DataStoreConfiguration the rest of the stack already speaks.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Why the importer package and not a SqlConnection here: reading a live schema is a solved
+         problem in the framework (ISchemaImporter), and it already returns the exact shape
+         configurationSchema.json wants. A hand-rolled reader would produce a second, divergent
+         idea of what a schema is. -->
+    <PackageReference Include="Fdw.Data.DataStores.SqlServer" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+  </ItemGroup>
+
+</Project>

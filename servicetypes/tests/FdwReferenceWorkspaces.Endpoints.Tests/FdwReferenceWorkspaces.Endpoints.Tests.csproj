@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FdwReferenceWorkspaces.Endpoints\FdwReferenceWorkspaces.Endpoints.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" />
+    <!-- Analyzer-only: emits the [ModuleInitializer] that registers the cross-assembly options into their collections at assembly load.
+         The workspace reference page is a TypeOption of ApiReferencePages declared in FdwReferenceWorkspaces.Endpoints, so without this
+         the document endpoint's page lookup finds no "WorkspaceReference" page and answers SERVICES-61001. This executable is the one
+         place the reference belongs, as in a host. -->
+    <PackageReference Include="Fdw.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+  </ItemGroup>
+  <PropertyGroup>
+    <Include>[FdwReferenceWorkspaces.Endpoints]*</Include>
+    <Exclude>[xunit.*]*,[Moq]*,[Shouldly]*</Exclude>
+  </PropertyGroup>
+</Project>

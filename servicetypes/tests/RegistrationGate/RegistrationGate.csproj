@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FdwReferenceNotifications.Console\FdwReferenceNotifications.Console.csproj" />
+    <PackageReference Include="Fdw.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\FdwReferenceAgentActions.Endpoints\FdwReferenceAgentActions.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceAuth.Endpoints\FdwReferenceAuth.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceCalculations.Endpoints\FdwReferenceCalculations.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceConfiguration.Endpoints\FdwReferenceConfiguration.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceNfl.Endpoints\FdwReferenceNfl.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceQuality.Endpoints\FdwReferenceQuality.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceSessionState.Endpoints\FdwReferenceSessionState.Endpoints.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FdwReferenceNotifications.Console.Registration\FdwReferenceNotifications.Console.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceNotifications.Email.Registration\FdwReferenceNotifications.Email.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceNotifications.System.Registration\FdwReferenceNotifications.System.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceNotifications.Teams.Registration\FdwReferenceNotifications.Teams.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceNotifications.Webhook.Registration\FdwReferenceNotifications.Webhook.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceSecretManagers.AzureKeyVault.Registration\FdwReferenceSecretManagers.AzureKeyVault.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceSecretManagers.EnvironmentVariable.Registration\FdwReferenceSecretManagers.EnvironmentVariable.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceSecretManagers.MsSql.Registration\FdwReferenceSecretManagers.MsSql.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceSecretManagers.Sqlite.Registration\FdwReferenceSecretManagers.Sqlite.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceSecretManagers.UserSecrets.Registration\FdwReferenceSecretManagers.UserSecrets.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceConnections.MsSql.DataVault.Registration\FdwReferenceConnections.MsSql.DataVault.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceCredentials.Sql.Registration\FdwReferenceCredentials.Sql.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceMultitenancy.Sql.Registration\FdwReferenceMultitenancy.Sql.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceData.Endpoints\FdwReferenceData.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceEtl.Endpoints\FdwReferenceEtl.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceOperations.Endpoints\FdwReferenceOperations.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceMessaging.Endpoints\FdwReferenceMessaging.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceCatalog.Endpoints\FdwReferenceCatalog.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceSamples.Endpoints\FdwReferenceSamples.Endpoints.csproj" />
+  </ItemGroup>
+</Project>

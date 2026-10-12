@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>FdwReferenceHosts.ResponseStreaming</RootNamespace>
+    <PackageId>FdwReferenceHosts.ResponseStreaming</PackageId>
+    <Description>The response-streaming host option: its configuration record and the command that reads it. Settings live here, not on a shared host interface.</Description>
+    <IsPackable>true</IsPackable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Configuration.Abstractions" />
+    <PackageReference Include="Fdw.Data.Abstractions" />
+    <PackageReference Include="Fdw.Services" />
+    <PackageReference Include="Fdw.Services.Hosts.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.Messages" />
+    <PackageReference Include="Fdw.Results" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Configuration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <PackageReference Include="Fdw.Data.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

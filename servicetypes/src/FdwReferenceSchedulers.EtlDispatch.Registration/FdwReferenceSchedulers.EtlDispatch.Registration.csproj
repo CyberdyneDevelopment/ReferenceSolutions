@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\FdwReferenceSchedulers.EtlDispatch\FdwReferenceSchedulers.EtlDispatch.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Services.Pipelines.Clients" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>FdwReferenceSchedulers.EtlDispatch.Registration</RootNamespace>
+    <PackageId>FdwReferenceSchedulers.EtlDispatch.Registration</PackageId>
+    <Description>The ETL-dispatch scheduled execution handler registration: the [Implementation] only. References the implementation, so referencing THIS package brings the handler with it and registers it.</Description>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+</Project>

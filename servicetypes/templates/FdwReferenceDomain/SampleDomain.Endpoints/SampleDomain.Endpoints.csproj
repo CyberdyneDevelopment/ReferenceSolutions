@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--#if (projectReference) -->
+    <!-- Generated inside the reference stack: FdwReferenceEndpoints is reached by path, so the group
+         builds against the working tree rather than the last published build. -->
+    <ProjectReference Include="REFERENCE_PATH" />
+    <!--#else -->
+    <!-- Generated outside the reference stack: FdwReferenceEndpoints comes from the feed. The version
+         is floated, never pinned, so the project tracks the newest build of the hand-set base. -->
+    <PackageReference Include="FdwReferenceEndpoints" />
+    <!--#endif -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Web.RestEndpoints" />
+    <PackageReference Include="Fdw.Services.Abstractions" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.Collections.SourceGenerators" />
+  </ItemGroup>
+
+</Project>

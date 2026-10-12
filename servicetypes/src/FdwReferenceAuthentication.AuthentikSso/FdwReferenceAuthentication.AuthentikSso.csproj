@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Description>Sign-in type: Authentik SSO. Brings in the steps an AuthentikLogin flow needs -- OidcRedirect, ResolvePrincipal, BakePermissions, AuthorizeSignInMethod, AuthorizeIssuance -- so a host references one package instead of five. No code of its own: referencing this package is the registration.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FdwReferenceAuthentication.OidcRedirect.Registration\FdwReferenceAuthentication.OidcRedirect.Registration.csproj" />
+    <ProjectReference Include="..\FdwReferenceAuthentication.ResolvePrincipal.Registration\FdwReferenceAuthentication.ResolvePrincipal.Registration.csproj" />
+    <ProjectReference Include="..\FdwReferenceAuthentication.BakePermissions.Registration\FdwReferenceAuthentication.BakePermissions.Registration.csproj" />
+    <ProjectReference Include="..\FdwReferenceAuthentication.AuthorizeIssuance.Registration\FdwReferenceAuthentication.AuthorizeIssuance.Registration.csproj" />
+    <ProjectReference Include="..\FdwReferenceAuthentication.AuthorizeSignInMethod.Registration\FdwReferenceAuthentication.AuthorizeSignInMethod.Registration.csproj" />
+  </ItemGroup>
+
+</Project>

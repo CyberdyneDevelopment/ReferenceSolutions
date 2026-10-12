@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>FdwReferenceAegis.McpServer</RootNamespace>
+
+    <!-- dotnet tool packaging, mirroring RoslynMcp's Fdw.Roslyn.Commands.Mcp.Stdio. The tool was
+         Fdw.Aegis.McpServer in the FDW repo until FDW-1119 moved the entry point here. -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>aegis-mcp</ToolCommandName>
+    <PackageId>FdwReferenceAegis.McpServer</PackageId>
+    <Title>Reference Aegis MCP Server</Title>
+    <Description>Standalone stdio MCP server exposing the Aegis Gateway's deterministic approval-policy evaluation and secret-below-the-boundary injection. Its configuration (declared connections, AegisCommand rows, secret managers) is read through a declared FileSystem connection.</Description>
+    <PackageDescription>$(Description)</PackageDescription>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The schema, the AegisCommand rows and the secret manager rows: the host's configuration source
+         is a connection, and these are what that connection's store holds. -->
+    <Content Include="aegisSchema.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="config-data\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Aegis.McpServer" />
+    <PackageReference Include="Fdw.Data.RowSources.Json" />
+    <!-- Analyzer-only: emits the [ModuleInitializer] that registers the cross-assembly options (FileSystem, Http,
+         EnvironmentVariable) into their TypeCollections at assembly load. This entry-point exe is the one place
+         this reference belongs. -->
+    <PackageReference Include="Fdw.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <PackageReference Include="Fdw.Services.Connections" />
+    <PackageReference Include="Fdw.Services.Data" />
+    <PackageReference Include="Fdw.Services.SecretManagers" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Settings.Configuration" />
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FdwReferenceConnections.FileSystem.Registration\FdwReferenceConnections.FileSystem.Registration.csproj" />
+    <ProjectReference Include="..\FdwReferenceConnections.Http.Registration\FdwReferenceConnections.Http.Registration.csproj" />
+    <ProjectReference Include="..\FdwReferenceSecretManagers.EnvironmentVariable.Registration\FdwReferenceSecretManagers.EnvironmentVariable.Registration.csproj" />
+  </ItemGroup>
+
+</Project>

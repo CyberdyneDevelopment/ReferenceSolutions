@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Description>The SampleGroup domain HTTP endpoints.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Why FdwReferenceEndpoints: it supplies EndpointGroups, the registry this group joins. Without
+         it the group has nothing to attach to and none of its routes reach the host. -->
+    <PackageReference Include="FdwReferenceEndpoints" />
+    <PackageReference Include="Fdw.Web.RestEndpoints" />
+    <PackageReference Include="FastEndpoints" />
+  </ItemGroup>
+
+</Project>

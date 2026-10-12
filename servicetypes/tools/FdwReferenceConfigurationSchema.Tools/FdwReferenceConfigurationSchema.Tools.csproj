@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <Description>Introspects a live ConfigurationDb and produces the DataStores/Paths block of configurationSchema.json.</Description>
+  </PropertyGroup>
+
+  <!-- Why a library and not a packed tool, unlike the raydar original this is ported from: over
+       there the same code is also shipped as the `raydar-schema` dotnet tool and the wizard takes a
+       ProjectReference on that Exe. Nothing in this repo asks for a standalone schema CLI, and an
+       Exe referenced as a library is a quirk worth inheriting only when the second entry point is
+       actually wanted. The introspection engine is identical either way. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+  </ItemGroup>
+
+</Project>

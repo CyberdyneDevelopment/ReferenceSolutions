@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "FractalDataWorks",
+  "classifications": [ "FDW", "ServiceType", "Option" ],
+  "identity": "Fdw.Implementation",
+  "name": "FDW service type option",
+  "shortName": "fdw-option",
+  "tags": { "language": "C#", "type": "item" },
+  "sourceName": "SampleOption",
+  "preferNameDirectory": false,
+  "symbols": {
+    "collection": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "SampleDomainTypes",
+      "description": "The collection this option is a member of.",
+      "isRequired": true
+    },
+    "optionName": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "SAMPLE_NAME",
+      "description": "The name this option registers under. ByName finds it by this.",
+      "isRequired": true
+    },
+    "namespace": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "SampleNamespace",
+      "description": "The namespace, which by convention matches the collection's.",
+      "isRequired": true
+    }
+  }
+}

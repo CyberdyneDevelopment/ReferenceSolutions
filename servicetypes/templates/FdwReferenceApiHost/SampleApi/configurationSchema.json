@@ -1,0 +1,53 @@
+{
+  "ConfigurationSchema": {
+    "ConnectionRoles": {
+      "Platform": "PlatformConfiguration",
+      "Server": "ServerConfiguration"
+    },
+    "Connections": [
+      {
+        "Name": "ServerConfiguration",
+        "Implementation": "FileSystem",
+        "Configuration": {
+          "Root": "SERVER_CONFIG_ROOT"
+        }
+      },
+      {
+        "Name": "PlatformConfiguration",
+        "Implementation": "CONNECTION_TYPE",
+        "Configuration": {
+//#if (IsServerBacked)
+          "Server": "DB_SERVER",
+          "Database": "DB_NAME",
+          "Port": DB_PORT,
+          "AuthenticationType": "AUTH_TYPE",
+          "TrustServerCertificate": true,
+          "AdditionalProperties": {
+            "Username": "DB_USER",
+            "SecretManagerName": "EnvSecrets",
+            "SecretKeyName": "SECRET_KEY_NAME"
+          }
+//#endif
+//#if (ConnectionType == "Sqlite")
+          "DataSource": "CONFIG_PATH"
+//#endif
+//#if (ConnectionType == "FileSystem")
+          "Root": "CONFIG_PATH"
+//#endif
+        }
+      }
+    ],
+    "DataStores": [
+      {
+        "Name": "ServerConfiguration",
+        "Implementation": "FileSystem",
+        "Paths": []
+      },
+      {
+        "Name": "PlatformConfiguration",
+        "Implementation": "CONNECTION_TYPE",
+        "Paths": []
+      }
+    ]
+  }
+}

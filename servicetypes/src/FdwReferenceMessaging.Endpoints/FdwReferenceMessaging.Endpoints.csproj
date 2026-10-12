@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Description>The Messaging domain HTTP endpoints - messages, notifications, rules and preferences.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Services.Notifications.System" />
+    <ProjectReference Include="..\FdwReferenceEndpoints\FdwReferenceEndpoints.csproj" />
+    <PackageReference Include="Fdw.Configuration.Endpoints" />
+    <PackageReference Include="Fdw.Data.DataPaths" />
+    <PackageReference Include="Fdw.Data.RowSources.Json" />
+    <PackageReference Include="Fdw.Data.RowSources.Xml" />
+    <PackageReference Include="Fdw.Data.RowSources.Delimited" />
+    <PackageReference Include="Fdw.Data.RowSources.FixedWidth" />
+    <PackageReference Include="Fdw.Data.RowSources.Http" />
+    <PackageReference Include="Fdw.Services.Agents" />
+    <PackageReference Include="Fdw.Services.Messaging.Endpoints" />
+    <PackageReference Include="Fdw.Services.Connections.Http" />
+    <ProjectReference Include="..\FdwReferenceConnections.FileSystem\FdwReferenceConnections.FileSystem.csproj" />
+    <PackageReference Include="Fdw.Services.Connections.RoslynWorkspace" />
+    <PackageReference Include="Fdw.Services.Multitenancy" />
+    <PackageReference Include="Fdw.Services.Registration" />
+    <PackageReference Include="Fdw.Services.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Services.Settings.Endpoints" />
+    <PackageReference Include="Fdw.Web.Api" />
+    <PackageReference Include="FastEndpoints" />
+    <PackageReference Include="FastEndpoints.Swagger" />
+    <PackageReference Include="Fdw.Services.SecretManagers.Endpoints" />
+    <PackageReference Include="Fdw.UI.Pipelines.Endpoints" />
+    <PackageReference Include="Fdw.Services.Notifications.Endpoints" />
+    <PackageReference Include="Fdw.Services.Connections.PostgreSql" />
+    <PackageReference Include="Fdw.Services.Messaging" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Data.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Configuration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.Services.Etl.Projects" />
+    <PackageReference Include="Fdw.Operations" />
+    <PackageReference Include="Fdw.Calculations.Endpoints" />
+    <PackageReference Include="Fdw.Calculations.SignalR" />
+    <PackageReference Include="Fdw.Services.Calculations" />
+    <PackageReference Include="Fdw.Services.Data.SignalR" />
+    <PackageReference Include="Fdw.Schema.Ddl.MsSql" />
+    <PackageReference Include="Fdw.Services.SessionState" />
+    <!-- Why: MSBuildWorkspace arrives transitively through the Roslyn connection and pins
+         Microsoft.Build.Framework + Microsoft.NET.StringTools. Microsoft.Build.Locator refuses
+         (MSBL001) any Microsoft.Build.* reference not marked runtime-excluded, because loading a
+         second copy of MSBuild's assemblies at run time breaks its resolver. -->
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.StringTools" ExcludeAssets="runtime" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FdwReferenceNotifications.Console\FdwReferenceNotifications.Console.csproj" />
+    <ProjectReference Include="..\FdwReferenceNotifications.Email\FdwReferenceNotifications.Email.csproj" />
+    <ProjectReference Include="..\FdwReferenceNotifications.Teams\FdwReferenceNotifications.Teams.csproj" />
+    <ProjectReference Include="..\FdwReferenceNotifications.Webhook\FdwReferenceNotifications.Webhook.csproj" />
+  </ItemGroup>
+
+</Project>

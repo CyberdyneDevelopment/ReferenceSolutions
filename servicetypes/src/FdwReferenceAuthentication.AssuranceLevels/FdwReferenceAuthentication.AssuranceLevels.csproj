@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <Description>The reference deployment's assurance levels: the values its tokens carry in the acr claim and its flows name in MinimumAcr.</Description>
+  </PropertyGroup>
+
+  <!-- Why a package of its own: a package reference IS a registration, so referencing this is how a
+       host declares these are its levels. FDW declares none (FDW-954). -->
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.Services.Authentication.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

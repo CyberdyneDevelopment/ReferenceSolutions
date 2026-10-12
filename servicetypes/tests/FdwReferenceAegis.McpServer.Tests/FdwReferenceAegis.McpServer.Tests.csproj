@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <!-- These tests run the host's own declaration (aegisSchema.json ConnectionRoles); the shared stand-in would
+         declare a different Platform name first, and a holder takes one name per process. -->
+    <DeclaresItsOwnConnectionRoles>true</DeclaresItsOwnConnectionRoles>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Why linked and not copied: the smoke test reads exactly the schema and rows the host ships. -->
+    <Content Include="..\..\src\FdwReferenceAegis.McpServer\aegisSchema.json" Link="aegisSchema.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\FdwReferenceAegis.McpServer\config-data\**\*.json" Link="config-data\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Fdw.Aegis.McpServer" />
+    <PackageReference Include="Fdw.Data.RowSources.Json" />
+    <PackageReference Include="Fdw.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <PackageReference Include="Fdw.Services.Connections" />
+    <PackageReference Include="Fdw.Services.Data" />
+    <PackageReference Include="Fdw.Services.SecretManagers" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FdwReferenceConnections.FileSystem.Registration\FdwReferenceConnections.FileSystem.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceConnections.Http.Registration\FdwReferenceConnections.Http.Registration.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceSecretManagers.EnvironmentVariable.Registration\FdwReferenceSecretManagers.EnvironmentVariable.Registration.csproj" />
+  </ItemGroup>
+</Project>

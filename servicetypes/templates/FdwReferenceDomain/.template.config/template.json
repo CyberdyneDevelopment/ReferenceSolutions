@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "FractalDataWorks",
+  "classifications": [
+    "Reference",
+    "Endpoints",
+    "Clients"
+  ],
+  "identity": "FdwReference.Domain",
+  "name": "Reference domain (endpoint + client + component)",
+  "shortName": "fdw-ref-domain",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "SampleDomain",
+  "preferNameDirectory": true,
+  "symbols": {
+    "resource": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "sample-resource",
+      "description": "The route segment this resource is served under, e.g. \"connections\". Becomes ResourceName on the endpoint and the literal the client calls.",
+      "isRequired": true
+    },
+    "permission": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "sample-permission",
+      "description": "The permission prefix the Crud base gates on, e.g. \"connections\" for connections:read.",
+      "isRequired": true
+    },
+    "referencePath": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "REFERENCE_PATH",
+      "defaultValue": "..\\..\\FdwReferenceEndpoints\\FdwReferenceEndpoints.csproj",
+      "description": "Relative path to FdwReferenceEndpoints.csproj, used only when projectReference is true."
+    },
+    "projectReference": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Reference FdwReferenceEndpoints by relative project path instead of by package. Use when generating inside the reference stack working tree."
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "SampleDomain.Endpoints/SampleDomain.Endpoints.csproj"
+    },
+    {
+      "path": "SampleDomain.Clients/SampleDomain.Clients.csproj"
+    },
+    {
+      "path": "SampleDomain.Components/SampleDomain.Components.csproj"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>fdw-ref-scaffold</ToolCommandName>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>Interactive wizard for `dotnet new fdw-ref-api-host`: walks the Platform Configuration connection, other connections, secret manager and ServerConfiguration root, then generates the host and, where a real connection was given, introspects it.</Description>
+    <PackageTags>dotnet-tool;reference;templates;wizard;scaffold</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <!-- Why embedded too: PackagePath="\" only puts README.md at the nupkg root for the gallery
+         page — it is not copied next to the installed tool's DLL, so the help command reads it
+         back out of the assembly instead of the filesystem. -->
+    <EmbeddedResource Include="README.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <!-- Why: the wizard reads each authentication method's real RequiresSecret off its own
+         TypeOption instead of hand-copying which methods carry a password; a hand-copied table
+         drifts the moment FDW adds or changes an authentication method and nothing here would
+         catch it. -->
+    <PackageReference Include="Fdw.Services.Connections.MsSql" />
+    <PackageReference Include="Fdw.Services.Connections.PostgreSql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FdwReferenceConfigurationSchema.Tools\FdwReferenceConfigurationSchema.Tools.csproj" />
+  </ItemGroup>
+
+</Project>
