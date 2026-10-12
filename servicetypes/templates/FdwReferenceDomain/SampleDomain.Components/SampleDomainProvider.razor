@@ -1,0 +1,52 @@
+@namespace SampleDomain.Components
+@using System.Collections.Generic
+@using System.Threading
+@using System.Threading.Tasks
+@using System.Net.Http
+@using Microsoft.Extensions.Logging
+@using SampleDomain.Clients
+@using SampleDomain.Clients.Models
+
+@*
+    Headless: this component fetches and holds state, and renders whatever the caller passes.
+    It draws nothing itself, so the same data can back a table, a picker or a dashboard tile
+    without any of them re-implementing the fetch.
+*@
+
+@ChildContent(new SampleDomainContext(_items, _loading, _error, Reload))
+
+@code {
+    /// <summary>What to render with the loaded state.</summary>
+    [Parameter] public RenderFragment<SampleDomainContext> ChildContent { get; set; } = default!;
+
+    [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+    [Inject] private ILoggerFactory? LoggerFactory { get; set; }
+
+    private IReadOnlyList<SampleDomainPayload> _items = [];
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() => await Reload();
+
+    private async Task Reload()
+    {
+        _loading = true;
+        _error = null;
+
+        var client = new SampleDomainApiClient(
+            HttpClientFactory.CreateClient("SampleDomainClient"),
+            LoggerFactory?.CreateLogger<SampleDomainApiClient>()!);
+
+        var result = await client.List(CancellationToken.None);
+
+        // Why the message and not a swallowed empty list: an empty result and a failed call look
+        // identical to a caller that only gets items, and the failure is the one worth showing.
+        if (result.IsSuccess)
+            _items = result.Value ?? [];
+        else
+            _error = result.CurrentMessage;
+
+        _loading = false;
+        StateHasChanged();
+    }
+}

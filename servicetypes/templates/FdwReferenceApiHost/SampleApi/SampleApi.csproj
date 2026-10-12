@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- configurationSchema.json must reach the output directory: the gateway reads it by path at
+         startup, so a host that does not copy it fails at boot rather than at build. -->
+    <None Update="configurationSchema.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Services.Data" />
+    <PackageReference Include="Fdw.Services.Logging" />
+    <PackageReference Include="Fdw.Services.Registration" />
+    <PackageReference Include="Fdw.Services.SecretManagers" />
+    <!-- Referencing a *.Registration package is what registers its option; the package without the
+         suffix is the implementation alone and registers nothing. The gateway resolves each
+         connection's factory from the kind the schema declares, so a kind with no registration
+         package here has no factory to build and the host does not start. -->
+    <!-- ServerConfiguration is always a FileSystem connection. -->
+    <PackageReference Include="FdwReferenceConnections.FileSystem.Registration" />
+<!--#if (ConnectionType == "MsSql")-->
+    <PackageReference Include="FdwReferenceConnections.MsSql.Registration" />
+<!--#endif-->
+<!--#if (ConnectionType == "PostgreSql")-->
+    <PackageReference Include="FdwReferenceConnections.PostgreSql.Registration" />
+<!--#endif-->
+<!--#if (ConnectionType == "Sqlite")-->
+    <PackageReference Include="FdwReferenceConnections.Sqlite.Registration" />
+<!--#endif-->
+<!--#if (UseEnvSecrets)-->
+    <PackageReference Include="FdwReferenceSecretManagers.EnvironmentVariable.Registration" />
+<!--#endif-->
+<!--#if (UseMsSqlSecrets)-->
+    <PackageReference Include="FdwReferenceSecretManagers.MsSql.Registration" />
+<!--#endif-->
+    <!-- The token issuer and the key it signs with; FdwReferenceAuth.Endpoints carries the login
+         endpoint (/auth/login) and the pipeline it runs. -->
+    <PackageReference Include="Fdw.Services.TokenManagers" />
+    <PackageReference Include="FdwReferenceAuth.Endpoints" />
+    <PackageReference Include="FdwReferenceEndpoints" />
+    <!-- Why: MSBuildWorkspace arrives transitively through FdwReferenceAuth.Endpoints' Roslyn
+         connection and pins Microsoft.Build.Framework + Microsoft.NET.StringTools. Microsoft.Build.
+         Locator refuses (MSBL001) any Microsoft.Build.* reference not marked runtime-excluded,
+         because loading a second copy of MSBuild's assemblies at run time breaks its resolver. -->
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.StringTools" ExcludeAssets="runtime" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

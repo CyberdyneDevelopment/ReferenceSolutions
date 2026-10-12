@@ -1,0 +1,525 @@
+{
+  "ConfigurationSchema": {
+    "ConnectionRoles": {
+      "Platform": "ServerConfiguration",
+      "Server": "ServerConfiguration"
+    },
+    "Connections": [
+      {
+        "Name": "ServerConfiguration",
+        "Implementation": "FileSystem",
+        "Configuration": {
+          "Root": "config-data",
+          "SchemaDiscovery": "None"
+        }
+      },
+      {
+        "Name": "synthetic-echo",
+        "Implementation": "Http",
+        "Configuration": {
+          "BaseUrl": "http://localhost:5299"
+        }
+      }
+    ],
+    "DataStores": [
+      {
+        "Name": "ServerConfiguration",
+        "Implementation": "FileSystem",
+        "Paths": [
+          {
+            "Name": "aegis",
+            "Path": "aegis",
+            "PathType": "DatabasePath",
+            "Containers": [
+              {
+                "Name": "AegisCommand",
+                "TypeId": "Table",
+                "Format": "Json",
+                "Fields": [
+                  {
+                    "Name": "RowId",
+                    "Ordinal": 1,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Id",
+                    "Ordinal": 2,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Name",
+                    "Ordinal": 3,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Domain",
+                    "Ordinal": 4,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Implementation",
+                    "Ordinal": 5,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsCurrent",
+                    "Ordinal": 6,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsDeleted",
+                    "Ordinal": 7,
+                    "IsNullable": false
+                  }
+                ],
+                "Keys": [
+                  {
+                    "Name": "PK_AegisCommand",
+                    "TypeId": "Physical",
+                    "KeyFields": [
+                      {
+                        "Name": "RowId",
+                        "Ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "PK_AegisCommand_Logical",
+                    "TypeId": "Logical",
+                    "KeyFields": [
+                      {
+                        "Name": "Id",
+                        "Ordinal": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "Name": "PreApprovedCommandConfiguration",
+                "TypeId": "Table",
+                "Format": "Json",
+                "Fields": [
+                  {
+                    "Name": "RowId",
+                    "Ordinal": 1,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "AegisCommandRowId",
+                    "Ordinal": 2,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "ConnectionName",
+                    "Ordinal": 3,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "SecretManagerName",
+                    "Ordinal": 4,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "SecretKeyName",
+                    "Ordinal": 5,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsCurrent",
+                    "Ordinal": 6,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsDeleted",
+                    "Ordinal": 7,
+                    "IsNullable": false
+                  }
+                ],
+                "Keys": [
+                  {
+                    "Name": "PK_PreApprovedCommandConfiguration",
+                    "TypeId": "Physical",
+                    "KeyFields": [
+                      {
+                        "Name": "RowId",
+                        "Ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "FK_PreApprovedCommandConfiguration_AegisCommand",
+                    "TypeId": "Foreign",
+                    "KeyFields": [
+                      {
+                        "Name": "AegisCommandRowId",
+                        "Ordinal": 0
+                      }
+                    ],
+                    "ReferencedContainerName": "AegisCommand",
+                    "ReferencedKeyName": "PK_AegisCommand"
+                  }
+                ]
+              },
+              {
+                "Name": "AdHocCommandConfiguration",
+                "TypeId": "Table",
+                "Format": "Json",
+                "Fields": [
+                  {
+                    "Name": "RowId",
+                    "Ordinal": 1,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "AegisCommandRowId",
+                    "Ordinal": 2,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "ConnectionName",
+                    "Ordinal": 3,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "SecretManagerName",
+                    "Ordinal": 4,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "SecretKeyName",
+                    "Ordinal": 5,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "RequiresFreshVerdict",
+                    "Ordinal": 6,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsCurrent",
+                    "Ordinal": 7,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsDeleted",
+                    "Ordinal": 8,
+                    "IsNullable": false
+                  }
+                ],
+                "Keys": [
+                  {
+                    "Name": "PK_AdHocCommandConfiguration",
+                    "TypeId": "Physical",
+                    "KeyFields": [
+                      {
+                        "Name": "RowId",
+                        "Ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "FK_AdHocCommandConfiguration_AegisCommand",
+                    "TypeId": "Foreign",
+                    "KeyFields": [
+                      {
+                        "Name": "AegisCommandRowId",
+                        "Ordinal": 0
+                      }
+                    ],
+                    "ReferencedContainerName": "AegisCommand",
+                    "ReferencedKeyName": "PK_AegisCommand"
+                  }
+                ]
+              },
+              {
+                "Name": "ParameterAllowEntryConfiguration",
+                "TypeId": "Table",
+                "Format": "Json",
+                "Fields": [
+                  {
+                    "Name": "RowId",
+                    "Ordinal": 1,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Id",
+                    "Ordinal": 2,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "PreApprovedCommandConfigurationRowId",
+                    "Ordinal": 3,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "ParameterName",
+                    "Ordinal": 4,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Required",
+                    "Ordinal": 5,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsCurrent",
+                    "Ordinal": 6,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsDeleted",
+                    "Ordinal": 7,
+                    "IsNullable": false
+                  }
+                ],
+                "Keys": [
+                  {
+                    "Name": "PK_ParameterAllowEntryConfiguration",
+                    "TypeId": "Physical",
+                    "KeyFields": [
+                      {
+                        "Name": "RowId",
+                        "Ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "PK_ParameterAllowEntryConfiguration_Logical",
+                    "TypeId": "Logical",
+                    "KeyFields": [
+                      {
+                        "Name": "Id",
+                        "Ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "FK_ParameterAllowEntryConfiguration_PreApprovedCommandConfiguration",
+                    "TypeId": "Foreign",
+                    "KeyFields": [
+                      {
+                        "Name": "PreApprovedCommandConfigurationRowId",
+                        "Ordinal": 0
+                      }
+                    ],
+                    "ReferencedContainerName": "PreApprovedCommandConfiguration",
+                    "ReferencedKeyName": "PK_PreApprovedCommandConfiguration"
+                  }
+                ]
+              },
+              {
+                "Name": "PermittedValueConfiguration",
+                "TypeId": "Table",
+                "Format": "Json",
+                "Fields": [
+                  {
+                    "Name": "RowId",
+                    "Ordinal": 1,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "ParameterAllowEntryConfigurationRowId",
+                    "Ordinal": 2,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Value",
+                    "Ordinal": 3,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsCurrent",
+                    "Ordinal": 4,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsDeleted",
+                    "Ordinal": 5,
+                    "IsNullable": false
+                  }
+                ],
+                "Keys": [
+                  {
+                    "Name": "PK_PermittedValueConfiguration",
+                    "TypeId": "Physical",
+                    "KeyFields": [
+                      {
+                        "Name": "RowId",
+                        "Ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "FK_PermittedValueConfiguration_ParameterAllowEntryConfiguration",
+                    "TypeId": "Foreign",
+                    "KeyFields": [
+                      {
+                        "Name": "ParameterAllowEntryConfigurationRowId",
+                        "Ordinal": 0
+                      }
+                    ],
+                    "ReferencedContainerName": "ParameterAllowEntryConfiguration",
+                    "ReferencedKeyName": "PK_ParameterAllowEntryConfiguration"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Name": "sec",
+            "Path": "sec",
+            "PathType": "DatabasePath",
+            "Containers": [
+              {
+                "Name": "SecretManager",
+                "TypeId": "Table",
+                "Format": "Json",
+                "Fields": [
+                  {
+                    "Name": "RowId",
+                    "Ordinal": 1,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Id",
+                    "Ordinal": 2,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Name",
+                    "Ordinal": 3,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Domain",
+                    "Ordinal": 4,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Implementation",
+                    "Ordinal": 5,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsCurrent",
+                    "Ordinal": 6,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsDeleted",
+                    "Ordinal": 7,
+                    "IsNullable": false
+                  }
+                ],
+                "Keys": [
+                  {
+                    "Name": "PK_SecretManager",
+                    "TypeId": "Physical",
+                    "KeyFields": [
+                      {
+                        "Name": "RowId",
+                        "Ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "PK_SecretManager_Logical",
+                    "TypeId": "Logical",
+                    "KeyFields": [
+                      {
+                        "Name": "Id",
+                        "Ordinal": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "Name": "EnvironmentVariableSecretManagerConfiguration",
+                "TypeId": "Table",
+                "Format": "Json",
+                "Fields": [
+                  {
+                    "Name": "RowId",
+                    "Ordinal": 1,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "SecretManagerRowId",
+                    "Ordinal": 2,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsEnabled",
+                    "Ordinal": 3,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Prefix",
+                    "Ordinal": 4,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "CaseSensitive",
+                    "Ordinal": 5,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Separator",
+                    "Ordinal": 6,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "StripPrefix",
+                    "Ordinal": 7,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "Target",
+                    "Ordinal": 8,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsCurrent",
+                    "Ordinal": 9,
+                    "IsNullable": false
+                  },
+                  {
+                    "Name": "IsDeleted",
+                    "Ordinal": 10,
+                    "IsNullable": false
+                  }
+                ],
+                "Keys": [
+                  {
+                    "Name": "PK_EnvironmentVariableSecretManagerConfiguration",
+                    "TypeId": "Physical",
+                    "KeyFields": [
+                      {
+                        "Name": "RowId",
+                        "Ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "FK_EnvironmentVariableSecretManagerConfiguration_SecretManager",
+                    "TypeId": "Foreign",
+                    "KeyFields": [
+                      {
+                        "Name": "SecretManagerRowId",
+                        "Ordinal": 0
+                      }
+                    ],
+                    "ReferencedContainerName": "SecretManager",
+                    "ReferencedKeyName": "PK_SecretManager"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

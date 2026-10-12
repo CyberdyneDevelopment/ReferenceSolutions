@@ -1,0 +1,319 @@
+{
+  "Name": "sqe",
+  "Path": "sqe",
+  "PathType": "DatabasePath",
+  "Containers": [
+    {
+      "Name": "SqlServerEndpoint",
+      "ContainerType": "Table",
+      "Format": "Json",
+      "Fields": [
+        {
+          "Name": "RowId",
+          "Ordinal": 1,
+          "DataType": "int",
+          "IsNullable": false,
+          "IsSystemProvided": true,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "Id",
+          "Ordinal": 2,
+          "DataType": "uniqueidentifier",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "Name",
+          "Ordinal": 3,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "Domain",
+          "Ordinal": 4,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "Implementation",
+          "Ordinal": 5,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "Description",
+          "Ordinal": 6,
+          "DataType": "varchar",
+          "IsNullable": true,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "IsCurrent",
+          "Ordinal": 7,
+          "DataType": "bit",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "IsDeleted",
+          "Ordinal": 8,
+          "DataType": "bit",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        }
+      ],
+      "Keys": [
+        {
+          "Name": "PK_SqlServerEndpoint",
+          "TypeId": "Physical",
+          "KeyFields": [
+            {
+              "Name": "RowId",
+              "Ordinal": 0
+            }
+          ]
+        },
+        {
+          "Name": "PK_SqlServerEndpoint_Logical",
+          "TypeId": "Logical",
+          "KeyFields": [
+            {
+              "Name": "Id",
+              "Ordinal": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "HostSqlServerEndpointConfiguration",
+      "ContainerType": "Table",
+      "Format": "Json",
+      "Fields": [
+        {
+          "Name": "RowId",
+          "Ordinal": 1,
+          "DataType": "int",
+          "IsNullable": false,
+          "IsSystemProvided": true,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "SqlServerEndpointRowId",
+          "Ordinal": 2,
+          "DataType": "int",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "ListenAddress",
+          "Ordinal": 3,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "Port",
+          "Ordinal": 4,
+          "DataType": "int",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "ServerName",
+          "Ordinal": 5,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "ProductVersion",
+          "Ordinal": 6,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "Edition",
+          "Ordinal": 7,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "EngineEdition",
+          "Ordinal": 8,
+          "DataType": "int",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "Collation",
+          "Ordinal": 9,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "Language",
+          "Ordinal": 10,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "DatabaseName",
+          "Ordinal": 11,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "LoginFlowName",
+          "Ordinal": 12,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "SecretManagerName",
+          "Ordinal": 13,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "CertificateSecretName",
+          "Ordinal": 14,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "CertificatePasswordSecretName",
+          "Ordinal": 15,
+          "DataType": "varchar",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "MaximumMessageBytes",
+          "Ordinal": 16,
+          "DataType": "int",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "MaximumConnections",
+          "Ordinal": 17,
+          "DataType": "int",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "LoginTimeoutSeconds",
+          "Ordinal": 18,
+          "DataType": "int",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "IsCurrent",
+          "Ordinal": 19,
+          "DataType": "bit",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        },
+        {
+          "Name": "IsDeleted",
+          "Ordinal": 20,
+          "DataType": "bit",
+          "IsNullable": false,
+          "IsSystemProvided": false,
+          "HasDefault": false,
+          "Visible": true
+        }
+      ],
+      "Keys": [
+        {
+          "Name": "PK_HostSqlServerEndpointConfiguration",
+          "TypeId": "Physical",
+          "KeyFields": [
+            {
+              "Name": "RowId",
+              "Ordinal": 0
+            }
+          ]
+        },
+        {
+          "Name": "FK_HostSqlServerEndpointConfiguration_SqlServerEndpoint",
+          "TypeId": "Foreign",
+          "KeyFields": [
+            {
+              "Name": "SqlServerEndpointRowId",
+              "Ordinal": 0
+            }
+          ],
+          "ReferencedContainerName": "SqlServerEndpoint",
+          "ReferencedKeyName": "PK_SqlServerEndpoint"
+        }
+      ]
+    }
+  ]
+}

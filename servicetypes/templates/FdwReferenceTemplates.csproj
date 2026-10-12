@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Why this project exists: without it the templates are installable only from a folder,
+       nothing builds them, and nothing instantiates them. A template carrying a call signature the
+       framework dropped months earlier packs, installs and generates perfectly — the breakage only
+       appears when someone compiles the generated code by hand. verify-templates.sh generates from
+       each template and builds the output, which is the only check that catches that. -->
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageId>FdwReference.Templates</PackageId>
+    <Title>Reference stack templates</Title>
+    <Description>dotnet new templates for the reference stack: an API host wired with authentication and a configuration gateway, and an endpoint group. Each emits the registration the hand-written form keeps losing.</Description>
+    <PackageTags>dotnet-new;templates;fdw;reference</PackageTags>
+
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+
+    <!-- Why: a template pack carries no code of its own. Without this the SDK still expects a
+         compilable project and fails on an empty compile item list. -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+    <!-- Why excluded from the solution build: this packs template CONTENT, and the .cs files under
+         it are template sources rather than code this project compiles. -->
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Why Exclude rather than a narrower Include: verify-templates.sh generates into a scratch
+         directory, but a stray bin/obj under a template would otherwise be packed as template
+         content and shipped to every consumer. -->
+    <Content Include="Reference*\**\*" Exclude="**\bin\**;**\obj\**" />
+    <!-- items/ holds the single-file option templates, which do not start with Reference. -->
+    <Content Include="items\**\*" Exclude="**\bin\**;**\obj\**" />
+    <Compile Remove="**\*" />
+    <None Remove="**\*" />
+  </ItemGroup>
+
+</Project>

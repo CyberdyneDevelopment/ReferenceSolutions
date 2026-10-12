@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FdwReferenceSchedules.Endpoints\FdwReferenceSchedules.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceProxy.Endpoints\FdwReferenceProxy.Endpoints.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <Include>[FdwReferenceSchedules.Endpoints]*,[FdwReferenceProxy.Endpoints]*</Include>
+    <Exclude>[xunit.*]*,[Moq]*,[Shouldly]*</Exclude>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+
+  <!-- Why: the file-system VOCABULARY — the container path, its canonicalizer, the command
+       translator and the command shapes that translator emits. Free of
+       Fdw.Services.Connections, mirroring Fdw.Data.MsSql / .PostgreSql / .Sqlite / .Http.
+       Fdw.Services.Connections.Http consumes ContainerRecordOptions from here, which is the
+       point: row-source vocabulary is reusable without the file-system connection domain. -->
+  <ItemGroup>
+    <PackageReference Include="Fdw.Commands.Data.Abstractions" />
+    <PackageReference Include="Fdw.Data.Abstractions" />
+    <PackageReference Include="Fdw.Data.RowSources.Abstractions" />
+    <PackageReference Include="Fdw.Data.RowSources.FixedWidth.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.Messages" />
+    <PackageReference Include="Fdw.Results" />
+    <ProjectReference Include="..\FdwReferenceConnections.FileSystem.Abstractions\FdwReferenceConnections.FileSystem.Abstractions.csproj" />
+  </ItemGroup>
+
+  <!-- Why: FileSystemConfigurationWriteLog moved in carrying [MessageLogging]. Generators emit
+       per-compilation, so without this reference every generated log member silently vanishes
+       and the partials fail with CS8795. -->
+  <ItemGroup>
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+</Project>

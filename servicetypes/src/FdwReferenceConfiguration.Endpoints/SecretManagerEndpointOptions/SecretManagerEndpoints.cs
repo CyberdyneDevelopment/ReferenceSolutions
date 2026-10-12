@@ -1,0 +1,18 @@
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Fdw.Collections.Attributes;
+using Fdw.Web.RestEndpoints.EndpointTypeOptions;
+using FdwReferenceEndpoints;
+
+namespace FdwReferenceSecretManagers.Endpoints.SecretManagerEndpointOptions;
+
+/// <summary>The endpoints over the secret-manager resource.</summary>
+[ExcludeFromCodeCoverage]
+[TypeOption(typeof(EndpointGroups), "SecretManagerEndpoints")]
+[TypeCollection(typeof(SecretManagerEndpointBase), typeof(IEndpointTypeOption), typeof(SecretManagerEndpoints))]
+public partial class SecretManagerEndpoints : EndpointTypeCollectionBase<SecretManagerEndpointBase>
+{
+    /// <inheritdoc />
+    public override IEnumerable<IEndpointTypeOption> Members => All();
+
+}

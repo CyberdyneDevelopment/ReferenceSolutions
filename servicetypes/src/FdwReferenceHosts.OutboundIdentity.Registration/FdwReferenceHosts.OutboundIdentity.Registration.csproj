@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>FdwReferenceHosts.OutboundIdentity.Registration</RootNamespace>
+    <PackageId>FdwReferenceHosts.OutboundIdentity.Registration</PackageId>
+    <Description>The outbound-identity host-option registration: the [Implementation] only. References the implementation, so referencing THIS package brings the implementation with it and registers the option.</Description>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.Services.Hosts" />
+    <PackageReference Include="Fdw.Services.Identity" />
+    <PackageReference Include="Fdw.Services.Identity.Abstractions" />
+    <PackageReference Include="Fdw.Web.Http.Authentication" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Why the implementation and not the reverse: referencing the implementation gets you its
+         configuration record with no registration; referencing this package gets you the
+         registration as well. Registration is opt-in, so a library can depend on the
+         implementation without silently registering an option into its consumer's collection. -->
+    <ProjectReference Include="..\FdwReferenceHosts.OutboundIdentity\FdwReferenceHosts.OutboundIdentity.csproj" />
+  </ItemGroup>
+
+</Project>

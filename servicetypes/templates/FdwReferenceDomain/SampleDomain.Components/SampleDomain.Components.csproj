@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Why components are their own project and never live in the Endpoints one: an endpoint
+         package is referenced by the server, a component package by the UI, and a host that mounts
+         the API has no reason to take a Razor dependency with it. The two are referenced by
+         different processes, so they are separate assemblies. -->
+    <ProjectReference Include="..\SampleDomain.Clients\SampleDomain.Clients.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.UI" />
+    <PackageReference Include="Fdw.Results" />
+  </ItemGroup>
+
+</Project>

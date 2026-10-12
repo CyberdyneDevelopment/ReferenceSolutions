@@ -1,0 +1,12 @@
+[
+  {
+    "RowId": 1,
+    "Id": "019f8a10-0028-7000-a000-000000000001",
+    "Name": "SqlServerEndpoint",
+    "Domain": "SqlServerEndpoint",
+    "Implementation": "Host",
+    "Description": "The SQL Server endpoint vendors connect to: workspaces as schemas, data sets as tables.",
+    "IsCurrent": true,
+    "IsDeleted": false
+  }
+]

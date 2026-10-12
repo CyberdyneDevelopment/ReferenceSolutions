@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "FractalDataWorks",
+  "classifications": [
+    "FDW",
+    "ServiceType",
+    "Register",
+    "Calculation"
+  ],
+  "identity": "Fdw.Register.Calculation",
+  "name": "FDW Calculation service type",
+  "shortName": "fdw-calculation",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "sourceName": "SampleCalculationServiceType",
+  "preferNameDirectory": false,
+  "symbols": {
+    "optionName": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "SAMPLE_NAME",
+      "description": "The name this option registers under.",
+      "isRequired": true
+    },
+    "namespace": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "SampleNamespace",
+      "description": "The namespace.",
+      "isRequired": true
+    }
+  }
+}

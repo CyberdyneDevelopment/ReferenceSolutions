@@ -1,0 +1,157 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "FractalDataWorks",
+  "classifications": [
+    "Reference",
+    "API",
+    "Host"
+  ],
+  "identity": "FdwReference.ApiHost",
+  "name": "Reference API host (authentication + configuration gateway)",
+  "shortName": "fdw-ref-api-host",
+  "description": "A runnable API host wired the way the reference stack expects: configurationSchema.json declaring the ServerConfiguration and PlatformConfiguration connections, Connection/SecretManager/ConfigurationGateway registered ahead of the three-phase PlatformServices lifecycle, and token-issuing authentication via FdwReferenceAuth.Endpoints.",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "SampleApi",
+  "preferNameDirectory": true,
+  "symbols": {
+    "SecretManager": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "EnvironmentVariable",
+      "description": "Which secret manager option this host registers. A SqlAuth PlatformConfiguration connection names it in SecretManagerName to resolve its password. Secret managers are configured in PlatformConfiguration itself, so the PlatformConfiguration password cannot come from a manager that is read out of it \u2014 see the README.",
+      "choices": [
+        {
+          "choice": "EnvironmentVariable",
+          "description": "Read secrets from environment variables (FDW_SECRET_{KEY})."
+        },
+        {
+          "choice": "MsSql",
+          "description": "Read secrets from sec.Secret in ConfigurationDb."
+        }
+      ],
+      "replaces": "SECRET_MANAGER"
+    },
+    "UseEnvSecrets": {
+      "type": "computed",
+      "value": "(SecretManager == \"EnvironmentVariable\")"
+    },
+    "UseMsSqlSecrets": {
+      "type": "computed",
+      "value": "(SecretManager == \"MsSql\")"
+    },
+    "DbServer": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "localhost",
+      "replaces": "DB_SERVER",
+      "description": "ConfigurationDb host name or IP, written into configurationSchema.json. Server-backed types only; ignored for Sqlite and FileSystem."
+    },
+    "DbName": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "devConfigurationDb",
+      "replaces": "DB_NAME",
+      "description": "The ConfigurationDb catalogue this host reads its configuration from. Server-backed types only; ignored for Sqlite and FileSystem."
+    },
+    "DbPort": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "1433",
+      "replaces": "DB_PORT",
+      "description": "SQL Server port. Server-backed types only; ignored for Sqlite and FileSystem."
+    },
+    "DbUser": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "fdw_config",
+      "replaces": "DB_USER",
+      "description": "SQL login this host connects as. Its password is never written here \u2014 see SecretKeyName. Server-backed types only; ignored for Sqlite and FileSystem."
+    },
+    "SecretKeyName": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "CONFIG_PASSWORD",
+      "replaces": "SECRET_KEY_NAME",
+      "description": "Logical name of the PlatformConfiguration password, resolved through the named secret manager. SqlAuth only."
+    },
+    "AuthenticationType": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "SqlAuth",
+      "replaces": "AUTH_TYPE",
+      "description": "How this host authenticates to ConfigurationDb. Only SqlAuth has a password, and so only SqlAuth needs a secret manager for the connection. Server-backed types only; ignored for Sqlite and FileSystem.",
+      "choices": [
+        {
+          "choice": "SqlAuth",
+          "description": "SQL login and password. Needs a secret manager to supply the password."
+        },
+        {
+          "choice": "ManagedIdentity",
+          "description": "Azure managed identity. No password, no secret manager for the connection."
+        },
+        {
+          "choice": "EntraId",
+          "description": "Entra ID principal. No password."
+        },
+        {
+          "choice": "AzureCli",
+          "description": "The developer's az login. No password. Local use only."
+        },
+        {
+          "choice": "WindowsAuth",
+          "description": "Integrated Windows auth. No password."
+        }
+      ]
+    },
+    "ConnectionType": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "MsSql",
+      "replaces": "CONNECTION_TYPE",
+      "description": "Where this host reads its configuration from. The server-backed types ask for a server, database and credentials; the file-backed types ask only for a path.",
+      "choices": [
+        {
+          "choice": "MsSql",
+          "description": "SQL Server. Asks for server, database, port, login and how the password is supplied."
+        },
+        {
+          "choice": "PostgreSql",
+          "description": "PostgreSQL. Same details as SQL Server."
+        },
+        {
+          "choice": "Sqlite",
+          "description": "A SQLite file. Asks only for the file path."
+        },
+        {
+          "choice": "FileSystem",
+          "description": "Configuration held as files on disk. Asks only for the directory path."
+        }
+      ]
+    },
+    "IsServerBacked": {
+      "type": "computed",
+      "value": "(ConnectionType == \"MsSql\" || ConnectionType == \"PostgreSql\")"
+    },
+    "IsFileBacked": {
+      "type": "computed",
+      "value": "(ConnectionType == \"Sqlite\" || ConnectionType == \"FileSystem\")"
+    },
+    "ConfigPath": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "/var/lib/fdw/configuration.db",
+      "replaces": "CONFIG_PATH",
+      "description": "File-backed types only: the SQLite file (DataSource) or the configuration directory (Root) for PlatformConfiguration. Ignored for MsSql and PostgreSql."
+    },
+    "ServerConfigRoot": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "server-config",
+      "replaces": "SERVER_CONFIG_ROOT",
+      "description": "Root directory of the ServerConfiguration FileSystem connection: the host's own boot-time rows (logging, authentication, the host record). Read before PlatformConfiguration is reachable, which is why it is files and not a database."
+    }
+  }
+}

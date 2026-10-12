@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="configurationSchema.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="config-data\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Why: Connectors.Abstractions (netstandard2.0) pulls Microsoft.Bcl.AsyncInterfaces 6.0.0
+         as a transitive dep. Pinning here resolves the MSB3277 version conflict with net10.0. -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FdwReferenceSecretManagers.TestDouble\FdwReferenceSecretManagers.TestDouble.csproj" />    <ProjectReference Include="..\..\src\FdwReferenceConnections.FileSystem\FdwReferenceConnections.FileSystem.csproj" />
+    <PackageReference Include="Fdw.Registration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <PackageReference Include="Fdw.Data.RowSources.Json" />
+    <PackageReference Include="Fdw.Data.RowSources.Xml" />
+    <PackageReference Include="Fdw.Data.RowSources.Delimited" />
+    <PackageReference Include="Fdw.Data.RowSources.FixedWidth" />
+    <PackageReference Include="Fdw.Services.SecretManagers" />
+    <ProjectReference Include="..\..\src\FdwReferenceSecretManagers.EnvironmentVariable\FdwReferenceSecretManagers.EnvironmentVariable.csproj" />
+    <PackageReference Include="Fdw.Services.Data" />
+    <PackageReference Include="Fdw.Commands.Data" />
+    <PackageReference Include="Fdw.Commands.Data.Fluency" />
+    <ProjectReference Include="..\..\src\FdwReferenceConnections.FileSystem.Registration\FdwReferenceConnections.FileSystem.Registration.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FdwReferenceSecretManagers.EnvironmentVariable.Registration\FdwReferenceSecretManagers.EnvironmentVariable.Registration.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <Include>[FdwReferenceConnections.FileSystem]*</Include>
+    <Exclude>[xunit.*]*,[Moq]*,[Shouldly]*</Exclude>
+  </PropertyGroup>
+</Project>

@@ -53,4 +53,20 @@
   <PropertyGroup Condition="'$(IsLocalConfiguration)' == 'true' AND '$(LocalNugetFolder)' != ''">
     <RestoreConfigFile>$(LocalNugetFolder)\$(LocalNugetConfigFileName)</RestoreConfigFile>
   </PropertyGroup>
+
+  <!--
+    The connection-role holders (PlatformConnection, ServerConnection, AuthConnection) have no default: a host declares
+    its roles in configurationSchema.json. Tests that read a holder declare the same roles through this shared file,
+    compiled in only where the project can see the holders. A holder is process-wide and takes one name per process,
+    so a project whose tests run a host's own declaration (its schema's ConnectionRoles) sets
+    <DeclaresItsOwnConnectionRoles>true</DeclaresItsOwnConnectionRoles> and does not get the stand-in.
+  -->
+  <Target Name="IncludeTestConnectionRoles" BeforeTargets="CoreCompile" DependsOnTargets="FindReferenceAssembliesForReferences">
+    <ItemGroup>
+      <_ConnectionRolesReference Include="@(ReferencePathWithRefAssemblies)" Condition="'%(Filename)' == 'Fdw.Services.Data.Abstractions'" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(_ConnectionRolesReference)' != '' AND '$(DeclaresItsOwnConnectionRoles)' != 'true'">
+      <Compile Include="$(MSBuildThisFileDirectory)Shared/TestConnectionRoles.cs" Link="TestConnectionRoles.cs" />
+    </ItemGroup>
+  </Target>
 </Project>

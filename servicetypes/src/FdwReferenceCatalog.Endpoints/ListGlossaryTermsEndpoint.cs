@@ -1,0 +1,18 @@
+using System.Diagnostics.CodeAnalysis;
+using Fdw.Services.Catalog.Endpoints;
+using Fdw.Services.Quality;
+
+namespace FdwReferenceCatalog.Endpoints;
+
+/// <summary>
+/// Concrete endpoint to list glossary terms.
+/// </summary>
+[ExcludeFromCodeCoverage]
+public sealed class ListGlossaryTermsEndpoint : ListGlossaryTermsEndpointBase
+{
+    /// <inheritdoc />
+    public ListGlossaryTermsEndpoint(IGlossaryTermConfigurationProvider provider)
+        : base(provider)
+    {
+    }
+}

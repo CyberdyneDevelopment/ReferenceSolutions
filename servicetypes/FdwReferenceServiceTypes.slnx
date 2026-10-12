@@ -1,0 +1,231 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug-Local" />
+    <BuildType Name="Develop" />
+    <BuildType Name="Develop-Local" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release-Local" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/FdwReferenceAegis.McpServer/FdwReferenceAegis.McpServer.csproj" />
+    <Project Path="src/FdwReferenceAgentActions.Endpoints/FdwReferenceAgentActions.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceAuth.Endpoints/FdwReferenceAuth.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.AssuranceLevels/FdwReferenceAuthentication.AssuranceLevels.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.AuthentikSso/FdwReferenceAuthentication.AuthentikSso.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.AuthorizeIssuance.Registration/FdwReferenceAuthentication.AuthorizeIssuance.Registration.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.AuthorizeSignInMethod.Registration/FdwReferenceAuthentication.AuthorizeSignInMethod.Registration.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.BakePermissions.Registration/FdwReferenceAuthentication.BakePermissions.Registration.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.ForeignToken.Registration/FdwReferenceAuthentication.ForeignToken.Registration.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.ForeignToken/FdwReferenceAuthentication.ForeignToken.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.OidcRedirect.Registration/FdwReferenceAuthentication.OidcRedirect.Registration.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.OidcRedirect/FdwReferenceAuthentication.OidcRedirect.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.Password/FdwReferenceAuthentication.Password.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.PasswordCredential.Registration/FdwReferenceAuthentication.PasswordCredential.Registration.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.ResolvePrincipal.Registration/FdwReferenceAuthentication.ResolvePrincipal.Registration.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.TenantSwitch.Registration/FdwReferenceAuthentication.TenantSwitch.Registration.csproj" />
+    <Project Path="src/FdwReferenceAuthentication.TokenProviders/FdwReferenceAuthentication.TokenProviders.csproj" />
+    <Project Path="src/FdwReferenceCalculations.Endpoints/FdwReferenceCalculations.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceCatalog.Endpoints/FdwReferenceCatalog.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceConfiguration.Endpoints/FdwReferenceConfiguration.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceConnections.FileSystem.Abstractions/FdwReferenceConnections.FileSystem.Abstractions.csproj" />
+    <Project Path="src/FdwReferenceConnections.FileSystem.Registration/FdwReferenceConnections.FileSystem.Registration.csproj" />
+    <Project Path="src/FdwReferenceConnections.FileSystem/FdwReferenceConnections.FileSystem.csproj" />
+    <Project Path="src/FdwReferenceConnections.Http.Registration/FdwReferenceConnections.Http.Registration.csproj" />
+    <Project Path="src/FdwReferenceConnections.Http/FdwReferenceConnections.Http.csproj" />
+    <Project Path="src/FdwReferenceConnections.MsSql.Registration/FdwReferenceConnections.MsSql.Registration.csproj" />
+    <Project Path="src/FdwReferenceConnections.MsSql/FdwReferenceConnections.MsSql.csproj" />
+    <Project Path="src/FdwReferenceConnections.MsSql.DataVault.Registration/FdwReferenceConnections.MsSql.DataVault.Registration.csproj" />
+    <Project Path="src/FdwReferenceConnections.MsSql.DataVault/FdwReferenceConnections.MsSql.DataVault.csproj" />
+    <Project Path="src/FdwReferenceConnections.PostgreSql.Registration/FdwReferenceConnections.PostgreSql.Registration.csproj" />
+    <Project Path="src/FdwReferenceConnections.PostgreSql/FdwReferenceConnections.PostgreSql.csproj" />
+    <Project Path="src/FdwReferenceConnections.Sqlite.Registration/FdwReferenceConnections.Sqlite.Registration.csproj" />
+    <Project Path="src/FdwReferenceConnections.Sqlite/FdwReferenceConnections.Sqlite.csproj" />
+    <Project Path="src/FdwReferenceCredentials.Sql.Registration/FdwReferenceCredentials.Sql.Registration.csproj" />
+    <Project Path="src/FdwReferenceCredentials.Sql/FdwReferenceCredentials.Sql.csproj" />
+    <Project Path="src/FdwReferenceData.FileSystem/FdwReferenceData.FileSystem.csproj" />
+    <Project Path="src/FdwReferenceData.Endpoints/FdwReferenceData.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceDataPaths.Templates/FdwReferenceDataPaths.Templates.csproj" />
+    <Project Path="src/FdwReferenceWorkspaces.Endpoints/FdwReferenceWorkspaces.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceEndpoints/FdwReferenceEndpoints.csproj" />
+    <Project Path="src/FdwReferenceEtl.Endpoints/FdwReferenceEtl.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceHost/FdwReferenceHost.csproj" />
+    <Project Path="src/FdwReferenceHosts.Cors.Registration/FdwReferenceHosts.Cors.Registration.csproj" />
+    <Project Path="src/FdwReferenceHosts.Cors/FdwReferenceHosts.Cors.csproj" />
+    <Project Path="src/FdwReferenceHosts.EmptyBody.Registration/FdwReferenceHosts.EmptyBody.Registration.csproj" />
+    <Project Path="src/FdwReferenceHosts.EmptyBody/FdwReferenceHosts.EmptyBody.csproj" />
+    <Project Path="src/FdwReferenceHosts.ForwardedHeaders.Registration/FdwReferenceHosts.ForwardedHeaders.Registration.csproj" />
+    <Project Path="src/FdwReferenceHosts.ForwardedHeaders/FdwReferenceHosts.ForwardedHeaders.csproj" />
+    <Project Path="src/FdwReferenceHosts.OutboundIdentity.Registration/FdwReferenceHosts.OutboundIdentity.Registration.csproj" />
+    <Project Path="src/FdwReferenceHosts.OutboundIdentity/FdwReferenceHosts.OutboundIdentity.csproj" />
+    <Project Path="src/FdwReferenceHosts.ResponseBuffering.Registration/FdwReferenceHosts.ResponseBuffering.Registration.csproj" />
+    <Project Path="src/FdwReferenceHosts.ResponseBuffering/FdwReferenceHosts.ResponseBuffering.csproj" />
+    <Project Path="src/FdwReferenceHosts.ResponseStreaming.Registration/FdwReferenceHosts.ResponseStreaming.Registration.csproj" />
+    <Project Path="src/FdwReferenceHosts.ResponseStreaming/FdwReferenceHosts.ResponseStreaming.csproj" />
+    <Project Path="src/FdwReferenceHosts.SecurityHeaders.Registration/FdwReferenceHosts.SecurityHeaders.Registration.csproj" />
+    <Project Path="src/FdwReferenceHosts.SecurityHeaders/FdwReferenceHosts.SecurityHeaders.csproj" />
+    <Project Path="src/FdwReferenceHosts.SqlServerEndpoint.Registration/FdwReferenceHosts.SqlServerEndpoint.Registration.csproj" />
+    <Project Path="src/FdwReferenceHosts.SqlServerEndpoint/FdwReferenceHosts.SqlServerEndpoint.csproj" />
+    <Project Path="src/FdwReferenceHosts.WebMcp.Registration/FdwReferenceHosts.WebMcp.Registration.csproj" />
+    <Project Path="src/FdwReferenceHosts.WebMcp/FdwReferenceHosts.WebMcp.csproj" />
+    <Project Path="src/FdwReferenceLogging.Serilog.Registration/FdwReferenceLogging.Serilog.Registration.csproj" />
+    <Project Path="src/FdwReferenceLogging.Serilog/FdwReferenceLogging.Serilog.csproj" />
+    <Project Path="src/FdwReferenceMessaging.Endpoints/FdwReferenceMessaging.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceMultitenancy.Sql.Registration/FdwReferenceMultitenancy.Sql.Registration.csproj" />
+    <Project Path="src/FdwReferenceMultitenancy.Sql/FdwReferenceMultitenancy.Sql.csproj" />
+    <Project Path="src/FdwReferenceMultitenancy/FdwReferenceMultitenancy.csproj" />
+    <Project Path="src/FdwReferenceNfl.Endpoints/FdwReferenceNfl.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceNotifications.Console.Registration/FdwReferenceNotifications.Console.Registration.csproj" />
+    <Project Path="src/FdwReferenceNotifications.Console/FdwReferenceNotifications.Console.csproj" />
+    <Project Path="src/FdwReferenceNotifications.Email.Registration/FdwReferenceNotifications.Email.Registration.csproj" />
+    <Project Path="src/FdwReferenceNotifications.Email/FdwReferenceNotifications.Email.csproj" />
+    <Project Path="src/FdwReferenceNotifications.System.Registration/FdwReferenceNotifications.System.Registration.csproj" />
+    <Project Path="src/FdwReferenceNotifications.System/FdwReferenceNotifications.System.csproj" />
+    <Project Path="src/FdwReferenceNotifications.Teams.Registration/FdwReferenceNotifications.Teams.Registration.csproj" />
+    <Project Path="src/FdwReferenceNotifications.Teams/FdwReferenceNotifications.Teams.csproj" />
+    <Project Path="src/FdwReferenceNotifications.Webhook.Registration/FdwReferenceNotifications.Webhook.Registration.csproj" />
+    <Project Path="src/FdwReferenceNotifications.Webhook/FdwReferenceNotifications.Webhook.csproj" />
+    <Project Path="src/FdwReferenceOperations.Endpoints/FdwReferenceOperations.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceProxy.Endpoints/FdwReferenceProxy.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceQuality.Endpoints/FdwReferenceQuality.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceSamples.Endpoints/FdwReferenceSamples.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceSchedulers.EtlDispatch.Registration/FdwReferenceSchedulers.EtlDispatch.Registration.csproj" />
+    <Project Path="src/FdwReferenceSchedulers.EtlDispatch/FdwReferenceSchedulers.EtlDispatch.csproj" />
+    <Project Path="src/FdwReferenceSchedulers.Hangfire.Registration/FdwReferenceSchedulers.Hangfire.Registration.csproj" />
+    <Project Path="src/FdwReferenceSchedulers.Hangfire/FdwReferenceSchedulers.Hangfire.csproj" />
+    <Project Path="src/FdwReferenceSchedulers.Quartz.Registration/FdwReferenceSchedulers.Quartz.Registration.csproj" />
+    <Project Path="src/FdwReferenceSchedulers.Quartz/FdwReferenceSchedulers.Quartz.csproj" />
+    <Project Path="src/FdwReferenceSchedules.Endpoints/FdwReferenceSchedules.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceSecretManagers.AzureKeyVault.Registration/FdwReferenceSecretManagers.AzureKeyVault.Registration.csproj" />
+    <Project Path="src/FdwReferenceSecretManagers.AzureKeyVault/FdwReferenceSecretManagers.AzureKeyVault.csproj" />
+    <Project Path="src/FdwReferenceSecretManagers.EnvironmentVariable.Registration/FdwReferenceSecretManagers.EnvironmentVariable.Registration.csproj" />
+    <Project Path="src/FdwReferenceSecretManagers.EnvironmentVariable/FdwReferenceSecretManagers.EnvironmentVariable.csproj" />
+    <Project Path="src/FdwReferenceSecretManagers.HashiCorpVault/FdwReferenceSecretManagers.HashiCorpVault.csproj" />
+    <Project Path="src/FdwReferenceSecretManagers.MsSql.Registration/FdwReferenceSecretManagers.MsSql.Registration.csproj" />
+    <Project Path="src/FdwReferenceSecretManagers.MsSql/FdwReferenceSecretManagers.MsSql.csproj" />
+    <Project Path="src/FdwReferenceSecretManagers.Sqlite.Registration/FdwReferenceSecretManagers.Sqlite.Registration.csproj" />
+    <Project Path="src/FdwReferenceSecretManagers.Sqlite/FdwReferenceSecretManagers.Sqlite.csproj" />
+    <Project Path="src/FdwReferenceSecretManagers.UserSecrets.Registration/FdwReferenceSecretManagers.UserSecrets.Registration.csproj" />
+    <Project Path="src/FdwReferenceSecretManagers.UserSecrets/FdwReferenceSecretManagers.UserSecrets.csproj" />
+    <Project Path="src/FdwReferenceSessionState.Endpoints/FdwReferenceSessionState.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceTelemetry.OpenTelemetry.Registration/FdwReferenceTelemetry.OpenTelemetry.Registration.csproj" />
+    <Project Path="src/FdwReferenceTelemetry.OpenTelemetry/FdwReferenceTelemetry.OpenTelemetry.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FdwReferenceAegis.McpServer.Tests/FdwReferenceAegis.McpServer.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceAuth.Endpoints.Tests/FdwReferenceAuth.Endpoints.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceAuthentication.AuthorizeSignInMethod.Registration.Tests/FdwReferenceAuthentication.AuthorizeSignInMethod.Registration.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceAuthentication.BakePermissions.Registration.Tests/FdwReferenceAuthentication.BakePermissions.Registration.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceAuthentication.OidcRedirect.Tests/FdwReferenceAuthentication.OidcRedirect.Tests.csproj" />
+    <Project Path="tests/FdwReferenceAuthentication.ResolvePrincipal.Registration.Tests/FdwReferenceAuthentication.ResolvePrincipal.Registration.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceAuthentication.TokenProviders.Tests/FdwReferenceAuthentication.TokenProviders.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceConnections.Data.Tests/FdwReferenceConnections.Data.Tests.csproj" />
+    <Project Path="tests/FdwReferenceConnections.FileSystem.Abstractions.Tests/FdwReferenceConnections.FileSystem.Abstractions.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceConnections.FileSystem.Tests/FdwReferenceConnections.FileSystem.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceConnections.Http.Tests/FdwReferenceConnections.Http.Tests.csproj" />
+    <Project Path="tests/FdwReferenceConnections.MsSql.Tests/FdwReferenceConnections.MsSql.Tests.csproj" />
+    <Project Path="tests/FdwReferenceConnections.Sqlite.Tests/FdwReferenceConnections.Sqlite.Tests.csproj" />
+    <Project Path="tests/FdwReferenceCredentials.Sql.Tests/FdwReferenceCredentials.Sql.Tests.csproj" />
+    <Project Path="tests/FdwReferenceData.Endpoints.Tests/FdwReferenceData.Endpoints.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceDataPaths.Templates.Tests/FdwReferenceDataPaths.Templates.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceWorkspaces.Endpoints.Tests/FdwReferenceWorkspaces.Endpoints.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceHost.Tests/FdwReferenceHost.Tests.csproj" />
+    <Project Path="tests/FdwReferenceMessaging.Endpoints.Tests/FdwReferenceMessaging.Endpoints.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceMultitenancy.Sql.Tests/FdwReferenceMultitenancy.Sql.Tests.csproj" />
+    <Project Path="tests/FdwReferenceNotifications.Console.Tests/FdwReferenceNotifications.Console.Tests.csproj" />
+    <Project Path="tests/FdwReferenceNotifications.Teams.Tests/FdwReferenceNotifications.Teams.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceNotifications.Webhook.Tests/FdwReferenceNotifications.Webhook.Tests.csproj" />
+    <Project Path="tests/FdwReferenceSchedulers.Tests/FdwReferenceSchedulers.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceSchedules.Endpoints.Tests/FdwReferenceSchedules.Endpoints.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceSecretManagers.AzureKeyVault.Tests/FdwReferenceSecretManagers.AzureKeyVault.Tests.csproj" />
+    <Project Path="tests/FdwReferenceSecretManagers.EnvironmentVariable.Tests/FdwReferenceSecretManagers.EnvironmentVariable.Tests.csproj" />
+    <Project Path="tests/FdwReferenceSecretManagers.Sqlite.Tests/FdwReferenceSecretManagers.Sqlite.Tests.csproj" />
+    <Project Path="tests/FdwReferenceSecretManagers.TestDouble/FdwReferenceSecretManagers.TestDouble.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/RegistrationGate/RegistrationGate.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+  </Folder>
+</Solution>

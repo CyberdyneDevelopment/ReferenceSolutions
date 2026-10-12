@@ -1,0 +1,24 @@
+[
+  {
+    "RowId": 1,
+    "SqlServerEndpointRowId": 1,
+    "ListenAddress": "0.0.0.0",
+    "Port": 1433,
+    "ServerName": "<the name @@SERVERNAME answers>",
+    "ProductVersion": "16.0.4135.4",
+    "Edition": "Standard Edition (64-bit)",
+    "EngineEdition": 2,
+    "Collation": "SQL_Latin1_General_CP1_CI_AS",
+    "Language": "us_english",
+    "DatabaseName": "<the one database the vendor connects to>",
+    "LoginFlowName": "<a password flow that delivers a session>",
+    "SecretManagerName": "<the secret manager holding the certificate>",
+    "CertificateSecretName": "<secret: base64 PKCS#12 certificate with its private key>",
+    "CertificatePasswordSecretName": "<secret: that file's password>",
+    "MaximumMessageBytes": 4194304,
+    "MaximumConnections": 32,
+    "LoginTimeoutSeconds": 30,
+    "IsCurrent": true,
+    "IsDeleted": false
+  }
+]

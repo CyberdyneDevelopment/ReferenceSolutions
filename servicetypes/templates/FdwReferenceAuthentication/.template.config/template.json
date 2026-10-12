@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "FractalDataWorks",
+  "classifications": [
+    "Reference",
+    "Authentication"
+  ],
+  "identity": "FdwReference.Authentication",
+  "name": "Reference authentication mechanism",
+  "shortName": "fdw-ref-authentication",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Sample",
+  "preferNameDirectory": true,
+  "symbols": {
+    "mechanismName": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "SAMPLE_MECHANISM",
+      "defaultValue": "Sample",
+      "description": "The name an AuthenticationServices entry names in Implementation to select this mechanism."
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "Sample.csproj"
+    }
+  ]
+}

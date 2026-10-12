@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "FractalDataWorks",
+  "classifications": [ "Reference", "Authentication", "Step" ],
+  "identity": "FdwReference.AuthenticationStep",
+  "name": "Reference authentication step",
+  "shortName": "fdw-ref-auth-step",
+  "description": "One step in an authentication flow: the step itself, its configuration, its Implementation and its MessageLogging. Referencing the package is what makes the step selectable — a flow naming a step whose package is absent fails at startup rather than quietly doing less.",
+  "tags": { "language": "C#", "type": "project" },
+  "sourceName": "SampleStep",
+  "preferNameDirectory": true,
+  "symbols": {
+    "Contributes": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "Subject",
+      "replaces": "CONTRIBUTES_ELEMENT",
+      "description": "What this step produces. A step may only affect what it declares — the runner discards anything else and reports it.",
+      "choices": [
+        { "choice": "Subject",   "description": "It proves who someone is." },
+        { "choice": "Principal", "description": "It resolves a subject to a local principal." },
+        { "choice": "Claims",    "description": "It gathers facts about a principal." },
+        { "choice": "Decision",  "description": "It decides whether a token may be issued." }
+      ]
+    },
+    "Requires": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "Nothing",
+      "replaces": "REQUIRES_ELEMENT",
+      "description": "What must already be established. Checked when the flow loads, so a misordered flow fails at boot naming what is missing.",
+      "choices": [
+        { "choice": "Nothing",   "description": "It runs first." },
+        { "choice": "Subject",   "description": "Someone must already be proved." },
+        { "choice": "Principal", "description": "A local principal must already be resolved." },
+        { "choice": "Claims",    "description": "Claims must already be gathered." }
+      ]
+    },
+    "AuthenticationMethod": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "",
+      "replaces": "AMR_VALUE",
+      "description": "The RFC 8176 value the runner records if this step succeeds — pwd, otp, hwk, fpt. Leave empty for a step that proves nothing. Declare only what the step actually enforces: claiming more makes every downstream assurance check a lie."
+    },
+    "EventIdBase": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "92000",
+      "replaces": "EVENTID_BASE",
+      "description": "First EventId for this step's MessageLogging. Must not collide with an existing range."
+    }
+  }
+}

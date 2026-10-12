@@ -1,0 +1,20 @@
+[
+  {
+    "RowId": 1,
+    "Id": "019f8a20-0000-7000-a000-000000000001",
+    "Name": "echo_credential",
+    "Domain": "AegisCommand",
+    "Implementation": "PreApproved",
+    "IsCurrent": true,
+    "IsDeleted": false
+  },
+  {
+    "RowId": 2,
+    "Id": "019f8a20-0000-7000-a000-000000000002",
+    "Name": "echo_adhoc",
+    "Domain": "AegisCommand",
+    "Implementation": "AdHoc",
+    "IsCurrent": true,
+    "IsDeleted": false
+  }
+]

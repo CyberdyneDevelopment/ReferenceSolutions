@@ -1,6 +1,6 @@
 // Why this project exists — read before deleting it as unused.
 //
-// A [ServiceTypeOption] registers itself through a module initializer emitted by whichever
+// A [Implementation] registers itself through a module initializer emitted by whichever
 // compilation CONTAINS it. Move the option into a new package and every consumer that referenced
 // the old package silently stops receiving the registration. Nothing fails: the build is clean,
 // the restore is clean, and the collection is simply short one member at runtime.

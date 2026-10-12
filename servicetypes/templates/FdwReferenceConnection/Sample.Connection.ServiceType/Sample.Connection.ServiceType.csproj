@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Why the registration is a separate project from the wire: referencing this package is what
+         declares intent to use the connection, and a host that only needs the wire types should not
+         be forced to take the registration with them. -->
+    <ProjectReference Include="..\Sample.Connection\Sample.Connection.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Services.Connections" />
+    <PackageReference Include="Fdw.Services.Connections.Abstractions" />
+    <PackageReference Include="Fdw.Services.Abstractions" />
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.Collections.SourceGenerators" />
+    <PackageReference Include="Fdw.Results" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <!-- Why: the request pipeline itself - the middleware every host runs and the options that
+       shape them. None of it names an endpoint, a route or FastEndpoints, which is why it does
+       not belong in FdwReferenceEndpoints. FdwReferenceEndpoints references BACK to this for
+       SupportOptions; the dependency runs endpoints -> host, never the reverse. -->
+
+  <!-- Why: HostingLog and RequestContextLog carry [MessageLogging]. Generators emit
+       per-compilation, so without this reference every generated log member silently vanishes
+       and the partials fail with CS8795. -->
+  <ItemGroup>
+    <PackageReference Include="Fdw.Claims.Abstractions" />
+    <PackageReference Include="Fdw.Configuration.Abstractions" />
+    <PackageReference Include="Fdw.Data.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.Data.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <PackageReference Include="Fdw.Configuration.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <PackageReference Include="Fdw.Messages" />
+    <PackageReference Include="Fdw.Services.Abstractions" />
+    <PackageReference Include="Fdw.Services.Authentication.Abstractions" />
+    <PackageReference Include="Fdw.Services.Hosts.Abstractions" />
+    <PackageReference Include="Fdw.Web.Http.Abstractions" />
+  </ItemGroup>
+
+</Project>
