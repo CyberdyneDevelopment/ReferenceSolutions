@@ -7,15 +7,15 @@ using Fdw.Services.Data.Transformations;
 namespace FdwReferenceTransformations.Endpoints;
 
 /// <summary>
-/// Creates or updates a transform step in a field mapping's transform chain.
+/// Lists all transforms configured for a field mapping.
 /// </summary>
 [ExcludeFromCodeCoverage]
-public sealed class SaveFieldMappingTransformEndpoint : SaveFieldMappingTransformEndpointBase
+public sealed class ListFieldMappingTransformationsEndpoint : ListFieldMappingTransformationsEndpointBase
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="SaveFieldMappingTransformEndpoint"/>.
+    /// Initializes a new instance of <see cref="ListFieldMappingTransformationsEndpoint"/>.
     /// </summary>
-    public SaveFieldMappingTransformEndpoint(IConfigurationGatewayProvider configurationGateways, TransformationConfigurationProvider transformations, ILogger<SaveFieldMappingTransformEndpoint> logger)
+    public ListFieldMappingTransformationsEndpoint(IConfigurationGatewayProvider configurationGateways, TransformationConfigurationProvider transformations, ILogger<ListFieldMappingTransformationsEndpoint> logger)
         : base(logger, configurationGateways, transformations) {
     }
 

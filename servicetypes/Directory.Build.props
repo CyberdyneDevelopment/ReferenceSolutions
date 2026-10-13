@@ -19,7 +19,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <!-- Hand-set product version (SemVer 2.0), lockstep across the workspace. No MinVer, no git tags. -->
-    <VersionPrefix>1.2.0</VersionPrefix>
+    <VersionPrefix>1.3.0</VersionPrefix>
     <VersionSuffix>rc.1</VersionSuffix>
 
     <Authors>Cyberdyne Development</Authors>

@@ -10,12 +10,12 @@ namespace FdwReferenceTransformations.Endpoints;
 /// Soft-deletes a transform step from a field mapping's transform chain.
 /// </summary>
 [ExcludeFromCodeCoverage]
-public sealed class DeleteFieldMappingTransformEndpoint : DeleteFieldMappingTransformEndpointBase
+public sealed class DeleteFieldMappingTransformationEndpoint : DeleteFieldMappingTransformationEndpointBase
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="DeleteFieldMappingTransformEndpoint"/>.
+    /// Initializes a new instance of <see cref="DeleteFieldMappingTransformationEndpoint"/>.
     /// </summary>
-    public DeleteFieldMappingTransformEndpoint(IConfigurationGatewayProvider configurationGateways, TransformationConfigurationProvider transformations, ILogger<DeleteFieldMappingTransformEndpoint> logger)
+    public DeleteFieldMappingTransformationEndpoint(IConfigurationGatewayProvider configurationGateways, TransformationConfigurationProvider transformations, ILogger<DeleteFieldMappingTransformationEndpoint> logger)
         : base(logger, configurationGateways, transformations) {
     }
 

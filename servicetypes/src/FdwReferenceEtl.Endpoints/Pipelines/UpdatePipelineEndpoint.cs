@@ -45,37 +45,31 @@ public class UpdatePipelineEndpoint : UpdatePipelineEndpointBase<IPipelineImplem
         var engine = wired.Value!;
 
         // Why a supplied side replaces the whole binding: the engine takes EXACTLY ONE of
-        // {DataSet, ConnectionName, data store container} per side, so naming one clears the others.
+        // {DataSet, data store container} per side, so naming one clears the other.
         if (request.SourceDataStoreName is not null || request.SourceDataStorePath is not null || request.SourceContainerName is not null)
         {
             engine.SourceDataStoreName = request.SourceDataStoreName;
             engine.SourceDataStorePath = request.SourceDataStorePath;
             engine.SourceContainerName = request.SourceContainerName;
             engine.SourceDataSet = string.Empty;
-            engine.SourceConnectionName = string.Empty;
         }
         else if (request.SourceDataSet is not null)
         {
             engine.SourceDataSet = request.SourceDataSet;
-            engine.SourceConnectionName = string.Empty;
-            ClearDataStoreSource(engine);
-        }
-        else if (request.SourceConnectionName is not null)
-        {
-            engine.SourceConnectionName = request.SourceConnectionName;
-            engine.SourceDataSet = string.Empty;
             ClearDataStoreSource(engine);
         }
 
-        if (request.DestinationDataSet is not null)
+        if (request.DestinationDataStoreName is not null || request.DestinationDataStorePath is not null || request.DestinationContainerName is not null)
+        {
+            engine.DestinationDataStoreName = request.DestinationDataStoreName;
+            engine.DestinationDataStorePath = request.DestinationDataStorePath;
+            engine.DestinationContainerName = request.DestinationContainerName;
+            engine.DestinationDataSet = string.Empty;
+        }
+        else if (request.DestinationDataSet is not null)
         {
             engine.DestinationDataSet = request.DestinationDataSet;
-            engine.DestinationConnectionName = string.Empty;
-        }
-        else if (request.DestinationConnectionName is not null)
-        {
-            engine.DestinationConnectionName = request.DestinationConnectionName;
-            engine.DestinationDataSet = string.Empty;
+            ClearDataStoreDestination(engine);
         }
 
         if (request.IsEnabled is { } isEnabled)
@@ -113,6 +107,15 @@ public class UpdatePipelineEndpoint : UpdatePipelineEndpointBase<IPipelineImplem
     protected override void ConfigureEndpoint()
     {
         Tags("Pipelines");
+    }
+
+    // The data store destination is three columns set together; replacing the destination with a data set or a connection
+    // clears all three (FDW-1269).
+    private static void ClearDataStoreDestination(BatchCopyPipelineConfiguration engine)
+    {
+        engine.DestinationDataStoreName = null;
+        engine.DestinationDataStorePath = null;
+        engine.DestinationContainerName = null;
     }
 
     // The data store source is three columns set together; replacing the source with a data set or a connection

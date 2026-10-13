@@ -7,15 +7,15 @@ using Fdw.Services.Data.Transformations;
 namespace FdwReferenceTransformations.Endpoints;
 
 /// <summary>
-/// Lists all transforms configured for a field mapping.
+/// Updates the ordinal positions of transforms in a field mapping's transform chain.
 /// </summary>
 [ExcludeFromCodeCoverage]
-public sealed class ListFieldMappingTransformsEndpoint : ListFieldMappingTransformsEndpointBase
+public sealed class ReorderFieldMappingTransformationsEndpoint : ReorderFieldMappingTransformationsEndpointBase
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="ListFieldMappingTransformsEndpoint"/>.
+    /// Initializes a new instance of <see cref="ReorderFieldMappingTransformationsEndpoint"/>.
     /// </summary>
-    public ListFieldMappingTransformsEndpoint(IConfigurationGatewayProvider configurationGateways, TransformationConfigurationProvider transformations, ILogger<ListFieldMappingTransformsEndpoint> logger)
+    public ReorderFieldMappingTransformationsEndpoint(IConfigurationGatewayProvider configurationGateways, TransformationConfigurationProvider transformations, ILogger<ReorderFieldMappingTransformationsEndpoint> logger)
         : base(logger, configurationGateways, transformations) {
     }
 

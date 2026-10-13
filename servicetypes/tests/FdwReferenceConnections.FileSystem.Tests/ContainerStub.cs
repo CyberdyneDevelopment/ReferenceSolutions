@@ -19,8 +19,13 @@ internal static class ContainerStub
     {
         var fields = fieldNames.Select(n => BuildField(n, fieldMetadata)).ToList();
 
+        // The family and the separator come from the real format of that name: the connector finds its reader and writer by
+        // the family (FDW-1315), so a mock that stated only a name would be read by no reader.
+        var realFormat = FormatTypes.ByName(format);
         var formatType = new Mock<IFormatType>();
         formatType.Setup(f => f.Name).Returns(format);
+        formatType.Setup(f => f.Family).Returns(realFormat.Family);
+        formatType.Setup(f => f.Separator).Returns(realFormat.Separator);
 
         var path = new Mock<IPath>();
         path.Setup(p => p.Domain).Returns("File");

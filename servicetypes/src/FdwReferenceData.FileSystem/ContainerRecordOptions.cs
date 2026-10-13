@@ -39,12 +39,13 @@ public static class ContainerRecordOptions
     /// and should use its own defaults.
     /// </returns>
     public static RowSourceOptions? BuildSourceOptions(IStorageContainer container)
-        => container.Format.Name switch
+        => container.Format.Family switch
         {
             "Json" => BuildJsonSourceOptions(container.Metadata),
             "Xml" => BuildXmlSourceOptions(container.Metadata),
             "Delimited" => BuildDelimitedSourceOptions(container),
             "FixedWidth" => BuildFixedWidthSourceOptions(container),
+            "Xlsx" => BuildXlsxSourceOptions(container),
             _ => null
         };
 
@@ -57,14 +58,29 @@ public static class ContainerRecordOptions
     /// and should use its own defaults.
     /// </returns>
     public static RowWriterOptions? BuildWriterOptions(IStorageContainer container)
-        => container.Format.Name switch
+        => container.Format.Family switch
         {
             "Json" => BuildJsonWriterOptions(container.Metadata),
             "Xml" => BuildXmlWriterOptions(container.Metadata),
             "Delimited" => BuildDelimitedWriterOptions(container),
             "FixedWidth" => BuildFixedWidthWriterOptions(container),
+            "Xlsx" => BuildXlsxWriterOptions(container),
             _ => null
         };
+
+    // Why the columns are the container's field order (FDW-1298): a workbook's header row and its cells must come out in a stable
+    // order supplied by the schema, never inferred; the writer refuses an empty list. SheetName is read only when the container
+    // states one, so the format's own default stands otherwise.
+    private static XlsxRowWriterOptions BuildXlsxWriterOptions(IStorageContainer container)
+    {
+        var options = new XlsxRowWriterOptions { Columns = new List<string>(FieldNames(container)) };
+        if (container.Metadata.TryGetValue("SheetName", out var sheet) && sheet is string name && !string.IsNullOrWhiteSpace(name))
+        {
+            options.SheetName = name;
+        }
+
+        return options;
+    }
 
     // ── Read side ───────────────────────────────────────────────────────────────
 
@@ -92,6 +108,26 @@ public static class ContainerRecordOptions
             Separator = meta.TryGetValue("Separator", out var sep) && sep is string ss && !string.IsNullOrEmpty(ss) ? ss : ","
         };
         options.Columns = new List<string>(FieldNames(container));
+        return options;
+    }
+
+    // Why the columns are the container's field order (FDW-1308): the reader names its columns left to right from column
+    // A. HasHeader is the container's own statement, as for Delimited: a workbook this system wrote has a header row, so
+    // its container says so. SheetName is read only when the container states one; the reader itself refuses a workbook
+    // of several worksheets that is not told which.
+    private static XlsxRowSourceOptions BuildXlsxSourceOptions(IStorageContainer container)
+    {
+        var meta = container.Metadata;
+        var options = new XlsxRowSourceOptions
+        {
+            HasHeader = meta.TryGetValue("HasHeader", out var hh) && hh is bool hb && hb,
+            Columns = new List<string>(FieldNames(container))
+        };
+        if (meta.TryGetValue("SheetName", out var sheet) && sheet is string name && !string.IsNullOrWhiteSpace(name))
+        {
+            options.SheetName = name;
+        }
+
         return options;
     }
 

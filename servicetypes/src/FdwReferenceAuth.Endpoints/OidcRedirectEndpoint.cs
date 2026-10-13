@@ -141,6 +141,7 @@ public sealed class OidcRedirectEndpoint : Endpoint<OidcRedirectRequest, OidcRed
         HttpContext.Response.Cookies.Append(ResumeCookieName, suspended.ResumeToken, cookie);
         HttpContext.Response.Cookies.Append(ReturnCookieName, req.ReturnUrl, cookie);
         HttpContext.Response.Cookies.Append(FlowCookieName, req.FlowName, cookie);
+        AuthenticationLog.RedirectCookiesSet(_logger, req.FlowName, string.Join(", ", ResumeCookieName, ReturnCookieName, FlowCookieName), cookie.Expires!.Value, req.ReturnUrl);
 
         // AbsoluteUri, not ToString(): ToString() undoes the percent-encoding the step gave the query, so the
         // scope would reach the browser with raw spaces (FDW-1037).

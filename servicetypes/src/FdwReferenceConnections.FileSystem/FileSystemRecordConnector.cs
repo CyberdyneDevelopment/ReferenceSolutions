@@ -76,10 +76,10 @@ internal sealed class FileSystemRecordConnector
         FileSystemRecordConnectorLog.ReadingRecords(
             _logger, _connectionName, container.Name, container.Format.Name, relativePath);
 
-        var textResult = await _client.ReadText(relativePath, cancellationToken).ConfigureAwait(false);
-        if (!textResult.IsSuccess)
+        var contentResult = await ReadContent(relativePath, formatResult.Value!.ReadsBinary, cancellationToken).ConfigureAwait(false);
+        if (!contentResult.IsSuccess)
         {
-            return textResult.ToNewResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>();
+            return contentResult.ToNewResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>();
         }
 
         var fieldsResult = Fields(container);
@@ -88,9 +88,10 @@ internal sealed class FileSystemRecordConnector
             return fieldsResult.ToNewResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>();
         }
 
-        // Why: the format factory reads from a Stream; the file content is decoded text, re-encoded UTF-8
-        // into a MemoryStream so the same Create(context) seam the HTTP path uses drives the parse.
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(textResult.Value!));
+        // Why: the format factory reads from a Stream; a text format's content is the file decoded as text and
+        // re-encoded UTF-8, a binary format's (an Excel workbook is a zip) is the file's own bytes -- see ReadContent --
+        // so the same Create(context) seam the HTTP path uses drives the parse.
+        using var stream = new MemoryStream(contentResult.Value!);
         var context = new RecordSourceContext(stream, fieldsResult.Value!, ContainerRecordOptions.BuildSourceOptions(container));
         using var source = formatResult.Value!.Create(context);
 
@@ -119,6 +120,21 @@ internal sealed class FileSystemRecordConnector
 
         FileSystemRecordConnectorLog.ReadRecordsCompleted(_logger, _connectionName, container.Name, rows.Count);
         return GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Success(rows);
+    }
+
+    // Why a binary format is read as bytes (FDW-1308): decoding a workbook as text corrupts it. The text path is as it
+    // was: the file decoded, then encoded UTF-8 for the reader.
+    private async Task<IGenericResult<byte[]>> ReadContent(string relativePath, bool binary, CancellationToken cancellationToken)
+    {
+        if (binary)
+        {
+            return await _client.ReadBytes(relativePath, cancellationToken).ConfigureAwait(false);
+        }
+
+        var text = await _client.ReadText(relativePath, cancellationToken).ConfigureAwait(false);
+        return text.IsSuccess
+            ? GenericResult<byte[]>.Success(Encoding.UTF8.GetBytes(text.Value!))
+            : text.ToNewResult<byte[]>();
     }
 
     // Why: reads EVERY field the cursor currently exposes (not just the container's declared schema) into
@@ -201,6 +217,11 @@ internal sealed class FileSystemRecordConnector
         }
 
         var fields = fieldsResult.Value!;
+        if (formatResult.Value!.WritesBinary)
+        {
+            return await WriteBinary(container, relativePath, formatResult.Value, fields, rows, cancellationToken).ConfigureAwait(false);
+        }
+
         var buffer = new StringBuilder();
         using (var target = new StringWriter(buffer))
         {
@@ -219,6 +240,31 @@ internal sealed class FileSystemRecordConnector
         if (!writeResult.IsSuccess)
         {
             return writeResult.ToNewResult<int>();
+        }
+
+        FileSystemRecordConnectorLog.WriteRecordsCompleted(_logger, _connectionName, container.Name, rows.Count);
+        return GenericResult<int>.Success(rows.Count);
+    }
+
+    // Why a binary format has its own write (FDW-1298): a workbook is a zip, so it has no string form. It is built through the same
+    // format-driven factory as every other format (the writer type's Create over a byte context), then handed to the client as bytes.
+    private async Task<IGenericResult<int>> WriteBinary(
+        IDataContainer container,
+        string relativePath,
+        IRecordWriterType format,
+        List<IDataField> fields,
+        IReadOnlyList<IReadOnlyDictionary<string, object?>> rows,
+        CancellationToken cancellationToken)
+    {
+        var bytes = RecordWriterBytes.Write(
+            format,
+            fields,
+            ContainerRecordOptions.BuildWriterOptions(container),
+            writer => WriteRows(writer, new RecordSchema(fields), rows, cancellationToken));
+        var written = await _client.WriteBytes(relativePath, bytes, cancellationToken).ConfigureAwait(false);
+        if (!written.IsSuccess)
+        {
+            return written.ToNewResult<int>();
         }
 
         FileSystemRecordConnectorLog.WriteRecordsCompleted(_logger, _connectionName, container.Name, rows.Count);
@@ -278,7 +324,7 @@ internal sealed class FileSystemRecordConnector
                 FileSystemRecordConnectorLog.FormatNotConfigured(_logger, _connectionName, container.Name));
         }
 
-        var sourceType = RecordSourceTypes.ByName(container.Format.Name);
+        var sourceType = RecordSourceTypes.ByName(container.Format.Family);
         if (sourceType == RecordSourceTypes.NotFound)
         {
             return GenericResult<IRecordSourceType>.Failure(
@@ -296,7 +342,7 @@ internal sealed class FileSystemRecordConnector
                 FileSystemRecordConnectorLog.FormatNotConfigured(_logger, _connectionName, container.Name));
         }
 
-        var writerType = RecordWriterTypes.ByName(container.Format.Name);
+        var writerType = RecordWriterTypes.ByName(container.Format.Family);
         if (writerType == RecordWriterTypes.NotFound)
         {
             return GenericResult<IRecordWriterType>.Failure(

@@ -79,22 +79,25 @@ public sealed class CreatePipelineRequestValidator : Validator<CreatePipelineReq
             .NotEmpty()
             .WithMessage("Pipeline type is required (e.g., BatchCopy, Streaming)");
 
-        // Why: the BatchCopy factory requires EXACTLY ONE of {DataSet, ConnectionName} per source and
-        // per sink — a DataSet carries its own connection binding, a raw connection is the alternative.
-        // Forcing a connection name produced configs with BOTH set, which the factory rejects
-        // ("exactly one is required") so the pipeline could never execute. Mirror the factory contract here.
-        // A data store container is the third source form (FDW-1103): store, path and container, all three.
+        // Why: the BatchCopy factory requires EXACTLY ONE of {DataSet, data store container} per source and
+        // per sink. A data store container is store, path and container, all three (FDW-1103, FDW-1274).
+        // Mirror the factory contract here.
         RuleFor(x => x)
-            .Must(r => PipelineSourceRules.SourceForms(r.SourceDataSet, r.SourceConnectionName, r.SourceDataStoreName) == 1)
-            .WithMessage("Exactly one of SourceDataSet, SourceConnectionName or SourceDataStoreName (with SourceDataStorePath and SourceContainerName) must be supplied");
+            .Must(r => PipelineSourceRules.SourceForms(r.SourceDataSet, r.SourceDataStoreName) == 1)
+            .WithMessage("Exactly one of SourceDataSet or SourceDataStoreName (with SourceDataStorePath and SourceContainerName) must be supplied");
 
         RuleFor(x => x)
             .Must(r => PipelineSourceRules.DataStoreSourceIsWhole(r.SourceDataStoreName, r.SourceDataStorePath, r.SourceContainerName))
             .WithMessage("A data store source names SourceDataStoreName, SourceDataStorePath and SourceContainerName together");
 
+        // A data store container is the other destination form (FDW-1269): store, path and container, all three.
         RuleFor(x => x)
-            .Must(r => !string.IsNullOrWhiteSpace(r.DestinationDataSet) ^ !string.IsNullOrWhiteSpace(r.DestinationConnectionName))
-            .WithMessage("Exactly one of DestinationDataSet or DestinationConnectionName must be supplied");
+            .Must(r => PipelineDestinationRules.DestinationForms(r.DestinationDataSet, r.DestinationDataStoreName) == 1)
+            .WithMessage("Exactly one of DestinationDataSet or DestinationDataStoreName (with DestinationDataStorePath and DestinationContainerName) must be supplied");
+
+        RuleFor(x => x)
+            .Must(r => PipelineDestinationRules.DataStoreDestinationIsWhole(r.DestinationDataStoreName, r.DestinationDataStorePath, r.DestinationContainerName))
+            .WithMessage("A data store destination names DestinationDataStoreName, DestinationDataStorePath and DestinationContainerName together");
 
         When(x => !string.IsNullOrEmpty(x.Description), () =>
         {
@@ -128,11 +131,11 @@ public sealed class UpdatePipelineRequestValidator : Validator<UpdatePipelineReq
             .WithErrorCode(UpdatePipelineChanges.NothingStatedCode)
             .WithMessage(UpdatePipelineChanges.RefusalMessage);
 
-        // Why: the engine binds each side to EXACTLY ONE of {DataSet, ConnectionName}; naming both
+        // Why: the engine binds each side to EXACTLY ONE of {DataSet, data store container}; naming both
         // for one side in a single update has no meaning.
         RuleFor(x => x)
-            .Must(r => PipelineSourceRules.SourceForms(r.SourceDataSet, r.SourceConnectionName, r.SourceDataStoreName) <= 1)
-            .WithMessage("Supply at most one of SourceDataSet, SourceConnectionName or a data store source");
+            .Must(r => PipelineSourceRules.SourceForms(r.SourceDataSet, r.SourceDataStoreName) <= 1)
+            .WithMessage("Supply at most one of SourceDataSet or a data store source");
 
         RuleFor(x => x)
             .Must(r => (r.SourceDataStoreName is null && r.SourceDataStorePath is null && r.SourceContainerName is null)
@@ -140,8 +143,13 @@ public sealed class UpdatePipelineRequestValidator : Validator<UpdatePipelineReq
             .WithMessage("A data store source names SourceDataStoreName, SourceDataStorePath and SourceContainerName together");
 
         RuleFor(x => x)
-            .Must(r => r.DestinationDataSet is null || r.DestinationConnectionName is null)
-            .WithMessage("Supply at most one of DestinationDataSet or DestinationConnectionName");
+            .Must(r => PipelineDestinationRules.DestinationForms(r.DestinationDataSet, r.DestinationDataStoreName) <= 1)
+            .WithMessage("Supply at most one of DestinationDataSet or a data store destination");
+
+        RuleFor(x => x)
+            .Must(r => (r.DestinationDataStoreName is null && r.DestinationDataStorePath is null && r.DestinationContainerName is null)
+                || PipelineDestinationRules.DataStoreDestinationIsWhole(r.DestinationDataStoreName, r.DestinationDataStorePath, r.DestinationContainerName))
+            .WithMessage("A data store destination names DestinationDataStoreName, DestinationDataStorePath and DestinationContainerName together");
 
         When(x => !string.IsNullOrEmpty(x.Description), () =>
         {

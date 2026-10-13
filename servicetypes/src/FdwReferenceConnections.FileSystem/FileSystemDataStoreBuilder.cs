@@ -113,7 +113,7 @@ public sealed class FileSystemDataStoreBuilder : DataStoreBuilderBase
             format,
             new FileSystemContainerPath($"{parent.Name}/{containerCfg.Name}{format.CanonicalFileExtension}"),
             ["Query"],
-            ContainerComposition.BuildMetadata(containerCfg),
+            ContainerComposition.BuildMetadata(containerCfg, format),
             Logger);
     }
 }

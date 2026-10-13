@@ -48,5 +48,10 @@ public sealed class FileSystemDataStoreType
     public override IDataStoreBuilder SupplyBuilder(ILogger? logger = null)
         => new FileSystemDataStoreBuilder(ConnectionTypes.ByName("FileSystem").DefaultResponseFormat, logger);
 
+    /// <inheritdoc />
+    // Why: the builder composes {DataPath folder}/{container name}{format.CanonicalFileExtension}, so a container
+    // named with its format's extension is looked up with the extension twice and is never found (FDW-1324).
+    public override bool AddressesContainersAsFiles => true;
+
 
 }
