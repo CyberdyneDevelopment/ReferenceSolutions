@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,13 +77,16 @@ public sealed class OidcCallbackEndpoint : EndpointWithoutRequest<PasswordLoginR
         var returnUrl = cookies[OidcRedirectEndpoint.ReturnCookieName];
         var flowName = cookies[OidcRedirectEndpoint.FlowCookieName];
 
+        var (received, carried) = Report(cookies);
+        AuthenticationLog.CallbackCookiesReceived(_logger, received, HttpContext.Request.Scheme, HttpContext.Request.Host.ToString(), carried);
+
         HttpContext.Response.Cookies.Delete(OidcRedirectEndpoint.ResumeCookieName);
         HttpContext.Response.Cookies.Delete(OidcRedirectEndpoint.ReturnCookieName);
         HttpContext.Response.Cookies.Delete(OidcRedirectEndpoint.FlowCookieName);
 
         if (string.IsNullOrEmpty(returnUrl) || string.IsNullOrEmpty(flowName))
         {
-            AuthenticationLog.CallbackReturnTargetMissing(_logger);
+            AuthenticationLog.CallbackReturnTargetMissing(_logger, received, HttpContext.Request.Scheme, HttpContext.Request.Host.ToString(), carried);
             await Send.ResponseAsync(new PasswordLoginResponse(), StatusCodes.Status400BadRequest, ct)
                 .ConfigureAwait(false);
             return;
@@ -146,6 +150,17 @@ public sealed class OidcCallbackEndpoint : EndpointWithoutRequest<PasswordLoginR
             Append(Append(returnUrl, "error", error), "error_description", description),
             isPermanent: false,
             allowRemoteRedirects: true);
+
+    // Which of the sign-in cookies arrived, and the names of every cookie the request carried: names only, never values.
+    // What the browser sent is what tells a cookie it never kept from one it sent to the wrong place.
+    private static (string Received, string Carried) Report(IRequestCookieCollection cookies)
+    {
+        var received = new[] { OidcRedirectEndpoint.ResumeCookieName, OidcRedirectEndpoint.ReturnCookieName, OidcRedirectEndpoint.FlowCookieName }
+            .Where(name => !string.IsNullOrEmpty(cookies[name]))
+            .ToList();
+        return (received.Count == 0 ? "none" : string.Join(", ", received),
+                cookies.Count == 0 ? "none" : string.Join(", ", cookies.Keys));
+    }
 
     private static string Append(string url, string name, string value)
         => string.Concat(url, url.Contains('?', StringComparison.Ordinal) ? "&" : "?", name, "=", Uri.EscapeDataString(value));

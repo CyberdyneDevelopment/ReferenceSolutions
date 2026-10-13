@@ -88,18 +88,21 @@ public class CreatePipelineEndpoint : CreatePipelineEndpointBase<IPipelineImplem
                 // versions the engine row and leaves the FK-cited domain row alone.
                 Description = request.Description,
                 IsEnabled = request.IsEnabled,
-                SourceConnectionName = request.SourceConnectionName,
                 // Why: empty-string init for a non-nullable POCO field on an optional request value is
                 // an init default, not a value fallback — required-ness is enforced upstream by the
-                // request validator, so this never silently substitutes a missing connection.
+                // request validator, so this never silently substitutes a missing source.
                 SourceDataSet = request.SourceDataSet ?? string.Empty,
                 // A data store container source (FDW-1103): store, path and container together, or none; the
                 // request validator and the run authority refuse a partial or doubled source.
                 SourceDataStoreName = request.SourceDataStoreName,
                 SourceDataStorePath = request.SourceDataStorePath,
                 SourceContainerName = request.SourceContainerName,
-                DestinationConnectionName = request.DestinationConnectionName,
                 DestinationDataSet = request.DestinationDataSet ?? string.Empty,
+                // A data store container destination (FDW-1269): store, path and container together, or none; the
+                // request validator and the run authority refuse a partial or doubled destination.
+                DestinationDataStoreName = request.DestinationDataStoreName,
+                DestinationDataStorePath = request.DestinationDataStorePath,
+                DestinationContainerName = request.DestinationContainerName,
                 // Why derived, not copied: the load mode is the one definition and Replace means truncate then load; the
                 // request's truncateBeforeLoad was checked against it by the FDW base and is not a second way to truncate.
                 TruncateBeforeLoad = PipelineTruncateConsistency.Derive(request.LoadMode)

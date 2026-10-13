@@ -26,11 +26,13 @@ public sealed class RecordFormatRegistrationFixture
         RecordSourceTypes.RegisterMember(new XmlRowSourceType());
         RecordSourceTypes.RegisterMember(new DelimitedRowSourceType());
         RecordSourceTypes.RegisterMember(new FixedWidthRowSourceType());
+        RecordSourceTypes.RegisterMember(new XlsxRowSourceType());
 
         RecordWriterTypes.RegisterMember(new JsonRowWriterType());
         RecordWriterTypes.RegisterMember(new XmlRowWriterType());
         RecordWriterTypes.RegisterMember(new DelimitedRowWriterType());
         RecordWriterTypes.RegisterMember(new FixedWidthRowWriterType());
+        RecordWriterTypes.RegisterMember(new XlsxRowWriterType());
     }
 }
 

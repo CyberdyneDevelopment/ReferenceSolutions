@@ -6,14 +6,12 @@ namespace FdwReferencePipelines.Endpoints.Validators;
 [ExcludeFromCodeCoverage]
 internal static class PipelineSourceRules
 {
-    /// <summary>Counts the source forms a request names: a data set, a connection, a data store container.</summary>
+    /// <summary>Counts the source forms a request names: a data set, a data store container.</summary>
     /// <param name="dataSet">The source data set, if named.</param>
-    /// <param name="connectionName">The source connection, if named.</param>
     /// <param name="dataStoreName">The source data store, if named.</param>
-    /// <returns>How many of the three are named.</returns>
-    public static int SourceForms(string? dataSet, string? connectionName, string? dataStoreName) =>
+    /// <returns>How many of the two are named.</returns>
+    public static int SourceForms(string? dataSet, string? dataStoreName) =>
         (string.IsNullOrWhiteSpace(dataSet) ? 0 : 1)
-        + (string.IsNullOrWhiteSpace(connectionName) ? 0 : 1)
         + (string.IsNullOrWhiteSpace(dataStoreName) ? 0 : 1);
 
     /// <summary>True when a data store source is either absent or names its store, path and container.</summary>

@@ -94,19 +94,9 @@ public sealed class HttpRecordConnector
         }
 
         var fields = fieldsResult.Value!;
-        var buffer = new StringBuilder();
-        using (var target = new StringWriter(buffer))
-        {
-            var context = new RecordWriterContext(target, fields, BuildWriterOptions(container));
-            using var writer = formatResult.Value!.Create(context);
-
-            // Why: row writers (delimited/fixed-width) take the flat name→value dictionary directly via
-            // IRowWriter; item writers (Json/Xml) take a DataRecord projected over the container schema.
-            WriteRows(writer, new RecordSchema(fields), rows, cancellationToken);
-            writer.Flush();
-        }
-
-        using var content = new StringContent(buffer.ToString(), Encoding.UTF8, contentType);
+        using HttpContent content = formatResult.Value!.WritesBinary
+            ? BinaryContent(formatResult.Value, fields, container, rows, contentType, cancellationToken)
+            : new StringContent(WriteText(formatResult.Value, fields, container, rows, cancellationToken), Encoding.UTF8, contentType);
         using var request = new HttpRequestMessage(method, endpoint) { Content = content };
         using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -119,6 +109,45 @@ public sealed class HttpRecordConnector
 
         HttpRecordConnectorLog.WriteRecordsCompleted(_logger, _connectionName, rows.Count, endpoint);
         return GenericResult<int>.Success(rows.Count);
+    }
+
+    // Why a binary format is sent as bytes (FDW-1298): a workbook has no string form. It is built through the same format-driven
+    // factory as every other format, over a byte context, and the content type is the one the container's endpoint declares.
+    private static ByteArrayContent BinaryContent(
+        IRecordWriterType format,
+        List<IDataField> fields,
+        IDataContainer container,
+        IReadOnlyList<IReadOnlyDictionary<string, object?>> rows,
+        string contentType,
+        CancellationToken cancellationToken)
+    {
+        var bytes = RecordWriterBytes.Write(
+            format, fields, BuildWriterOptions(container), writer => WriteRows(writer, new RecordSchema(fields), rows, cancellationToken));
+        var content = new ByteArrayContent(bytes);
+        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+        return content;
+    }
+
+    private static string WriteText(
+        IRecordWriterType format,
+        List<IDataField> fields,
+        IDataContainer container,
+        IReadOnlyList<IReadOnlyDictionary<string, object?>> rows,
+        CancellationToken cancellationToken)
+    {
+        var buffer = new StringBuilder();
+        using (var target = new StringWriter(buffer))
+        {
+            var context = new RecordWriterContext(target, fields, BuildWriterOptions(container));
+            using var writer = format.Create(context);
+
+            // Why: row writers (delimited/fixed-width) take the flat name→value dictionary directly via
+            // IRowWriter; item writers (Json/Xml) take a DataRecord projected over the container schema.
+            WriteRows(writer, new RecordSchema(fields), rows, cancellationToken);
+            writer.Flush();
+        }
+
+        return buffer.ToString();
     }
 
     // Why: row writers (delimited/fixed-width) implement IRowWriter and take the flat name→value
@@ -170,7 +199,7 @@ public sealed class HttpRecordConnector
                 HttpRecordConnectorLog.FormatNotConfigured(_logger, _connectionName, container.Name));
         }
 
-        var writerType = RecordWriterTypes.ByName(container.Format.Name);
+        var writerType = RecordWriterTypes.ByName(container.Format.Family);
         if (writerType == RecordWriterTypes.NotFound)
         {
             return GenericResult<IRecordWriterType>.Failure(
@@ -222,14 +251,29 @@ public sealed class HttpRecordConnector
     // connector. The Http project already carries all four format Abstractions references (for the read
     // path), so no new project reference is required.
     private static RowWriterOptions? BuildWriterOptions(IStorageContainer container)
-        => container.Format.Name switch
+        => container.Format.Family switch
         {
             "Json" => BuildJsonWriterOptions(container.Metadata),
             "Xml" => BuildXmlWriterOptions(container.Metadata),
             "Delimited" => BuildDelimitedWriterOptions(container),
             "FixedWidth" => BuildFixedWidthWriterOptions(container),
+            "Xlsx" => BuildXlsxWriterOptions(container),
             _ => null
         };
+
+    // Why the columns are the container's field order (FDW-1298): a workbook's header row and its cells must come out in a stable
+    // order supplied by the schema, never inferred; the writer refuses an empty list. SheetName is read only when the container
+    // states one, so the format's own default stands otherwise.
+    private static XlsxRowWriterOptions BuildXlsxWriterOptions(IStorageContainer container)
+    {
+        var options = new XlsxRowWriterOptions { Columns = new List<string>(FieldNames(container)) };
+        if (container.Metadata.TryGetValue("SheetName", out var sheet) && sheet is string name && !string.IsNullOrWhiteSpace(name))
+        {
+            options.SheetName = name;
+        }
+
+        return options;
+    }
 
     private static JsonRowWriterOptions BuildJsonWriterOptions(IReadOnlyDictionary<string, object> meta)
         => new()

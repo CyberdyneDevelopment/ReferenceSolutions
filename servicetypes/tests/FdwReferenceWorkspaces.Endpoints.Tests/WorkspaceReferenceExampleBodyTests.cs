@@ -39,6 +39,7 @@ public sealed class WorkspaceReferenceExampleBodyTests : IAsyncLifetime
 {
     private const string WorkspaceName = "Sales";
     private const string DataSetName = "NflTeams";
+    private const string VariationName = "AfcEast";
     private static readonly Guid DataSetId = Guid.Parse("6f1c2d3e-4b5a-4c6d-8e7f-90a1b2c3d4e5");
 
     private readonly Mock<IDataGateway> _gateway = new();
@@ -95,6 +96,14 @@ public sealed class WorkspaceReferenceExampleBodyTests : IAsyncLifetime
         var reads = new Mock<IWorkspaceReadService>();
         reads.Setup(r => r.DataSet(WorkspaceName, DataSetName, It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<ReadableDataSet>.Success(new ReadableDataSet(DataSetName, dataSet, [])));
+        // What the data route serves in the workspace: the attached data set and a variation of it the workspace owns.
+        reads.Setup(r => r.DataSets(It.IsAny<IWorkspaceImplementationConfiguration>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<IReadOnlyList<ReadableDataSet>>.Success(
+                new List<ReadableDataSet>
+                {
+                    new(DataSetName, dataSet, []),
+                    new(VariationName, dataSet, ["{\"field\":\"Team\",\"operator\":\"Equal\",\"value\":\"Patriots\"}"]),
+                }));
         builder.Services.AddSingleton(reads.Object);
 
         builder.Services.AddSingleton(Mock.Of<ISystemRoleConfiguration>());
@@ -190,6 +199,32 @@ public sealed class WorkspaceReferenceExampleBodyTests : IAsyncLifetime
         (await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).ShouldContain("filter.logic");
     }
 
+    // FDW-1318: the reference lists every name the data route serves in the workspace, a variation the workspace owns included.
+    [Fact]
+    [Trait("Priority", "P0")]
+    public async Task TheReferenceListsAVariationTheWorkspaceOwnsUnderItsOwnName()
+    {
+        var document = await Document();
+
+        var paths = document["paths"]!.AsObject().Select(p => p.Key).ToList();
+        paths.ShouldContain($"/{FdwReferenceEndpoints.Endpoints.RoutePrefix}/{WorkspaceName}/{DataSetName}");
+        paths.ShouldContain($"/{FdwReferenceEndpoints.Endpoints.RoutePrefix}/{WorkspaceName}/{VariationName}");
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    public async Task AVariationIsDescribedAsAVariationWithTheFieldsOfTheDataSetItVaries()
+    {
+        var document = await Document();
+
+        var operation = document["paths"]![$"/{FdwReferenceEndpoints.Endpoints.RoutePrefix}/{WorkspaceName}/{VariationName}"]!["post"]!;
+        operation["summary"]!.GetValue<string>().ShouldBe($"Query {VariationName}");
+        var description = operation["description"]!.GetValue<string>();
+        description.ShouldContain($"**{VariationName}**");
+        description.ShouldContain($"variation of the **{DataSetName}** data set");
+        description.ShouldContain("`Team`");
+    }
+
     // Team takes Equal (Descriptive); Notes is not yet typed and takes no operator.
     private static SimpleDataSetConfiguration NflTeams() => new()
     {
@@ -216,6 +251,17 @@ public sealed class WorkspaceReferenceExampleBodyTests : IAsyncLifetime
     // the members its body schema declares and the ones it requires, gathered through $ref and allOf.
     private async Task<(JsonObject Example, BodySchema Schema)> Example()
     {
+        var document = await Document();
+        var body = document["paths"]![$"/{FdwReferenceEndpoints.Endpoints.RoutePrefix}/{WorkspaceName}/{DataSetName}"]!["post"]!
+            ["requestBody"]!["content"]!["application/json"]!;
+        var schema = new BodySchema();
+        schema.Read(body["schema"], document["components"]?["schemas"]);
+        return (body["example"]!.AsObject(), schema);
+    }
+
+    // The workspace reference document the host serves, as the signed-in caller reads it.
+    private async Task<JsonNode> Document()
+    {
         using var request = new HttpRequestMessage(
             HttpMethod.Get, new Uri($"/{FdwReferenceEndpoints.Endpoints.RoutePrefix}/openapi/data/{WorkspaceName}", UriKind.Relative));
         request.Headers.Add(HeaderScheme.Header, "signed-in");
@@ -223,12 +269,7 @@ public sealed class WorkspaceReferenceExampleBodyTests : IAsyncLifetime
         var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         response.StatusCode.ShouldBe(HttpStatusCode.OK, json);
 
-        var document = JsonNode.Parse(json)!;
-        var body = document["paths"]![$"/{FdwReferenceEndpoints.Endpoints.RoutePrefix}/{WorkspaceName}/{DataSetName}"]!["post"]!
-            ["requestBody"]!["content"]!["application/json"]!;
-        var schema = new BodySchema();
-        schema.Read(body["schema"], document["components"]?["schemas"]);
-        return (body["example"]!.AsObject(), schema);
+        return JsonNode.Parse(json)!;
     }
 
     private async Task<HttpResponseMessage> Post(string body)

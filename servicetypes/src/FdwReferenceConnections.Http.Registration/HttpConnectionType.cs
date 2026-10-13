@@ -58,10 +58,13 @@ public sealed class HttpConnectionType : ConnectionTypeBase<IGenericConnection, 
         category: "HTTP",
         defaultContainerName: "HttpConnectionConfiguration")
     {
-        // Endpoint behavior: the flat request's Authentication is this type's AdditionalProperties. Its
-        // authentication values and headers are shown masked (the default for a dictionary: the flat detail
-        // never showed them at all). The configuration's own Validate() decides what is acceptable.
+        // Endpoint behavior: the flat request's Authentication is this type's AdditionalProperties. The method's
+        // credential references are shown masked and the secret manager's name and its settings as they are
+        // (FDW-1336); headers are shown masked (the default for a dictionary: the flat detail never showed them at
+        // all). The configuration's own Validate() decides what is acceptable.
         EndpointAlias("authentication", nameof(HttpConnectionConfiguration.AdditionalProperties));
+        EndpointMask(nameof(HttpConnectionConfiguration.AdditionalProperties), (configuration, entries) =>
+            HttpAuthenticationTypes.ByName(configuration.AuthenticationType).MaskSecrets(entries, ConnectionSecretMask.Value));
         EndpointValidation(CheckConfiguration);
 
         // Why Initialize: this wiring needs a LIVE container, and Register runs while the

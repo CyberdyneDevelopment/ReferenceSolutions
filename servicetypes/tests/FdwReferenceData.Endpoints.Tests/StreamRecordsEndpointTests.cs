@@ -212,6 +212,64 @@ public sealed class StreamRecordsEndpointTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task AFormatQueryValueWinsOverTheAcceptHeaderForALinkABrowserFollows()
+    {
+        // A browser link cannot send Accept, so the link names the format; it is the more specific statement.
+        var response = await _host.Get("/paced/export?rows=2&format=Json", "text/csv", TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(200);
+        response.Header("Content-Type").ShouldBe("application/json");
+        response.Header("Content-Disposition").ShouldContain("paced.json");
+    }
+
+    [Fact]
+    public async Task AFormatQueryValueIsComparedIgnoringCaseAndStillServesTheDefaultLimits()
+    {
+        var response = await _host.Get("/paced/export?rows=2&format=delimited", "*/*", TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(200);
+        response.Header("Content-Type").ShouldBe("text/csv");
+        response.Body.ShouldContain("id,name");
+    }
+
+    [Theory]
+    [InlineData("csv", "text/csv", "paced.csv")]
+    [InlineData("CSV", "text/csv", "paced.csv")]
+    [InlineData("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "paced.xlsx")]
+    [InlineData("json", "application/json", "paced.json")]
+    public async Task AFormatQueryValueMayBeTheFileExtensionPeopleWrite(string value, string mediaType, string fileName)
+    {
+        var response = await _host.Get($"/paced/export?rows=2&format={value}", "*/*", TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(200);
+        response.Header("Content-Type").ShouldBe(mediaType);
+        response.Header("Content-Disposition").ShouldContain(fileName);
+    }
+
+    [Fact]
+    public async Task AnUnknownFormatQueryValueIs406NamingTheFormatsThereAre()
+    {
+        var response = await _host.Get("/paced/export?rows=2&format=Pdf", "text/csv", TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(406);
+        response.Body.ShouldContain("Xlsx");
+    }
+
+    [Fact]
+    public async Task AnExcelWorkbookIsServedAsABinaryAttachmentThatIsAZip()
+    {
+        var response = await _host.Get("/paced/export?rows=3&format=Xlsx", "*/*", TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(200);
+        response.Header("Content-Type").ShouldBe("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.Header("Content-Disposition").ShouldContain("paced.xlsx");
+        // The response is chunked (no Content-Length is known up front), so what follows the headers on the wire
+        // is the chunk-size line in hex and then the payload; a zip's payload starts with the local file header
+        // signature "PK". The size line is optional so the test states the zip, not the framing.
+        response.Body.ShouldMatch("^([0-9a-fA-F]+\r\n)?PK");
+    }
+
+    [Fact]
     public async Task ARefusedRequestCarriesNoAttachmentHeader()
     {
         var refused = await _host.Get("/paced/export?rows=1", "application/pdf", TestContext.Current.CancellationToken);

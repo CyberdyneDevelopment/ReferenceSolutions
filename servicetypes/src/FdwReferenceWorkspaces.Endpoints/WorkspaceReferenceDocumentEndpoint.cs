@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Fdw.Data.DataSets.Abstractions;
 using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Workspaces;
 using Fdw.Services.Workspaces.Endpoints;
@@ -19,8 +18,8 @@ public sealed class WorkspaceReferenceDocumentEndpoint : WorkspaceReferenceDocum
         ISystemRoleConfiguration systemRoles,
         IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access,
-        IDataSetConfigurationProvider dataSets)
-        : base(logger, systemRoles, workspaces, access, dataSets)
+        IWorkspaceReadService readService)
+        : base(logger, systemRoles, workspaces, access, readService)
     {
     }
 

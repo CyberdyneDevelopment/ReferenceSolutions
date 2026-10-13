@@ -295,8 +295,20 @@ public static partial class AuthenticationLog
     [MessageLogging(
         EventId = 7221,
         Level = LogLevel.Warning,
-        Message = "The sign-in callback arrived without the return target cookies set by /auth/oidc/redirect")]
-    public static partial IGenericMessage CallbackReturnTargetMissing(ILogger logger);
+        Message = "The sign-in callback arrived without the return target cookies set by /auth/oidc/redirect: of those it got {received}; the request ({scheme}://{host}) carried the cookies {cookieNames}")]
+    public static partial IGenericMessage CallbackReturnTargetMissing(ILogger logger, string received, string scheme, string host, string cookieNames);
+
+    [MessageLogging(
+        EventId = 7244,
+        Level = LogLevel.Trace,
+        Message = "Sign-in flow '{flowName}' sent to its provider: cookies {cookieNames} set until {expiresAt:O}, returning to {returnUrl}")]
+    public static partial IGenericMessage RedirectCookiesSet(ILogger logger, string flowName, string cookieNames, DateTimeOffset expiresAt, string returnUrl);
+
+    [MessageLogging(
+        EventId = 7245,
+        Level = LogLevel.Trace,
+        Message = "The sign-in callback ({scheme}://{host}) got the sign-in cookies {received} and carried the cookies {cookieNames}")]
+    public static partial IGenericMessage CallbackCookiesReceived(ILogger logger, string received, string scheme, string host, string cookieNames);
 
     [MessageLogging(
         EventId = 7222,

@@ -1,9 +1,12 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Data.DataSets.Abstractions;
 using Fdw.Data.RowSources.Abstractions;
+using Fdw.Data.RowSources.Delimited.Abstractions;
 using Fdw.Results;
 using Fdw.Services.Data.Abstractions;
+using Fdw.Services.Data.Results;
 using Fdw.Services.Data.Endpoints;
 using Fdw.Web.RestEndpoints.Pagination;
 using Microsoft.Extensions.Logging;
@@ -67,7 +70,7 @@ public class ExportDataSetEndpoint : StreamRecordsEndpointBase<ExportDataSetRequ
     /// <inheritdoc />
     protected override string EndpointDescription =>
         "Streams every row of the data set progressively, in the format named by the Accept header " +
-        $"(application/json or text/csv). The outcome is reported in the {StatusTrailerName} trailer " +
+        $"(application/json, text/csv or the Excel workbook type) or by a format query value (Json, Delimited or Xlsx), which wins over Accept and is for a link a browser follows. The outcome is reported in the {StatusTrailerName} trailer " +
         "where the protocol carries trailers; an incomplete response always ends as a truncated body.";
 
     /// <inheritdoc />
@@ -75,6 +78,23 @@ public class ExportDataSetEndpoint : StreamRecordsEndpointBase<ExportDataSetRequ
 
     /// <inheritdoc />
     protected override void ConfigureEndpoint() => Tags("DataSets");
+
+    // Why on here and not in the format's defaults (FDW-1298): this endpoint's CSV is a file someone opens in a spreadsheet. The
+    // byte order mark is what makes Excel read it as UTF-8, and the formula guard stops a text cell that starts with = + - @ from
+    // being run as a formula. Both change the bytes a machine reader sees, so the delimited format leaves them off for every other
+    // use of it. A caller wanting the data unchanged asks for Json.
+    /// <inheritdoc />
+    protected override RowWriterOptions WriterOptions(IRecordWriterType format, IReadOnlyList<string> columns)
+    {
+        var options = base.WriterOptions(format, columns);
+        if (options is DelimitedRowWriterOptions delimited)
+        {
+            delimited.WriteByteOrderMark = true;
+            delimited.NeutralizeFormulas = true;
+        }
+
+        return options;
+    }
 
     /// <inheritdoc />
     protected override async Task<IGenericResult<IRecordSource<DataRecord>>> OpenRecords(
@@ -89,7 +109,7 @@ public class ExportDataSetEndpoint : StreamRecordsEndpointBase<ExportDataSetRequ
         if (dataSet.Value is null)
         {
             return GenericResult<IRecordSource<DataRecord>>.Failure(
-                ExportDataSetLog.DataSetNotFound(Logger, request.Name));
+                DataServiceResultCodes.ByName("DataSetNotFound"), Logger, ResultDetails.Create("DataSetName", request.Name));
         }
 
         // Why through DataSetRecordSource (FDW-1075): an export streams the data set's own rows -- its renames,
