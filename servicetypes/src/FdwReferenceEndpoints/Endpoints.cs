@@ -10,6 +10,7 @@ using Fdw.Web.RestEndpoints.Security;
 using Fdw.Web.RestEndpoints.OpenApi;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Fdw.Results;
 using FastEndpoints;
@@ -218,6 +219,11 @@ public partial class Endpoints : ServiceTypeCollectionBase<IEndpointTypeCollecti
             // validation failures; the .NET producer covers what it does not — unhandled exceptions
             // and bare status codes — so a caller never has to branch on which layer refused it.
             builder.Services.AddProblemDetails();
+
+            // Why the authorization middleware's own refusal is replaced (FDW-2271): it answers a policy it refuses through the authentication handler, which sets the
+            // status and writes nothing, so a call refused for a missing permission had no body and no reference. This handler answers with the problem body, the permission
+            // needed and the request's reference. Replace, not Add: it wins whether AddAuthorization has registered ASP.NET's default yet or not.
+            builder.Services.Replace(ServiceDescriptor.Singleton<IAuthorizationMiddlewareResultHandler, ProblemAuthorizationResultHandler>());
 
             // UseRateLimiter is placed in the pipeline here too, and a limiter with no policies
             // registered lets every request through while looking configured.

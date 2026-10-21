@@ -44,7 +44,7 @@ public sealed class SetDefaultTenantEndpoint : Endpoint<SetDefaultTenantRequest,
     /// <inheritdoc />
     public override void Configure()
     {
-        Post("/tenants/{id}/default");
+        Post("/tenants/{Id}/default");
         Policies("tenants:write");
         Tags("Tenants");
     }
