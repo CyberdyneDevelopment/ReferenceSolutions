@@ -36,4 +36,10 @@ public sealed class ProxyTriggerEtlRequest
     /// tenant it acts in, and the roles must be able to reach everything the pipeline reads and writes.
     /// </summary>
     public IList<string>? RunRoles { get; set; }
+
+    /// <summary>
+    /// Gets or sets how many rows each source may read in a test run (FDW-1676). When set, the run is a test run: each source stops
+    /// after this many rows, no destination is written and no step with an outside effect runs. When null, the run is a real run.
+    /// </summary>
+    public int? TestRowsPerSource { get; set; }
 }

@@ -24,8 +24,9 @@ public sealed class GetMapChildrenEndpoint : GetMapChildrenEndpointBase
         DataStoreConfigurationProvider dataStores,
         IPipelineConfigurationProvider pipelines,
         IDataSetVariationConfigurationProvider variations,
+        ICategoryConfigurationProvider categories,
         IFrameworkAuthorizationService authorization)
-        : base(logger, dataSets, dataStores, pipelines, variations, authorization)
+        : base(logger, dataSets, dataStores, pipelines, variations, categories, authorization)
     {
     }
 }

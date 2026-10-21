@@ -4,6 +4,7 @@ using Fdw.Abstractions;
 using Fdw.Configuration;
 using Fdw.Results;
 using Fdw.Services.Notifications.Abstractions;
+using Fdw.Services.SecretManagers.Abstractions;
 using FdwReferenceNotifications.Webhook.Logging;
 using Microsoft.Extensions.Logging;
 
@@ -27,6 +28,7 @@ public sealed class WebhookNotificationFactory : IWebhookNotificationFactory
     private readonly ILogger<WebhookNotificationFactory> _logger;
     private readonly ILoggerFactory _loggerFactory;
     private readonly System.Net.Http.IHttpClientFactory _httpClientFactory;
+    private readonly ISecretManagerProvider _secretManagers;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WebhookNotificationFactory"/> class.
@@ -34,14 +36,17 @@ public sealed class WebhookNotificationFactory : IWebhookNotificationFactory
     /// <param name="logger">The logger for factory operations.</param>
     /// <param name="loggerFactory">The logger factory for creating service instance loggers.</param>
     /// <param name="httpClientFactory">The HTTP client factory for webhook calls.</param>
+    /// <param name="secretManagers">Resolves the secret manager that holds the secret a service sends.</param>
     public WebhookNotificationFactory(
         ILogger<WebhookNotificationFactory> logger,
         ILoggerFactory loggerFactory,
-        System.Net.Http.IHttpClientFactory httpClientFactory)
+        System.Net.Http.IHttpClientFactory httpClientFactory,
+        ISecretManagerProvider secretManagers)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+        _secretManagers = secretManagers ?? throw new ArgumentNullException(nameof(secretManagers));
     }
 
     /// <inheritdoc/>
@@ -66,7 +71,7 @@ public sealed class WebhookNotificationFactory : IWebhookNotificationFactory
             WebhookNotificationFactoryLogger.CreatingNotification(_logger, configuration.Name);
 
             var serviceLogger = _loggerFactory.CreateLogger<WebhookNotificationService>();
-            var service = new WebhookNotificationService(serviceLogger, _httpClientFactory, configuration);
+            var service = new WebhookNotificationService(serviceLogger, _httpClientFactory, _secretManagers, configuration);
 
             WebhookNotificationFactoryLogger.NotificationCreated(
                 _logger,
@@ -131,7 +136,7 @@ public sealed class WebhookNotificationFactory : IWebhookNotificationFactory
             WebhookNotificationFactoryLogger.CreatingNotification(_logger, configuration.Name);
 
             var serviceLogger = _loggerFactory.CreateLogger<WebhookNotificationService>();
-            var service = new WebhookNotificationService(serviceLogger, _httpClientFactory, configuration);
+            var service = new WebhookNotificationService(serviceLogger, _httpClientFactory, _secretManagers, configuration);
 
             WebhookNotificationFactoryLogger.NotificationCreated(
                 _logger,
@@ -190,7 +195,7 @@ public sealed class WebhookNotificationFactory : IWebhookNotificationFactory
             WebhookNotificationFactoryLogger.CreatingNotification(_logger, webhookConfig.Name);
 
             var serviceLogger = _loggerFactory.CreateLogger<WebhookNotificationService>();
-            var service = new WebhookNotificationService(serviceLogger, _httpClientFactory, webhookConfig);
+            var service = new WebhookNotificationService(serviceLogger, _httpClientFactory, _secretManagers, webhookConfig);
 
             WebhookNotificationFactoryLogger.NotificationCreated(
                 _logger,
@@ -234,7 +239,7 @@ public sealed class WebhookNotificationFactory : IWebhookNotificationFactory
             WebhookNotificationFactoryLogger.CreatingNotification(_logger, webhookConfig.Name);
 
             var serviceLogger = _loggerFactory.CreateLogger<WebhookNotificationService>();
-            var service = new WebhookNotificationService(serviceLogger, _httpClientFactory, webhookConfig);
+            var service = new WebhookNotificationService(serviceLogger, _httpClientFactory, _secretManagers, webhookConfig);
 
             WebhookNotificationFactoryLogger.NotificationCreated(
                 _logger,

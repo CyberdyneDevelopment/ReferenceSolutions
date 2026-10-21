@@ -78,6 +78,48 @@ public sealed class SqlMultitenancyType : MultitenancyTypeBase<ISqlMultitenancyF
 
             builder.Services.AddScoped<ITenantProvider, SqlTenantProvider>();
 
+            // Why beside the provider: the writes are the other half of the same tenants table (FDW-1578), and a tenant is read back
+            // through ITenantProvider before it is changed.
+            builder.Services.AddScoped<ITenantWriter, SqlTenantWriter>();
+            builder.Services.AddScoped<IOrganizationWriter, SqlOrganizationWriter>();
+
+            // Why beside the tenant tables: a feature is switched on for a tenant in the table SqlTenantProvider reads its features from
+            // (TenantFeaturesTableName), so the switches take the store, path and that table from SqlTenantConfiguration; the table of
+            // the features a tenant switched on for its organizations sits beside it (FDW-1580).
+            builder.Services.AddScoped<IFeatureEnablement>(sp =>
+            {
+                var tenant = sp.GetRequiredService<SqlTenantConfiguration>();
+                return new FeatureEnablement(
+                    sp.GetRequiredService<IConfigurationGatewayProvider>(),
+                    new FeatureTables(tenant.DataStoreName!, tenant.PathName!, tenant.TenantFeaturesTableName!, "OrganizationFeatures"),
+                    sp.GetService<ILogger<FeatureEnablement>>());
+            });
+
+            // Why beside the features (FDW-1575): retention policies and legal holds are kept in the same tenant schema, in the tables the
+            // platform declares for them. The keeper runs an organization's policies against the application's IRetainedDocuments, which the
+            // application registers (the reference application does in its FileSystem connection type).
+            builder.Services.AddScoped<IRetentionPolicies>(sp =>
+            {
+                var tenant = sp.GetRequiredService<SqlTenantConfiguration>();
+                return new RetentionPolicies(
+                    sp.GetRequiredService<IConfigurationGatewayProvider>(),
+                    new RetentionTables(tenant.DataStoreName!, tenant.PathName!, "RetentionPolicy", "LegalHold"),
+                    sp.GetService<ILogger<RetentionPolicies>>());
+            });
+            builder.Services.AddScoped<ILegalHolds>(sp =>
+            {
+                var tenant = sp.GetRequiredService<SqlTenantConfiguration>();
+                return new LegalHolds(
+                    sp.GetRequiredService<IConfigurationGatewayProvider>(),
+                    new RetentionTables(tenant.DataStoreName!, tenant.PathName!, "RetentionPolicy", "LegalHold"),
+                    sp.GetService<ILogger<LegalHolds>>());
+            });
+            builder.Services.AddScoped<IRetentionKeeper>(sp => new RetentionKeeper(
+                sp.GetRequiredService<IRetentionPolicies>(),
+                sp.GetRequiredService<ILegalHolds>(),
+                sp.GetRequiredService<IRetainedDocuments>(),
+                sp.GetService<ILogger<RetentionKeeper>>()));
+
             // Why: IOrganizationProvider reads tenant.Organization for org resolution and default-org
             // lookup. Registered here (not in Authorization) because it belongs to the multitenancy
             // domain and requires SqlTenantConfiguration for DataStore/path names.

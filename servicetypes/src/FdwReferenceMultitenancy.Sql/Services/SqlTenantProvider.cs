@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Commands.Data;
 using Fdw.Results;
+using Fdw.Services.Authorization;
 using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Multitenancy.Abstractions;
 using FdwReferenceMultitenancy.Sql.Models;
@@ -21,6 +22,8 @@ public sealed class SqlTenantProvider : ITenantProvider
 {
     private readonly IConfigurationGatewayProvider _configurationGateways;
     private readonly SqlTenantConfiguration _configuration;
+    private readonly IOrgAccessProvider? _orgAccess;
+    private readonly SqlOrganizationProvider _organizations;
     private readonly ILogger<SqlTenantProvider> _logger;
 
     /// <summary>
@@ -29,10 +32,15 @@ public sealed class SqlTenantProvider : ITenantProvider
     /// <param name="configurationGateways">Supplies the configuration gateway for tenant data access.</param>
     /// <param name="configuration">The tenant provider configuration.</param>
     /// <param name="logger">Optional logger instance.</param>
+    /// <param name="orgAccess">
+    /// Reads the access a person holds in a department (FDW-1802). Absent on a host that has none, which then cannot say a person may act in
+    /// a department: the question fails loud.
+    /// </param>
     public SqlTenantProvider(
         IConfigurationGatewayProvider configurationGateways,
         SqlTenantConfiguration configuration,
-        ILogger<SqlTenantProvider>? logger = null)
+        ILogger<SqlTenantProvider>? logger = null,
+        IOrgAccessProvider? orgAccess = null)
     {
         ArgumentNullException.ThrowIfNull(configurationGateways);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -40,6 +48,8 @@ public sealed class SqlTenantProvider : ITenantProvider
         _configurationGateways = configurationGateways;
         _configuration = configuration;
         _logger = logger ?? NullLogger<SqlTenantProvider>.Instance;
+        _orgAccess = orgAccess;
+        _organizations = new SqlOrganizationProvider(configurationGateways, configuration);
     }
 
     /// <inheritdoc />
@@ -47,6 +57,7 @@ public sealed class SqlTenantProvider : ITenantProvider
     {
         var command = Query.From<SqlTenantEntity>(_configuration.DataStoreName!, _configuration.PathName!, _configuration.TenantsTableName!)
             .Where("Id", tenantId)
+            .Where("IsDeleted", false)
             .Build();
 
         var result = await Execute<IEnumerable<SqlTenantEntity>>(command, ct).ConfigureAwait(false);
@@ -82,6 +93,7 @@ public sealed class SqlTenantProvider : ITenantProvider
 
         var command = Query.From<SqlTenantEntity>(_configuration.DataStoreName!, _configuration.PathName!, _configuration.TenantsTableName!)
             .Where("Slug", slug)
+            .Where("IsDeleted", false)
             .Build();
 
         var result = await Execute<IEnumerable<SqlTenantEntity>>(command, ct).ConfigureAwait(false);
@@ -112,6 +124,7 @@ public sealed class SqlTenantProvider : ITenantProvider
     {
         var command = Query.From<SqlTenantEntity>(_configuration.DataStoreName!, _configuration.PathName!, _configuration.TenantsTableName!)
             .Where("IsActive", true)
+            .Where("IsDeleted", false)
             .Build();
 
         var result = await Execute<IEnumerable<SqlTenantEntity>>(command, ct).ConfigureAwait(false);
@@ -139,6 +152,7 @@ public sealed class SqlTenantProvider : ITenantProvider
     public async Task<IGenericResult<IEnumerable<ITenant>>> GetAllTenants(CancellationToken ct = default)
     {
         var command = Query.From<SqlTenantEntity>(_configuration.DataStoreName!, _configuration.PathName!, _configuration.TenantsTableName!)
+            .Where("IsDeleted", false)
             .Build();
 
         var result = await Execute<IEnumerable<SqlTenantEntity>>(command, ct).ConfigureAwait(false);
@@ -187,6 +201,7 @@ public sealed class SqlTenantProvider : ITenantProvider
         // and is not an access rule.
         var tenants = await Execute<IEnumerable<SqlTenantEntity>>(
             Query.From<SqlTenantEntity>(_configuration.DataStoreName!, _configuration.PathName!, _configuration.TenantsTableName!)
+                .Where("IsDeleted", false)
                 .Build(),
             ct).ConfigureAwait(false);
         if (!tenants.IsSuccess)
@@ -343,6 +358,42 @@ public sealed class SqlTenantProvider : ITenantProvider
 
         return await gateway.Value!.Execute<T>(command, ct).ConfigureAwait(false);
     }
+    /// <inheritdoc />
+    public async Task<IGenericResult<bool>> ValidateOrganizationAccess(
+        Guid tenantId,
+        Guid organizationId,
+        string userId,
+        CancellationToken ct = default)
+    {
+        if (!Guid.TryParse(userId, out var userIdGuid))
+        {
+            return GenericResult<bool>.Failure(
+                SqlTenantResultCodes.ByName("InvalidUserIdFormat"),
+                ResultDetails.Create().With("UserId", userId));
+        }
+
+        if (_orgAccess is null)
+        {
+            return GenericResult<bool>.Failure(
+                SqlTenantResultCodes.ByName("TenantAccessValidationFailed"),
+                ResultDetails.Create().With("UserId", userId).With("Error", "this host has no organization access provider"));
+        }
+
+        // The department must exist, be this tenant's and be active; only then are the person's access rows asked for (FDW-1802).
+        var organization = await _organizations.Get(organizationId, ct).ConfigureAwait(false);
+        if (organization.IsFailure)
+            return organization.ToNewResult<bool>();
+
+        if (organization.Value is not { IsActive: true } department || department.TenantId != tenantId)
+            return GenericResult<bool>.Success(false);
+
+        var access = await _orgAccess.Get(userIdGuid, tenantId, organizationId, ct).ConfigureAwait(false);
+        if (access.IsFailure)
+            return access.ToNewResult<bool>();
+
+        return GenericResult<bool>.Success(access.Value is { Count: > 0 });
+    }
+
     private async Task<IGenericResult> LoadTenantFeatures(Guid tenantId, TenantOptions options, CancellationToken ct)
     {
         var command = Query.From<TenantFeatureEntity>(_configuration.DataStoreName!, _configuration.PathName!, _configuration.TenantFeaturesTableName!)

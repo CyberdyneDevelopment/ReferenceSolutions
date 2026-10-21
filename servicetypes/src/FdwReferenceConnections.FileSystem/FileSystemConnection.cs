@@ -7,6 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Commands.Data.Abstractions;
 using Fdw.Data.Abstractions;
+using Fdw.Documents.Abstractions;
+using Fdw.Documents.Abstractions.Capabilities;
+using Fdw.Documents.Abstractions.Commands;
 using Fdw.Results;
 using Fdw.Services.Connections;
 using Fdw.Services.Connections.Abstractions;
@@ -30,12 +33,13 @@ namespace FdwReferenceConnections.FileSystem;
 /// </remarks>
 public sealed class FileSystemConnection
     : ConnectionBase<IFileSystemCommand, FileSystemConnectionConfiguration, FileSystemConnection>,
-      IFileSystemConnection, ISupportsHealthProbe, ITransactionalDataConnection
+      IFileSystemConnection, ISupportsHealthProbe, ITransactionalDataConnection, IDocumentConnection
 {
     private readonly FileSystemClient _client;
     private readonly FileSystemCommandTranslator _translator;
     private readonly FileSystemRecordConnector _recordConnector;
     private readonly FileSystemConfigurationWriter _configurationWriter;
+    private readonly FileSystemDocumentStore _documents;
 
     /// <inheritdoc />
     public string Root { get; }
@@ -68,8 +72,31 @@ public sealed class FileSystemConnection
         _configurationWriter = new FileSystemConfigurationWriter(_recordConnector, Name, Root, logger);
         // Why: ConnectionBase already stored the NullLogger-fallbacked logger in Logger; use it so the
         // message actually emits (a message built on a throwaway NullLogger never logs).
+        _documents = new FileSystemDocumentStore(Root, Name, logger);
         FileSystemConnectionLog.Created(Logger, Name, Root);
     }
+
+    /// <summary>
+    /// Gets the scope of the documents: the whole root folder. A narrower scope is applied by whoever uses the connection (FDW-1581).
+    /// </summary>
+    public DocumentScope Scope { get; } = new(DocumentPath.Root);
+
+    /// <summary>
+    /// Gets what the connection can do with documents: create-only writes, ranged and streamed reads, copy and move. It keeps no
+    /// metadata, no versions and no content hash, and creates no read links (FDW-1798).
+    /// </summary>
+    public IReadOnlyCollection<IDocumentCapability> Capabilities { get; } =
+    [
+        DocumentCapabilities.ByName("CreateOnlyWrites"),
+        DocumentCapabilities.ByName("RangedReads"),
+        DocumentCapabilities.ByName("StreamedReads"),
+        DocumentCapabilities.ByName("Copy"),
+        DocumentCapabilities.ByName("Move"),
+    ];
+
+    /// <inheritdoc />
+    public Task<IGenericResult<T>> Execute<T>(IDocumentCommand<T> command, CancellationToken cancellationToken = default)
+        => _documents.Execute(command, cancellationToken);
 
     /// <inheritdoc />
     protected override IDataCommandTranslator<IFileSystemCommand> GetTranslator(string commandType)

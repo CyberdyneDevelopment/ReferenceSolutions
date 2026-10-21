@@ -19,5 +19,12 @@ public sealed class UnifiedTriggerRequestValidator : Validator<UnifiedTriggerReq
             .NotEmpty()
             .Must(source => JobTriggerSourceTypes.ByName(source!) != JobTriggerSourceTypes.NotFound)
             .WithMessage(_ => $"TriggerSource must name a registered trigger source: {string.Join(", ", JobTriggerSourceTypes.All().Select(o => o.Name))}");
+
+        // Why positive (FDW-1676): a test run reads at most this many rows from each source, so zero or a negative number
+        // would run nothing and say nothing; it is refused with the setting named.
+        RuleFor(x => x.TestRowsPerSource)
+            .GreaterThan(0)
+            .When(x => x.TestRowsPerSource.HasValue)
+            .WithMessage("TestRowsPerSource must be a positive number of rows per source.");
     }
 }

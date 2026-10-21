@@ -1,6 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
-using Fdw.Data.Transformations.Configuration;
 using Fdw.Services.Pipelines;
 using Fdw.Services.Pipelines.Endpoints;
 
@@ -15,9 +14,8 @@ public class GetPipelineDetailEndpoint : GetPipelineDetailEndpointBase
     /// <inheritdoc />
     public GetPipelineDetailEndpoint(
         PipelineServiceConfigurationProvider pipelineProvider,
-        ITransformationConfigurationProvider transformations,
         ILogger<GetPipelineDetailEndpoint> logger)
-        : base(logger, pipelineProvider, transformations) {
+        : base(logger, pipelineProvider) {
     }
 
     /// <inheritdoc />

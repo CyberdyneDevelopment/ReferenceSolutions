@@ -60,6 +60,7 @@
        hold for them before the connection moved here. -->
   <ItemGroup>
     <InternalsVisibleTo Include="FdwReferenceConnections.MsSql.Tests" />
+    <InternalsVisibleTo Include="FdwReferenceConnections.Script" />
     <InternalsVisibleTo Include="ReferenceConnections.Authentication.OpenIddict.Tests" />
   </ItemGroup>
 

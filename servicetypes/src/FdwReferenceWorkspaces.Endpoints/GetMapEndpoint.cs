@@ -25,10 +25,11 @@ public sealed class GetMapEndpoint : GetMapEndpointBase
         DataStoreConfigurationProvider dataStores,
         IPipelineConfigurationProvider pipelines,
         IDataSetVariationConfigurationProvider variations,
+        ICategoryConfigurationProvider categories,
         IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access,
         IFrameworkAuthorizationService authorization)
-        : base(logger, dataSets, dataStores, pipelines, variations, workspaces, access, authorization)
+        : base(logger, dataSets, dataStores, pipelines, variations, categories, workspaces, access, authorization)
     {
     }
 }

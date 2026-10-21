@@ -1,73 +1,61 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FastEndpoints;
 using Microsoft.Extensions.Logging;
-using FdwReferenceProxy.Endpoints.Logging;
 
 namespace FdwReferenceProxy.Endpoints;
 
-/// <summary>Proxies an ETL execution approval to the ETL server.</summary>
-public sealed class ApproveEtlExecutionProxyEndpoint : Endpoint<EtlExecutionProxyRequest>
+/// <summary>
+/// <c>POST /etl/executions/{id}/approve</c> (proxy, FDW-1740): approves a run that waits for approval. Forwards the call, with the caller's own token and the
+/// optional message in the body, to the ETL server, which owns the execution tracker and the queue.
+/// </summary>
+/// <remarks>
+/// Why <c>pipelines:approve</c> here too and not <c>pipelines:execute</c>: starting a run and releasing one that waits are different rights.
+/// The ETL server checks the policy again, as the real person.
+/// </remarks>
+[ExcludeFromCodeCoverage]
+public sealed class ApproveEtlExecutionProxyEndpoint : EndpointWithoutRequest
 {
     private readonly IHttpClientFactory _factory;
     private readonly ILogger<ApproveEtlExecutionProxyEndpoint> _logger;
 
     /// <summary>Initializes a new instance of the <see cref="ApproveEtlExecutionProxyEndpoint"/> class.</summary>
-    /// <param name="factory">The HTTP client factory.</param>
+    /// <param name="factory">Supplies the named client that reaches the ETL server.</param>
     /// <param name="logger">The logger.</param>
-    public ApproveEtlExecutionProxyEndpoint(
-        IHttpClientFactory factory,
-        ILogger<ApproveEtlExecutionProxyEndpoint> logger)
+    public ApproveEtlExecutionProxyEndpoint(IHttpClientFactory factory, ILogger<ApproveEtlExecutionProxyEndpoint> logger)
     {
         _factory = factory;
         _logger = logger;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override void Configure()
     {
         Post("/etl/executions/{id}/approve");
-        Policies("pipelines:execute");
+        Policies("pipelines:approve");
         Summary(s =>
         {
-            s.Summary = "Approve a paused ETL execution (proxy)";
-            s.Description = "Forwards to the ETL server, which owns the execution tracker and queue.";
+            s.Summary = "Approve a run that waits for approval (proxy)";
+            s.Description = "Forwards to the ETL server, which owns the execution tracker and queue. Send {} or {\"message\": \"...\"} as the body.";
         });
         Tags("EtlOrchestration");
     }
 
-    /// <inheritdoc/>
-    public override async Task HandleAsync(EtlExecutionProxyRequest req, CancellationToken ct)
+    /// <inheritdoc />
+    public override async Task HandleAsync(CancellationToken ct)
     {
-        ProxyLog.ProxyRequest(_logger, "POST", "Etl", $"etl/executions/{req.Id}/approve");
-
-        var client = _factory.CreateClient(EtlOrchestrationProxy.ClientName);
-        HttpResponseMessage response;
-        try
+        // Why "!": the route template is "/etl/executions/{id}/approve", so a request that reaches this handler always carries the segment.
+        var id = Route<string>("id")!;
+        var relayed = await EtlForwarder.Forward(
+            HttpContext, _factory, _logger, System.Net.Http.HttpMethod.Post, $"executions/{System.Uri.EscapeDataString(id)}/approve", ct).ConfigureAwait(false);
+        if (relayed)
         {
-            response = await client
-                .PostAsync($"etl/executions/{req.Id}/approve", content: null, ct)
-                .ConfigureAwait(false);
-        }
-        catch (HttpRequestException ex)
-        {
-            // Same fix as GetEtlExecutionStatusProxyEndpoint: this raw-HttpClient pass-through has
-            // no typed client to catch a connection failure for it, so it surfaced as a raw 500
-            // instead of the 502 every other proxy endpoint returns when unreachable.
-            ProxyLog.ProxyFailed(_logger, "Etl", ex.Message);
-            AddError("Failed to proxy request to EtlServer");
-            await Send.ErrorsAsync(502, ct).ConfigureAwait(false);
             return;
         }
 
-        using (response)
-        {
-            var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
-                ProxyLog.ProxyFailed(_logger, "Etl", $"status {(int)response.StatusCode}");
-
-            await UpstreamPassThrough.Relay(HttpContext, response, body, ct).ConfigureAwait(false);
-        }
+        AddError("Failed to proxy request to EtlServer");
+        await Send.ErrorsAsync(502, ct).ConfigureAwait(false);
     }
 }

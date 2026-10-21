@@ -11,8 +11,8 @@ namespace FdwReferenceDataSets.Endpoints;
 public class UpdateDataSetEndpoint : UpdateDataSetEndpointBase
 {
     /// <inheritdoc />
-    public UpdateDataSetEndpoint(DataSetConfigurationProvider dataSetProvider, ILogger<UpdateDataSetEndpoint> logger)
-        : base(logger, dataSetProvider) {
+    public UpdateDataSetEndpoint(DataSetConfigurationProvider dataSetProvider, CategoryConfigurationProvider categories, ILogger<UpdateDataSetEndpoint> logger)
+        : base(logger, dataSetProvider, categories) {
     }
 
     /// <inheritdoc />

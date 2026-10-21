@@ -121,6 +121,17 @@ public sealed class BakePermissionsStepType
             Source = ClaimSources.Local,
         }));
 
+        // Stated only when the token is for a department (FDW-1802); the request pipeline resolves the department from it.
+        if (principal.OrganizationId is { } organizationId)
+        {
+            claims.Add(new Claim
+            {
+                Type = ClaimDefinitions.orgId.Name,
+                Value = organizationId.ToString(),
+                Source = ClaimSources.Local,
+            });
+        }
+
         // Stated only for the global tenant, and read by ISystemRoleConfiguration.IsPlatformAdmin: an
         // Admin acting in the global tenant administers the platform, an Admin acting in any other
         // tenant administers only that tenant (FDW-825).
@@ -160,7 +171,9 @@ public sealed class BakePermissionsStepType
         ITenantProvider tenants, CancellationToken cancellationToken)
     {
         var userId = principal.Id.ToString();
-        var inTenant = await userPermissions.Get(userId, tenant.Id, orgId: null, cancellationToken).ConfigureAwait(false);
+        // The department the token is for, when it states one (FDW-1802): the permission service adds the person's access in it. The global
+        // tenant's roles below are tenant-wide and take none.
+        var inTenant = await userPermissions.Get(userId, tenant.Id, principal.OrganizationId, cancellationToken).ConfigureAwait(false);
         if (inTenant.IsFailure)
             return inTenant;
         if (inTenant.Value is null)

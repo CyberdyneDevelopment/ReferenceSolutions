@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FastEndpoints;
 using Fdw.Services.Abstractions;
 using Fdw.Services.Data;
+using Fdw.Services.Data.Endpoints;
 using Fdw.Services.Data.Endpoints.Logging;
 using Microsoft.Extensions.Logging;
 
@@ -19,6 +20,7 @@ namespace FdwReferenceDataSets.Endpoints;
 public class SearchDataSetSourceEndpoint : Endpoint<SearchDataSetSourceRequest, List<DataSetSourceSearchResultDto>>
 {
     private readonly DataSetConfigurationProvider _dataSetProvider;
+    private readonly CategoryConfigurationProvider _categories;
     private readonly ILogger<SearchDataSetSourceEndpoint> _logger;
 
     /// <summary>
@@ -26,9 +28,11 @@ public class SearchDataSetSourceEndpoint : Endpoint<SearchDataSetSourceRequest, 
     /// </summary>
     public SearchDataSetSourceEndpoint(
         DataSetConfigurationProvider dataSetProvider,
+        CategoryConfigurationProvider categories,
         ILogger<SearchDataSetSourceEndpoint> logger)
     {
         _dataSetProvider = dataSetProvider;
+        _categories = categories;
         _logger = logger;
     }
 
@@ -81,16 +85,32 @@ public class SearchDataSetSourceEndpoint : Endpoint<SearchDataSetSourceRequest, 
                 (ds.DisplayName != null && ds.DisplayName.Contains(req.SearchTerm, System.StringComparison.OrdinalIgnoreCase)));
         }
 
-        var results = candidates
-            .OrderBy(ds => ds.Name, System.StringComparer.OrdinalIgnoreCase)
-            .Select(ds => new DataSetSourceSearchResultDto
+        var tree = await DataSetCategoryLinks.Tree(_categories, _logger, ct).ConfigureAwait(false);
+        if (tree.IsFailure || tree.Value is null)
+        {
+            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            return;
+        }
+
+        var results = new List<DataSetSourceSearchResultDto>();
+        foreach (var ds in candidates.OrderBy(ds => ds.Name, System.StringComparer.OrdinalIgnoreCase))
+        {
+            var label = DataSetCategoryLinks.Label(tree.Value, ds.CategoryId, _logger);
+            if (label.IsFailure || label.Value is null)
+            {
+                await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+                return;
+            }
+
+            results.Add(new DataSetSourceSearchResultDto
             {
                 Id = ds.Id,
                 Name = ds.Name,
                 DisplayName = ds.DisplayName ?? ds.Name,
-                Category = ds.Category
-            })
-            .ToList();
+                Category = label.Value.Name,
+                CategoryPath = label.Value.Path,
+            });
+        }
 
         DataSetEndpointLog.DataSetsLoaded(_logger, results.Count);
 

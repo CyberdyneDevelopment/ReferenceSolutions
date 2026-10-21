@@ -86,7 +86,8 @@ public sealed partial class WebhookNotificationConfiguration : INotificationImpl
     public string? PayloadTemplate { get; set; }
 
     /// <summary>
-    /// Gets or sets the number of retry attempts on transient failures. Defaults to 3.
+    /// Gets or sets how many more times a delivery is tried when the receiver cannot be reached, does not answer in time or answers with a
+    /// server error (FDW-1913); a refusal is not tried again. Must not be negative. Defaults to 3.
     /// </summary>
     public int RetryCount { get; set; } = 3;
 

@@ -8,6 +8,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Fdw.Services.Multitenancy.Abstractions" />
     <ProjectReference Include="..\FdwReferenceConnections.FileSystem.Abstractions\FdwReferenceConnections.FileSystem.Abstractions.csproj" />
     <PackageReference Include="Fdw.Services.Connections.Abstractions" />
     <PackageReference Include="Fdw.Services.Connections" />

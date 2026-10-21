@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections;
 using Fdw.Results;
+using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Connections;
 using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Data.Abstractions;
@@ -91,6 +92,10 @@ public sealed class FileSystemConnectionType
             // Why: RegisterFactory (below) requires ConnectionConfigurationProvider (the shared header
             // provider for the whole Connections domain) to already be registered. TryAddSingleton makes
             // this idempotent — every connection-kind option calls it, harmlessly redundant after the first.
+            // Why here (FDW-1575): the reference application keeps an organization's documents as files in the store the organization is
+            // assigned, which in this application is a FileSystem connection. TryAdd, so an application that keeps its documents elsewhere
+            // (or dates them differently) registers its own IRetainedDocuments and the retention policy, hold and job work unchanged.
+            builder.Services.TryAddScoped<IRetainedDocuments, OrganizationStoreRetainedDocuments>();
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
 

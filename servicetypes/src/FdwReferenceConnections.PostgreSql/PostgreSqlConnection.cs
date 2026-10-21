@@ -84,6 +84,12 @@ public sealed class PostgreSqlConnection : ConnectionBase<NpgsqlCommand, Postgre
     /// </summary>
     public NpgsqlConnection InnerConnection => _npgsqlConnection;
 
+    // Why: the script extension (FdwReferenceConnections.Script, FDW-1447) runs a script on this connection and logs where the
+    // connection logs, under its name.
+    internal ILogger ScriptLogger => _logger;
+
+    internal string ScriptConnectionName => _connectionName;
+
     /// <summary>
     /// Executes a NpgsqlCommand with a typed result using container schema for result materialization.
     /// ConnectionBase routes translated NpgsqlCommand to this method.

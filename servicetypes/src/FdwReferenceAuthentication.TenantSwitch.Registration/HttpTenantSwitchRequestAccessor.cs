@@ -41,6 +41,17 @@ public sealed class HttpTenantSwitchRequestAccessor : ITenantSwitchRequestAccess
             ? bound as Guid?
             : null;
 
+    /// <inheritdoc />
+    public Guid? RequestedOrganizationId
+        => _context.HttpContext?.Items.TryGetValue(RequestedOrganizationItemKey, out var bound) == true
+            ? bound as Guid?
+            : null;
+
+    /// <summary>
+    /// The key an endpoint stores the bound requested department (organization) under, when the switch asks for one (FDW-1802).
+    /// </summary>
+    public const string RequestedOrganizationItemKey = "Fdw.Authentication.TenantSwitch.OrganizationId";
+
     /// <summary>
     /// The key an endpoint stores the bound requested tenant under. The model binder has already
     /// read a JSON body by the time a step runs, and the stream is not rewindable.

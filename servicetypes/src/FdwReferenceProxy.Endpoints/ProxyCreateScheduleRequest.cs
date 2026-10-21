@@ -48,10 +48,10 @@ public sealed class ProxyCreateScheduleRequest
     public string? EventName { get; set; }
 
     /// <summary>
-    /// Gets or sets the IANA time zone the schedule's times are evaluated in (FDW-1170), e.g. "America/Chicago". Omitted leaves
-    /// the choice to the scheduler; a zone the server cannot resolve is refused naming the value.
+    /// Gets or sets the IANA time zone the schedule's times are evaluated in (FDW-1170), e.g. "America/Chicago". Required (FDW-2059): a
+    /// create that leaves it out, or names one the server cannot resolve, is refused naming the value. A schedule that wants UTC says "UTC".
     /// </summary>
-    public string? TimeZoneId { get; set; }
+    public string TimeZoneId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets whether the schedule is enabled.

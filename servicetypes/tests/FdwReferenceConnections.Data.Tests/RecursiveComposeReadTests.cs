@@ -171,6 +171,9 @@ public sealed class RecursiveComposeReadTests
         public Task<IGenericResult<IDataGatewayTransaction>> BeginTransaction(string connectionName, CancellationToken cancellationToken = default)
             => Task.FromResult(GenericResult<IDataGatewayTransaction>.Failure(new GenericMessage("Transactions not supported in test double")));
 
+        public Task<IGenericResult<T>> Execute<T>(IVectorizedDataCommand<T> command, DataStoreTarget target, CancellationToken cancellationToken = default)
+            => Task.FromResult(GenericResult<T>.Failure(new GenericMessage("Vectorized commands not supported in ComposingReadGateway test double")));
+
         // Why: the schema tree mirrors ConfigurationDb's data.* schema. Each OWNER container (DataStore,
         // DataPath) carries the Physical (RowId) + Logical (Id) keys the cascade resolves to build the
         // child JOIN; the leaf DataContainer is given the same keys so a nested recurse into it never

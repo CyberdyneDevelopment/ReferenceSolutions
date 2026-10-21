@@ -11,8 +11,8 @@ namespace FdwReferenceDataSets.Endpoints;
 public class CreateDataSetEndpoint : CreateDataSetEndpointBase
 {
     /// <inheritdoc />
-    public CreateDataSetEndpoint(DataSetConfigurationProvider dataSetProvider, ILogger<CreateDataSetEndpoint> logger)
-        : base(logger, dataSetProvider) {
+    public CreateDataSetEndpoint(DataSetConfigurationProvider dataSetProvider, CategoryConfigurationProvider categories, ILogger<CreateDataSetEndpoint> logger)
+        : base(logger, dataSetProvider, categories) {
     }
 
     /// <inheritdoc />

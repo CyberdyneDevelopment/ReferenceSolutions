@@ -15,8 +15,8 @@ public class ListDataSetsEndpoint : ListDataSetsEndpointBase
     /// <summary>
     /// Initializes a new instance of the <see cref="ListDataSetsEndpoint"/> class.
     /// </summary>
-    public ListDataSetsEndpoint(DataSetConfigurationProvider dataSetProvider, ILogger<ListDataSetsEndpoint> logger)
-        : base(logger, dataSetProvider)
+    public ListDataSetsEndpoint(DataSetConfigurationProvider dataSetProvider, CategoryConfigurationProvider categories, ILogger<ListDataSetsEndpoint> logger)
+        : base(logger, dataSetProvider, categories)
     {
     }
 

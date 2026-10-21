@@ -107,7 +107,9 @@ public sealed class TenantSwitchStepType
                 AuthenticatedAt = DateTimeOffset.UtcNow,
             },
 
-            Principal = new Principal { Id = callerId, TenantId = tenantId },
+            // A department is stated only when the switch asked for one; a switch of tenant alone leaves the token without a department
+            // (FDW-1802). The eligibility check that follows decides whether the person may act in it.
+            Principal = new Principal { Id = callerId, TenantId = tenantId, OrganizationId = _request.RequestedOrganizationId },
         })));
     }
 }

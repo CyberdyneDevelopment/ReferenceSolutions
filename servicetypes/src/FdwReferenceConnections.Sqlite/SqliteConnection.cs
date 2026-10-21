@@ -188,6 +188,11 @@ public sealed class SqliteConnection
 
     internal SqliteAdoConnection CreateAdoConnection() => new SqliteAdoConnection(_connectionString);
 
+    // Why: the script extension (FdwReferenceConnections.Script, FDW-1447) logs where the connection logs, under its name.
+    internal ILogger ScriptLogger => _logger;
+
+    internal string ScriptConnectionName => Configuration.Name;
+
     /// <summary>
     /// Internal static entry point used by <see cref="SqliteDataConnectionTransaction"/> to reuse
     /// the same reader-to-type mapping logic without needing a <see cref="SqliteConnection"/> instance.

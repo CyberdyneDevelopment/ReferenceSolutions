@@ -135,6 +135,9 @@ public sealed class DataSetAggregateCompositionTests
         public Task<IGenericResult<IDataGatewayTransaction>> BeginTransaction(string connectionName, CancellationToken cancellationToken = default)
             => Task.FromResult(GenericResult<IDataGatewayTransaction>.Failure(new GenericMessage("Transactions not used in this test")));
 
+        public Task<IGenericResult<T>> Execute<T>(IVectorizedDataCommand<T> command, DataStoreTarget target, CancellationToken cancellationToken = default)
+            => Task.FromResult(GenericResult<T>.Failure(new GenericMessage("Vectorized commands not used in this test")));
+
         private IDataStore BuildTree()
         {
             // The tree ConfigurationDb's data.* DDL declares: the implementation row owns every child
