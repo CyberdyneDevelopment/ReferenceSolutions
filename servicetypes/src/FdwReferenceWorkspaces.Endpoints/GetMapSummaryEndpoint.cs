@@ -27,12 +27,13 @@ public sealed class GetMapSummaryEndpoint : GetMapSummaryEndpointBase
         DataStoreConfigurationProvider dataStores,
         IPipelineConfigurationProvider pipelines,
         IDataSetVariationConfigurationProvider variations,
+        ICategoryConfigurationProvider categories,
         IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access,
         IConnectionConfigurationProvider connections,
         IQualityRuleConfigurationProvider qualityRules,
         IScheduleConfigurationProvider schedules)
-        : base(logger, dataSets, dataStores, pipelines, variations, workspaces, access, connections, qualityRules, schedules)
+        : base(logger, dataSets, dataStores, pipelines, variations, categories, workspaces, access, connections, qualityRules, schedules)
     {
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -10,6 +10,7 @@ using Fdw.Commands.Data.Extensions;
 using Fdw.Data.DataSets.Abstractions;
 using Fdw.Operations.Abstractions.Execution;
 using Fdw.Operations.Abstractions.TypeCollections.Execution;
+using Fdw.Operations.Abstractions.TypeCollections.ExecutionStateOptions;
 using Fdw.Results;
 using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Authorization.Abstractions;
@@ -76,6 +77,12 @@ public sealed class UnifiedTriggerRequest
     /// scheduled run relays the roles its schedule recorded.
     /// </summary>
     public IList<string>? RunRoles { get; set; }
+
+    /// <summary>
+    /// Gets or sets how many rows each source may read in a test run (FDW-1676). When set, the run is a test run: each source stops
+    /// after this many rows, no destination is written and no step with an outside effect runs. When null, the run is a real run. Only a pipeline can be a test run.
+    /// </summary>
+    public int? TestRowsPerSource { get; set; }
 }
 
 /// <summary>
@@ -115,18 +122,11 @@ public sealed class UnifiedTriggerResponse
 [ExcludeFromCodeCoverage]
 public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, UnifiedTriggerResponse>
 {
-    private const string EtlContainerName = "PipelineExecution";
-
     private readonly IExecutionTracker _executionTracker;
-    private readonly IDataGatewayProvider _dataGateways;
-    private readonly IEtlPipelineProvider _pipelineProvider;
-    private readonly IPipelineConfigurationProvider _pipelineConfigurations;
-    private readonly IAuthenticationContextAccessor _accessor;
-    private readonly IPipelineExecutionQueue _pipelineQueue;
     private readonly ProjectExecutionQueue _projectQueue;
-    private readonly IPipelineStatusBroadcaster _broadcaster;
     private readonly IOrchestrationNodeConfigurationProvider _nodeProvider;
-    private readonly PipelineRunAuthority _runAuthority;
+    private readonly IEffectivePolicyResolver _policyResolver;
+    private readonly PipelineTrigger _pipelineTrigger;
     private readonly ILogger<UnifiedTriggerEndpoint> _logger;
 
     public UnifiedTriggerEndpoint(
@@ -136,6 +136,7 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
         IPipelineConfigurationProvider pipelineConfigurations,
         IAuthenticationContextAccessor accessor,
         IPipelineExecutionQueue pipelineQueue,
+        IPipelineRunHolds holds,
         ProjectExecutionQueue projectQueue,
         IPipelineStatusBroadcaster broadcaster,
         IOrchestrationNodeConfigurationProvider nodeProvider,
@@ -143,21 +144,19 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
         IDataSetConfigurationProvider dataSets,
         IConnectionConfigurationProvider connections,
         IDataStoreProvider dataStores,
+        IEffectivePolicyResolver policyResolver,
         ILogger<UnifiedTriggerEndpoint> logger)
     {
         _executionTracker = executionTracker;
-        _dataGateways = dataGateways;
-        _pipelineProvider = pipelineProvider;
-        _pipelineConfigurations = pipelineConfigurations;
-        _accessor = accessor;
-        _pipelineQueue = pipelineQueue;
         _projectQueue = projectQueue;
-        _broadcaster = broadcaster;
         _nodeProvider = nodeProvider;
-        _runAuthority = new PipelineRunAuthority(grants, dataSets, connections, dataStores);
+        _policyResolver = policyResolver;
         // Why NullLogger fallback: per FDW convention, ensures the endpoint remains functional
         // if DI does not wire up logging.
         _logger = logger ?? NullLogger<UnifiedTriggerEndpoint>.Instance;
+        _pipelineTrigger = new PipelineTrigger(
+            executionTracker, dataGateways, pipelineProvider, pipelineConfigurations, accessor, pipelineQueue, holds, broadcaster,
+            new PipelineRunAuthority(grants, dataSets, connections, dataStores), _logger);
     }
 
     public override void Configure()
@@ -263,144 +262,11 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
     }
 
     /// <summary>
-    /// Triggers a pipeline execution.
+    /// Triggers a pipeline execution, for the caller of this request.
     /// </summary>
-    public async Task<IGenericResult<UnifiedTriggerResponse>> TriggerPipeline(
+    public Task<IGenericResult<UnifiedTriggerResponse>> TriggerPipeline(
         UnifiedTriggerRequest req,
-        CancellationToken ct = default)
-    {
-        // Why no defaults (FDW-899): a pipeline is named -- by exactly one of its id or its name (FDW-1088) -- and
-        // what caused the run is recorded on the execution; neither is guessed. This method is also reached without
-        // the request validators, so it refuses them itself.
-        var byName = !string.IsNullOrWhiteSpace(req.Name);
-        if (byName == req.Id.HasValue)
-            return GenericResult<UnifiedTriggerResponse>.Failure(EtlServerLog.PipelineNameRequiredForTrigger(_logger));
-
-        if (string.IsNullOrWhiteSpace(req.TriggerSource))
-            return GenericResult<UnifiedTriggerResponse>.Failure(EtlServerLog.TriggerSourceMissing(_logger, req.Name, req.Id));
-
-        // What the run is called until the pipeline is resolved: its name, or its id when it was named by id.
-        var pipelineName = byName ? req.Name! : req.Id!.Value.ToString("D", CultureInfo.InvariantCulture);
-        var triggerSource = req.TriggerSource;
-
-        // Why the caller's own claim wins over the request-body TenantId: an authenticated per-tenant
-        // caller's token always carries their own tenant_id, so trusting a body-supplied TenantId
-        // directly would let them request execution scoped to a DIFFERENT tenant (cross-tenant RLS
-        // escalation). The body field is only honored when the caller's own token carries no tenant
-        // scope — the case for a system/service-account caller (e.g. the scheduler, which dispatches
-        // for every tenant's schedules and so has no single tenant identity of its own).
-        var callerTenant = new ClaimsPrincipalAuthenticationContext(HttpContext.User).ActiveTenantId;
-        var tenantId = callerTenant ?? req.TenantId;
-
-        // The execution record belongs to the run's tenant; the tracker refuses a run with none.
-        var createResult = await _executionTracker.CreateItem(
-            ExecutionItemTypes.Job,
-            $"{pipelineName}_{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
-            tenantId,
-            parentId: null,
-            correlationId: Guid.NewGuid().ToString(),
-            triggerSource: triggerSource,
-            parameters: new Dictionary<string, object?>
-            {
-                ["PipelineName"] = pipelineName
-            },
-            ct).ConfigureAwait(false);
-
-        if (!createResult.IsSuccess)
-        {
-            return GenericResult<UnifiedTriggerResponse>.Failure(
-                EtlServerLog.ExecutionRecordCreateFailed(_logger,
-                    new InvalidOperationException(EtlServerLog.GetError(createResult, _logger)),
-                    pipelineName,
-                    EtlServerLog.GetError(createResult, _logger)));
-        }
-
-        var executionId = createResult.Value!.Id;
-
-        // Insert ETL-specific metrics record (non-fatal if it fails)
-        // Why no StartedAt: a queued run has not started. The executor sets it when the run reaches Running.
-        var etlRecord = new EtlPipelineExecutionRecord
-        {
-            Id = executionId,
-            PipelineName = pipelineName,
-            Status = createResult.Value!.State.Name
-        };
-        var operationalStore = EtlPipelineTypes.OperationalConnection;
-        if (string.IsNullOrWhiteSpace(operationalStore))
-        {
-            // Reported the same way a failed insert is, because this write is already non-fatal.
-            EtlServerLog.EtlMetricsInsertFailed(
-                _logger,
-                executionId,
-                pipelineName,
-                $"{nameof(EtlPipelineTypes)}.{nameof(EtlPipelineTypes.OperationalConnection)} is not set; the host must name the operational store.");
-        }
-        else
-        {
-            var insertCommand = Insert.Into<EtlPipelineExecutionRecord>(EtlContainerName)
-                .DataStore(operationalStore)
-                .Path("etl")
-                .Value(etlRecord);
-            var insertResult = await _dataGateways.ByName("Main").Execute<int>(insertCommand, ct).ConfigureAwait(false);
-            if (!insertResult.IsSuccess)
-            {
-                EtlServerLog.EtlMetricsInsertFailed(_logger, executionId, pipelineName, insertResult.CurrentMessage);
-            }
-        }
-
-        // Resolved by name in the caller's view -- or, for a service caller relaying a tenant, in that
-        // tenant's -- then built by the id that resolution found: the worker runs exactly that pipeline,
-        // never another tenant's of the same name (FDW-1087).
-        var relayedTenant = callerTenant is null ? tenantId : null;
-        var (resolvedId, resolvedName, notFoundReason, declared, reach) = await ResolvePipeline(
-            byName ? req.Name : null, byName ? null : req.Id, relayedTenant, ct).ConfigureAwait(false);
-        if (resolvedId is not { } pipelineId)
-            return await RefusePipelineNotFound(executionId, pipelineName, notFoundReason).ConfigureAwait(false);
-        pipelineName = resolvedName!;
-
-        // The roles the run acts with are the run's own (FDW-1161), judged now for everything the pipeline reaches: a caller
-        // names roles it holds; a schedule's firing, which has no person behind it, relays the roles its schedule recorded.
-        var authorized = await AuthorizeRun(req, reach!, callerTenant is null, relayedTenant, ct).ConfigureAwait(false);
-        if (authorized.IsFailure)
-            return await RefuseRun(executionId, pipelineName, "PipelineRunRefused", authorized).ConfigureAwait(false);
-
-        // The values a run is given are judged against what the pipeline declares before it is queued: an undeclared name, a
-        // missing required parameter and a value its declared type cannot parse are refused with the parameter named.
-        var values = PipelineRunParameterValues.Resolve(declared, SuppliedValues(req), _logger);
-        if (values.IsFailure)
-            return await RefuseRun(executionId, pipelineName, "InvalidRunParameters", values).ConfigureAwait(false);
-
-        EtlServerLog.PipelineExecutionQueued(_logger, pipelineName, executionId);
-        await _broadcaster.BroadcastStatusChange(pipelineName, executionId, "Triggered").ConfigureAwait(false);
-
-        var enqueued = await _pipelineQueue.Enqueue(new PipelineExecutionRequest
-        {
-            ExecutionId = executionId,
-            PipelineId = pipelineId,
-            PipelineName = pipelineName,
-            TriggerSource = triggerSource,
-            RunRoles = RunRoleSelection.Chosen(req.RunRoles),
-            TenantId = tenantId,
-            Parameters = values.Value
-        }, ct).ConfigureAwait(false);
-
-        if (!enqueued)
-        {
-            EtlLog.ExecutionQueueFull(_logger, pipelineName);
-            return GenericResult<UnifiedTriggerResponse>.Success(new UnifiedTriggerResponse
-            {
-                ExecutionId = executionId,
-                Status = "QueueFull"
-            });
-        }
-
-        EtlLog.ExecutionEnqueued(_logger, pipelineName, executionId);
-        return GenericResult<UnifiedTriggerResponse>.Success(new UnifiedTriggerResponse
-        {
-            ExecutionId = executionId,
-            Status = "Queued"
-        });
-    }
+        CancellationToken ct = default) => _pipelineTrigger.Trigger(req, HttpContext.User, null, ct);
 
     private async Task<IGenericResult<UnifiedTriggerResponse>> TriggerProject(
         UnifiedTriggerRequest req,
@@ -408,6 +274,10 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
     {
         if (string.IsNullOrWhiteSpace(req.TriggerSource))
             return GenericResult<UnifiedTriggerResponse>.Failure(EtlServerLog.TriggerSourceMissing(_logger, req.Name, req.Id));
+
+        // Why refused: a test run is a property of a pipeline run; a project that ignored it would run for real.
+        if (req.TestRowsPerSource is not null)
+            return GenericResult<UnifiedTriggerResponse>.Failure(EtlServerLog.TestRunOnlyForPipeline(_logger, req.Name, req.Id));
 
         var triggerSource = req.TriggerSource;
 
@@ -454,9 +324,20 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
 
         var executionId = createResult.Value!.Id;
 
-        // Why: if approval gate is set, hold in AwaitingApproval — do NOT enqueue
-        if (project.RequireApprovalToRun == true)
+        // Why: if approval gate is set, hold in AwaitingApproval — do NOT enqueue. The run is moved to that state (FDW-1740), so a waiting run is
+        // told from any other new run, and only a decision by someone who holds pipelines:approve starts it. A hold that cannot be recorded is a
+        // failure: answering AwaitingApproval for a run that is not marked as waiting would leave it waiting for nobody.
+        // The project's own setting wins; a project that states none inherits the server default (a null column means inherit).
+        if (_policyResolver.ResolveForRootNode(project).RequireApprovalToRun)
         {
+            var held = await _executionTracker.TransitionState(
+                executionId, ExecutionStateTypes.AwaitingApproval, "Held for approval", "ApprovalGate", ct).ConfigureAwait(false);
+            if (held.IsFailure)
+            {
+                return GenericResult<UnifiedTriggerResponse>.Failure(
+                    EtlServerLog.ApprovalHoldFailed(_logger, executionId, resolvedName, held.CurrentMessage));
+            }
+
             EtlServerLog.ExecutionAwaitingApproval(_logger, executionId, resolvedName);
             return GenericResult<UnifiedTriggerResponse>.Success(new UnifiedTriggerResponse
             {
@@ -488,71 +369,5 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
             ExecutionId = executionId,
             Status = "Queued"
         });
-    }
-
-    // The pipeline, resolved by the id or the name it was named by and built in the view the trigger is entitled
-    // to: its caller's own, or the relayed tenant's for a service caller with none. A schedule relays the id
-    // (FDW-1088), so it resolves exactly the pipeline it stores, never another tenant's of the same name.
-    private async Task<(Guid? Id, string? Name, string? NotFoundReason, IList<PipelineRunParameterConfiguration>? Declared, PipelineReach? Reach)> ResolvePipeline(
-        string? pipelineName, Guid? pipelineId, Guid? relayedTenant, CancellationToken ct)
-    {
-        using var view = new RelayedTenantView(_accessor, relayedTenant);
-        var configuration = pipelineId is { } id
-            ? await _pipelineConfigurations.Get(id, ct).ConfigureAwait(false)
-            : await _pipelineConfigurations.Get(pipelineName!, ct).ConfigureAwait(false);
-        if (!configuration.IsSuccess || configuration.Value is null)
-            return (null, null, configuration.CurrentMessage, null, null);
-
-        var pipeline = await _pipelineProvider.Get(configuration.Value.Id, ct).ConfigureAwait(false);
-        if (!pipeline.IsSuccess || pipeline.Value is null)
-            return (null, null, pipeline.CurrentMessage, null, null);
-        pipeline.Value.Dispose();
-        var declared = configuration.Value is IPipelineLoadConfiguration load ? load.RunParameters : null;
-        return (configuration.Value.Id, configuration.Value.Name, null, declared, PipelineReach.Of(PipelineDetailMapper.Map(configuration.Value)));
-    }
-
-    // The roles judged for what the pipeline reaches, in the view the trigger is entitled to: the caller's own, or the relayed
-    // tenant's for a service caller with none, so what is visible to the run is what would be visible to its tenant.
-    private async Task<IGenericResult> AuthorizeRun(
-        UnifiedTriggerRequest req, PipelineReach reach, bool relayed, Guid? relayedTenant, CancellationToken ct)
-    {
-        using var view = new RelayedTenantView(_accessor, relayedTenant);
-        return relayed
-            ? await _runAuthority.AuthorizeScheduled(reach, RunRoleSelection.Chosen(req.RunRoles), _logger, ct).ConfigureAwait(false)
-            : await _runAuthority.Authorize(
-                new ClaimsPrincipalAuthenticationContext(HttpContext.User), reach, RunRoleSelection.Chosen(req.RunRoles), _logger, ct).ConfigureAwait(false);
-    }
-
-    private static List<KeyValuePair<string, string>> SuppliedValues(UnifiedTriggerRequest req) =>
-        req.Parameters is null ? [] : [.. req.Parameters.Select(p => new KeyValuePair<string, string>(p.Name, p.Value))];
-
-    // The run record already exists, so a run refused for what it was given closes it as failed with the reason.
-    private async Task<IGenericResult<UnifiedTriggerResponse>> RefuseRun(
-        Guid executionId, string pipelineName, string code, IGenericResult refusal)
-    {
-        var completeResult = await _executionTracker.Complete(
-            executionId, false, code, refusal.CurrentMessage, CancellationToken.None).ConfigureAwait(false);
-        if (!completeResult.IsSuccess)
-        {
-            EtlServerLog.ExecutionCompleteFailed(_logger, executionId, pipelineName, completeResult.CurrentMessage);
-        }
-
-        return refusal.ToNewResult<UnifiedTriggerResponse>();
-    }
-
-    // The run record already exists, so a pipeline the caller cannot resolve closes it as not found.
-    private async Task<IGenericResult<UnifiedTriggerResponse>> RefusePipelineNotFound(
-        Guid executionId, string pipelineName, string? reason)
-    {
-        var notFound = EtlServerLog.PipelineNotFoundForTrigger(_logger, pipelineName, reason);
-        var completeResult = await _executionTracker.Complete(
-            executionId, false, "PipelineNotFound", notFound.Message,
-            CancellationToken.None).ConfigureAwait(false);
-        if (!completeResult.IsSuccess)
-        {
-            EtlServerLog.ExecutionCompleteFailed(_logger, executionId, pipelineName, completeResult.CurrentMessage);
-        }
-
-        return GenericResult<UnifiedTriggerResponse>.Failure(notFound);
     }
 }

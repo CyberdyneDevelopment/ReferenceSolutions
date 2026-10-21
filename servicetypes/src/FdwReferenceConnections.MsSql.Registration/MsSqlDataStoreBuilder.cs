@@ -61,11 +61,10 @@ public sealed class MsSqlDataStoreBuilder : DataStoreBuilderBase
     /// <inheritdoc />
     protected override IDataField BuildField(DataContainerFieldConfiguration fieldCfg)
     {
-        // Why: DataType carries the SQL native type name (e.g. "nvarchar", "int"). NotFound sentinel
-        // for an unrecognised type — ExplicitType returns null, observable, never a guessed type.
-        var nativeType = fieldCfg.DataType is null
-            ? MsSqlNativeTypes.NotFound
-            : MsSqlNativeTypes.ByName(fieldCfg.DataType);
+        // Why: DataType carries the SQL native type name (e.g. "nvarchar", "int"), resolved by the name SQL Server uses and not
+        // by option name, which is capitalised for the keywords (Int, Decimal) (FDW-1588). NotFound sentinel for an
+        // unrecognised or missing type — ExplicitType returns null, observable, never a guessed type.
+        var nativeType = MsSqlNativeTypeResolver.Resolve(fieldCfg.DataType);
 
         MsSqlDataStoreBuilderLog.FieldNativeTypeResolved(Logger, fieldCfg.Name, nativeType.Name);
 

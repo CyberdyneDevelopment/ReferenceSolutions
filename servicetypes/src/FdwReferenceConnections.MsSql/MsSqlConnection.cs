@@ -37,7 +37,7 @@ namespace FdwReferenceConnections.MsSql;
 /// driver's internal pool, rather than holding a single connection open.
 /// </summary>
 [ExcludeFromCodeCoverage] // Excluded: requires SQL Server connection
-public sealed class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlConnectionConfiguration, MsSqlConnection>, ITransactionalDataConnection, IRecordSourceConnection, ISupportsHealthProbe, IPooledConnectionSource
+public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlConnectionConfiguration, MsSqlConnection>, ITransactionalDataConnection, IRecordSourceConnection, ISupportsHealthProbe, IPooledConnectionSource
 {
     private readonly string _connectionString;
     private readonly ILogger<MsSqlConnection> _logger;
@@ -93,6 +93,10 @@ public sealed class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlConnection
     // Why: Configuration is non-public on services (FDW-454). Internal database accessor for
     // same-assembly schema-discovery callers (MsSqlSchemaCommands) that need the target db name.
     internal string Database => Configuration.Database;
+
+    // Why: the script extension (FdwReferenceConnections.Script, FDW-1447) runs a script on this connection's own pooled
+    // connections and logs where the connection logs.
+    internal ILogger ScriptLogger => _logger;
 
     /// <summary>
     /// Gets the connection string for creating pooled connections.

@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using FastEndpoints;
 using Fdw.Services.Etl.Projects.Abstractions;
 using Fdw.Services.Etl.Projects.Abstractions.Configuration;
+using Fdw.Services.Etl.Projects.Writers;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceProjects.Endpoints.Logging;
@@ -31,6 +34,12 @@ public sealed class UpdateProjectRequest
 
     /// <summary>Gets or sets the enabled state, or null to leave unchanged.</summary>
     public bool? IsEnabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether a run of the project waits for approval (FDW-1740): true makes a run wait for someone who holds
+    /// <c>pipelines:approve</c>, false states it needs none, null leaves it unchanged.
+    /// </summary>
+    public bool? RequireApprovalToRun { get; set; }
 }
 
 /// <summary>
@@ -40,6 +49,7 @@ public sealed class UpdateProjectRequest
 public sealed class UpdateProjectEndpoint : Endpoint<UpdateProjectRequest, ProjectConfiguration>
 {
     private readonly IOrchestrationNodeConfigurationProvider _provider;
+    private readonly OrchestrationNodeConfigurationWriter _writer;
     private readonly ILogger<UpdateProjectEndpoint> _logger;
 
     /// <summary>
@@ -47,9 +57,11 @@ public sealed class UpdateProjectEndpoint : Endpoint<UpdateProjectRequest, Proje
     /// </summary>
     public UpdateProjectEndpoint(
         IOrchestrationNodeConfigurationProvider provider,
+        OrchestrationNodeConfigurationWriter writer,
         ILogger<UpdateProjectEndpoint> logger)
     {
         _provider = provider;
+        _writer = writer;
         _logger = logger ?? NullLogger<UpdateProjectEndpoint>.Instance;
     }
 
@@ -100,12 +112,23 @@ public sealed class UpdateProjectEndpoint : Endpoint<UpdateProjectRequest, Proje
             existing.Ordinal = req.Ordinal.Value;
         if (req.IsEnabled.HasValue)
             existing.IsEnabled = req.IsEnabled.Value;
+        if (req.RequireApprovalToRun.HasValue)
+            existing.RequireApprovalToRun = req.RequireApprovalToRun.Value;
 
-        var saveResult = await _provider.Save(existing, "OrchestrationNode", existing.Implementation, existing.Name, ct).ConfigureAwait(false);
+        if (existing is not OrchestrationNodeImplementationConfiguration node)
+        {
+            ProjectLog.ProjectUpdateFailed(_logger, req.Id, $"resolved to '{existing.GetType().Name}'");
+            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            return;
+        }
+
+        // Why the writer: it validates the node before anything is stored; the provider alone does not.
+        var saveResult = await _writer.Save(node, ct).ConfigureAwait(false);
         if (saveResult.IsFailure)
         {
             ProjectLog.ProjectUpdateFailed(_logger, req.Id, saveResult.CurrentMessage);
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            var (status, problem) = ResultHttpStatusMapper.Map(saveResult, HttpContext);
+            await Send.ResultAsync(TypedResults.Json(problem, statusCode: status)).ConfigureAwait(false);
             return;
         }
 

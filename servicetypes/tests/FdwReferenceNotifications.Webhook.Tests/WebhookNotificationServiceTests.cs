@@ -1,6 +1,9 @@
 using System.Net;
 using Fdw.Abstractions;
+using Fdw.Results;
 using Fdw.Services.Notifications.Abstractions;
+using Fdw.Services.SecretManagers;
+using Fdw.Services.SecretManagers.Abstractions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq.Protected;
 
@@ -20,6 +23,7 @@ public sealed class WebhookNotificationServiceTests
             Method = "POST",
             ContentType = "application/json",
             TimeoutSeconds = 30,
+            RetryCount = 0,
             PayloadTemplate = payloadTemplate
         };
 
@@ -52,7 +56,7 @@ public sealed class WebhookNotificationServiceTests
             .Returns(httpClient);
 
         var logger = NullLogger<WebhookNotificationService>.Instance;
-        var service = new WebhookNotificationService(logger, httpClientFactoryMock.Object, config);
+        var service = new WebhookNotificationService(logger, httpClientFactoryMock.Object, Mock.Of<ISecretManagerProvider>(), config);
 
         return (service, handlerMock);
     }
@@ -290,6 +294,7 @@ public sealed class WebhookNotificationServiceTests
         var service = new WebhookNotificationService(
             NullLogger<WebhookNotificationService>.Instance,
             httpClientFactoryMock.Object,
+            Mock.Of<ISecretManagerProvider>(),
             config);
 
         var request = BuildRequest();
@@ -309,7 +314,7 @@ public sealed class WebhookNotificationServiceTests
         // Arrange
         const string template = "{\"text\": \"{subject}: {body}\", \"type\": \"{type}\"}";
         var config = BuildConfig(payloadTemplate: template);
-        HttpRequestMessage? capturedRequest = null;
+        string? body = null;
 
         var handlerMock = new Mock<HttpMessageHandler>();
         handlerMock.Protected()
@@ -317,9 +322,10 @@ public sealed class WebhookNotificationServiceTests
                 "SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync((HttpRequestMessage req, CancellationToken _) =>
+            .Returns(async (HttpRequestMessage req, CancellationToken cancellationToken) =>
             {
-                capturedRequest = req;
+                // Why the body is read here: the client disposes the request and its content when the send completes, so a read after Send throws.
+                body = await req.Content!.ReadAsStringAsync(cancellationToken);
                 return new HttpResponseMessage(HttpStatusCode.OK);
             });
 
@@ -331,6 +337,7 @@ public sealed class WebhookNotificationServiceTests
         var service = new WebhookNotificationService(
             NullLogger<WebhookNotificationService>.Instance,
             httpClientFactoryMock.Object,
+            Mock.Of<ISecretManagerProvider>(),
             config);
 
         var request = BuildRequest("Hello World");
@@ -339,8 +346,7 @@ public sealed class WebhookNotificationServiceTests
         await service.Send(request, TestContext.Current.CancellationToken);
 
         // Assert - payload should have tokens replaced
-        capturedRequest.ShouldNotBeNull();
-        var body = await capturedRequest!.Content!.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        body.ShouldNotBeNull();
         body.ShouldContain("Test Subject");
         body.ShouldContain("Hello World");
         body.ShouldNotContain("{subject}");
@@ -354,7 +360,7 @@ public sealed class WebhookNotificationServiceTests
     {
         // Arrange
         var config = BuildConfig(payloadTemplate: null);
-        HttpRequestMessage? capturedRequest = null;
+        string? body = null;
 
         var handlerMock = new Mock<HttpMessageHandler>();
         handlerMock.Protected()
@@ -362,9 +368,10 @@ public sealed class WebhookNotificationServiceTests
                 "SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync((HttpRequestMessage req, CancellationToken _) =>
+            .Returns(async (HttpRequestMessage req, CancellationToken cancellationToken) =>
             {
-                capturedRequest = req;
+                // Why the body is read here: the client disposes the request and its content when the send completes, so a read after Send throws.
+                body = await req.Content!.ReadAsStringAsync(cancellationToken);
                 return new HttpResponseMessage(HttpStatusCode.OK);
             });
 
@@ -376,6 +383,7 @@ public sealed class WebhookNotificationServiceTests
         var service = new WebhookNotificationService(
             NullLogger<WebhookNotificationService>.Instance,
             httpClientFactoryMock.Object,
+            Mock.Of<ISecretManagerProvider>(),
             config);
 
         var request = BuildRequest();
@@ -384,8 +392,7 @@ public sealed class WebhookNotificationServiceTests
         await service.Send(request, TestContext.Current.CancellationToken);
 
         // Assert - payload should be standard JSON
-        capturedRequest.ShouldNotBeNull();
-        var body = await capturedRequest!.Content!.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        body.ShouldNotBeNull();
         body.ShouldContain("\"subject\"");
         body.ShouldContain("\"body\"");
         body.ShouldContain("\"type\"");
@@ -454,7 +461,7 @@ public sealed class WebhookNotificationServiceTests
 
         // Act & Assert
         Should.Throw<ArgumentNullException>(() =>
-            new WebhookNotificationService(null!, httpClientFactory, config));
+            new WebhookNotificationService(null!, httpClientFactory, Mock.Of<ISecretManagerProvider>(), config));
     }
 
     [Fact]
@@ -470,6 +477,7 @@ public sealed class WebhookNotificationServiceTests
             new WebhookNotificationService(
                 NullLogger<WebhookNotificationService>.Instance,
                 null!,
+                Mock.Of<ISecretManagerProvider>(),
                 config));
     }
 
@@ -486,6 +494,7 @@ public sealed class WebhookNotificationServiceTests
             new WebhookNotificationService(
                 NullLogger<WebhookNotificationService>.Instance,
                 httpClientFactory,
+                Mock.Of<ISecretManagerProvider>(),
                 null!));
     }
 
@@ -500,5 +509,119 @@ public sealed class WebhookNotificationServiceTests
 
         // Act & Assert
         Should.NotThrow(() => service.Dispose());
+    }
+
+    private const string SecretValueText = "s3cr3t-value-for-the-test";
+
+    // The request the service sent, for the header the secret travels in.
+    private static (WebhookNotificationService service, List<HttpRequestMessage> sent) BuildSecretService(
+        WebhookNotificationConfiguration config,
+        Mock<ISecretManagerProvider> secretManagers)
+    {
+        var sent = new List<HttpRequestMessage>();
+        var handlerMock = new Mock<HttpMessageHandler>();
+        handlerMock.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>((message, _) => sent.Add(message))
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
+        var factory = new Mock<IHttpClientFactory>();
+        factory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(new HttpClient(handlerMock.Object));
+        var service = new WebhookNotificationService(
+            NullLogger<WebhookNotificationService>.Instance, factory.Object, secretManagers.Object, config);
+        return (service, sent);
+    }
+
+    private static Mock<ISecretManagerProvider> SecretManagerHolding(string name, string key, string value)
+    {
+        var manager = new Mock<ISecretManager>();
+        manager.Setup(m => m.Execute(It.IsAny<ISecretManagerCommand<SecretValue>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<SecretValue>.Success(new SecretValue(key, value)));
+        var provider = new Mock<ISecretManagerProvider>();
+        provider.Setup(p => p.Get(name, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<ISecretManager>.Success(manager.Object));
+        return provider;
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "Security")]
+    public async Task ANamedSecretIsSentInTheWebhookSecretHeader()
+    {
+        var config = BuildConfig();
+        config.SecretManagerName = "Main";
+        config.SecretKeyName = "partner-hook";
+        var (service, sent) = BuildSecretService(config, SecretManagerHolding("Main", "partner-hook", SecretValueText));
+
+        var result = await service.Send(BuildRequest(), TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeTrue(result.CurrentMessage);
+        var request = sent.ShouldHaveSingleItem();
+        request.Headers.GetValues(WebhookNotificationService.SecretHeader).ShouldBe([SecretValueText]);
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "Security")]
+    public async Task AServiceThatNamesNoSecretSendsNoSecretHeader()
+    {
+        var secretManagers = new Mock<ISecretManagerProvider>();
+        var (service, sent) = BuildSecretService(BuildConfig(), secretManagers);
+
+        var result = await service.Send(BuildRequest(), TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeTrue(result.CurrentMessage);
+        sent.ShouldHaveSingleItem().Headers.Contains(WebhookNotificationService.SecretHeader).ShouldBeFalse();
+        secretManagers.Verify(p => p.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData("Main", null, "SecretKeyName")]
+    [InlineData(null, "partner-hook", "SecretManagerName")]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "Security")]
+    public async Task AServiceThatNamesHalfASecretSendsNothingAndNamesTheMissingHalf(string? manager, string? key, string missing)
+    {
+        var config = BuildConfig();
+        config.SecretManagerName = manager;
+        config.SecretKeyName = key;
+        var secretManagers = new Mock<ISecretManagerProvider>();
+        var (service, sent) = BuildSecretService(config, secretManagers);
+
+        var result = await service.Send(BuildRequest(), TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.CurrentMessage.ShouldNotBeNull().ShouldContain(missing);
+        sent.ShouldBeEmpty();
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "Security")]
+    public async Task ASecretThatCannotBeReadSendsNothingAndTheFailureNamesNoValue()
+    {
+        var config = BuildConfig();
+        config.SecretManagerName = "Main";
+        config.SecretKeyName = "partner-hook";
+        var secretManagers = new Mock<ISecretManagerProvider>();
+        secretManagers.Setup(p => p.Get("Main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<ISecretManager>.Failure(Mock.Of<Fdw.Messages.IGenericMessage>()));
+        var (service, sent) = BuildSecretService(config, secretManagers);
+
+        var result = await service.Send(BuildRequest(), TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeFalse();
+        (result.CurrentMessage ?? string.Empty).ShouldNotContain(SecretValueText);
+        sent.ShouldBeEmpty();
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "Api")]
+    public void ConstructorThrowsWhenSecretManagerProviderIsNull()
+    {
+        var factory = new Mock<IHttpClientFactory>().Object;
+
+        Should.Throw<ArgumentNullException>(() =>
+            new WebhookNotificationService(NullLogger<WebhookNotificationService>.Instance, factory, null!, BuildConfig()));
     }
 }

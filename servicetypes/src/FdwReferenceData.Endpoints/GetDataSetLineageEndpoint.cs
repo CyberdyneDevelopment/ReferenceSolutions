@@ -16,9 +16,8 @@ public sealed class GetDataSetLineageEndpoint : GetDataSetLineageEndpointBase
         DataSetConfigurationProvider dataSetProvider,
         Fdw.Services.Pipelines.PipelineServiceConfigurationProvider pipelineProvider,
         Fdw.Services.Calculations.ICalculationConfigurationProvider calculations,
-        Fdw.Services.Data.LineageConfigurationProvider lineage,
         ILogger<Fdw.Operations.Endpoints.GetDataSetLineageEndpointBase> logger)
-        : base(dataSetProvider, pipelineProvider, calculations, lineage, logger)
+        : base(dataSetProvider, pipelineProvider, calculations, logger)
     {
     }
 }

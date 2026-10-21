@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Catalog.Endpoints;
+using Fdw.Data.DataSets.Abstractions;
 using Fdw.Services.Quality;
 
 namespace FdwReferenceCatalog.Endpoints;
@@ -11,8 +12,8 @@ namespace FdwReferenceCatalog.Endpoints;
 public sealed class ListGlossaryTermsEndpoint : ListGlossaryTermsEndpointBase
 {
     /// <inheritdoc />
-    public ListGlossaryTermsEndpoint(IGlossaryTermConfigurationProvider provider)
-        : base(provider)
+    public ListGlossaryTermsEndpoint(IGlossaryTermConfigurationProvider provider, ICategoryConfigurationProvider categories)
+        : base(provider, categories)
     {
     }
 }

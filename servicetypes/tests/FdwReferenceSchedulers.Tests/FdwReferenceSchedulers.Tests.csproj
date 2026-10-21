@@ -7,7 +7,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\FdwReferenceSchedulers.Quartz\FdwReferenceSchedulers.Quartz.csproj" />
-    <ProjectReference Include="..\..\src\FdwReferenceSchedulers.Hangfire\FdwReferenceSchedulers.Hangfire.csproj" />
     <ProjectReference Include="..\..\src\FdwReferenceSchedulers.EtlDispatch\FdwReferenceSchedulers.EtlDispatch.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -16,7 +15,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
   <PropertyGroup>
-    <Include>[FdwReferenceSchedulers.Quartz]*,[FdwReferenceSchedulers.Hangfire]*</Include>
+    <Include>[FdwReferenceSchedulers.Quartz]*</Include>
     <Exclude>[xunit.*]*,[Moq]*,[Shouldly]*</Exclude>
   </PropertyGroup>
 </Project>

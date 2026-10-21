@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Fdw.Services.Notifications.Endpoints.Logging;
 using Fdw.Services.Notifications.Abstractions;
 ﻿using System;
@@ -70,7 +71,7 @@ public class CreateNotificationEndpoint
         {
             return GenericResult<NotificationDetailDto>.Failure(
                 NotificationEndpointLog.UnknownNotificationImplementation(
-                    Logger, request.Name, implementation ?? string.Empty));
+                    Logger, request.Name, implementation ?? string.Empty, string.Join(", ", Builders.Keys.OrderBy(k => k, StringComparer.Ordinal))));
         }
 
         // Why a builder per implementation rather than one flat record: Notification is a domain with

@@ -3,8 +3,10 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using FastEndpoints;
-using Fdw.Services.Etl.Projects.Abstractions;
 using Fdw.Services.Etl.Projects.Abstractions.Configuration;
+using Fdw.Services.Etl.Projects.Writers;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Microsoft.AspNetCore.Http;
 using Fdw.Services.Etl.Projects.Abstractions.TypeCollections;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -26,6 +28,12 @@ public sealed class CreateProjectRequest
 
     /// <summary>Gets or sets the display ordinal among sibling projects.</summary>
     public int Ordinal { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether a run of the project waits for someone who holds <c>pipelines:approve</c> to approve it (FDW-1740). True makes a
+    /// run wait; false states it needs no approval; null (left out) inherits the server's default.
+    /// </summary>
+    public bool? RequireApprovalToRun { get; set; }
 }
 
 /// <summary>
@@ -34,17 +42,17 @@ public sealed class CreateProjectRequest
 [ExcludeFromCodeCoverage]
 public sealed class CreateProjectEndpoint : Endpoint<CreateProjectRequest, ProjectConfiguration>
 {
-    private readonly IOrchestrationNodeConfigurationProvider _provider;
+    private readonly OrchestrationNodeConfigurationWriter _writer;
     private readonly ILogger<CreateProjectEndpoint> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateProjectEndpoint"/> class.
     /// </summary>
     public CreateProjectEndpoint(
-        IOrchestrationNodeConfigurationProvider provider,
+        OrchestrationNodeConfigurationWriter writer,
         ILogger<CreateProjectEndpoint> logger)
     {
-        _provider = provider;
+        _writer = writer;
         _logger = logger ?? NullLogger<CreateProjectEndpoint>.Instance;
     }
 
@@ -83,13 +91,16 @@ public sealed class CreateProjectEndpoint : Endpoint<CreateProjectRequest, Proje
             Description = req.Description,
             Ordinal = req.Ordinal,
             IsEnabled = true,
+            RequireApprovalToRun = req.RequireApprovalToRun,
         };
 
-        var result = await _provider.Save(config, "OrchestrationNode", config.Implementation, config.Name, ct).ConfigureAwait(false);
+        // Why the writer: it validates the node before anything is stored; the provider alone does not.
+        var result = await _writer.Save(config, ct).ConfigureAwait(false);
         if (result.IsFailure)
         {
             ProjectLog.ProjectCreateFailed(_logger, req.Name, result.CurrentMessage);
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            var (status, problem) = ResultHttpStatusMapper.Map(result, HttpContext);
+            await Send.ResultAsync(TypedResults.Json(problem, statusCode: status)).ConfigureAwait(false);
             return;
         }
 

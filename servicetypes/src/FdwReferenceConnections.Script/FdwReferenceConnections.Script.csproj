@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <Description>The script extension of the database connections (FDW-1447): MsSqlScriptConnection, PostgreSqlScriptConnection and SqliteScriptConnection wrap their connections so a data engineer's SQL script, with named parameters, runs through the data gateway. Scripts are for ETL: only a host that references this package takes one.</Description>
+  </PropertyGroup>
+
+  <!-- Why: the extension wraps the connections the data stores reach their data by, so it is built over each of them. -->
+  <ItemGroup>
+    <ProjectReference Include="..\FdwReferenceConnections.MsSql\FdwReferenceConnections.MsSql.csproj" />
+    <ProjectReference Include="..\FdwReferenceConnections.PostgreSql\FdwReferenceConnections.PostgreSql.csproj" />
+    <ProjectReference Include="..\FdwReferenceConnections.Sqlite\FdwReferenceConnections.Sqlite.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.Commands.Data.Abstractions" />
+    <PackageReference Include="Fdw.Data.Sqlite" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Services.Connections" />
+    <PackageReference Include="Fdw.Services.Connections.Abstractions" />
+    <PackageReference Include="Fdw.Services.Connections.MsSql" />
+    <PackageReference Include="Fdw.Services.Connections.PostgreSql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="FdwReferenceConnections.Script.Tests" />
+  </ItemGroup>
+
+</Project>

@@ -58,6 +58,7 @@ public sealed class TriggerPipelineProxyEndpoint : Endpoint<ProxyTriggerEtlReque
             TriggerSource = req.TriggerSource,
             Parameters = req.Parameters,
             RunRoles = req.RunRoles,
+            TestRowsPerSource = req.TestRowsPerSource,
         };
 
         var result = await _client.Trigger(request, ct);

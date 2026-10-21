@@ -21,7 +21,7 @@ namespace FdwReferenceSchedulers.EtlDispatch;
 /// Runs a firing schedule's pipeline by triggering it on the ETL server (FDW-902).
 /// </summary>
 /// <remarks>
-/// The scheduler (Quartz, Hangfire) decides WHEN; this decides HOW: the process id is the pipeline
+/// The scheduler (Quartz) decides WHEN; this decides HOW: the process id is the pipeline
 /// name, and the run is triggered through <see cref="IPipelineJobClient"/>, whose base address is the
 /// <c>PipelineJobClient</c> HTTP connection. The schedule's own tenant is relayed, because a scheduled
 /// fire has no caller whose token carries one, and so are the roles its creator recorded, because a fire has no caller to name them.

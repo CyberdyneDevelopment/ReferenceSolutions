@@ -40,14 +40,14 @@ public sealed class GetEtlExecutionStatusProxyEndpoint : Endpoint<EtlExecutionPr
     /// <inheritdoc/>
     public override async Task HandleAsync(EtlExecutionProxyRequest req, CancellationToken ct)
     {
-        ProxyLog.ProxyRequest(_logger, "GET", "Etl", $"etl/executions/{req.Id}");
+        ProxyLog.ProxyRequest(_logger, "GET", "Etl", $"executions/{req.Id}");
 
         var client = _factory.CreateClient(EtlOrchestrationProxy.ClientName);
         HttpResponseMessage response;
         try
         {
             response = await client
-                .GetAsync($"etl/executions/{req.Id}", ct)
+                .GetAsync($"executions/{req.Id}", ct)
                 .ConfigureAwait(false);
         }
         catch (HttpRequestException ex)

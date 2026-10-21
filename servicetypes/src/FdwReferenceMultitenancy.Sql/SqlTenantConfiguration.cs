@@ -14,8 +14,9 @@ namespace FdwReferenceMultitenancy.Sql;
 /// forced during the Multitenancy domain's post-Build <c>SqlMultitenancyType.Initialize</c> (FdwReferenceMultitenancy.Sql)
 /// fail-fast phase — never bound from <c>IConfiguration</c> (see
 /// <c>SqlMultitenancyLog</c> (FdwReferenceMultitenancy.Sql)).
-/// Why: Tenant definitions are system infrastructure. Users cannot create/delete tenants
-/// through cfg CRUD — that is a system admin operation managed through settings schema and seed data.
+/// Why: Tenant definitions are system infrastructure. They are made, changed and removed only through
+/// <see cref="Fdw.Services.Multitenancy.Abstractions.ITenantWriter"/> (FDW-1578), which a platform administrator reaches through
+/// the tenant endpoints; the seed supplies the first tenant.
 /// </summary>
 [ExcludeFromCodeCoverage]
 [GenerateMapper]

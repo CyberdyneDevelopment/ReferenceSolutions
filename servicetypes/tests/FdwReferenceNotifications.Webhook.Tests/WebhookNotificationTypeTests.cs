@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Fdw.Services.Notifications.Abstractions;
 using Fdw.ServiceTypes;
+using Fdw.Services.SecretManagers.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using FdwReferenceNotifications.Webhook.Registration;
@@ -52,6 +53,8 @@ public sealed class WebhookNotificationTypeTests
         // option's Register decorates that existing registration. This test calls the option's
         // Register in isolation, so it has to seed the same prerequisite itself.
         services.AddScoped<INotificationServiceProvider>(_ => Mock.Of<INotificationServiceProvider>());
+        // Why: the factory builds services that read their secret from a secret manager, so it needs the provider the host registers.
+        services.AddSingleton(Mock.Of<ISecretManagerProvider>());
 
         // Act
         var result = sut.Register(builder, null);

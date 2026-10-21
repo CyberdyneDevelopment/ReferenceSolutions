@@ -300,6 +300,12 @@ public static partial class EtlServerLog
         Message = "A pipeline trigger must name the pipeline by exactly one of its id or its name")]
     public static partial IGenericMessage PipelineNameRequiredForTrigger(ILogger logger);
 
+    [MessageLogging(
+        EventId = 10276,
+        Level = LogLevel.Warning,
+        Message = "Trigger for name='{name}' id='{id}' states TestRowsPerSource, but only a pipeline can be a test run")]
+    public static partial IGenericMessage TestRunOnlyForPipeline(ILogger logger, string? name, Guid? id);
+
     // Execution control endpoints (10270-10279)
 
     [MessageLogging(
@@ -591,6 +597,36 @@ public static partial class EtlServerLog
         Level = LogLevel.Error,
         Message = "Execution Complete call failed for execution '{executionId}', pipeline '{pipelineName}': {message}")]
     public static partial IGenericMessage ExecutionCompleteFailed(ILogger logger, Guid executionId, string pipelineName, string? message);
+
+    [MessageLogging(
+        EventId = 10364,
+        Level = LogLevel.Error,
+        Message = "Execution '{executionId}' of project '{projectName}' could not be held for approval: {message}")]
+    public static partial IGenericMessage ApprovalHoldFailed(ILogger logger, Guid executionId, string projectName, string? message);
+
+    [MessageLogging(
+        EventId = 10365,
+        Level = LogLevel.Error,
+        Message = "Execution '{executionId}' of pipeline '{pipelineName}' could not be held for approval: {message}")]
+    public static partial IGenericMessage PipelineApprovalHoldFailed(ILogger logger, Guid executionId, string pipelineName, string? message);
+
+    [MessageLogging(
+        EventId = 10366,
+        Level = LogLevel.Information,
+        Message = "Execution '{executionId}' of pipeline '{pipelineName}' waits for approval")]
+    public static partial IGenericMessage PipelineHeldForApproval(ILogger logger, Guid executionId, string pipelineName);
+
+    [MessageLogging(
+        EventId = 10367,
+        Level = LogLevel.Error,
+        Message = "Execution '{executionId}' of pipeline '{pipelineName}' is already held for approval, so its request was not held again")]
+    public static partial IGenericMessage PipelineHoldRefused(ILogger logger, Guid executionId, string pipelineName);
+
+    [MessageLogging(
+        EventId = 10363,
+        Level = LogLevel.Error,
+        Message = "Recording the parameters given to execution '{executionId}', pipeline '{pipelineName}', failed: {message}")]
+    public static partial IGenericMessage RunParametersRecordFailed(ILogger logger, Guid executionId, string pipelineName, string? message);
 
     /// <summary>
     /// Returns the error message from a result, logging a warning if CurrentMessage is null.

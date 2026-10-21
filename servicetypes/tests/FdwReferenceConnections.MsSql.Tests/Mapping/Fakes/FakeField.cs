@@ -10,6 +10,7 @@ internal sealed class FakeField : IField
 {
     public string Name { get; init; } = string.Empty;
     public IFieldType FieldType { get; init; } = null!;
+    public IDataType? ExplicitType { get; init; }
     public IDatumType Role { get; init; } = DatumTypes.ByName("Attribute");
     public bool IsRequired => !IsNullable;
     public bool IsNullable { get; init; }

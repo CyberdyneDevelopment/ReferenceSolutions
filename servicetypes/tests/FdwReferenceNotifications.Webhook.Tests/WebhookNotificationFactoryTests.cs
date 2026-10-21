@@ -1,5 +1,6 @@
 using Fdw.Configuration;
 using Fdw.Services.Notifications.Abstractions;
+using Fdw.Services.SecretManagers.Abstractions;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace FdwReferenceNotifications.Webhook.Tests;
@@ -14,7 +15,7 @@ public sealed class WebhookNotificationFactoryTests
         var logger = NullLogger<WebhookNotificationFactory>.Instance;
         var loggerFactory = NullLoggerFactory.Instance;
         var httpClientFactory = new Mock<IHttpClientFactory>().Object;
-        return new WebhookNotificationFactory(logger, loggerFactory, httpClientFactory);
+        return new WebhookNotificationFactory(logger, loggerFactory, httpClientFactory, Mock.Of<ISecretManagerProvider>());
     }
 
     private static WebhookNotificationConfiguration BuildValidConfig(string name = "TestWebhook") =>
@@ -133,7 +134,7 @@ public sealed class WebhookNotificationFactoryTests
 
         // Act & Assert
         Should.Throw<ArgumentNullException>(() =>
-            new WebhookNotificationFactory(null!, loggerFactory, httpClientFactory));
+            new WebhookNotificationFactory(null!, loggerFactory, httpClientFactory, Mock.Of<ISecretManagerProvider>()));
     }
 
     [Fact]
@@ -147,7 +148,7 @@ public sealed class WebhookNotificationFactoryTests
 
         // Act & Assert
         Should.Throw<ArgumentNullException>(() =>
-            new WebhookNotificationFactory(logger, null!, httpClientFactory));
+            new WebhookNotificationFactory(logger, null!, httpClientFactory, Mock.Of<ISecretManagerProvider>()));
     }
 
     [Fact]
@@ -161,7 +162,22 @@ public sealed class WebhookNotificationFactoryTests
 
         // Act & Assert
         Should.Throw<ArgumentNullException>(() =>
-            new WebhookNotificationFactory(logger, loggerFactory, null!));
+            new WebhookNotificationFactory(logger, loggerFactory, null!, Mock.Of<ISecretManagerProvider>()));
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "Api")]
+    public void ConstructorThrowsWhenSecretManagerProviderIsNull()
+    {
+        // Arrange
+        var logger = NullLogger<WebhookNotificationFactory>.Instance;
+        var loggerFactory = NullLoggerFactory.Instance;
+        var httpClientFactory = new Mock<IHttpClientFactory>().Object;
+
+        // Act & Assert
+        Should.Throw<ArgumentNullException>(() =>
+            new WebhookNotificationFactory(logger, loggerFactory, httpClientFactory, null!));
     }
 
     [Fact]

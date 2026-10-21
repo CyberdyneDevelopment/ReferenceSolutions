@@ -119,4 +119,44 @@ public static partial class ExecutionLog
 
     [MessageLogging(EventId = 8442, Level = LogLevel.Error, Message = "Failed to fetch children for execution '{executionId}': {message}")]
     public static partial IGenericMessage ChildrenFetchFailed(ILogger logger, Guid executionId, string message);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Approval decisions (8443-8448, 8451-8456; FDW-1740, FDW-1937)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    [MessageLogging(EventId = 8443, Level = LogLevel.Information, Message = "Execution '{executionId}': '{decision}' requested by '{actor}'")]
+    public static partial IGenericMessage DecidingExecution(ILogger logger, Guid executionId, string decision, string actor);
+
+    [MessageLogging(EventId = 8444, Level = LogLevel.Warning, Message = "Execution '{executionId}': '{decision}' refused, the caller carries no identity")]
+    public static partial IGenericMessage DecisionCallerUnknown(ILogger logger, Guid executionId, string decision);
+
+    [MessageLogging(EventId = 8445, Level = LogLevel.Warning, Message = "Execution '{executionId}' is '{state}', not AwaitingApproval, so it cannot be decided")]
+    public static partial IGenericMessage ExecutionNotAwaitingApproval(ILogger logger, Guid executionId, string state);
+
+    [MessageLogging(EventId = 8446, Level = LogLevel.Warning, Message = "Execution '{executionId}': the decision was refused by the tracker, someone decided first: {message}")]
+    public static partial IGenericMessage ExecutionDecisionRefused(ILogger logger, Guid executionId, string? message);
+
+    [MessageLogging(EventId = 8447, Level = LogLevel.Error, Message = "Execution '{executionId}' was decided but could not be released, and goes back to waiting: {message}")]
+    public static partial IGenericMessage ExecutionReleaseFailed(ILogger logger, Guid executionId, string? message);
+
+    [MessageLogging(EventId = 8448, Level = LogLevel.Information, Message = "Execution '{executionId}': '{decision}' made by '{actor}'")]
+    public static partial IGenericMessage ExecutionDecided(ILogger logger, Guid executionId, string decision, string actor);
+
+    [MessageLogging(EventId = 8451, Level = LogLevel.Error, Message = "Execution '{executionId}' was decided but could not be put back to waiting: {message}")]
+    public static partial IGenericMessage ExecutionReturnToWaitingFailed(ILogger logger, Guid executionId, string? message);
+
+    [MessageLogging(EventId = 8452, Level = LogLevel.Warning, Message = "Execution '{executionId}' is a '{itemType}' run; only a project run or a pipeline run waits for approval")]
+    public static partial IGenericMessage ExecutionNotAProjectRun(ILogger logger, Guid executionId, string itemType);
+
+    [MessageLogging(EventId = 8453, Level = LogLevel.Error, Message = "Execution '{executionId}' cannot be released: its record has no {missing}")]
+    public static partial IGenericMessage ProjectRunIncomplete(ILogger logger, Guid executionId, string missing);
+
+    [MessageLogging(EventId = 8454, Level = LogLevel.Warning, Message = "Execution '{executionId}' cannot be released: the project queue is full for project '{projectName}'")]
+    public static partial IGenericMessage ProjectQueueFullOnRelease(ILogger logger, Guid executionId, string projectName);
+
+    [MessageLogging(EventId = 8455, Level = LogLevel.Warning, Message = "Execution '{executionId}' cannot be released: the request kept for it is gone (the host restarted); start the pipeline again, or deny this run")]
+    public static partial IGenericMessage PipelineRunHoldLost(ILogger logger, Guid executionId);
+
+    [MessageLogging(EventId = 8456, Level = LogLevel.Warning, Message = "Execution '{executionId}' cannot be released: the pipeline queue is full for pipeline '{pipelineName}'")]
+    public static partial IGenericMessage PipelineQueueFullOnRelease(ILogger logger, Guid executionId, string pipelineName);
 }

@@ -2,6 +2,7 @@ using System;
 using System.Data.SqlTypes;
 using System.Globalization;
 using Fdw.Data.DataContainers.Abstractions;
+using Fdw.Data.MsSql;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using FdwReferenceConnections.MsSql.Logging;
@@ -11,12 +12,14 @@ namespace FdwReferenceConnections.MsSql;
 /// <summary>
 /// Reads a SqlDataReader column, translating a geography/geometry UDT into a
 /// <see cref="SpatialValue"/> (FDW-816) instead of the bytes <see cref="SqlDataReader.GetValue(int)"/>
-/// returns for a CLR UDT type nothing above the connection layer references.
+/// returns for a CLR UDT type nothing above the connection layer references, and a <c>vector</c> column into the
+/// <c>float[]</c> its converter reads it as (FDW-1354), never SqlClient's own vector type.
 /// </summary>
 internal static class SqlSpatialReader
 {
     private const string GeographyTypeName = "geography";
     private const string GeometryTypeName = "geometry";
+    private const string VectorTypeName = "vector";
 
     // MS-SSCLRT "Basic GEOGRAPHY Structure" header: SRID (4 bytes, LE int32) + Version (1 byte) +
     // SerializationProperties (1 byte) -- identical layout for GEOGRAPHY and GEOMETRY.
@@ -40,6 +43,8 @@ internal static class SqlSpatialReader
             return ParseSinglePoint(reader.GetSqlBytes(ordinal), SpatialValue.Geography, logger);
         if (string.Equals(dbTypeName, GeometryTypeName, StringComparison.OrdinalIgnoreCase))
             return ParseSinglePoint(reader.GetSqlBytes(ordinal), SpatialValue.Geometry, logger);
+        if (string.Equals(dbTypeName, VectorTypeName, StringComparison.OrdinalIgnoreCase))
+            return MsSqlConverters.BySourceType(VectorTypeName).ToClr(reader.GetValue(ordinal));
 
         return reader.GetValue(ordinal);
     }
@@ -53,6 +58,9 @@ internal static class SqlSpatialReader
     public static Type GetFieldClrType(SqlDataReader reader, int ordinal)
     {
         var dbTypeName = reader.GetDataTypeName(ordinal);
+        if (string.Equals(dbTypeName, VectorTypeName, StringComparison.OrdinalIgnoreCase))
+            return typeof(float[]);
+
         return string.Equals(dbTypeName, GeographyTypeName, StringComparison.OrdinalIgnoreCase)
             || string.Equals(dbTypeName, GeometryTypeName, StringComparison.OrdinalIgnoreCase)
                 ? typeof(SpatialValue)

@@ -39,6 +39,7 @@
     <Project Path="src/FdwReferenceConnections.MsSql.DataVault/FdwReferenceConnections.MsSql.DataVault.csproj" />
     <Project Path="src/FdwReferenceConnections.PostgreSql.Registration/FdwReferenceConnections.PostgreSql.Registration.csproj" />
     <Project Path="src/FdwReferenceConnections.PostgreSql/FdwReferenceConnections.PostgreSql.csproj" />
+    <Project Path="src/FdwReferenceConnections.Script/FdwReferenceConnections.Script.csproj" />
     <Project Path="src/FdwReferenceConnections.Sqlite.Registration/FdwReferenceConnections.Sqlite.Registration.csproj" />
     <Project Path="src/FdwReferenceConnections.Sqlite/FdwReferenceConnections.Sqlite.csproj" />
     <Project Path="src/FdwReferenceCredentials.Sql.Registration/FdwReferenceCredentials.Sql.Registration.csproj" />
@@ -91,8 +92,6 @@
     <Project Path="src/FdwReferenceSamples.Endpoints/FdwReferenceSamples.Endpoints.csproj" />
     <Project Path="src/FdwReferenceSchedulers.EtlDispatch.Registration/FdwReferenceSchedulers.EtlDispatch.Registration.csproj" />
     <Project Path="src/FdwReferenceSchedulers.EtlDispatch/FdwReferenceSchedulers.EtlDispatch.csproj" />
-    <Project Path="src/FdwReferenceSchedulers.Hangfire.Registration/FdwReferenceSchedulers.Hangfire.Registration.csproj" />
-    <Project Path="src/FdwReferenceSchedulers.Hangfire/FdwReferenceSchedulers.Hangfire.csproj" />
     <Project Path="src/FdwReferenceSchedulers.Quartz.Registration/FdwReferenceSchedulers.Quartz.Registration.csproj" />
     <Project Path="src/FdwReferenceSchedulers.Quartz/FdwReferenceSchedulers.Quartz.csproj" />
     <Project Path="src/FdwReferenceSchedules.Endpoints/FdwReferenceSchedules.Endpoints.csproj" />
@@ -164,6 +163,12 @@
     </Project>
     <Project Path="tests/FdwReferenceConnections.Http.Tests/FdwReferenceConnections.Http.Tests.csproj" />
     <Project Path="tests/FdwReferenceConnections.MsSql.Tests/FdwReferenceConnections.MsSql.Tests.csproj" />
+    <Project Path="tests/FdwReferenceConnections.Script.Tests/FdwReferenceConnections.Script.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
     <Project Path="tests/FdwReferenceConnections.Sqlite.Tests/FdwReferenceConnections.Sqlite.Tests.csproj" />
     <Project Path="tests/FdwReferenceCredentials.Sql.Tests/FdwReferenceCredentials.Sql.Tests.csproj" />
     <Project Path="tests/FdwReferenceData.Endpoints.Tests/FdwReferenceData.Endpoints.Tests.csproj">
@@ -179,6 +184,12 @@
       <BuildType Solution="Release-Local|*" Project="Debug" />
     </Project>
     <Project Path="tests/FdwReferenceWorkspaces.Endpoints.Tests/FdwReferenceWorkspaces.Endpoints.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/FdwReferenceEtl.Endpoints.Tests/FdwReferenceEtl.Endpoints.Tests.csproj">
       <BuildType Solution="Debug-Local|*" Project="Debug" />
       <BuildType Solution="Develop-Local|*" Project="Debug" />
       <BuildType Solution="Develop|*" Project="Debug" />

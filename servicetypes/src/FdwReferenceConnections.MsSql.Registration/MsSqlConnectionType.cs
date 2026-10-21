@@ -193,11 +193,11 @@ public sealed class MsSqlConnectionType
     // temp table typed like the target, then an UPDATE (or, versioned, a close) and an INSERT run (FDW-1107).
     // InsertFromQuery is INSERT ... SELECT on one server; SoftDelete flags rows; UnitOfWork runs commands in one transaction.
     // Execute runs an executable container (a stored procedure here); ExecutableContainerTypes says which container types.
+    // Vectorized: SQL Server 2025 holds vectors, and MsSqlConnection answers the nearest rows by VECTOR_DISTANCE (FDW-1354).
     public override IReadOnlyList<ICommandCapabilityType> SupportedCommands =>
     [
         CommandCapabilityTypes.ByName("Query"),
         CommandCapabilityTypes.ByName("CompoundQuery"),
-        CommandCapabilityTypes.ByName("RawQuery"),
         CommandCapabilityTypes.ByName("Execute"),
         CommandCapabilityTypes.ByName("Insert"),
         CommandCapabilityTypes.ByName("Update"),
@@ -208,6 +208,7 @@ public sealed class MsSqlConnectionType
         CommandCapabilityTypes.ByName("SoftDelete"),
         CommandCapabilityTypes.ByName("UnitOfWork"),
         CommandCapabilityTypes.ByName("Stream"),
+        CommandCapabilityTypes.ByName("Vectorized"),
     ];
 
     // ── SupportedDiscoveryTypes ────────────────────────────────────────────────

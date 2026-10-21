@@ -65,8 +65,8 @@ public sealed class CreateScheduleProxyEndpoint : Endpoint<ProxyCreateScheduleRe
     {
         ProxyLog.ProxyRequest(_logger, "POST", "Scheduler", "schedules");
 
-        // A zone the server cannot resolve is refused before the pipeline is looked up (FDW-1170).
-        var zone = ScheduleTimeZone.Check(req.TimeZoneId, _logger);
+        // A zone that is not stated, or that the server cannot resolve, is refused before the pipeline is looked up (FDW-1170, FDW-2059).
+        var zone = ScheduleTimeZone.Require(req.TimeZoneId, _logger);
         if (zone.IsFailure)
         {
             var (zoneStatus, zoneRefusal) = ResultHttpStatusMapper.Map(zone, HttpContext);
@@ -102,16 +102,11 @@ public sealed class CreateScheduleProxyEndpoint : Endpoint<ProxyCreateScheduleRe
             IntervalSeconds = req.IntervalSeconds,
             OneTimeDateTime = req.OneTimeDateTime,
             EventName = req.EventName,
+            TimeZoneId = req.TimeZoneId,
             IsEnabled = req.IsEnabled,
             Parameters = req.Parameters,
             RunRoles = req.RunRoles,
         };
-
-        // The client request declares the zone's one default; a zone the caller did not state leaves it, as it always has.
-        if (req.TimeZoneId is not null)
-        {
-            request.TimeZoneId = req.TimeZoneId;
-        }
 
         var result = await _client.CreateSchedule(request, ct);
 

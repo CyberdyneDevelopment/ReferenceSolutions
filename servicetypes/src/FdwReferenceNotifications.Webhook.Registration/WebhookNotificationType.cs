@@ -70,6 +70,10 @@ public sealed class WebhookNotificationType
         Registration((builder, loggerFactory) =>
         {
 
+            // Why: the service reaches the receiver through a client from the factory; registering it here keeps the type working in any
+            // host that references it (the ETL host fires the run-end notifications), instead of leaning on a neighbouring type to have added it.
+            builder.Services.AddHttpClient();
+
             // Factory — DI handles all constructor dependencies
             builder.Services.TryAdd(new ServiceDescriptor(
                 typeof(IWebhookNotificationFactory), typeof(WebhookNotificationFactory), ServiceLifetime.Singleton));

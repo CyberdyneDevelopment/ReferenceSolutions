@@ -14,8 +14,9 @@ public sealed class GetImpactAnalysisEndpoint : GetImpactAnalysisEndpointBase
     /// <inheritdoc />
     public GetImpactAnalysisEndpoint(
         DataSetConfigurationProvider dataSetProvider,
+        CategoryConfigurationProvider categories,
         ILogger<Fdw.Operations.Endpoints.GetImpactAnalysisEndpointBase> logger)
-        : base(dataSetProvider, logger)
+        : base(dataSetProvider, categories, logger)
     {
     }
 }

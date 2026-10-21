@@ -49,4 +49,8 @@
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="FdwReferenceConnections.Script" />
+  </ItemGroup>
+
 </Project>

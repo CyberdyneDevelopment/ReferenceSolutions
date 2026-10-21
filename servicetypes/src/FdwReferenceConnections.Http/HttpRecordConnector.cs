@@ -210,9 +210,10 @@ public sealed class HttpRecordConnector
     }
 
     // Why: endpoint + method + content-type are stored in the container's Metadata under the keys defined
-    // by HttpRecordWriterCapability. Endpoint and Method are required; ContentType is optional but must
-    // be non-empty when present — an absent ContentType is also a failure so the caller explicitly
-    // configures a media type rather than getting a silent default (NO FALLBACKS).
+    // by HttpRecordWriterCapability, which ContainerComposition.BuildMetadata fills from the container's
+    // WriteEndpoint, WriteMethod and WriteContentType (FDW-1757). All three are required: an absent one is a
+    // failure that names the container member to state, so the caller explicitly configures it rather than
+    // getting a silent default (NO FALLBACKS).
     private IGenericResult<(string endpoint, HttpMethod method, string contentType)> ResolveEndpoint(
         IDataContainer container)
     {
@@ -221,7 +222,7 @@ public sealed class HttpRecordConnector
             || string.IsNullOrWhiteSpace(endpoint))
         {
             return GenericResult<(string, HttpMethod, string)>.Failure(
-                HttpRecordConnectorLog.FormatNotConfigured(_logger, _connectionName, container.Name));
+                HttpRecordConnectorLog.WriteSettingNotConfigured(_logger, _connectionName, container.Name, "WriteEndpoint"));
         }
 
         if (!container.Metadata.TryGetValue("Method", out var methodObj)
@@ -229,7 +230,7 @@ public sealed class HttpRecordConnector
             || string.IsNullOrWhiteSpace(methodName))
         {
             return GenericResult<(string, HttpMethod, string)>.Failure(
-                HttpRecordConnectorLog.FormatNotConfigured(_logger, _connectionName, container.Name));
+                HttpRecordConnectorLog.WriteSettingNotConfigured(_logger, _connectionName, container.Name, "WriteMethod"));
         }
 
         if (!container.Metadata.TryGetValue("ContentType", out var ctObj)
@@ -237,7 +238,7 @@ public sealed class HttpRecordConnector
             || string.IsNullOrWhiteSpace(contentType))
         {
             return GenericResult<(string, HttpMethod, string)>.Failure(
-                HttpRecordConnectorLog.FormatNotConfigured(_logger, _connectionName, container.Name));
+                HttpRecordConnectorLog.WriteSettingNotConfigured(_logger, _connectionName, container.Name, "WriteContentType"));
         }
 
         // Why: HttpMethod is a value object — new HttpMethod("PUT") equals HttpMethod.Put by value. Using
