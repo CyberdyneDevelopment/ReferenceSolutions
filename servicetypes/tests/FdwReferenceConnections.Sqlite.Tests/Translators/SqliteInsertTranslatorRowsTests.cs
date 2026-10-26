@@ -2,19 +2,20 @@ using Fdw.Data.Sqlite;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Fdw.Commands.Data;
+using Fdw.Commands.Data.Abstractions;
 using Fdw.Data.Abstractions;
 using Fdw.Results;
 
 namespace FdwReferenceConnections.Sqlite.Tests.Translators;
 
 /// <summary>
-/// Verifies multi-row INSERT SQL shape produced by <see cref="SqliteBatchInsertTranslator"/>:
+/// Verifies multi-row INSERT SQL shape produced by <see cref="SqliteInsertTranslator"/>:
 /// double-quote identifiers, schemaless table name, multi-row VALUES syntax, @p0 parameter naming.
 /// </summary>
 [Collection(nameof(SqliteTestCollection))]
-public sealed class SqliteBatchInsertTranslatorTests
+public sealed class SqliteInsertTranslatorRowsTests
 {
-    private readonly SqliteBatchInsertTranslator _translator = new();
+    private readonly SqliteInsertTranslator _translator = new();
 
     private sealed class RowData
     {
@@ -57,7 +58,7 @@ public sealed class SqliteBatchInsertTranslatorTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "DataGateway")]
-    public async Task BatchInsertTranslatorProducesMultiRowValuesSyntax()
+    public async Task InsertTranslatorRowsProducesMultiRowValuesSyntax()
     {
         var container = CreateContainer("contacts");
         var rows = new List<RowData>
@@ -65,7 +66,7 @@ public sealed class SqliteBatchInsertTranslatorTests
             new() { name = "Alice", age = 30 },
             new() { name = "Bob", age = 25 }
         };
-        var command = new InsertCommand<List<RowData>>(rows);
+        var command = new InsertCommand<RowData>(rows);
 
         var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
 
@@ -79,11 +80,11 @@ public sealed class SqliteBatchInsertTranslatorTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "DataGateway")]
-    public async Task BatchInsertTranslatorUsesAtPrefixParameterNaming()
+    public async Task InsertTranslatorRowsUsesAtPrefixParameterNaming()
     {
         var container = CreateContainer("contacts");
         var rows = new List<RowData> { new() { name = "Alice", age = 30 } };
-        var command = new InsertCommand<List<RowData>>(rows);
+        var command = new InsertCommand<RowData>(rows);
 
         var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
 
@@ -97,11 +98,11 @@ public sealed class SqliteBatchInsertTranslatorTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "DataGateway")]
-    public async Task BatchInsertTranslatorSchemalessTableName()
+    public async Task InsertTranslatorRowsSchemalessTableName()
     {
         var container = CreateContainer("contacts");
         var rows = new List<RowData> { new() { name = "Alice", age = 30 } };
-        var command = new InsertCommand<List<RowData>>(rows);
+        var command = new InsertCommand<RowData>(rows);
 
         var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
 
@@ -114,13 +115,15 @@ public sealed class SqliteBatchInsertTranslatorTests
     [Fact]
     [Trait("Priority", "P2")]
     [Trait("Category", "DataGateway")]
-    public async Task BatchInsertTranslatorWithNonEnumerableDataReturnsStructuredFailure()
+    public async Task InsertTranslatorRowsWithNonEnumerableDataReturnsStructuredFailure()
     {
-        // BatchInsert requires an IEnumerable — an int (non-enumerable) must fail-loud.
+        // Insert requires rows (an IEnumerable) — an int (non-enumerable) must fail-loud.
         var container = CreateContainer("contacts");
-        var command = new InsertCommand<int>(42);
+        var command = new Mock<IDataCommandWithInput>();
+        command.As<IDataCommand>();
+        command.Setup(c => c.InputData).Returns(42);
 
-        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+        var result = await _translator.Translate(command.Object, container.Object, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeFalse();
         result.CurrentMessage.ShouldNotBeNullOrEmpty();

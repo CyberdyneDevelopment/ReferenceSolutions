@@ -148,15 +148,14 @@ public sealed class PostgreSqlConnectionType
     // ── SupportedCommands ─────────────────────────────────────────────────────
 
     /// <summary>
-    /// PostgreSQL supports structured reads, compound (pushed-down JOIN) reads, single-row INSERT/UPDATE/DELETE.
+    /// PostgreSQL lists the compound (pushed-down JOIN) read mode and the unit of work. The data commands it runs natively are the
+    /// ones its translator collection holds; the rest compose from those.
     /// </summary>
     // Why: ByName() returns the TypeCollection singleton — never instantiate capabilities inline.
     public override IReadOnlyList<ICommandCapabilityType> SupportedCommands =>
     [
-        CommandCapabilityTypes.ByName("Query"),
         CommandCapabilityTypes.ByName("CompoundQuery"),
-        CommandCapabilityTypes.ByName("Insert"),
-        CommandCapabilityTypes.ByName("Update"),
+        CommandCapabilityTypes.ByName("UnitOfWork"),
     ];
 
     // ── SupportedDiscoveryTypes ────────────────────────────────────────────────

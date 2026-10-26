@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Commands.Data.Abstractions;
+using Fdw.Commands.Data.SoftDeletes;
 using Fdw.Data.Abstractions;
 using Fdw.Data.Abstractions.Mappers.PocoMappers;
 using Fdw.Results;
@@ -18,22 +19,16 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace FdwReferenceConnections.FileSystem;
 
 /// <summary>
-/// Runs the FileSystem configuration write verbs — the version-on-write CREATE (<c>ConfigurationSave</c>),
-/// the literal in-place <c>Update</c>, and the soft-delete (<c>ConfigurationDelete</c>) — by reading the
-/// container's current rows through the <see cref="FileSystemRecordConnector"/>, mutating the in-memory
-/// row list per the verb's semantics, and rewriting the WHOLE file. This mirrors the ACTUAL MsSql
-/// translator semantics (<c>MsSqlConfigurationSaveTranslator</c>, <c>MsSqlUpdateTranslator</c>,
-/// <c>MsSqlConfigurationDeleteTranslator</c>) over a flat name→value row set instead of T-SQL.
+/// Runs the FileSystem record write verbs: the <c>Insert</c> that adds rows (stamping the next value of the Physical key
+/// a row does not carry), the literal in-place <c>Update</c>, and the <c>Delete</c> that removes the rows a filter
+/// selects or, with soft-delete options, flags them. Each reads the container's current rows through the
+/// <see cref="FileSystemRecordConnector"/>, changes the in-memory row list, and rewrites the WHOLE file.
 /// </summary>
 /// <remarks>
-/// Why a dedicated writer (not inlined in the connection): the read-modify-write logic is substantial
-/// (POCO mapping, container-key-driven logical/physical/FK resolution, version-flag management) and needs
-/// both the container metadata AND the record connector (for parent-file reads on FK resolution). Keeping
-/// it here keeps the connection's <c>Execute</c> a thin dispatcher and the metadata derivation cohesive.
-/// The key/FK resolution is driven off <see cref="IDataContainer.Keys"/> — never a hardcoded column name
-/// or a per-container-name special case — exactly as the MsSql translators derive theirs.
+/// A configuration save or retire is not a verb of its own here: it expands into these (a query, a close or delete,
+/// an insert), so a version is written the same way on every kind of connection.
 /// <para>
-/// Why the per-file lock: every verb is read-whole-file → mutate in memory → write-whole-file with no
+/// Why the per-file lock: every verb is read-whole-file → change in memory → write-whole-file with no
 /// coordination between concurrent callers. Two near-simultaneous writes to the SAME file (e.g. <see cref="NextRowId"/>
 /// computing <c>max(existing RowId)+1</c> from an in-memory snapshot) can both read the same current-max
 /// RowId and both compute the same "next" RowId — the second write silently clobbers the first: one row
@@ -44,9 +39,8 @@ namespace FdwReferenceConnections.FileSystem;
 /// </remarks>
 internal sealed class FileSystemConfigurationWriter
 {
-    // Why: the version-on-write audit columns are a framework-wide convention (every config container
-    // declares them), the same literals MsSql's translators hardcode in their SET/VALUES clauses. They
-    // are managed by the translator, never read from the POCO.
+    // Why: the version columns are a framework-wide convention (every config container declares them). An Update never
+    // writes them; a configuration write sets them through the data commands it expands into.
     private const string IsCurrentColumn = "IsCurrent";
     private const string IsDeletedColumn = "IsDeleted";
 
@@ -56,8 +50,8 @@ internal sealed class FileSystemConfigurationWriter
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
     /// <summary>
-    /// Per-absolute-file-path locks serializing the read-modify-write cycle of <see cref="Save"/>/
-    /// <see cref="Update"/>/<see cref="Delete"/> against the SAME file.
+    /// Per-absolute-file-path locks serializing the read-modify-write cycle of <see cref="InsertRows"/>/
+    /// <see cref="Update"/>/<see cref="DeleteRows"/> against the SAME file.
     /// </summary>
     /// <remarks>
     /// Explicit boundary: this serializes writes to the same file FROM THIS PROCESS only. A second,
@@ -98,158 +92,6 @@ internal sealed class FileSystemConfigurationWriter
         _fileLocks.GetOrAdd(absolutePath, static _ => new SemaphoreSlim(1, 1));
 
     // ════════════════════════════════════════════════════════════════════════════
-    // ConfigurationSave — version-on-write CREATE
-    // ════════════════════════════════════════════════════════════════════════════
-
-    /// <summary>
-    /// Persists a new version of a configuration record: assigns a new physical RowId, writes the owner
-    /// key values the command carries, sets <c>IsCurrent=true</c>/<c>IsDeleted=false</c>, retires the
-    /// current row it replaces when the command says it replaces one, appends the new row, and rewrites
-    /// the whole file. Answers with the rows it retired and the row it wrote.
-    /// </summary>
-    public async Task<IGenericResult<ConfigurationWriteResult>> Save(
-        FileSystemConfigurationSaveCommand command, CancellationToken cancellationToken = default)
-    {
-        var pathResult = ResolveAbsolutePath(command.RelativePath);
-        if (!pathResult.IsSuccess)
-            return pathResult.ToNewResult<ConfigurationWriteResult>();
-
-        var fileLock = GetFileLock(pathResult.Value!);
-        await fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            return await SaveCore(command, cancellationToken).ConfigureAwait(false);
-        }
-        finally
-        {
-            fileLock.Release();
-        }
-    }
-
-    private async Task<IGenericResult<ConfigurationWriteResult>> SaveCore(
-        FileSystemConfigurationSaveCommand command, CancellationToken cancellationToken)
-    {
-        var container = command.Container;
-        FileSystemConfigurationWriteLog.SaveStarting(_logger, _connectionName, container.Name);
-
-        var rowsResult = await _connector
-            .ReadExistingOrEmpty(container, command.RelativePath, cancellationToken).ConfigureAwait(false);
-        if (!rowsResult.IsSuccess)
-            return rowsResult.ToNewResult<ConfigurationWriteResult>();
-
-        var rows = rowsResult.Value!.Select(CopyRow).ToList();
-
-        var newRowResult = BuildNewRow(command, rows);
-        if (!newRowResult.IsSuccess)
-            return newRowResult.ToNewResult<ConfigurationWriteResult>();
-        var newRow = newRowResult.Value!;
-
-        // Why: guarantee the assembled row satisfies the container's declared schema BEFORE it is written —
-        // a declared non-nullable column left null is a fail-loud defect, caught once by the shared validator.
-        var validate = RecordRowValidator.Validate(new[] { (IReadOnlyDictionary<string, object?>)newRow }, container, _logger);
-        if (!validate.IsSuccess)
-            return validate.ToNewResult<ConfigurationWriteResult>();
-
-        // The row it replaces is the current one under the same owner key values and, where the container
-        // declares one, with the same Logical key. A row written without replacing anything (a child
-        // inserted under its owner's new version) retires nothing.
-        IReadOnlyList<IReadOnlyDictionary<string, object?>> retired = [];
-        if (command.ReplacesCurrent)
-        {
-            var match = new Dictionary<string, object?>(command.FieldValues, StringComparer.OrdinalIgnoreCase);
-            if (DeclaredLogicalKeyColumn(container) is { } logical)
-                match[logical] = GetCell(newRow, logical);
-            if (match.Count == 0)
-                return GenericResult<ConfigurationWriteResult>.Failure(
-                    FileSystemConfigurationWriteLog.LogicalKeyNotFound(_logger, _connectionName, container.Name));
-            retired = RetireMatching(rows, container, match, markDeleted: false);
-        }
-
-        rows.Add(newRow);
-
-        var writeResult = await WriteRows(container, command.RelativePath, rows, cancellationToken).ConfigureAwait(false);
-        if (!writeResult.IsSuccess)
-            return writeResult.ToNewResult<ConfigurationWriteResult>();
-
-        FileSystemConfigurationWriteLog.SaveCompleted(_logger, _connectionName, container.Name, 1);
-        return GenericResult<ConfigurationWriteResult>.Success(new ConfigurationWriteResult(retired, Snapshot(newRow)));
-    }
-    private IGenericResult<Dictionary<string, object?>> BuildNewRow(
-        FileSystemConfigurationSaveCommand command,
-        IReadOnlyList<Dictionary<string, object?>> currentRows)
-    {
-        var container = command.Container;
-
-        var mapper = PocoMapperCollection.ByName(command.Record.GetType().Name);
-        if (mapper == PocoMapperCollection.NotFound)
-            return GenericResult<Dictionary<string, object?>>.Failure(
-                FileSystemConfigurationWriteLog.PocoMapperNotFound(_logger, _connectionName, command.Record.GetType().Name));
-
-        var physicalKeyColumn = PhysicalKeyColumn(container);
-        if (physicalKeyColumn is null)
-            return GenericResult<Dictionary<string, object?>>.Failure(
-                FileSystemConfigurationWriteLog.PhysicalKeyNotFound(_logger, _connectionName, container.Name));
-
-        var parameters = new Dictionary<string, object?>(mapper.MapToParameters(command.Record), StringComparer.OrdinalIgnoreCase);
-        var propertyNames = new HashSet<string>(mapper.GetPropertyNames(), StringComparer.OrdinalIgnoreCase);
-        MergeFieldValues(command.FieldValues, parameters, propertyNames);
-
-        var insertable = InsertableFieldNames(container);
-        var newRow = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-        AddMappedColumns(newRow, propertyNames, parameters, insertable, physicalKeyColumn);
-
-        if (newRow.Count == 0)
-            return GenericResult<Dictionary<string, object?>>.Failure(
-                FileSystemConfigurationWriteLog.NoInsertableColumns(
-                    _logger, _connectionName, container.Name, command.Record.GetType().Name));
-
-        // Why: RowId is the physical version PK (INT IDENTITY in MsSql — DB-assigned there). No DB assigns
-        // it here, so the writer stamps the next value; IsCurrent/IsDeleted are set here, never read from
-        // the POCO (mirrors MsSql's VALUES (..., 1, 0)).
-        newRow[physicalKeyColumn] = NextRowId(currentRows, physicalKeyColumn);
-        newRow[IsCurrentColumn] = true;
-        newRow[IsDeletedColumn] = false;
-
-        return GenericResult<Dictionary<string, object?>>.Success(newRow);
-    }
-    // The container's own declared Logical key -- no fallback to a Foreign key.
-    private static string? DeclaredLogicalKeyColumn(IDataContainer container)
-    {
-        var keys = container.Keys;
-        for (var i = 0; i < keys.Count; i++)
-        {
-            var key = keys[i];
-            if (string.Equals(key.KeyType.Name, "Logical", StringComparison.Ordinal)
-                && key.ReferencedContainer is null && key.KeyFields.Count > 0)
-                return key.KeyFields[0].LocalField.Name;
-        }
-        return null;
-    }
-
-    // Retires the current rows holding every one of the match values, marking them deleted when asked,
-    // and answers with a copy of each as it was retired.
-    private List<IReadOnlyDictionary<string, object?>> RetireMatching(
-        IReadOnlyList<Dictionary<string, object?>> rows,
-        IDataContainer container,
-        IReadOnlyDictionary<string, object?> match,
-        bool markDeleted)
-    {
-        var retired = new List<IReadOnlyDictionary<string, object?>>();
-        foreach (var row in rows)
-        {
-            if (!IsFlagTrue(GetCell(row, IsCurrentColumn)) || !match.All(m => KeyValuesEqual(GetCell(row, m.Key), m.Value)))
-                continue;
-            row[IsCurrentColumn] = false;
-            if (markDeleted)
-                row[IsDeletedColumn] = true;
-            retired.Add(Snapshot(row));
-        }
-
-        if (retired.Count > 0)
-            FileSystemConfigurationWriteLog.PriorVersionRetired(_logger, _connectionName, container.Name);
-        return retired;
-    }
-    // ════════════════════════════════════════════════════════════════════════════
     // Update — literal, in-place mutation (NOT version-on-write)
     // ════════════════════════════════════════════════════════════════════════════
 
@@ -257,8 +99,26 @@ internal sealed class FileSystemConfigurationWriter
     /// Mutates the matched rows' non-key columns in place (same RowId, version flags untouched) and
     /// rewrites the whole file. Matches on the command's filter; refuses to run without one.
     /// </summary>
-    public async Task<IGenericResult<int>> Update(
+    public Task<IGenericResult<int>> Update(
         FileSystemUpdateCommand command, CancellationToken cancellationToken = default)
+        => UpdateLocked(command, null, cancellationToken);
+
+    /// <summary>Applies an update as <see cref="Update"/> does and answers the rows it modified, as they are now written.</summary>
+    /// <param name="command">The update command.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The modified rows; or the failure that stopped it.</returns>
+    public async Task<IGenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>> UpdateReturning(
+        FileSystemUpdateCommand command, CancellationToken cancellationToken = default)
+    {
+        var modified = new List<IReadOnlyDictionary<string, object?>>();
+        var result = await UpdateLocked(command, modified, cancellationToken).ConfigureAwait(false);
+        return result.IsSuccess
+            ? GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Success(modified)
+            : result.ToNewResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>();
+    }
+
+    private async Task<IGenericResult<int>> UpdateLocked(
+        FileSystemUpdateCommand command, List<IReadOnlyDictionary<string, object?>>? sink, CancellationToken cancellationToken)
     {
         var pathResult = ResolveAbsolutePath(command.RelativePath);
         if (!pathResult.IsSuccess)
@@ -268,7 +128,7 @@ internal sealed class FileSystemConfigurationWriter
         await fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return await UpdateCore(command, cancellationToken).ConfigureAwait(false);
+            return await UpdateCore(command, sink, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -277,7 +137,7 @@ internal sealed class FileSystemConfigurationWriter
     }
 
     private async Task<IGenericResult<int>> UpdateCore(
-        FileSystemUpdateCommand command, CancellationToken cancellationToken)
+        FileSystemUpdateCommand command, List<IReadOnlyDictionary<string, object?>>? sink, CancellationToken cancellationToken)
     {
         var container = command.Container;
         FileSystemConfigurationWriteLog.UpdateStarting(_logger, _connectionName, container.Name);
@@ -334,31 +194,34 @@ internal sealed class FileSystemConfigurationWriter
         if (!writeResult.IsSuccess)
             return writeResult;
 
+        sink?.AddRange(modified);
         FileSystemConfigurationWriteLog.UpdateCompleted(_logger, _connectionName, container.Name, modified.Count);
         return GenericResult<int>.Success(modified.Count);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
-    // ConfigurationDelete — soft-delete via in-place update
+    // Delete — removes the rows a filter selects, or every row when there is no filter
     // ════════════════════════════════════════════════════════════════════════════
 
     /// <summary>
-    /// Retires the current rows holding the command's match values (a row's Logical key, or the owner key
-    /// values its children hang from), marking them deleted when the command says so, then rewrites the
-    /// whole file. Answers with the rows it retired.
+    /// Removes the rows the command's filter selects from the container's file, and every row when the command has no
+    /// filter (a Delete with no restrictions empties the container, as it does on the SQL kinds).
     /// </summary>
-    public async Task<IGenericResult<ConfigurationWriteResult>> Delete(
-        FileSystemConfigurationDeleteCommand command, CancellationToken cancellationToken = default)
+    /// <param name="command">The delete command.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The number of rows removed; or the failure that stopped it.</returns>
+    public async Task<IGenericResult<int>> DeleteRows(
+        FileSystemDeleteCommand command, CancellationToken cancellationToken = default)
     {
         var pathResult = ResolveAbsolutePath(command.RelativePath);
         if (!pathResult.IsSuccess)
-            return pathResult.ToNewResult<ConfigurationWriteResult>();
+            return pathResult.ToNewResult<int>();
 
         var fileLock = GetFileLock(pathResult.Value!);
         await fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return await DeleteCore(command, cancellationToken).ConfigureAwait(false);
+            return await DeleteRowsCore(command, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -366,41 +229,211 @@ internal sealed class FileSystemConfigurationWriter
         }
     }
 
-    private async Task<IGenericResult<ConfigurationWriteResult>> DeleteCore(
-        FileSystemConfigurationDeleteCommand command, CancellationToken cancellationToken)
+    private async Task<IGenericResult<int>> DeleteRowsCore(
+        FileSystemDeleteCommand command, CancellationToken cancellationToken)
     {
         var container = command.Container;
-        FileSystemConfigurationWriteLog.DeleteStarting(_logger, _connectionName, container.Name);
+        FileSystemConfigurationWriteLog.DeleteRowsStarting(_logger, _connectionName, container.Name);
 
-        // An empty match would retire every current row in the file.
-        if (command.MatchValues.Count == 0)
-            return GenericResult<ConfigurationWriteResult>.Failure(
-                FileSystemConfigurationWriteLog.LogicalKeyNotFound(_logger, _connectionName, container.Name));
+        if (command.Filter?.Root is { } root)
+        {
+            var filterColumns = RecordColumnValidator.ValidateFilterColumns(root, container, null, null, _logger);
+            if (!filterColumns.IsSuccess)
+                return filterColumns.ToNewResult<int>();
+        }
+
+        if (command.SoftDelete is { } soft)
+            return await SoftDeleteRowsCore(command, soft, cancellationToken).ConfigureAwait(false);
 
         var rowsResult = await _connector
             .ReadExistingOrEmpty(container, command.RelativePath, cancellationToken).ConfigureAwait(false);
         if (!rowsResult.IsSuccess)
-            return rowsResult.ToNewResult<ConfigurationWriteResult>();
+            return rowsResult.ToNewResult<int>();
 
-        var rows = rowsResult.Value!.Select(CopyRow).ToList();
-        var retired = RetireMatching(rows, container, command.MatchValues, command.MarkDeleted);
-        if (retired.Count == 0)
+        var kept = rowsResult.Value!
+            .Where(row => command.Filter?.Root is { } selector && !RecordRowMatcher.Matches(row, null, null, selector))
+            .Select(CopyRow)
+            .ToList();
+        var removed = rowsResult.Value!.Count - kept.Count;
+        if (removed == 0)
         {
-            FileSystemConfigurationWriteLog.DeleteCompleted(_logger, _connectionName, container.Name, 0);
-            return GenericResult<ConfigurationWriteResult>.Success(new ConfigurationWriteResult([], null));
+            FileSystemConfigurationWriteLog.DeleteRowsCompleted(_logger, _connectionName, container.Name, 0);
+            return GenericResult<int>.Success(0);
         }
 
-        var validate = RecordRowValidator.Validate(retired, container, _logger);
-        if (!validate.IsSuccess)
-            return validate.ToNewResult<ConfigurationWriteResult>();
-
-        var writeResult = await WriteRows(container, command.RelativePath, rows, cancellationToken).ConfigureAwait(false);
+        var writeResult = await WriteRows(container, command.RelativePath, kept, cancellationToken).ConfigureAwait(false);
         if (!writeResult.IsSuccess)
-            return writeResult.ToNewResult<ConfigurationWriteResult>();
+            return writeResult;
 
-        FileSystemConfigurationWriteLog.DeleteCompleted(_logger, _connectionName, container.Name, retired.Count);
-        return GenericResult<ConfigurationWriteResult>.Success(new ConfigurationWriteResult(retired, null));
+        FileSystemConfigurationWriteLog.DeleteRowsCompleted(_logger, _connectionName, container.Name, removed);
+        return GenericResult<int>.Success(removed);
     }
+
+    // Flags the rows the soft delete selects and keeps every row in the file; answers the number flagged.
+    private async Task<IGenericResult<int>> SoftDeleteRowsCore(
+        FileSystemDeleteCommand command, SoftDeleteOptions soft, CancellationToken cancellationToken)
+    {
+        var container = command.Container;
+        var problem = SoftDeleteProblem(soft, container);
+        if (problem is not null)
+            return GenericResult<int>.Failure(
+                FileSystemConfigurationWriteLog.SoftDeleteRefused(_logger, _connectionName, container.Name, problem));
+
+        var rowsResult = await _connector
+            .ReadExistingOrEmpty(container, command.RelativePath, cancellationToken).ConfigureAwait(false);
+        if (!rowsResult.IsSuccess)
+            return rowsResult.ToNewResult<int>();
+
+        var rows = rowsResult.Value!.Select(CopyRow).ToList();
+        var flagged = FlagRows(rows, soft, command.Filter);
+        if (flagged > 0)
+        {
+            var writeResult = await WriteRows(container, command.RelativePath, rows, cancellationToken).ConfigureAwait(false);
+            if (!writeResult.IsSuccess)
+                return writeResult;
+        }
+
+        FileSystemConfigurationWriteLog.SoftDeleteRowsCompleted(_logger, _connectionName, container.Name, flagged);
+        return GenericResult<int>.Success(flagged);
+    }
+
+    // Why: the same checks the SQL kinds make. The options must be consistent and every column they name must be one
+    // the container declares, so a typo fails by name instead of adding a column to the file.
+    private static string? SoftDeleteProblem(SoftDeleteOptions soft, IDataContainer container)
+    {
+        var problem = soft.FirstProblem();
+        if (problem is not null)
+            return problem;
+
+        var names = new List<string> { soft.DeletedFlagColumn };
+        if (soft.DeletedAtColumn is not null)
+            names.Add(soft.DeletedAtColumn);
+        if (soft.Marker is not null)
+            names.Add(soft.Marker.Column);
+        if (soft.AbsentFromSource is not null)
+            names.AddRange(soft.AbsentFromSource.KeyColumns);
+
+        var declared = container.Schema.Fields;
+        var unknown = names.FirstOrDefault(n => !declared.Any(f => string.Equals(f.Name, n, StringComparison.OrdinalIgnoreCase)));
+        return unknown is null ? null : $"container {container.Name} does not declare column '{unknown}'";
+    }
+
+    private static int FlagRows(IReadOnlyList<Dictionary<string, object?>> rows, SoftDeleteOptions soft, IFilterExpression? filter)
+    {
+        var flagged = 0;
+        foreach (var row in rows)
+        {
+            if (!SoftDeleteSelects(row, soft, filter))
+                continue;
+            row[soft.DeletedFlagColumn] = soft.FlagValue;
+            if (soft.DeletedAtColumn is not null)
+                row[soft.DeletedAtColumn] = DateTimeOffset.UtcNow;
+            flagged++;
+        }
+
+        return flagged;
+    }
+
+    // A row is selected when it does not already hold the flag value (an empty flag cell does not), the filter matches
+    // it, its marker column holds the marker value, and its keys are absent from the source set when the options carry one.
+    private static bool SoftDeleteSelects(Dictionary<string, object?> row, SoftDeleteOptions soft, IFilterExpression? filter)
+    {
+        var flag = GetCell(row, soft.DeletedFlagColumn);
+        if (flag is not null && IsFlagTrue(flag) == soft.FlagValue)
+            return false;
+        if (filter?.Root is { } selector && !RecordRowMatcher.Matches(row, null, null, selector))
+            return false;
+        if (soft.Marker is { } marker && !KeyValuesEqual(GetCell(row, marker.Column), marker.Value))
+            return false;
+        return soft.AbsentFromSource is not { } source
+            || !source.Rows.Any(present => source.KeyColumns.All(k => present.TryGetValue(k, out var value) && KeyValuesEqual(GetCell(row, k), value)));
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // Insert — adds rows to the ones the file holds
+    // ════════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Adds the command's rows to the rows the file already holds (an absent file holds none) and rewrites the
+    /// whole file, under the same per-file lock as the other writes. A row that carries no Physical key value is given the
+    /// next one. A file keeps its rows across inserts, as every other connection kind does; a load that wants a fresh file
+    /// empties it first with a Delete that has no filter.
+    /// </summary>
+    /// <param name="command">The insert command carrying the rows.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The number of rows added; or the failure that stopped it.</returns>
+    public Task<IGenericResult<int>> InsertRows(
+        FileSystemWriteCommand command, CancellationToken cancellationToken = default)
+        => InsertRowsLocked(command, null, cancellationToken);
+
+    /// <summary>Adds rows as <see cref="InsertRows"/> does and answers the rows it added, as they are now written.</summary>
+    /// <param name="command">The insert command carrying the rows.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The added rows; or the failure that stopped it.</returns>
+    public async Task<IGenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>> InsertRowsReturning(
+        FileSystemWriteCommand command, CancellationToken cancellationToken = default)
+    {
+        var added = new List<IReadOnlyDictionary<string, object?>>();
+        var result = await InsertRowsLocked(command, added, cancellationToken).ConfigureAwait(false);
+        return result.IsSuccess
+            ? GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Success(added)
+            : result.ToNewResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>();
+    }
+
+    private async Task<IGenericResult<int>> InsertRowsLocked(
+        FileSystemWriteCommand command, List<IReadOnlyDictionary<string, object?>>? sink, CancellationToken cancellationToken)
+    {
+        var pathResult = ResolveAbsolutePath(command.RelativePath);
+        if (!pathResult.IsSuccess)
+            return pathResult.ToNewResult<int>();
+
+        var fileLock = GetFileLock(pathResult.Value!);
+        await fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return await InsertRowsCore(command, sink, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            fileLock.Release();
+        }
+    }
+
+    private async Task<IGenericResult<int>> InsertRowsCore(
+        FileSystemWriteCommand command, List<IReadOnlyDictionary<string, object?>>? sink, CancellationToken cancellationToken)
+    {
+        var container = command.Container;
+        FileSystemConfigurationWriteLog.InsertRowsStarting(_logger, _connectionName, container.Name);
+
+        var rowsResult = await _connector
+            .ReadExistingOrEmpty(container, command.RelativePath, cancellationToken).ConfigureAwait(false);
+        if (!rowsResult.IsSuccess)
+            return rowsResult.ToNewResult<int>();
+
+        // Why: a file has no database to assign the Physical key (RowId, an identity on a SQL kind), so a row that does not
+        // carry one is given the next value here, after the rows already in the file and the rows added before it.
+        var all = rowsResult.Value!.Select(CopyRow).ToList();
+        var physicalKey = PhysicalKeyColumn(container);
+        var added = new List<Dictionary<string, object?>>(command.Rows.Count);
+        foreach (var source in command.Rows)
+        {
+            var row = CopyRow(source);
+            if (physicalKey is not null && GetCell(row, physicalKey) is null)
+                row[physicalKey] = NextRowId(all, physicalKey);
+            all.Add(row);
+            added.Add(row);
+        }
+
+        var writeResult = await WriteRows(container, command.RelativePath, all, cancellationToken).ConfigureAwait(false);
+        if (!writeResult.IsSuccess)
+            return writeResult;
+
+        sink?.AddRange(added);
+        FileSystemConfigurationWriteLog.InsertRowsCompleted(
+            _logger, _connectionName, container.Name, command.Rows.Count, rowsResult.Value!.Count);
+        return GenericResult<int>.Success(command.Rows.Count);
+    }
+
     // ════════════════════════════════════════════════════════════════════════════
     // Shared helpers
     // ════════════════════════════════════════════════════════════════════════════
@@ -415,59 +448,6 @@ internal sealed class FileSystemConfigurationWriter
             relativePath,
             rows.Cast<IReadOnlyDictionary<string, object?>>().ToList(),
             cancellationToken);
-
-    private static void AddMappedColumns(
-        Dictionary<string, object?> newRow,
-        HashSet<string> propertyNames,
-        Dictionary<string, object?> parameters,
-        HashSet<string> insertable,
-        string physicalKeyColumn)
-    {
-        foreach (var name in propertyNames)
-        {
-            // Translator-managed columns (physical RowId, version flags) are set explicitly, never from the POCO.
-            if (IsManagedColumn(name, physicalKeyColumn) || !insertable.Contains(name))
-                continue;
-            newRow[name] = parameters.TryGetValue(name, out var value) ? value : null;
-        }
-    }
-
-    // Why: merges IConfigurationSaveCommand.FieldValues into the candidate parameter/property sets before
-    // the container-field intersection, so the owner key values flow through the same pipeline as mapped
-    // columns — the same merge MsSql's translator performs.
-    private static void MergeFieldValues(
-        IReadOnlyDictionary<string, object?> extra,
-        Dictionary<string, object?> parameters,
-        HashSet<string> propertyNames)
-    {
-        if (extra.Count == 0)
-            return;
-        foreach (var kv in extra)
-        {
-            parameters[kv.Key] = kv.Value;
-            propertyNames.Add(kv.Key);
-        }
-    }
-
-    private static bool IsManagedColumn(string name, string physicalKeyColumn) =>
-        string.Equals(name, physicalKeyColumn, StringComparison.OrdinalIgnoreCase)
-        || string.Equals(name, IsCurrentColumn, StringComparison.OrdinalIgnoreCase)
-        || string.Equals(name, IsDeletedColumn, StringComparison.OrdinalIgnoreCase);
-
-    // Why: the container's DECLARED field names are its IDataNode field children — read from Nodes, NOT
-    // container.Schema. A FileSystem container's fields implement IDataField only (not IField), so accessing
-    // container.Schema throws; Nodes is the schema-agnostic source every record-connector transport uses.
-    // FileSystem field metadata carries no identity/computed/system flags (file records are schema-only),
-    // so every declared field is insertable — the translator-managed columns are excluded downstream by
-    // IsManagedColumn. Mirrors the intent of MsSqlConfigurationSaveTranslator.BuildInsertableFieldSet.
-    private static HashSet<string> InsertableFieldNames(IDataContainer container)
-    {
-        var insertable = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var nodes = container.Nodes;
-        for (var i = 0; i < nodes.Count; i++)
-            insertable.Add(nodes[i].Name);
-        return insertable;
-    }
 
     // Why: the SET column list for an Update — every declared field the record supplies a value for,
     // excluding the physical PK and the version flags (mirrors MsSqlUpdateTranslator's exclusions; the
@@ -518,10 +498,6 @@ internal sealed class FileSystemConfigurationWriter
     }
 
     private static Dictionary<string, object?> CopyRow(IReadOnlyDictionary<string, object?> row)
-        => new(row, StringComparer.OrdinalIgnoreCase);
-
-    // The key values a write answers with: a copy, so the row the file holds is not the one handed out.
-    private static Dictionary<string, object?> Snapshot(Dictionary<string, object?> row)
         => new(row, StringComparer.OrdinalIgnoreCase);
 
     private static object? GetCell(Dictionary<string, object?> row, string column)

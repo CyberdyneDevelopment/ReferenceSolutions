@@ -1,5 +1,6 @@
 using Fdw.Commands.Data.Abstractions;
 using Fdw.Data.Abstractions;
+using Fdw.Results;
 
 namespace FdwReferenceConnections.FileSystem.Tests;
 
@@ -41,6 +42,24 @@ internal static class CommandStub
         command.Setup(c => c.CommandType).Returns("Insert");
         command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
         command.Setup(c => c.InputData).Returns(rows);
+        return command.Object;
+    }
+
+    public static IDataCommand OfType(string commandType)
+    {
+        var command = new Mock<IDataCommand>();
+        command.Setup(c => c.CommandType).Returns(commandType);
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        return command.Object;
+    }
+
+    public static IDataCommand Expandable(string commandType, params IDataCommand[] steps)
+    {
+        var command = new Mock<IExpandableDataCommand>();
+        command.Setup(c => c.CommandType).Returns(commandType);
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        command.Setup(c => c.Expand(It.IsAny<IStorageContainer>()))
+            .Returns(GenericResult<IReadOnlyList<ExpandedCommand>>.Success(steps.Select(s => new ExpandedCommand(s)).ToList()));
         return command.Object;
     }
 }

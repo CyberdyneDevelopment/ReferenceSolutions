@@ -1,4 +1,5 @@
 using FdwReferenceData.FileSystem;
+using FdwReferenceData.FileSystem.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,8 +38,10 @@ public sealed class FileSystemConnection
 {
     private readonly FileSystemClient _client;
     private readonly FileSystemCommandTranslator _translator;
+    private readonly FileSystemTranslatorNotFound _translatorNotFound;
     private readonly FileSystemRecordConnector _recordConnector;
     private readonly FileSystemConfigurationWriter _configurationWriter;
+    private readonly FileSystemFinder _finder;
     private readonly FileSystemDocumentStore _documents;
 
     /// <inheritdoc />
@@ -65,11 +68,13 @@ public sealed class FileSystemConnection
         // connector runs the config-driven record source/writer over the file client. Both share the
         // connection name + logger so structured logging traces back to this connection.
         _translator = new FileSystemCommandTranslator(Name, logger);
+        _translatorNotFound = new FileSystemTranslatorNotFound(Name, logger);
         _recordConnector = new FileSystemRecordConnector(_client, Name, logger);
         // Why: the config write verbs (ConfigurationSave/Update/ConfigurationDelete) read the container's
         // current rows through the record connector, mutate them per version-on-write semantics, and rewrite
         // the whole file — this writer owns that read-modify-write, keeping Execute a thin dispatcher.
         _configurationWriter = new FileSystemConfigurationWriter(_recordConnector, Name, Root, logger);
+        _finder = new FileSystemFinder(Name, Logger);
         // Why: ConnectionBase already stored the NullLogger-fallbacked logger in Logger; use it so the
         // message actually emits (a message built on a throwaway NullLogger never logs).
         _documents = new FileSystemDocumentStore(Root, Name, logger);
@@ -98,14 +103,59 @@ public sealed class FileSystemConnection
     public Task<IGenericResult<T>> Execute<T>(IDocumentCommand<T> command, CancellationToken cancellationToken = default)
         => _documents.Execute(command, cancellationToken);
 
+    // Set while a command runs through a unit of work (the unit's Execute sets it), so a command that assembles its own result
+    // there runs its steps in that unit and does not try to open another, which the client refuses while one is open.
+    private static readonly AsyncLocal<bool> _inUnit = new();
+
+    // The units a client holds cannot overlap, so a command that assembles its own result takes its turn: two such commands
+    // running at once on this connection (two saves of one file) run one after the other, each in its own unit.
+    private readonly SemaphoreSlim _assembledGate = new(1, 1);
+
+    /// <summary>
+    /// Gets a value indicating whether the command being run came through a unit of work, so it runs inside that unit and its
+    /// undo log.
+    /// </summary>
+    protected override bool InUnitOfWork => _inUnit.Value;
+
+    /// <inheritdoc />
+    protected override async Task<IGenericResult<IDataConnectionTransaction>> BeginAssembledUnit(
+        ITransactionalDataConnection transactional, CancellationToken cancellationToken)
+    {
+        await _assembledGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        var begun = await transactional.BeginTransaction(cancellationToken).ConfigureAwait(false);
+        if (begun.IsFailure)
+        {
+            _assembledGate.Release();
+            return begun;
+        }
+
+        return GenericResult<IDataConnectionTransaction>.Success(new GatedFileSystemUnit(begun.Value!, _assembledGate));
+    }
+
+    // Runs a command for a unit of work, marking it as inside one for as long as it runs.
+    internal async Task<IGenericResult<T>> ExecuteInUnit<T>(IDataCommand command, IDataContainer container, CancellationToken cancellationToken)
+    {
+        var outer = _inUnit.Value;
+        _inUnit.Value = true;
+        try
+        {
+            return await Execute<T>(command, container, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            _inUnit.Value = outer;
+        }
+    }
+
     /// <inheritdoc />
     protected override IDataCommandTranslator<IFileSystemCommand> GetTranslator(string commandType)
     {
-        // Why: the FileSystem domain has one translator that handles every command type (it maps the
-        // command to a read/write file operation), mirroring the HTTP connection's single protocol
-        // translator adapter. ConnectionBase only treats the "NotFound" sentinel as "not found", so this
-        // real translator drives the unified Execute(IDataCommand, IDataContainer) path.
-        return _translator;
+        // Why: the FileSystem domain has one translator for the command types a file supports (it maps the command
+        // to a read/write file operation). ConnectionBase treats the "NotFound" sentinel as "no translator", and
+        // for a command that declares an expansion (Upsert, BulkUpsert, BulkUpdate) it then runs the simpler
+        // commands the file does answer, so a command type the translator does not handle must be reported
+        // missing rather than failing inside the translator.
+        return _translator.Handles(commandType) ? _translator : _translatorNotFound;
     }
 
     /// <inheritdoc />
@@ -119,34 +169,19 @@ public sealed class FileSystemConnection
         // (a wiring defect — NO FALLBACKS).
         return command switch
         {
-            FileSystemWriteCommand write => await ExecuteWrite<T>(write, cancellationToken).ConfigureAwait(false),
+            FileSystemWriteCommand write => await ExecuteInsert<T>(write, cancellationToken).ConfigureAwait(false),
             FileSystemReadCommand read => await ExecuteRead<T>(read, cancellationToken).ConfigureAwait(false),
-            FileSystemConfigurationSaveCommand save =>
-                WrapWrite<T>(await _configurationWriter.Save(save, cancellationToken).ConfigureAwait(false)),
+            FileSystemFindCommand find => await ExecuteFind<T>(find, cancellationToken).ConfigureAwait(false),
             FileSystemUpdateCommand update =>
                 WrapCount<T>(await _configurationWriter.Update(update, cancellationToken).ConfigureAwait(false)),
-            FileSystemConfigurationDeleteCommand delete =>
-                WrapWrite<T>(await _configurationWriter.Delete(delete, cancellationToken).ConfigureAwait(false)),
+            FileSystemDeleteCommand delete =>
+                WrapCount<T>(await _configurationWriter.DeleteRows(delete, cancellationToken).ConfigureAwait(false)),
             _ => GenericResult<T>.Failure(
                 FileSystemConnectionLog.FactoryValidationFailed(
                     Logger,
                     Name,
                     $"unsupported native command '{command.GetType().Name}'"))
         };
-    }
-
-    // A configuration save or retire answers with the key values of the rows it touched, as the MsSql
-    // connection does; a caller that asked for a count gets the number of rows touched.
-    private static IGenericResult<T> WrapWrite<T>(IGenericResult<ConfigurationWriteResult> writeResult)
-    {
-        if (!writeResult.IsSuccess)
-            return writeResult.ToNewResult<T>();
-
-        if (typeof(T) == typeof(ConfigurationWriteResult))
-            return GenericResult<T>.Success((T)(object)writeResult.Value!);
-
-        var touched = writeResult.Value!.Retired.Count + (writeResult.Value.Written is null ? 0 : 1);
-        return WrapCount<T>(GenericResult<int>.Success(touched));
     }
 
     // Why: the config write verbs return an affected-row count (int). Materialize it into T when T can hold
@@ -226,6 +261,14 @@ public sealed class FileSystemConnection
         Type elementType,
         CancellationToken cancellationToken)
     {
+        // A write that names columns to return answers the rows it wrote, projected to those columns.
+        if (command is FileSystemWriteCommand { ReturnColumns: { Count: > 0 } insertColumns } insert)
+            return await ReturnWritten(
+                await _configurationWriter.InsertRowsReturning(insert, cancellationToken).ConfigureAwait(false), insertColumns, elementType).ConfigureAwait(false);
+        if (command is FileSystemUpdateCommand { ReturnColumns: { Count: > 0 } updateColumns } update)
+            return await ReturnWritten(
+                await _configurationWriter.UpdateReturning(update, cancellationToken).ConfigureAwait(false), updateColumns, elementType).ConfigureAwait(false);
+
         if (command is not FileSystemReadCommand read)
         {
             return GenericResult<IEnumerable<object>>.Failure(
@@ -255,13 +298,36 @@ public sealed class FileSystemConnection
         return RecordRowMaterializer.MaterializeByType(matchResult.Value!, elementType, read.Container, Logger);
     }
 
+    // The columns a write was asked to return, taken from the rows it wrote. A file generates no column of its own, so a column the
+    // row does not carry is returned as null. Only dictionary rows are answered.
+    private Task<IGenericResult<IEnumerable<object>>> ReturnWritten(
+        IGenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>> written, IReadOnlyList<string> columns, Type elementType)
+    {
+        if (!written.IsSuccess)
+            return Task.FromResult(written.ToNewResult<IEnumerable<object>>());
+        if (elementType != typeof(Dictionary<string, object?>))
+            return Task.FromResult(GenericResult<IEnumerable<object>>.Failure(
+                FileSystemConnectionLog.FactoryValidationFailed(
+                    Logger, Name, $"returned columns are answered as dictionary rows, and '{elementType.Name}' was asked for")));
+
+        return Task.FromResult(GenericResult<IEnumerable<object>>.Success(
+            written.Value!
+                .Select(row => (object)columns.ToDictionary(
+                    column => column,
+                    column => row.TryGetValue(column, out var value) ? value : null,
+                    StringComparer.OrdinalIgnoreCase))
+                .ToList()));
+    }
+
     private async Task<IGenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>> EvaluateRows(
         FileSystemReadCommand command,
         CancellationToken cancellationToken)
     {
-        var readResult = await _recordConnector
-            .Read(command.Container, command.RelativePath, cancellationToken)
-            .ConfigureAwait(false);
+        // Why: a file is created by its first write, so rows read to be written over come from a file that may not exist yet
+        // and hold none; a read for any other purpose of a file that is not there is refused.
+        var readResult = command.MissingFileHoldsNoRows
+            ? await _recordConnector.ReadExistingOrEmpty(command.Container, command.RelativePath, cancellationToken).ConfigureAwait(false)
+            : await _recordConnector.Read(command.Container, command.RelativePath, cancellationToken).ConfigureAwait(false);
         if (!readResult.IsSuccess)
         {
             return readResult.ToNewResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>();
@@ -326,13 +392,33 @@ public sealed class FileSystemConnection
         return GenericResult<JoinedRowsResult>.Success(new JoinedRowsResult(joinedContainer, readResult.Value!));
     }
 
-    private async Task<IGenericResult<T>> ExecuteWrite<T>(
+    private async Task<IGenericResult<T>> ExecuteFind<T>(
+        FileSystemFindCommand command,
+        CancellationToken cancellationToken)
+    {
+        FileSystemConfigurationWriteLog.FindStarting(Logger, Name, command.Container.Name);
+
+        var readResult = await _recordConnector
+            .Read(command.Container, command.RelativePath, cancellationToken)
+            .ConfigureAwait(false);
+        if (!readResult.IsSuccess)
+            return readResult.ToNewResult<T>();
+
+        var found = _finder.Search(command, readResult.Value!);
+        if (!found.IsSuccess)
+            return found.ToNewResult<T>();
+
+        var answer = _finder.Answer<T>(found.Value!, command.Container);
+        if (answer.IsSuccess)
+            FileSystemConfigurationWriteLog.FindCompleted(Logger, Name, command.Container.Name, found.Value!.Count);
+        return answer;
+    }
+
+    private async Task<IGenericResult<T>> ExecuteInsert<T>(
         FileSystemWriteCommand command,
         CancellationToken cancellationToken)
     {
-        var writeResult = await _recordConnector
-            .Write(command.Container, command.RelativePath, command.Rows, cancellationToken)
-            .ConfigureAwait(false);
+        var writeResult = await _configurationWriter.InsertRows(command, cancellationToken).ConfigureAwait(false);
         if (!writeResult.IsSuccess)
         {
             return writeResult.ToNewResult<T>();

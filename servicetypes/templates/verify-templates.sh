@@ -21,8 +21,29 @@ export DOTNET_CLI_HOME="$WORK/clihome"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 mkdir -p "$DOTNET_CLI_HOME"
 
-FDW_VERSION="${FDW_VERSION:-1.1.0-rc.1.*}"
-REFERENCE_VERSION="${REFERENCE_VERSION:-1.1.0-rc.1.*}"
+# Why the default versions are read from the base file and are never written in this script: a version
+# typed here goes stale at the next base bump without failing. The retired packages are still on the
+# feed, so every template would compile green against an API that has since moved, and this script
+# would report PASS for code that would not build in its real home. Compiling proves a template
+# matches SOME published version; reading the base proves it is built against the CURRENT one. The
+# script stops, naming the file, when it cannot read the base. Setting FDW_VERSION or
+# REFERENCE_VERSION on the command line is still allowed: testing against another base is a
+# deliberate act.
+BASE_PROPS="$REPO/../Directory.Build.props"
+if [[ ! -f "$BASE_PROPS" ]]; then
+  echo "no base version file at $BASE_PROPS - the default versions are read from its VersionPrefix and VersionSuffix" >&2
+  exit 1
+fi
+base_prefix="$(sed -n 's:.*<VersionPrefix>\(.*\)</VersionPrefix>.*:\1:p' "$BASE_PROPS" | head -1)"
+base_suffix="$(sed -n 's:.*<VersionSuffix>\(.*\)</VersionSuffix>.*:\1:p' "$BASE_PROPS" | head -1)"
+if [[ -z "$base_prefix" ]]; then
+  echo "no <VersionPrefix> in $BASE_PROPS - the default versions are read from it" >&2
+  exit 1
+fi
+expected="$base_prefix${base_suffix:+-$base_suffix}.*"
+
+FDW_VERSION="${FDW_VERSION:-$expected}"
+REFERENCE_VERSION="${REFERENCE_VERSION:-$expected}"
 NUGET_CONFIG="${NUGET_CONFIG:-$HOME/.nuget/NuGet/NuGet.Config}"
 
 if [[ ! -f "$NUGET_CONFIG" ]]; then
@@ -30,54 +51,25 @@ if [[ ! -f "$NUGET_CONFIG" ]]; then
   exit 1
 fi
 
-# Why this runs before anything is packed or built: the defaults above decide which packages the
-# generated projects restore, and a default left behind after a base bump does not fail. The
-# retired packages are still on the feed, so every template compiles green against an API that has
-# since moved, and this script reports PASS for code that would not build in its real home. That is
-# not hypothetical - the sibling reference-templates repo sat four bases behind on 1.0.0-rc.6.1.*,
-# and six of its seven build targets were broken against current packages while its gate passed.
-# Compiling proves a template matches SOME published version; only this proves it matches the
-# CURRENT one. Overriding either variable on the command line is still allowed and skips the check
-# for that variable, since testing against another base is a deliberate act.
-BASE_PROPS="$REPO/../Directory.Build.props"
-if [[ -f "$BASE_PROPS" ]]; then
-  base_prefix="$(sed -n 's:.*<VersionPrefix>\(.*\)</VersionPrefix>.*:\1:p' "$BASE_PROPS" | head -1)"
-  base_suffix="$(sed -n 's:.*<VersionSuffix>\(.*\)</VersionSuffix>.*:\1:p' "$BASE_PROPS" | head -1)"
-  if [[ -n "$base_prefix" ]]; then
-    expected="$base_prefix${base_suffix:+-$base_suffix}.*"
-    # The literal committed above, not the runtime value: an override on the command line is a
-    # deliberate act and must stay possible, while a default left behind in the file is the defect.
-    for var in FDW_VERSION REFERENCE_VERSION; do
-      declared="$(sed -n "s/^$var=\"\\\${$var:-\\(.*\\)}\"$/\1/p" "${BASH_SOURCE[0]}" | head -1)"
-      if [[ -n "$declared" && "$declared" != "$expected" ]]; then
-        echo "stale version default: $var defaults to '$declared' but this repo's base is '$expected'" >&2
-        echo "  a stale default restores retired packages and hides API drift from this gate" >&2
-        exit 1
-      fi
-    done
-
-    # A template can also pin the base itself, through a symbol whose replaces is FDW_VERSION.
-    # Every template here takes its versions from Directory.Packages.props instead, so no such
-    # symbol should exist - but one reintroduced would go stale at the next bump without failing,
-    # since retired packages still resolve and the template still compiles. Keyed on the replaces
-    # target rather than position: a template carries several defaults and matching the wrong one
-    # passes by accident.
-    for tmpl in "$REPO"/*/.template.config/template.json; do
-      [[ -f "$tmpl" ]] || continue
-      pinned="$(python3 -c "
+# A template can also pin the base itself, through a symbol whose replaces is FDW_VERSION. Every
+# template here takes its versions from Directory.Packages.props instead, so no such symbol should
+# exist - but one reintroduced would go stale at the next bump without failing, since retired
+# packages still resolve and the template still compiles. Keyed on the replaces target rather than
+# position: a template carries several defaults and matching the wrong one passes by accident.
+for tmpl in "$REPO"/*/.template.config/template.json; do
+  [[ -f "$tmpl" ]] || continue
+  pinned="$(python3 -c "
 import json,sys
 s = json.load(open(sys.argv[1])).get('symbols') or {}
 print(next((x.get('defaultValue','') for x in s.values()
             if x.get('replaces') == 'FDW_VERSION'), ''))" "$tmpl")"
-      [[ -z "$pinned" ]] && continue
-      if [[ "$pinned" != "$expected" ]]; then
-        echo "stale version default: $(basename "$(dirname "$(dirname "$tmpl")")") pins '$pinned' but this repo's base is '$expected'" >&2
-        echo "  a template that pins its own base goes stale without failing - take the version from Directory.Packages.props" >&2
-        exit 1
-      fi
-    done
+  [[ -z "$pinned" ]] && continue
+  if [[ "$pinned" != "$expected" ]]; then
+    echo "stale version default: $(basename "$(dirname "$(dirname "$tmpl")")") pins '$pinned' but this repo's base is '$expected'" >&2
+    echo "  a template that pins its own base goes stale without failing - take the version from Directory.Packages.props" >&2
+    exit 1
   fi
-fi
+done
 
 echo "== pack"
 dotnet pack "$REPO/FdwReferenceTemplates.csproj" -c Release -o "$WORK/pkg" --nologo -v quiet
@@ -147,10 +139,21 @@ PROPSEOF
 
 FAILED=0
 
-echo "== generate: endpoint group"
-dotnet new fdw-ref-endpoint-group -o "$WORK/Widget.Endpoints" -n Widget >/dev/null
-echo "== build: endpoint group"
-dotnet build "$WORK/Widget.Endpoints/Widget.Endpoints" -c Release --nologo -v minimal --configfile "$NUGET_CONFIG" || FAILED=1
+# Why every mode and operation: the three modes are different files and the five operations are different bases, so one build proves one of fifteen.
+for mode in Plain Base Seal; do
+  for operation in List Read Create Update Delete; do
+    echo "== generate: endpoint group ($mode, $operation)"
+    dotnet new fdw-ref-endpoint-group -o "$WORK/Widget.Endpoints-$mode-$operation" -n Widget --Permission widgets --Mode "$mode" --Operation "$operation" >/dev/null
+    echo "== build: endpoint group ($mode, $operation)"
+    dotnet build "$WORK/Widget.Endpoints-$mode-$operation/Widget.Endpoints" -c Release --nologo -v minimal --configfile "$NUGET_CONFIG" || FAILED=1
+  done
+done
+
+# A generated endpoint states its right: a route that names none needs no sign-in, and the project still builds clean (FDW-2225).
+if grep -rq "AllowAnonymous" "$WORK"/Widget.Endpoints-*/ --include=*.cs; then
+  echo "an endpoint group template generated AllowAnonymous" >&2
+  FAILED=1
+fi
 
 echo "== generate: api host"
 dotnet new fdw-ref-api-host -o "$WORK/WidgetApi" -n WidgetApi >/dev/null
@@ -187,10 +190,11 @@ dotnet build "$WORK/WidgetAuth" -c Release --nologo -v minimal --configfile "$NU
 echo "== generate: implementation"
 dotnet new fdw-ref-implementation -o "$WORK/WidgetImpl" --ImplName Widget --ServiceName Notification --ServiceNamePlural Notifications >/dev/null
 echo "== build: implementation"
-dotnet build "$WORK/WidgetImpl/ReferenceNotifications.Widget" -c Release --nologo -v minimal --configfile "$NUGET_CONFIG" || FAILED=1
+dotnet build "$WORK/WidgetImpl/FdwReferenceNotifications.Widget" -c Release --nologo -v minimal --configfile "$NUGET_CONFIG" || FAILED=1
 
-# The item templates emit one file each, which cannot compile alone - generation is the whole
-# contract. A template that fails to generate is the defect; anything past that is the caller's file.
+# The item templates emit one file each, which cannot compile alone, so each is generated here and searched
+# below; the collection and the option, which can compile as a pair, are built together after this loop. A
+# template that fails to generate is the defect; anything past that is the caller's file.
 echo "== generate: item templates"
 for item in $(cd "$REPO/items" && ls); do
   cfg="$REPO/items/$item/.template.config/template.json"
@@ -210,6 +214,71 @@ for k,v in (d.get('symbols') or {}).items():
     FAILED=1
   fi
 done
+# A generated item must not compose onto a phase it declares: that is the error STC001 in FDW's own tree, and
+# the analyzer is not packaged, so a project built from the feed never reports it. Calls only: a remark may
+# name the methods when it explains who they are for.
+if grep -rnE '\b(Append|Prepend)(Configuration|Registration|Initialization)[[:space:]]*\(' "$WORK"/item-*/ --include=*.cs \
+   | grep -vE ':[0-9]+:[[:space:]]*//' ; then
+  echo "an item template generated code that composes onto a phase func (Append or Prepend); set it with Registration, Initialization or Configuration" >&2
+  FAILED=1
+fi
+
+# The collection and the option only compile together: the option names the collection's log class and base, and
+# neither ships the interface, the service or its interface that they name. Generate both into one project, add
+# those three small types, and build it.
+echo "== generate: collection and option together"
+ITEMS="$WORK/ItemServiceType"
+mkdir -p "$ITEMS"
+cat > "$ITEMS/ItemServiceType.csproj" <<'ITEMPROJEOF'
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Fdw.Abstractions" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.Collections.SourceGenerators" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" />
+    <PackageReference Include="Fdw.Messages" />
+    <PackageReference Include="Fdw.Services.Abstractions" />
+    <PackageReference Include="Fdw.Services" />
+    <PackageReference Include="Fdw.Services.Logging" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+</Project>
+ITEMPROJEOF
+if dotnet new fdw-collection -o "$ITEMS" -n SampleDomain --category Widgets --namespace WidgetItems >/dev/null \
+   && dotnet new fdw-option -o "$ITEMS" -n SampleOption --collection SampleDomainTypes --optionName Widget --namespace WidgetItems >/dev/null; then
+  cat > "$ITEMS/CallersFile.cs" <<'CALLERSEOF'
+namespace WidgetItems;
+
+public interface ISampleDomainType : Fdw.ServiceTypes.IServiceType
+{
+}
+
+public interface ISampleService
+{
+}
+
+public sealed class SampleService : ISampleService
+{
+}
+CALLERSEOF
+  echo "== build: collection and option together"
+  dotnet build "$ITEMS/ItemServiceType.csproj" -c Release --nologo -v minimal --configfile "$NUGET_CONFIG" || FAILED=1
+else
+  echo "   the collection and option templates FAILED to generate together" >&2
+  FAILED=1
+fi
+
 if [[ "$FAILED" == "0" ]]; then
   echo "PASS — every template generated code that compiles."
 else

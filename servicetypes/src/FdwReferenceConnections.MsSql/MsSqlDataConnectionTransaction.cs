@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -7,6 +8,7 @@ using Fdw.Commands.Data.Abstractions;
 using Fdw.Data.Abstractions;
 using Fdw.Data.MsSql;
 using Fdw.Results;
+using Fdw.Services.Connections;
 using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Connections.MsSql.Logging;
 using Microsoft.Data.SqlClient;
@@ -88,8 +90,7 @@ internal sealed class MsSqlDataConnectionTransaction : IDataConnectionTransactio
         if (string.Equals(translator.Name, "NotFound", StringComparison.Ordinal) ||
             !string.Equals(translator.Name, command.CommandType, StringComparison.Ordinal))
         {
-            return GenericResult<T>.Failure(
-                MsSqlConnectionLogger.ExecutionFailed(_logger));
+            return await ExecuteWithoutTranslator<T>(command, container, cancellationToken).ConfigureAwait(false);
         }
 
         // Why (Stage 3): the container is built complete — its Schema is a synchronous projection over
@@ -119,6 +120,26 @@ internal sealed class MsSqlDataConnectionTransaction : IDataConnectionTransactio
         return result.IsSuccess
             ? GenericResult.Success()
             : result;
+    }
+
+    // A command that declares an expansion runs the simpler commands it expands into, each on this unit's connection and
+    // transaction, so a rollback undoes them together. One that assembles its own result is answered from what its steps
+    // answered, the rows they read or wrote included.
+    private async Task<IGenericResult<T>> ExecuteWithoutTranslator<T>(IDataCommand command, IDataContainer container, CancellationToken cancellationToken)
+    {
+        if (command is IAssembledExpandableDataCommand<T> assembled)
+            return await CommandExpansion.RunAssembled(
+                assembled,
+                container,
+                (step, token) => Execute<int>(step, container, token),
+                (step, token) => Execute<IReadOnlyList<IReadOnlyDictionary<string, object?>>>(step, container, token),
+                _logger,
+                cancellationToken).ConfigureAwait(false);
+
+        return command is IExpandableDataCommand expandable
+            ? await CommandExpansion.Run<T>(expandable, container, (step, token) => Execute<int>(step, container, token), _logger, cancellationToken)
+                .ConfigureAwait(false)
+            : GenericResult<T>.Failure(MsSqlConnectionLogger.ExecutionFailed(_logger));
     }
 
     // The bulk route inside the unit of work: the rows are copied on the unit's own connection with its live transaction, so a
@@ -160,12 +181,12 @@ internal sealed class MsSqlDataConnectionTransaction : IDataConnectionTransactio
 
         try
         {
-            // A configuration save or retire answers with the key values of the rows it touched.
-            if (typeof(T) == typeof(ConfigurationWriteResult))
+            // A result of rows asks for the rows a command read or wrote (a query, or an insert with OUTPUT), one dictionary each.
+            if (typeof(T) == typeof(IReadOnlyList<IReadOnlyDictionary<string, object?>>))
             {
-                using var writeReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-                var writeResult = await MsSqlConnection.ReadWriteResult(writeReader, _logger, cancellationToken).ConfigureAwait(false);
-                return GenericResult<T>.Success((T)(object)writeResult);
+                using var rowsReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                var rows = await MsSqlConnection.ReadDictionaryRows(rowsReader, container, _logger, cancellationToken).ConfigureAwait(false);
+                return rows.IsFailure ? rows.ToNewResult<T>() : GenericResult<T>.Success((T)(object)rows.Value!);
             }
 
             var isQuery = command.CommandText.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase);

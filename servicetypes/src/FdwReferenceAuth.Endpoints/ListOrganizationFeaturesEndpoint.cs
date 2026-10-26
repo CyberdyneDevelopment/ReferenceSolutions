@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Multitenancy.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -15,10 +14,8 @@ public sealed class ListOrganizationFeaturesEndpoint : ListOrganizationFeaturesE
     /// <inheritdoc />
     public ListOrganizationFeaturesEndpoint(
         IFeatureEnablement features,
-        IOrganizationProvider organizations,
-        ISystemRoleConfiguration systemRoles,
         ILogger<ListOrganizationFeaturesEndpoint> logger)
-        : base(logger, features, organizations, systemRoles)
+        : base(logger, features)
     {
     }
 

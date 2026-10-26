@@ -1,4 +1,4 @@
-using Fdw.MessageLogging.Abstractions;
+using Fdw.MessageLogging;
 using Fdw.Messages;
 using Microsoft.Extensions.Logging;
 
@@ -31,14 +31,12 @@ namespace SampleNamespace;
 ///
 /// <b>Volume thins as severity rises.</b> Trace names every individual action; Critical fires once
 /// for a condition that makes the domain inoperable. Take <c>ILogger&lt;T&gt;</c>, not bare
-/// <c>ILogger</c>, so SourceContext names the type the line was written in — that is what makes a
-/// base's contribution distinguishable from a derived option's.
+/// <c>ILogger</c>, so SourceContext names the type the line was written in.
 /// </remarks>
 public static partial class SampleDomainLog
 {
     /// <summary>
-    /// Trace: one line per option, naming the declaring type so a segment contributed by a BASE on
-    /// the option's behalf is distinguishable from the option's own wiring.
+    /// Trace: one line per option, naming the declaring type that registered it.
     /// </summary>
     [MessageLogging(
         EventId = 11000,

@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Multitenancy.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -15,10 +14,8 @@ public sealed class ListRetentionPoliciesEndpoint : ListRetentionPoliciesEndpoin
     /// <inheritdoc />
     public ListRetentionPoliciesEndpoint(
         IRetentionPolicies policies,
-        IOrganizationProvider organizations,
-        ISystemRoleConfiguration systemRoles,
         ILogger<ListRetentionPoliciesEndpoint> logger)
-        : base(logger, policies, organizations, systemRoles)
+        : base(logger, policies)
     {
     }
 

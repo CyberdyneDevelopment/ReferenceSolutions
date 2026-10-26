@@ -10,6 +10,7 @@ using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Multitenancy.Endpoints;
 using Fdw.Services.Users;
+using Fdw.Services.Users.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -21,13 +22,13 @@ namespace FdwReferenceAuth.Endpoints;
 [ExcludeFromCodeCoverage]
 public sealed class ListTenantsEndpoint : ListTenantsEndpointBase
 {
-    private readonly UserTenantConfigurationProvider _userTenantProvider;
+    private readonly IUserTenantsHeld _userTenantsHeld;
     private readonly ILogger<ListTenantsEndpoint> _logger;
 
     /// <inheritdoc />
-    public ListTenantsEndpoint(ITenantProvider tenantProvider, ISystemRoleConfiguration systemRoleConfiguration, UserTenantConfigurationProvider userTenantProvider, ILogger<ListTenantsEndpoint>? logger)
+    public ListTenantsEndpoint(ITenantProvider tenantProvider, ISystemRoleConfiguration systemRoleConfiguration, IUserTenantsHeld userTenantsHeld, ILogger<ListTenantsEndpoint>? logger)
         : base(logger ?? NullLogger<ListTenantsEndpoint>.Instance, tenantProvider, systemRoleConfiguration) {
-        _userTenantProvider = userTenantProvider;
+        _userTenantsHeld = userTenantsHeld;
         _logger = logger ?? NullLogger<ListTenantsEndpoint>.Instance;
     }
 
@@ -70,10 +71,8 @@ public sealed class ListTenantsEndpoint : ListTenantsEndpointBase
             return GenericResult<IEnumerable<ITenant>>.Success(Array.Empty<ITenant>());
         }
 
-        // The user's memberships, then each tenant they name.
-        var memberships = await _userTenantProvider
-            .Find<IUserTenantImplementationConfiguration>(t => t.UserId == userGuid, ct)
-            .ConfigureAwait(false);
+        // The user's memberships, read by the user's id (FDW-2715), then each tenant they name.
+        var memberships = await _userTenantsHeld.Get(userGuid, ct).ConfigureAwait(false);
         if (!memberships.IsSuccess || memberships.Value is null)
         {
             // Why: Fail-loud — a store failure should surface, not silently return an empty list.
@@ -110,9 +109,7 @@ public sealed class ListTenantsEndpoint : ListTenantsEndpointBase
 
         // Why null on a failed read: the base declares Task<Guid?>, so a failure has nowhere to go. That
         // base should return a result instead; until it does, this is the one place a failure is absorbed.
-        var result = await _userTenantProvider
-            .Find<IUserTenantImplementationConfiguration>(t => t.UserId == userGuid && t.IsDefault, ct)
-            .ConfigureAwait(false);
-        return result.IsSuccess && result.Value is { Count: > 0 } defaults ? defaults[0].TenantId : null;
+        var result = await _userTenantsHeld.Get(userGuid, ct).ConfigureAwait(false);
+        return result.IsSuccess && result.Value is { } held && held.FirstOrDefault(m => m.IsDefault) is { } membership ? membership.TenantId : null;
     }
 }

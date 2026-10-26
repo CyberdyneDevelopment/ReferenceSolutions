@@ -56,12 +56,16 @@ public sealed class QueryDataSetDataEndpointStreamTests : IAsyncLifetime
             o.Filter = t => t == typeof(QueryDataSetDataEndpoint);
         });
 
-        var dataSets = new Mock<IDataSetConfigurationProvider>();
-        dataSets.Setup(d => d.Get("KeyedTeams", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(GenericResult<IDataSetImplementationConfiguration>.Success(Teams("KeyedTeams", keyed: true)));
-        dataSets.Setup(d => d.Get("KeylessTeams", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(GenericResult<IDataSetImplementationConfiguration>.Success(Teams("KeylessTeams", keyed: false)));
-        builder.Services.AddSingleton(dataSets.Object);
+        // The endpoint asks the resolver for the name in the route: here each name is a data set, never a variation of one.
+        var resolver = new Mock<IDataSetResolver>();
+        resolver.Setup(r => r.Resolve("KeyedTeams", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<ResolvedDataSet?>.Success(new ResolvedDataSet(Teams("KeyedTeams", keyed: true), null, null, [])));
+        resolver.Setup(r => r.Resolve("KeylessTeams", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<ResolvedDataSet?>.Success(new ResolvedDataSet(Teams("KeylessTeams", keyed: false), null, null, [])));
+        builder.Services.AddSingleton(resolver.Object);
+
+        // No body here names a calculation, so none is ever evaluated.
+        builder.Services.AddSingleton(Mock.Of<IFilterCalculations>());
 
         Reads(Rows(0, 1));
         var gateways = new Mock<IDataGatewayProvider>();

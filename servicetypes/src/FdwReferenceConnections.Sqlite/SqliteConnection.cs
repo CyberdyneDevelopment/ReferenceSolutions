@@ -27,7 +27,7 @@ namespace FdwReferenceConnections.Sqlite;
 /// from the ADO.NET connection pool (via connection string sharing).
 /// </summary>
 [ExcludeFromCodeCoverage] // Excluded: requires live SQLite file or :memory: database
-public sealed class SqliteConnection
+public sealed partial class SqliteConnection
     : ConnectionBase<SqliteCommand, SqliteConnectionConfiguration, SqliteConnection>,
       ITransactionalDataConnection,
       ISupportsHealthProbe,
@@ -108,6 +108,59 @@ public sealed class SqliteConnection
         catch (Exception ex)
         {
             return GenericResult<T>.Failure(
+                SqliteConnectionLog.ExecutionFailedWithException(_logger, ex, Configuration.Name));
+        }
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Reads every result set: a command that returns columns holds one INSERT for each batch of rows, and each returns its
+    /// own rows.
+    /// </remarks>
+    protected override async Task<IGenericResult<IEnumerable<object>>> ExecuteRowsByType(
+        SqliteCommand command,
+        IStorageContainer container,
+        Type elementType,
+        CancellationToken cancellationToken)
+    {
+        SqliteConnectionLog.TraceExecuteEntry(_logger, Configuration.Name);
+
+        try
+        {
+            var adoConnection = CreateAdoConnection();
+            await using (adoConnection.ConfigureAwait(false))
+            {
+                await adoConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                command.Connection = adoConnection;
+
+                SqliteConnectionLog.ExecutingCommand(_logger, Configuration.Name, command.CommandText, command.Parameters.Count);
+
+                using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                var rows = new List<object>();
+                do
+                {
+                    while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        var rowResult = MapReaderRowToObject(reader, elementType, container, _logger);
+                        if (!rowResult.IsSuccess)
+                            return rowResult.ToNewResult<IEnumerable<object>>();
+                        rows.Add(rowResult.Value!);
+                    }
+                }
+                while (await reader.NextResultAsync(cancellationToken).ConfigureAwait(false));
+
+                SqliteConnectionLog.CommandCompleted(_logger, Configuration.Name, rows.Count);
+                return GenericResult<IEnumerable<object>>.Success(rows);
+            }
+        }
+        catch (SqliteException ex)
+        {
+            return GenericResult<IEnumerable<object>>.Failure(
+                ExceptionResultExtensions.FlattenException(ex).Prepend(SqliteConnectionLog.ExecutionFailedWithException(_logger, ex, Configuration.Name)));
+        }
+        catch (Exception ex)
+        {
+            return GenericResult<IEnumerable<object>>.Failure(
                 SqliteConnectionLog.ExecutionFailedWithException(_logger, ex, Configuration.Name));
         }
     }
@@ -241,6 +294,33 @@ public sealed class SqliteConnection
         IStorageContainer container,
         CancellationToken cancellationToken)
         => MapReaderToTypeInternal<T>(reader, container, _logger, cancellationToken);
+
+    /// <summary>
+    /// Reads every row of every result set a command returned as dictionaries keyed by column name, the shape a command that
+    /// returns columns answers. A statement of several inserts returns one result set for each, so every set is read.
+    /// </summary>
+    /// <param name="reader">The reader the command returned.</param>
+    /// <param name="container">The container whose schema maps the columns.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The rows, one dictionary each; or why a row could not be read.</returns>
+    internal static async Task<IGenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>> ReadDictionaryRows(
+        Microsoft.Data.Sqlite.SqliteDataReader reader, IStorageContainer container, ILogger logger, CancellationToken cancellationToken)
+    {
+        var rows = new List<IReadOnlyDictionary<string, object?>>();
+        do
+        {
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                var row = MapReaderRowToObject(reader, typeof(Dictionary<string, object?>), container, logger);
+                if (!row.IsSuccess)
+                    return row.ToNewResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>();
+                rows.Add((IReadOnlyDictionary<string, object?>)row.Value!);
+            }
+        }
+        while (await reader.NextResultAsync(cancellationToken).ConfigureAwait(false));
+        return GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Success(rows);
+    }
 
     private static IGenericResult<object> MapReaderRowToObject(
         Microsoft.Data.Sqlite.SqliteDataReader reader,

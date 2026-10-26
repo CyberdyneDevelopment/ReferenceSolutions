@@ -57,6 +57,7 @@ public sealed partial class HttpConnection
     private readonly IHttpProtocol _protocol;
     private readonly HttpProtocolContext _context;
     private readonly HttpProtocolTranslatorAdapter _translatorAdapter;
+    private readonly HttpTranslatorNotFound _translatorNotFound;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpConnection"/> class.
@@ -83,6 +84,7 @@ public sealed partial class HttpConnection
         _protocol = protocol;
         _context = context;
         _translatorAdapter = new HttpProtocolTranslatorAdapter(protocol, context);
+        _translatorNotFound = new HttpTranslatorNotFound(Logger);
 
         LogConnectionInitialized(Logger, configuration.BaseUrl, protocol.Name);
     }
@@ -221,13 +223,59 @@ public sealed partial class HttpConnection
     }
 
     /// <summary>
+    /// Runs a command. An insert of more rows than the protocol sends in one request runs as one request for each batch of rows, one after the
+    /// other, and answers the rows written in all; every other command runs as one request.
+    /// </summary>
+    /// <typeparam name="T">The expected return type.</typeparam>
+    /// <param name="command">The data command.</param>
+    /// <param name="container">The container the command is dispatched with.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The result of the command; the first batch that fails ends it with that failure.</returns>
+    public override async Task<IGenericResult<T>> Execute<T>(IDataCommand command, IDataContainer container, CancellationToken cancellationToken = default)
+    {
+        if (command is not IBatchableDataCommand batchable || command is IReturningCommand { ReturnColumns.Count: > 0 })
+        {
+            return await base.Execute<T>(command, container, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (_protocol.InsertRowsPerRequest < 1)
+        {
+            return GenericResult<T>.Failure(
+                HttpResultCodes.ByName("CommandTranslationFailed"),
+                ResultDetails.Create().With("ErrorMessage", $"Protocol '{_protocol.Name}' sends {_protocol.InsertRowsPerRequest} insert rows in a request; it must send at least 1."));
+        }
+
+        var batches = batchable.InBatchesOf(_protocol.InsertRowsPerRequest);
+        if (batches.Count <= 1)
+        {
+            return await base.Execute<T>(command, container, cancellationToken).ConfigureAwait(false);
+        }
+
+        var written = 0;
+        IGenericResult<T>? last = null;
+        foreach (var batch in batches)
+        {
+            last = await base.Execute<T>(batch, container, cancellationToken).ConfigureAwait(false);
+            if (last.IsFailure)
+            {
+                return last;
+            }
+
+            written += last.Value is int count ? count : 0;
+        }
+
+        return typeof(T) == typeof(int) ? GenericResult<T>.Success((T)(object)written) : last!;
+    }
+
+    /// <summary>
     /// Gets the translator for HTTP commands.
     /// Uses an adapter that delegates to the protocol's Translate method.
     /// </summary>
-    /// <param name="commandType">The command type (ignored for HTTP - protocol handles all).</param>
-    /// <returns>The protocol translator adapter.</returns>
+    /// <param name="commandType">The command type.</param>
+    /// <returns>The protocol translator adapter when the protocol maps the command type; otherwise the not-found translator,
+    /// which lets a command that expands into simpler ones run those and fails any other with a named result.</returns>
     protected override IDataCommandTranslator<HttpRequestMessage> GetTranslator(string commandType)
-        => _translatorAdapter;
+        => _translatorAdapter.Maps(commandType) ? _translatorAdapter : _translatorNotFound;
 
     /// <summary>
     /// Executes an HTTP request and returns the typed result.

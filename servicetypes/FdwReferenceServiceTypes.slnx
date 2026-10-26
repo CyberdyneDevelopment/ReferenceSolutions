@@ -10,6 +10,7 @@
   <Folder Name="/src/">
     <Project Path="src/FdwReferenceAegis.McpServer/FdwReferenceAegis.McpServer.csproj" />
     <Project Path="src/FdwReferenceAgentActions.Endpoints/FdwReferenceAgentActions.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceAlerts.Endpoints/FdwReferenceAlerts.Endpoints.csproj" />
     <Project Path="src/FdwReferenceAuth.Endpoints/FdwReferenceAuth.Endpoints.csproj" />
     <Project Path="src/FdwReferenceAuthentication.AssuranceLevels/FdwReferenceAuthentication.AssuranceLevels.csproj" />
     <Project Path="src/FdwReferenceAuthentication.AuthentikSso/FdwReferenceAuthentication.AuthentikSso.csproj" />
@@ -47,6 +48,8 @@
     <Project Path="src/FdwReferenceData.FileSystem/FdwReferenceData.FileSystem.csproj" />
     <Project Path="src/FdwReferenceData.Endpoints/FdwReferenceData.Endpoints.csproj" />
     <Project Path="src/FdwReferenceDataPaths.Templates/FdwReferenceDataPaths.Templates.csproj" />
+    <Project Path="src/FdwReferenceTypeCollections.Endpoints/FdwReferenceTypeCollections.Endpoints.csproj" />
+    <Project Path="src/FdwReferenceUiFeedback.Endpoints/FdwReferenceUiFeedback.Endpoints.csproj" />
     <Project Path="src/FdwReferenceWorkspaces.Endpoints/FdwReferenceWorkspaces.Endpoints.csproj" />
     <Project Path="src/FdwReferenceEndpoints/FdwReferenceEndpoints.csproj" />
     <Project Path="src/FdwReferenceEtl.Endpoints/FdwReferenceEtl.Endpoints.csproj" />
@@ -69,6 +72,7 @@
     <Project Path="src/FdwReferenceHosts.SqlServerEndpoint/FdwReferenceHosts.SqlServerEndpoint.csproj" />
     <Project Path="src/FdwReferenceHosts.WebMcp.Registration/FdwReferenceHosts.WebMcp.Registration.csproj" />
     <Project Path="src/FdwReferenceHosts.WebMcp/FdwReferenceHosts.WebMcp.csproj" />
+    <Project Path="src/FdwReferenceInbox.Endpoints/FdwReferenceInbox.Endpoints.csproj" />
     <Project Path="src/FdwReferenceLogging.Serilog.Registration/FdwReferenceLogging.Serilog.Registration.csproj" />
     <Project Path="src/FdwReferenceLogging.Serilog/FdwReferenceLogging.Serilog.csproj" />
     <Project Path="src/FdwReferenceMessaging.Endpoints/FdwReferenceMessaging.Endpoints.csproj" />
@@ -196,6 +200,12 @@
       <BuildType Solution="Release-Local|*" Project="Debug" />
     </Project>
     <Project Path="tests/FdwReferenceHost.Tests/FdwReferenceHost.Tests.csproj" />
+    <Project Path="tests/FdwReferenceHosts.ForwardedHeaders.Registration.Tests/FdwReferenceHosts.ForwardedHeaders.Registration.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
     <Project Path="tests/FdwReferenceMessaging.Endpoints.Tests/FdwReferenceMessaging.Endpoints.Tests.csproj">
       <BuildType Solution="Debug-Local|*" Project="Debug" />
       <BuildType Solution="Develop-Local|*" Project="Debug" />

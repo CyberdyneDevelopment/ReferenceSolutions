@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Operations.Abstractions.Audit;
-using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Multitenancy.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -16,11 +15,9 @@ public sealed class RunRetentionEndpoint : RunRetentionEndpointBase
     /// <inheritdoc />
     public RunRetentionEndpoint(
         IRetentionKeeper keeper,
-        IOrganizationProvider organizations,
         IAdministrativeAudit audit,
-        ISystemRoleConfiguration systemRoles,
         ILogger<RunRetentionEndpoint> logger)
-        : base(logger, keeper, organizations, audit, systemRoles)
+        : base(logger, keeper, audit)
     {
     }
 

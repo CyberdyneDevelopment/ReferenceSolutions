@@ -102,13 +102,14 @@ public sealed class FileSystemConnectionType
     }
 
     /// <summary>
-    /// FileSystem supports FileRead and FileWrite capabilities.
+    /// FileSystem supports FileRead and FileWrite, and a unit of work that undoes its writes on rollback.
     /// </summary>
     // Why: ByName() returns the TypeCollection singleton — never instantiate capabilities inline.
     public override IReadOnlyList<ICommandCapabilityType> SupportedCommands =>
     [
         CommandCapabilityTypes.ByName("FileRead"),
         CommandCapabilityTypes.ByName("FileWrite"),
+        CommandCapabilityTypes.ByName("UnitOfWork"),
     ];
 
     /// <inheritdoc/>

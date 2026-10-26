@@ -24,11 +24,38 @@
       "replaces": "ROUTE_PREFIX",
       "description": "The URL segment this group's endpoints live under, e.g. api/v1/samples."
     },
+    "Permission": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "sample-permission",
+      "isRequired": true,
+      "description": "The permission prefix the endpoint's right is stated under, e.g. \"samples\" for samples:read. Required: an endpoint with no right needs no sign-in."
+    },
+    "Mode": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "Plain",
+      "description": "What to generate. Plain: the group and one plain FastEndpoints endpoint. Base: the group and the open-generic abstract endpoint base for the operation, a Crud base with the resource name, OpenAPI summary, description and tag stated and its generics left open. Seal: the group and a concrete endpoint class that closes the generics of the Crud base for the operation, with its option.",
+      "choices": [
+        {
+          "choice": "Plain",
+          "description": "A plain FastEndpoints endpoint with its right stated."
+        },
+        {
+          "choice": "Base",
+          "description": "The abstract endpoint base, generics open."
+        },
+        {
+          "choice": "Seal",
+          "description": "A concrete endpoint class that closes the generics of the Crud base."
+        }
+      ]
+    },
     "Operation": {
       "type": "parameter",
       "datatype": "choice",
       "defaultValue": "List",
-      "description": "Which operation this endpoint performs. Sets the verb and route to the convention the reference stack uses: GET lists and single reads, POST creates, PATCH modifies, DELETE removes. There is no PUT.",
+      "description": "Which operation this endpoint performs. Sets the verb and route to the convention the reference stack uses: GET lists and single reads, POST creates, PATCH modifies, DELETE removes. PUT is not used.",
       "choices": [
         {
           "choice": "List",
@@ -71,6 +98,43 @@
     "IsDelete": {
       "type": "computed",
       "value": "(Operation == \"Delete\")"
+    },
+    "IsPlain": {
+      "type": "computed",
+      "value": "(Mode == \"Plain\")"
+    },
+    "IsBase": {
+      "type": "computed",
+      "value": "(Mode == \"Base\")"
+    },
+    "IsSeal": {
+      "type": "computed",
+      "value": "(Mode == \"Seal\")"
     }
-  }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(IsBase)",
+          "exclude": [
+            "SampleGroup.Endpoints/ListSampleGroupEndpoint.cs",
+            "SampleGroup.Endpoints/SampleGroupEndpointOptions/ListSampleGroupOption.cs"
+          ]
+        },
+        {
+          "condition": "(!IsBase)",
+          "exclude": [
+            "SampleGroup.Endpoints/ListSampleGroupEndpointBase.cs"
+          ]
+        },
+        {
+          "condition": "(!IsSeal)",
+          "exclude": [
+            "SampleGroup.Endpoints/SampleGroupEndpointLog.cs"
+          ]
+        }
+      ]
+    }
+  ]
 }

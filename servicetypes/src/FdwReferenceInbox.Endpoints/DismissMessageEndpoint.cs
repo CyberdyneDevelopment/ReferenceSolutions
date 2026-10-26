@@ -6,16 +6,16 @@ using Microsoft.Extensions.Logging;
 namespace FdwReferenceMessages.Endpoints;
 
 /// <summary>
-/// Deletes a message (DELETE /messages/{Id}).
+/// Dismisses a message.
 /// </summary>
 [ExcludeFromCodeCoverage]
-public class DeleteMessageEndpoint : DeleteMessageEndpointBase
+public class DismissMessageEndpoint : DismissMessageEndpointBase
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="DeleteMessageEndpoint"/> class.
+    /// Initializes a new instance of the <see cref="DismissMessageEndpoint"/> class.
     /// </summary>
-    public DeleteMessageEndpoint(IMessageService messageService, ILogger<DeleteMessageEndpoint> logger)
-        : base(messageService, logger)
+    public DismissMessageEndpoint(IAlertActionService alerts, ILogger<DismissMessageEndpoint> logger)
+        : base(alerts, logger)
     {
     }
 

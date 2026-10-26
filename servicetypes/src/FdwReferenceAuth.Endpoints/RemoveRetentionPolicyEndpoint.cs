@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Operations.Abstractions.Audit;
-using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Multitenancy.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -16,11 +15,9 @@ public sealed class RemoveRetentionPolicyEndpoint : RemoveRetentionPolicyEndpoin
     /// <inheritdoc />
     public RemoveRetentionPolicyEndpoint(
         IRetentionPolicies policies,
-        IOrganizationProvider organizations,
         IAdministrativeAudit audit,
-        ISystemRoleConfiguration systemRoles,
         ILogger<RemoveRetentionPolicyEndpoint> logger)
-        : base(logger, policies, organizations, audit, systemRoles)
+        : base(logger, policies, audit)
     {
     }
 

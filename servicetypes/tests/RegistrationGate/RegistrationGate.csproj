@@ -34,6 +34,10 @@
     <ProjectReference Include="..\..\src\FdwReferenceEtl.Endpoints\FdwReferenceEtl.Endpoints.csproj" />
     <ProjectReference Include="..\..\src\FdwReferenceOperations.Endpoints\FdwReferenceOperations.Endpoints.csproj" />
     <ProjectReference Include="..\..\src\FdwReferenceMessaging.Endpoints\FdwReferenceMessaging.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceUiFeedback.Endpoints\FdwReferenceUiFeedback.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceAlerts.Endpoints\FdwReferenceAlerts.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceInbox.Endpoints\FdwReferenceInbox.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\FdwReferenceTypeCollections.Endpoints\FdwReferenceTypeCollections.Endpoints.csproj" />
     <ProjectReference Include="..\..\src\FdwReferenceCatalog.Endpoints\FdwReferenceCatalog.Endpoints.csproj" />
     <ProjectReference Include="..\..\src\FdwReferenceSamples.Endpoints\FdwReferenceSamples.Endpoints.csproj" />
   </ItemGroup>

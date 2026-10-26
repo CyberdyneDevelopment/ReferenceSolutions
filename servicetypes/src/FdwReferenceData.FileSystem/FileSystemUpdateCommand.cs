@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Fdw.Data.Abstractions;
 
 namespace FdwReferenceData.FileSystem;
@@ -18,15 +19,18 @@ public sealed class FileSystemUpdateCommand : FileSystemRecordCommand
     /// <param name="container">The configured container to write.</param>
     /// <param name="record">The record POCO whose mapped values replace the matched rows' columns.</param>
     /// <param name="filter">The filter expression identifying which rows to mutate.</param>
+    /// <param name="returnColumns">The columns to return for each row modified, already validated against the container; none answers a row count.</param>
     public FileSystemUpdateCommand(
         string relativePath,
         IDataContainer container,
         object record,
-        IFilterExpression? filter)
+        IFilterExpression? filter,
+        IReadOnlyList<string>? returnColumns = null)
         : base(relativePath, container)
     {
         Record = record;
         Filter = filter;
+        ReturnColumns = returnColumns;
     }
 
     /// <summary>Gets the record POCO whose mapped values replace the matched rows' non-key columns.</summary>
@@ -34,4 +38,7 @@ public sealed class FileSystemUpdateCommand : FileSystemRecordCommand
 
     /// <summary>Gets the filter expression (WHERE clause) identifying which rows to mutate.</summary>
     public IFilterExpression? Filter { get; }
+
+    /// <summary>Gets the names of the columns to return for each row modified; none or empty answers a row count.</summary>
+    public IReadOnlyList<string>? ReturnColumns { get; }
 }

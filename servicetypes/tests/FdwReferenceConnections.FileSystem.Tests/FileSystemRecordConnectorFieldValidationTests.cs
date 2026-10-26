@@ -67,6 +67,7 @@ public sealed class FileSystemRecordConnectorFieldValidationTests
         container.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
         container.Setup(c => c.Path).Returns(path.Object);
         container.Setup(c => c.Nodes).Returns([badNode.Object]);
+        container.Setup(c => c.Keys).Returns(new List<IContainerKey>());
         return container.Object;
     }
 }

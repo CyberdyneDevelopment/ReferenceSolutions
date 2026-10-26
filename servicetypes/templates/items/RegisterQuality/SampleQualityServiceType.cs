@@ -14,9 +14,13 @@ namespace SampleNamespace;
 /// Referencing the package that contains this IS the registration: a module initializer adds it to
 /// its collection at assembly load, before Main() runs.
 ///
-/// Append rather than replace. AppendRegistration runs after whatever is already chained, so the
-/// base's own body and any other contribution still run. Registration(...) assigns over all of it,
-/// and nothing reports that it happened — the option simply stops doing part of its job.
+/// The phase bodies are set in the constructor with Registration and Initialization. This class
+/// declares them, so it owns them outright. AppendRegistration, PrependRegistration and the Configuration
+/// and Initialization counterparts exist for a host or package extending an option it did not author;
+/// inside the declaring class they are the error STC001. Where a body needs the func another piece would
+/// have run, capture that func in a local and call it at the point in the body where it belongs. No
+/// base contributes a segment, because STC002 refuses a base that sets a phase: wiring every option of
+/// a domain needs belongs in the collection's Register body.
 ///
 /// Delete a phase this option does not need. The inherited default returns success, so an unset
 /// phase costs nothing and says plainly that there is nothing to do.
@@ -32,7 +36,7 @@ public sealed class SampleQualityServiceType : QualityServiceTypeBase
         : base("SAMPLE_NAME", "SAMPLE_NAME", "SAMPLE_NAME", "What this service type is.")
     {
         // Register runs while the container is still being built, so it can only add to it.
-        AppendRegistration((builder, loggerFactory) =>
+        Registration((builder, loggerFactory) =>
         {
             builder.Services.TryAddScoped<ISampleService, SampleService>();
 
@@ -41,7 +45,7 @@ public sealed class SampleQualityServiceType : QualityServiceTypeBase
 
         // Initialize runs after Build(), so it is the only phase with a real IServiceProvider —
         // a resolved service, a middleware pipeline or a mapped route can only exist here.
-        AppendInitialization((host, loggerFactory) =>
+        Initialization((host, loggerFactory) =>
         {
             return GenericResult<IHost>.Success(host);
         });

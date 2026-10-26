@@ -1,3 +1,4 @@
+using Fdw.Services.Authorization.Abstractions;
 using Fdw.Services.Authorization.Configuration;
 using System.Collections.Generic;
 using System;
@@ -7,9 +8,11 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using FastEndpoints;
+using Fdw.Claims.Abstractions;
 using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Authorization;
 using Fdw.Services.Users;
+using Fdw.Services.Users.Abstractions;
 using Fdw.Services.Users.Configuration;
 using Fdw.Services.Users.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -24,25 +27,25 @@ namespace FdwReferenceAuth.Endpoints;
 public class GetMeEndpoint : EndpointWithoutRequest<GetMeResponse>
 {
     private readonly UserConfigurationProvider _userProvider;
-    private readonly UserRoleConfigurationProvider _userRoleProvider;
+    private readonly IUserRolesHeld _userRolesHeld;
     private readonly IRoleConfigurationProvider _roleProvider;
-    private readonly UserTenantConfigurationProvider _userTenantProvider;
+    private readonly IUserTenantsHeld _userTenantsHeld;
     private readonly IAuthenticationContextAccessor _authContextAccessor;
     private readonly ILogger<GetMeEndpoint> _logger;
 
     /// <inheritdoc />
     public GetMeEndpoint(
         UserConfigurationProvider userProvider,
-        UserRoleConfigurationProvider userRoleProvider,
+        IUserRolesHeld userRolesHeld,
         IRoleConfigurationProvider roleProvider,
-        UserTenantConfigurationProvider userTenantProvider,
+        IUserTenantsHeld userTenantsHeld,
         IAuthenticationContextAccessor authContextAccessor,
         ILogger<GetMeEndpoint>? logger = null)
     {
         _userProvider = userProvider;
-        _userRoleProvider = userRoleProvider;
+        _userRolesHeld = userRolesHeld;
         _roleProvider = roleProvider;
-        _userTenantProvider = userTenantProvider;
+        _userTenantsHeld = userTenantsHeld;
         _authContextAccessor = authContextAccessor;
         _logger = logger ?? NullLogger<GetMeEndpoint>.Instance;
     }
@@ -92,13 +95,9 @@ public class GetMeEndpoint : EndpointWithoutRequest<GetMeResponse>
 
         var user = userResult.Value;
 
-        // Which rows are this user's is UserRoleAssignments' to say (FDW-532: parsed Guids, not text,
-        // because UserId is VARCHAR and SQL Server casts a uniqueidentifier to uppercase). A row for a
-        // service identity ('fdw.scheduler') is another identity's assignment, not a malformed one:
-        // it does not match a user and is not reported (FDW-991).
-        var assignments = await _userRoleProvider
-            .Find<IUserRoleImplementationConfiguration>(UserRoleAssignments.HeldBy(userId), ct)
-            .ConfigureAwait(false);
+        // Which assignments are this user's is IUserRolesHeld's to say: it reads only this user's rows, so the cost
+        // does not grow with the number of users (FDW-2676).
+        var assignments = await _userRolesHeld.Get(userId, ct).ConfigureAwait(false);
         if (!assignments.IsSuccess || assignments.Value is null)
         {
             await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
@@ -126,9 +125,7 @@ public class GetMeEndpoint : EndpointWithoutRequest<GetMeResponse>
         // the same claims baked into the token at login -- not a second DB round-trip.
         var authContext = _authContextAccessor.Current;
 
-        var membershipsResult = await _userTenantProvider
-            .Find<IUserTenantImplementationConfiguration>(t => t.UserId == userId, ct)
-            .ConfigureAwait(false);
+        var membershipsResult = await _userTenantsHeld.Get(userId, ct).ConfigureAwait(false);
         if (!membershipsResult.IsSuccess || membershipsResult.Value is null)
         {
             await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
@@ -142,7 +139,10 @@ public class GetMeEndpoint : EndpointWithoutRequest<GetMeResponse>
             Id = userId,
             Username = user.Name,
             Email = user.Email,
-            Roles = roleNames,
+            // A session acting with a role holds that role alone (FDW-2282), so it is told that one, not the roles the person is assigned.
+            Roles = User.FindFirst(ClaimDefinitions.actingRole.Name) is not null
+                ? [.. User.FindAll(ClaimDefinitions.roles.Name).Select(claim => claim.Value)]
+                : roleNames,
             Permissions = authContext?.Permissions.ToList() ?? [],
             TenantId = authContext?.ActiveTenantId,
             AvailableTenants = availableTenants,

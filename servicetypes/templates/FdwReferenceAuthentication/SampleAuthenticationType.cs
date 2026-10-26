@@ -29,7 +29,10 @@ public sealed class SampleAuthenticationType : AuthenticationServiceTypeBase
 {
     /// <summary>Initializes a new instance of the <see cref="SampleAuthenticationType"/> class.</summary>
     public SampleAuthenticationType()
-        : base("SAMPLE_MECHANISM", "SAMPLE_MECHANISM", "Validates tokens issued by SAMPLE_MECHANISM.")
+        : base("SAMPLE_MECHANISM",
+               "SAMPLE_MECHANISM",
+               "Validates tokens issued by SAMPLE_MECHANISM.",
+               defaultContainerName: "SAMPLE_MECHANISMAuthenticationServiceConfiguration")
     {
     }
 

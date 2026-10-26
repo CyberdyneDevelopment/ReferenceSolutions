@@ -85,17 +85,20 @@ public sealed class FileSystemConnectionTransaction : IDataConnectionTransaction
     public Task<IGenericResult<T>> Execute<T>(
         IDataCommand command, IDataContainer container, CancellationToken cancellationToken = default)
         => IsActive
-            ? _connection.Execute<T>(command, container, cancellationToken)
+            ? _connection.ExecuteInUnit<T>(command, container, cancellationToken)
             : Task.FromResult(GenericResult<T>.Failure(
                 FileSystemLog.UnitOfWorkNoLongerActive(_logger, _connectionName)));
 
     /// <inheritdoc />
-    public Task<IGenericResult> Execute(
+    public async Task<IGenericResult> Execute(
         IDataCommand command, IDataContainer container, CancellationToken cancellationToken = default)
-        => IsActive
-            ? _connection.Execute(command, container, cancellationToken)
-            : Task.FromResult<IGenericResult>(GenericResult.Failure(
-                FileSystemLog.UnitOfWorkNoLongerActive(_logger, _connectionName)));
+    {
+        if (!IsActive)
+            return GenericResult.Failure(FileSystemLog.UnitOfWorkNoLongerActive(_logger, _connectionName));
+
+        var result = await _connection.ExecuteInUnit<object>(command, container, cancellationToken).ConfigureAwait(false);
+        return result.IsSuccess ? GenericResult.Success() : result;
+    }
 
     /// <inheritdoc />
     public Task<IGenericResult> Commit(CancellationToken cancellationToken = default)

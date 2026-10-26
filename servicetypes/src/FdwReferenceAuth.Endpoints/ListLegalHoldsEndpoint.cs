@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Multitenancy.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -15,10 +14,8 @@ public sealed class ListLegalHoldsEndpoint : ListLegalHoldsEndpointBase
     /// <inheritdoc />
     public ListLegalHoldsEndpoint(
         ILegalHolds holds,
-        IOrganizationProvider organizations,
-        ISystemRoleConfiguration systemRoles,
         ILogger<ListLegalHoldsEndpoint> logger)
-        : base(logger, holds, organizations, systemRoles)
+        : base(logger, holds)
     {
     }
 

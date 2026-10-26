@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Data.Endpoints;
 using Fdw.Services.Data.Transformations;
+using Fdw.Services.Settings;
 
 namespace FdwReferenceTransformations.Endpoints;
 
@@ -14,8 +15,11 @@ public sealed class ListTransformationsEndpoint : ListTransformationsEndpointBas
     /// <summary>
     /// Initializes a new instance of <see cref="ListTransformationsEndpoint"/>.
     /// </summary>
-    public ListTransformationsEndpoint(TransformationConfigurationProvider transformations, ILogger<ListTransformationsEndpoint> logger)
-        : base(logger, transformations) {
+    public ListTransformationsEndpoint(
+        TransformationConfigurationProvider transformations,
+        IEffectiveSettingsProvider settings,
+        ILogger<ListTransformationsEndpoint> logger)
+        : base(logger, transformations, settings) {
     }
 
     /// <inheritdoc/>

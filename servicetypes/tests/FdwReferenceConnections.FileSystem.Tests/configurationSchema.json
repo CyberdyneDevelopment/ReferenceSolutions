@@ -39,7 +39,8 @@
                   { "Name": "Domain", "Ordinal": 4, "IsNullable": false },
                   { "Name": "Implementation", "Ordinal": 5, "IsNullable": false },
                   { "Name": "IsCurrent", "Ordinal": 6, "IsNullable": false },
-                  { "Name": "IsDeleted", "Ordinal": 7, "IsNullable": false }
+                  { "Name": "IsDeleted", "Ordinal": 7, "IsNullable": false },
+                  { "Name": "ModifyDate", "Ordinal": 8, "IsNullable": true }
                 ],
                 "Keys": [
                   {
@@ -69,7 +70,8 @@
                   { "Name": "StripPrefix", "Ordinal": 8, "IsNullable": false },
                   { "Name": "Target", "Ordinal": 9, "IsNullable": false },
                   { "Name": "IsCurrent", "Ordinal": 10, "IsNullable": false },
-                  { "Name": "IsDeleted", "Ordinal": 11, "IsNullable": false }
+                  { "Name": "IsDeleted", "Ordinal": 11, "IsNullable": false },
+                  { "Name": "ModifyDate", "Ordinal": 12, "IsNullable": true }
                 ],
                 "Keys": [
                   {

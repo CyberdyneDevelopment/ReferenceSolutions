@@ -14,10 +14,10 @@ namespace FdwReferenceConnections.MsSql;
 /// </summary>
 internal static class MsSqlBulkRoute
 {
-    private const string BulkInsert = "BulkInsert";
+    private const string Insert = "Insert";
 
     // Asked first: a command that would not take the bulk route even if no row could run serially has no use for it, and its
-    // container is not sized. Every data command answers; only a bulk insert with rows answers yes.
+    // container is not sized. Every data command answers; only an insert with rows answers yes.
     private const int NoSerialRows = 0;
 
     /// <summary>
@@ -35,23 +35,23 @@ internal static class MsSqlBulkRoute
     /// columns (2100 parameters). Rows beyond it go to the bulk copy, which has no such limit (FDW-1173).
     /// </summary>
     internal static int SerialLimit(IStorageContainer container, int maxSerialInsert)
-        => Math.Min(maxSerialInsert, MsSqlBatchInsertTranslator.RowsPerRequest(container));
+        => Math.Min(maxSerialInsert, MsSqlInsertTranslator.RowsPerRequest(container));
 
     /// <summary>
-    /// Plans the bulk copy of a command that takes the bulk route, or says why it cannot: this connection's bulk mode copies bulk
+    /// Plans the bulk copy of a command that takes the bulk route, or says why it cannot: this connection's bulk mode copies
     /// inserts only, and the failure is a coded result naming the command and the connection.
     /// </summary>
     internal static IGenericResult<MsSqlBulkCopyPlan> Plan(
         IDataCommand command, IStorageContainer container, ILogger logger, string connectionName, int maxSerialInsert, bool inTransaction)
     {
-        if (!string.Equals(command.CommandType, BulkInsert, StringComparison.Ordinal))
+        if (!string.Equals(command.CommandType, Insert, StringComparison.Ordinal))
         {
             return GenericResult<MsSqlBulkCopyPlan>.Failure(DatabaseCommandLog.BulkRouteUnavailable(
-                logger, command.CommandType, connectionName, "the SQL Server bulk mode copies bulk inserts only"));
+                logger, command.CommandType, connectionName, "the SQL Server bulk mode copies inserts only"));
         }
 
         DatabaseCommandLog.BulkRouteChosen(
             logger, command.CommandType, connectionName, SerialLimit(container, maxSerialInsert), inTransaction ? " in a unit of work" : string.Empty);
-        return MsSqlBulkInsertTranslator.Plan(command, container);
+        return MsSqlInsertTranslator.Plan(command, container);
     }
 }

@@ -57,7 +57,7 @@ public sealed class MsSqlBulkRouteTests
         return container.Object;
     }
 
-    private static BulkInsertCommand<IDictionary<string, object?>> Insert(int rows) => new(
+    private static InsertCommand<IDictionary<string, object?>> Insert(int rows) => new(
         Enumerable.Range(1, rows).Select(i => (IDictionary<string, object?>)new Dictionary<string, object?> { ["Name"] = $"Row {i}" }).ToList());
 
     private sealed class RecordingWriter
@@ -92,7 +92,7 @@ public sealed class MsSqlBulkRouteTests
     [InlineData(1001, true)]
     [Trait("Priority", "P0")]
     [Trait("Category", "DataIntegrity")]
-    public void ABulkInsertTakesTheBulkRouteOnlyAboveTheLimit(int rows, bool takesBulk)
+    public void AnInsertTakesTheBulkRouteOnlyAboveTheLimit(int rows, bool takesBulk)
     {
         MsSqlBulkRoute.Takes(Insert(rows), Container(), MaxSerialInsert).ShouldBe(takesBulk);
     }
@@ -102,7 +102,7 @@ public sealed class MsSqlBulkRouteTests
     [InlineData(141, true)]
     [Trait("Priority", "P0")]
     [Trait("Category", "DataIntegrity")]
-    public void ABulkInsertTakesTheBulkRouteWhereOneRequestCannotCarryItsRows(int rows, bool takesBulk)
+    public void AnInsertTakesTheBulkRouteWhereOneRequestCannotCarryItsRows(int rows, bool takesBulk)
     {
         // Fifteen columns, as the earthquake table has: one request carries 2100 / 15 = 140 rows however high MaxSerialInsert is
         // set, so 141 rows (well under the 1000 limit) cannot go as INSERT statements (FDW-1173).
@@ -122,7 +122,7 @@ public sealed class MsSqlBulkRouteTests
     [Fact]
     [Trait("Priority", "P0")]
     [Trait("Category", "DataIntegrity")]
-    public async Task AUnitOfWorkCopiesABulkInsertThatOneRequestCannotCarry()
+    public async Task AUnitOfWorkCopiesAnInsertThatOneRequestCannotCarry()
     {
         var writer = new RecordingWriter();
         var unit = UnitOfWork(new SqlConnection(), NeverUsedTransaction(), writer);
@@ -139,16 +139,16 @@ public sealed class MsSqlBulkRouteTests
     [Trait("Category", "DataIntegrity")]
     public void ACommandThatDoesNotRouteNeverTakesTheBulkRoute()
     {
-        MsSqlBulkRoute.Takes(new InsertCommand<string>("row"), Container(), 0).ShouldBeFalse();
+        MsSqlBulkRoute.Takes(new DeleteCommand(), Container(), 0).ShouldBeFalse();
         MsSqlBulkRoute.Takes(new Mock<IDataCommand>().Object, Container(), 0).ShouldBeFalse();
     }
 
     [Fact]
     [Trait("Priority", "P0")]
     [Trait("Category", "DataIntegrity")]
-    public void ACommandThatIsNotABulkInsertIsRefusedTheBulkModeWithACodedResult()
+    public void ACommandThatIsNotAnInsertIsRefusedTheBulkModeWithACodedResult()
     {
-        var plan = MsSqlBulkRoute.Plan(new InsertCommand<string>("row"), Container(), NullLogger.Instance, "Main", MaxSerialInsert, inTransaction: false);
+        var plan = MsSqlBulkRoute.Plan(new DeleteCommand(), Container(), NullLogger.Instance, "Main", MaxSerialInsert, inTransaction: false);
 
         plan.IsSuccess.ShouldBeFalse();
         plan.CurrentMessage.ShouldNotBeNull().ShouldContain("bulk");
@@ -157,7 +157,7 @@ public sealed class MsSqlBulkRouteTests
     [Fact]
     [Trait("Priority", "P0")]
     [Trait("Category", "DataIntegrity")]
-    public async Task AUnitOfWorkCopiesABulkInsertAboveTheLimitOnItsConnectionAndTransaction()
+    public async Task AUnitOfWorkCopiesAnInsertAboveTheLimitOnItsConnectionAndTransaction()
     {
         var writer = new RecordingWriter();
         var connection = new SqlConnection();
@@ -178,7 +178,7 @@ public sealed class MsSqlBulkRouteTests
     [Fact]
     [Trait("Priority", "P0")]
     [Trait("Category", "DataIntegrity")]
-    public async Task AUnitOfWorkDoesNotCopyABulkInsertUpToTheLimit()
+    public async Task AUnitOfWorkDoesNotCopyAnInsertUpToTheLimit()
     {
         var writer = new RecordingWriter();
         var unit = UnitOfWork(new SqlConnection(), NeverUsedTransaction(), writer);

@@ -122,6 +122,9 @@ public sealed class WorkspaceReferenceExampleBodyTests : IAsyncLifetime
         settings.Setup(s => s.GetEffectiveValue<int>(SettingDefinitions.MaxCalculatedFilterRows, It.IsAny<Guid?>(), It.IsAny<string?>())).Returns(10000);
         builder.Services.AddSingleton(settings.Object);
 
+        // The data query endpoint takes the filter calculations; no body here names a calculation, so none is ever evaluated.
+        builder.Services.AddSingleton(Mock.Of<IFilterCalculations>());
+
         _app = builder.Build();
         _app.UseAuthentication();
         _app.UseAuthorization();

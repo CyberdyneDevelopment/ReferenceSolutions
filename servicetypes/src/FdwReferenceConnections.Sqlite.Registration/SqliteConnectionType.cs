@@ -107,18 +107,13 @@ public sealed class SqliteConnectionType
     // ── IConnectionType — metadata ─────────────────────────────────────────────
 
     /// <summary>
-    /// SQLite supports structured reads, single-row INSERT/UPDATE/DELETE, batched INSERT,
-    /// filtered search, and multi-table JOINs. No bulk copy (no SqlBulkCopy equivalent).
+    /// SQLite lists the compound (JOIN) read mode. The data commands it runs natively are the ones its
+    /// translator collection holds; the rest compose from those. No bulk copy (no SqlBulkCopy equivalent).
     /// </summary>
     public override IReadOnlyList<ICommandCapabilityType> SupportedCommands =>
     [
-        CommandCapabilityTypes.ByName("Query"),
-        CommandCapabilityTypes.ByName("Insert"),
-        CommandCapabilityTypes.ByName("Update"),
-        CommandCapabilityTypes.ByName("Delete"),
-        CommandCapabilityTypes.ByName("Find"),
         CommandCapabilityTypes.ByName("CompoundQuery"),
-        CommandCapabilityTypes.ByName("BatchInsert"),
+        CommandCapabilityTypes.ByName("UnitOfWork"),
     ];
 
     // ── ISupportsAuthenticationMethods ─────────────────────────────────────────

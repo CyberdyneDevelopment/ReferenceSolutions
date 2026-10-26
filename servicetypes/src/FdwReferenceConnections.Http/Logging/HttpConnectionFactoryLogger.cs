@@ -106,7 +106,7 @@ public static partial class HttpConnectionFactoryLogger
     /// <summary>
     /// Logs when protocol is not specified.
     /// </summary>
-    [MessageLogging(EventId = 61003, Level = LogLevel.Warning, Message = "No protocol specified for HTTP connection '{connectionName}', defaulting to REST")]
+    [MessageLogging(EventId = 61003, Level = LogLevel.Error, Message = "No protocol specified for HTTP connection '{connectionName}'; a connection states its protocol and none is assumed")]
     public static partial IGenericMessage NoProtocolSpecified(ILogger<HttpConnectionFactory> logger, string connectionName);
 
     /// <summary>

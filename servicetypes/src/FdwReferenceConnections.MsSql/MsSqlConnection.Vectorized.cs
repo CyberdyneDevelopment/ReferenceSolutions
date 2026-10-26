@@ -46,10 +46,16 @@ public sealed partial class MsSqlConnection : IVectorizedDataConnection
         return read.IsSuccess && read.Value is { } answer ? GenericResult<T>.Success((T)answer) : read.ToNewResult<T>();
     }
 
-    // Runs the search as every read runs, with the caller's session context, and reads each row as the command's row type
-    // and the last column as its distance (the translator always puts the distance last).
-    private async Task<IGenericResult<object>> ReadNearest(
+    // Reads each row as the command's row type and the last column as its distance (the translator always puts the
+    // distance last).
+    private Task<IGenericResult<object>> ReadNearest(
         SqlCommand command, INearestCommand nearest, IStorageContainer container, CancellationToken cancellationToken)
+        => ReadRows(command, reader => ReadNearestRows(reader, nearest, container, _logger, cancellationToken), cancellationToken);
+
+    // Runs a translated read as every read runs, with the caller's session context, and hands the reader to the command's own
+    // reading: a vectorized command and a find each read their answer from the rows their translator selected.
+    private async Task<IGenericResult<object>> ReadRows(
+        SqlCommand command, Func<SqlDataReader, Task<IGenericResult<object>>> read, CancellationToken cancellationToken)
     {
         // What was asked to run, before the session context can be put in front of it (see Execute<T>).
         var commandText = command.CommandText;
@@ -75,7 +81,7 @@ public sealed partial class MsSqlConnection : IVectorizedDataConnection
 
                 using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
                 placement.Applied(sqlConnection);
-                return await ReadNearestRows(reader, nearest, container, _logger, cancellationToken).ConfigureAwait(false);
+                return await read(reader).ConfigureAwait(false);
             }
         }
         catch (SqlException ex)

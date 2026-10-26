@@ -4,6 +4,10 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FastEndpoints;
+using Fdw.Services.Messaging;
+using Fdw.Services.Messaging.Endpoints;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using FdwReferenceProxy.Endpoints.Logging;
@@ -12,24 +16,33 @@ namespace FdwReferenceProxy.Endpoints;
 
 /// <summary>Proxies the execution list to the ETL server.</summary>
 /// <remarks>
+/// <para>
 /// <c>Fdw.Operations.Endpoints.Executions.ListExecutionsEndpointBase</c> already carries a
 /// <c>[TypeOption]</c> and is live on the ETL host at bare <c>GET /executions</c> -- nothing routed
 /// it through reference-api. Same raw-forward shape as <see cref="GetEtlExecutionStatusProxyEndpoint"/>
 /// (its sibling on the same resource): no typed client exists for this route, so this talks to
 /// <see cref="EtlOrchestrationProxy.ClientName"/> directly and forwards the response body/status
 /// verbatim rather than round-tripping through a duplicate set of DTOs.
+/// </para>
+/// <para>
+/// With <c>?alerts=ScheduleFailure</c> (FDW-2431) the rows the ETL server listed are asked of that kind of alert, and each row that is one gets an
+/// <c>alert</c> property: what the caller may do to it and what has been done. That is the one change to the relayed body.
+/// </para>
 /// </remarks>
 public sealed class ListExecutionsProxyEndpoint : Endpoint<ListExecutionsProxyRequest>
 {
     private readonly IHttpClientFactory _factory;
+    private readonly IAlertActionService _alerts;
     private readonly ILogger<ListExecutionsProxyEndpoint> _logger;
 
     /// <summary>Initializes a new instance of the <see cref="ListExecutionsProxyEndpoint"/> class.</summary>
     /// <param name="factory">The HTTP client factory.</param>
+    /// <param name="alerts">Answers what each listed run allows the caller as an alert.</param>
     /// <param name="logger">The logger.</param>
-    public ListExecutionsProxyEndpoint(IHttpClientFactory factory, ILogger<ListExecutionsProxyEndpoint> logger)
+    public ListExecutionsProxyEndpoint(IHttpClientFactory factory, IAlertActionService alerts, ILogger<ListExecutionsProxyEndpoint> logger)
     {
         _factory = factory;
+        _alerts = alerts;
         _logger = logger;
     }
 
@@ -41,7 +54,7 @@ public sealed class ListExecutionsProxyEndpoint : Endpoint<ListExecutionsProxyRe
         Summary(s =>
         {
             s.Summary = "List executions (proxy)";
-            s.Description = "Forwards to the ETL server, which owns execution tracking.";
+            s.Description = "Forwards to the ETL server, which owns execution tracking. alerts names a kind of alert (such as ScheduleFailure): each row that is an alert of that kind then carries an alert property with what the caller may do to it.";
         });
         Tags("EtlOrchestration");
     }
@@ -79,6 +92,18 @@ public sealed class ListExecutionsProxyEndpoint : Endpoint<ListExecutionsProxyRe
             var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
                 ProxyLog.ProxyFailed(_logger, "Etl", $"status {(int)response.StatusCode}");
+            else if (!string.IsNullOrWhiteSpace(req.Alerts))
+            {
+                var withAlerts = await AlertListFields.Attach(_alerts, req.Alerts, body, _logger, ct).ConfigureAwait(false);
+                if (withAlerts.IsFailure)
+                {
+                    var (status, problem) = ResultHttpStatusMapper.Map(withAlerts, HttpContext);
+                    await Send.ResultAsync(TypedResults.Json(problem, statusCode: status)).ConfigureAwait(false);
+                    return;
+                }
+
+                body = withAlerts.Value!;
+            }
 
             await UpstreamPassThrough.Relay(HttpContext, response, body, ct).ConfigureAwait(false);
         }

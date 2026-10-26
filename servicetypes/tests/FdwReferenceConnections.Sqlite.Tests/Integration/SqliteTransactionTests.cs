@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Fdw.Commands.Data;
+using Fdw.Commands.Data.Abstractions;
 using Fdw.Data.Abstractions;
 using Fdw.Results;
 using Fdw.Services.Connections.Abstractions;
@@ -105,6 +106,35 @@ public sealed class SqliteTransactionTests : IAsyncLifetime
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "DataGateway")]
+    public async Task AnAssembledCommandInsideTheTransactionAnswersFromItsStepsAndItsRowStepSeesTheUncommittedInsert()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var command = new Mock<IAssembledExpandableDataCommand<string>>();
+        command.Setup(c => c.CommandType).Returns("Save");
+        command.Setup(c => c.Expand(It.IsAny<IStorageContainer>()))
+            .Returns(GenericResult<IReadOnlyList<ExpandedCommand>>.Success(
+            [
+                new ExpandedCommand(new InsertCommand<ContactRow>(new ContactRow { name = "Fay", age = 31 })),
+                new ExpandedCommand(new QueryCommand<object>(), CountsAsAffected: false, AnswersRows: true),
+            ]));
+        command.Setup(c => c.Assemble(It.IsAny<IReadOnlyList<ExpansionAnswer>>()))
+            .Returns((IReadOnlyList<ExpansionAnswer> answers)
+                => GenericResult<string>.Success($"{answers[0].Affected}:{answers[1].Rows.ShouldNotBeNull().Single()["name"]}"));
+
+        var transactionResult = await _connection!.BeginTransaction(ct);
+        transactionResult.IsSuccess.ShouldBeTrue();
+        await using var transaction = transactionResult.Value!;
+
+        var result = await transaction.Execute<string>(command.Object, _container, ct);
+
+        result.IsSuccess.ShouldBeTrue(result.CurrentMessage);
+        result.Value.ShouldBe("1:Fay");
+        await transaction.Rollback(ct);
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "DataGateway")]
     public async Task CommitPersistsInsertedRow()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -153,6 +183,35 @@ public sealed class SqliteTransactionTests : IAsyncLifetime
         // Query via a fresh connection — the rolled-back row must NOT be visible.
         var rows = await QueryAllRows(ct);
         rows.Count.ShouldBe(0);
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "DataGateway")]
+    public async Task ACommandWithNoTranslatorRunsItsExpansionInsideTheTransactionAndRollsBackWithIt()
+    {
+        // Sqlite has no Upsert translator, so a command that expands into inserts runs those inserts on the unit's own
+        // connection and transaction; the rollback discards both.
+        var ct = TestContext.Current.CancellationToken;
+        var transactionResult = await _connection!.BeginTransaction(ct);
+        transactionResult.IsSuccess.ShouldBeTrue();
+        await using var transaction = transactionResult.Value!;
+        var expandable = new Mock<IExpandableDataCommand>();
+        expandable.Setup(c => c.CommandType).Returns("Upsert");
+        expandable.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        expandable.Setup(c => c.Expand(It.IsAny<IStorageContainer>())).Returns(
+            GenericResult<IReadOnlyList<ExpandedCommand>>.Success(
+            [
+                new ExpandedCommand(new InsertCommand<ContactRow>(new ContactRow { name = "Dee", age = 41 })),
+                new ExpandedCommand(new InsertCommand<ContactRow>(new ContactRow { name = "Eli", age = 42 })),
+            ]));
+
+        var result = await transaction.Execute<int>(expandable.Object, _container, ct);
+
+        result.IsSuccess.ShouldBeTrue(result.CurrentMessage);
+        result.Value.ShouldBe(2);
+        (await transaction.Rollback(ct)).IsSuccess.ShouldBeTrue();
+        (await QueryAllRows(ct)).Count.ShouldBe(0);
     }
 
     [Fact]

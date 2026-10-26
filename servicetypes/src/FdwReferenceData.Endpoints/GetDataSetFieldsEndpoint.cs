@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
+using Fdw.Data.DataSets.Abstractions;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Endpoints;
 
@@ -15,8 +16,8 @@ public class GetDataSetFieldsEndpoint : GetDataSetFieldsEndpointBase
     /// <summary>
     /// Initializes a new instance of the <see cref="GetDataSetFieldsEndpoint"/> class.
     /// </summary>
-    public GetDataSetFieldsEndpoint(DataSetConfigurationProvider dataSetProvider, ILogger<GetDataSetFieldsEndpoint> logger)
-        : base(logger, dataSetProvider)
+    public GetDataSetFieldsEndpoint(DataSetConfigurationProvider dataSetProvider, IDataSetResolver resolver, ILogger<GetDataSetFieldsEndpoint> logger)
+        : base(logger, dataSetProvider, resolver)
     {
     }
 

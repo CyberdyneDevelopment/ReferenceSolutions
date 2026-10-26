@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections;
 using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Authorization;
+using Fdw.Services.Authorization.Abstractions;
 using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Multitenancy.Abstractions;
 using FdwReferenceMultitenancy.Sql.Logging;
@@ -92,11 +93,13 @@ public sealed class SqlMultitenancyType : MultitenancyTypeBase<ISqlMultitenancyF
                 return new FeatureEnablement(
                     sp.GetRequiredService<IConfigurationGatewayProvider>(),
                     new FeatureTables(tenant.DataStoreName!, tenant.PathName!, tenant.TenantFeaturesTableName!, "OrganizationFeatures"),
+                    sp.GetRequiredService<IOrganizationProvider>(),
+                    sp.GetRequiredService<IScopeAuthority>(),
                     sp.GetService<ILogger<FeatureEnablement>>());
             });
 
             // Why beside the features (FDW-1575): retention policies and legal holds are kept in the same tenant schema, in the tables the
-            // platform declares for them. The keeper runs an organization's policies against the application's IRetainedDocuments, which the
+            // platform declares for them. Each asks IScopeAuthority whether the caller may act for the organization (FDW-2215). The keeper runs an organization's policies against the application's IRetainedDocuments, which the
             // application registers (the reference application does in its FileSystem connection type).
             builder.Services.AddScoped<IRetentionPolicies>(sp =>
             {
@@ -104,6 +107,8 @@ public sealed class SqlMultitenancyType : MultitenancyTypeBase<ISqlMultitenancyF
                 return new RetentionPolicies(
                     sp.GetRequiredService<IConfigurationGatewayProvider>(),
                     new RetentionTables(tenant.DataStoreName!, tenant.PathName!, "RetentionPolicy", "LegalHold"),
+                    sp.GetRequiredService<IOrganizationProvider>(),
+                    sp.GetRequiredService<IScopeAuthority>(),
                     sp.GetService<ILogger<RetentionPolicies>>());
             });
             builder.Services.AddScoped<ILegalHolds>(sp =>
@@ -112,12 +117,16 @@ public sealed class SqlMultitenancyType : MultitenancyTypeBase<ISqlMultitenancyF
                 return new LegalHolds(
                     sp.GetRequiredService<IConfigurationGatewayProvider>(),
                     new RetentionTables(tenant.DataStoreName!, tenant.PathName!, "RetentionPolicy", "LegalHold"),
+                    sp.GetRequiredService<IOrganizationProvider>(),
+                    sp.GetRequiredService<IScopeAuthority>(),
                     sp.GetService<ILogger<LegalHolds>>());
             });
             builder.Services.AddScoped<IRetentionKeeper>(sp => new RetentionKeeper(
                 sp.GetRequiredService<IRetentionPolicies>(),
                 sp.GetRequiredService<ILegalHolds>(),
                 sp.GetRequiredService<IRetainedDocuments>(),
+                sp.GetRequiredService<IOrganizationProvider>(),
+                sp.GetRequiredService<IScopeAuthority>(),
                 sp.GetService<ILogger<RetentionKeeper>>()));
 
             // Why: IOrganizationProvider reads tenant.Organization for org resolution and default-org

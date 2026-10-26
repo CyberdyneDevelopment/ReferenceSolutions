@@ -14,6 +14,7 @@
        Fdw.Services.Connections.Http consumes ContainerRecordOptions from here, which is the
        point: row-source vocabulary is reusable without the file-system connection domain. -->
   <ItemGroup>
+    <PackageReference Include="Fdw.Commands.Data" />
     <PackageReference Include="Fdw.Commands.Data.Abstractions" />
     <PackageReference Include="Fdw.Data.Abstractions" />
     <PackageReference Include="Fdw.Data.RowSources.Abstractions" />

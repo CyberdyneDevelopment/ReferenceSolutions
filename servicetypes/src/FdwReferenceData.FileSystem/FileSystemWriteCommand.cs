@@ -16,17 +16,23 @@ public sealed class FileSystemWriteCommand : FileSystemRecordCommand
     /// <param name="relativePath">The file path relative to the connection root.</param>
     /// <param name="container">The configured container to write.</param>
     /// <param name="rows">The rows to serialize as flat name→value maps.</param>
+    /// <param name="returnColumns">The columns to return for each row written, already validated against the container; none answers a row count.</param>
     public FileSystemWriteCommand(
         string relativePath,
         IDataContainer container,
-        IReadOnlyList<IReadOnlyDictionary<string, object?>> rows)
+        IReadOnlyList<IReadOnlyDictionary<string, object?>> rows,
+        IReadOnlyList<string>? returnColumns = null)
         : base(relativePath, container)
     {
         Rows = rows;
+        ReturnColumns = returnColumns;
     }
 
     /// <summary>
     /// Gets the rows to write as flat name→value maps.
     /// </summary>
     public IReadOnlyList<IReadOnlyDictionary<string, object?>> Rows { get; }
+
+    /// <summary>Gets the names of the columns to return for each row written; none or empty answers a row count.</summary>
+    public IReadOnlyList<string>? ReturnColumns { get; }
 }

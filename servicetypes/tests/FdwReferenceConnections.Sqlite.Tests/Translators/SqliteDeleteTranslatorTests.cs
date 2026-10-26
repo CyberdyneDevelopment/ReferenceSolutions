@@ -99,16 +99,17 @@ public sealed class SqliteDeleteTranslatorTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "DataGateway")]
-    public async Task DeleteTranslatorWithoutFilterReturnsStructuredFailure()
+    public async Task DeleteTranslatorWithoutFilterDeletesEveryRow()
     {
-        // Fail-loud: a DELETE without a filter must never succeed — it would wipe the table.
+        // A command with no filter has no condition: the container is emptied.
         var container = CreateContainer("orders");
         var command = new DeleteCommand { Filter = null };
 
         var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeFalse();
-        result.CurrentMessage.ShouldNotBeNullOrEmpty();
+        result.IsSuccess.ShouldBeTrue();
+        result.Value!.CommandText.ShouldBe("DELETE FROM \"orders\"");
+        result.Value.Parameters.Count.ShouldBe(0);
     }
 
     [Fact]

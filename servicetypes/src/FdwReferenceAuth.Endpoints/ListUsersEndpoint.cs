@@ -2,6 +2,7 @@
 using Fdw.Services.Users.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
+using Fdw.Services.Authentication.Abstractions.SignIns;
 using Fdw.Services.Users;
 using Fdw.Services.Users.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -19,8 +20,8 @@ public class ListUsersEndpoint : ListUsersEndpointBase
     private readonly ILogger<ListUsersEndpoint> _logger;
 
     /// <inheritdoc />
-    public ListUsersEndpoint(UserConfigurationProvider userProvider, ILogger<ListUsersEndpoint> logger)
-        : base(logger, userProvider) {
+    public ListUsersEndpoint(UserConfigurationProvider userProvider, ISignInLog signIns, ILogger<ListUsersEndpoint> logger)
+        : base(logger, userProvider, signIns) {
         _logger = logger ?? NullLogger<ListUsersEndpoint>.Instance;
     }
 
