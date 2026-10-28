@@ -113,24 +113,6 @@ public static partial class ThemeLog
     public static partial IGenericMessage DeletingTheme(ILogger logger, string name);
 
     /// <summary>
-    /// Logs when attempting to delete the default theme.
-    /// </summary>
-    [MessageLogging(
-        EventId = 1781,
-        Level = LogLevel.Warning,
-        Message = "Cannot delete default theme: {name}")]
-    public static partial IGenericMessage CannotDeleteDefaultTheme(ILogger logger, string name);
-
-    /// <summary>
-    /// Logs when attempting to delete a built-in theme.
-    /// </summary>
-    [MessageLogging(
-        EventId = 1782,
-        Level = LogLevel.Warning,
-        Message = "Cannot delete built-in theme: {name}")]
-    public static partial IGenericMessage CannotDeleteBuiltInTheme(ILogger logger, string name);
-
-    /// <summary>
     /// Logs when a theme has been successfully deleted.
     /// </summary>
     [MessageLogging(
@@ -147,15 +129,6 @@ public static partial class ThemeLog
         Level = LogLevel.Trace,
         Message = "Setting default theme: {name}")]
     public static partial IGenericMessage SettingDefaultTheme(ILogger logger, string name);
-
-    /// <summary>
-    /// Logs when the default theme has been successfully set.
-    /// </summary>
-    [MessageLogging(
-        EventId = 1785,
-        Level = LogLevel.Information,
-        Message = "Default theme set to: {name}")]
-    public static partial IGenericMessage DefaultThemeSet(ILogger logger, string name);
 
     /// <summary>
     /// Logs when persisting a theme to the configuration database fails.

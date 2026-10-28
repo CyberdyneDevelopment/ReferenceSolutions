@@ -143,4 +143,40 @@ public sealed class OrganizationStoreRetainedDocumentsTests : IDisposable
 
         listed.IsFailure.ShouldBeTrue();
     }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    public async Task ThePolicyChoicesAreTheOneDateAFileHasAndTheTwoEndActionsItPerforms()
+    {
+        var offer = await Documents().Offers(Tenant, Finance, TestContext.Current.CancellationToken);
+
+        offer.IsSuccess.ShouldBeTrue();
+        offer.Value!.StartFields.ShouldBe([OrganizationStoreRetainedDocuments.ModifiedDate]);
+        offer.Value.EndActions.ShouldBe(["Delete", "Archive"]);
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    public async Task TheDocumentTypesAreTheFoldersBelowTheRootThatHoldDocumentsAndNotTheArchive()
+    {
+        Write("Contracts/2020/acme.pdf", new DateTime(2020, 3, 15, 0, 0, 0, DateTimeKind.Utc));
+        Write("Contracts/beta.pdf", new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+        Write("Invoices/other.pdf", new DateTime(2019, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+        Write("Archive/Contracts/old.pdf", new DateTime(2010, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+        Write("loose.pdf", new DateTime(2018, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+
+        var types = await Documents().DocumentTypes(Tenant, Finance, TestContext.Current.CancellationToken);
+
+        types.IsSuccess.ShouldBeTrue();
+        types.Value!.ShouldBe(["Contracts", "Invoices"]);
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    public async Task AnOrganizationWithNoDocumentStoreFailsLoudInsteadOfOfferingNoTypes()
+    {
+        var types = await Documents(noStore: true).DocumentTypes(Tenant, Finance, TestContext.Current.CancellationToken);
+
+        types.IsFailure.ShouldBeTrue();
+    }
 }

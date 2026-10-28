@@ -17,10 +17,9 @@ public sealed class SaveOrganizationHomePageDraftEndpoint : SaveOrganizationHome
     public SaveOrganizationHomePageDraftEndpoint(
         IHomePages pages,
         IOrganizationScope organizations,
-        IScopeAuthority authority,
         IAdministrativeAudit audit,
         ILogger<SaveOrganizationHomePageDraftEndpoint> logger)
-        : base(pages, organizations, authority, audit, logger)
+        : base(pages, organizations, audit, logger)
     {
     }
 

@@ -73,8 +73,14 @@ public static partial class TenantLog
     [MessageLogging(EventId = 8636, Level = LogLevel.Warning, Message = "Tenant switch token mint not supported post auth-cutover: user '{userId}' tenant '{tenantId}' — client must re-authenticate via /connect/token")]
     public static partial IGenericMessage TenantSwitchNotSupported(ILogger logger, string userId, Guid tenantId);
 
-    [MessageLogging(EventId = 8637, Level = LogLevel.Warning, Message = "User '{userId}' is not a member of tenant '{tenantId}'; cannot set as default")]
+    // Why 108637: a refusal answers 403, which is category 10, so the id keeps its 8637 and takes the category prefix. The caller is told only that the tenant is not one they belong to, never whether it exists.
+    [MessageLogging(EventId = 108637, Level = LogLevel.Warning, Message = "User '{userId}' is not a member of tenant '{tenantId}'; cannot set as default",
+        ClientMessage = "You can only choose a tenant you belong to")]
     public static partial IGenericMessage SetDefaultTenantNotMember(ILogger logger, string userId, Guid tenantId);
+
+    [MessageLogging(EventId = 108643, Level = LogLevel.Warning, Message = "User '{userId}' belongs to tenant '{tenantId}', which is not selectable; cannot set as default",
+        ClientMessage = "This tenant cannot be your landing tenant")]
+    public static partial IGenericMessage SetDefaultTenantNotSelectable(ILogger logger, string userId, Guid tenantId);
 
     [MessageLogging(EventId = 8638, Level = LogLevel.Error, Message = "Failed to set default tenant '{tenantId}' for user '{userId}'")]
     public static partial IGenericMessage SetDefaultTenantFailed(ILogger logger, Exception ex, string userId, Guid tenantId);

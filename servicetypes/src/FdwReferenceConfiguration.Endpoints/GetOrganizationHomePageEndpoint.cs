@@ -12,8 +12,8 @@ namespace FdwReferenceSettings.Endpoints;
 public sealed class GetOrganizationHomePageEndpoint : GetOrganizationHomePageEndpointBase
 {
     /// <inheritdoc />
-    public GetOrganizationHomePageEndpoint(IHomePages pages, IOrganizationScope organizations, IScopeAuthority authority)
-        : base(pages, organizations, authority)
+    public GetOrganizationHomePageEndpoint(IHomePages pages, IOrganizationScope organizations)
+        : base(pages, organizations)
     {
     }
 

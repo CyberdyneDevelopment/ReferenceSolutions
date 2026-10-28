@@ -68,7 +68,7 @@ public sealed class SqlTenantProvider : ITenantProvider
                 SqlTenantResultCodes.ByName("TenantQueryFailed"),
                 ResultDetails.Create()
                     .With("TenantId", tenantId.ToString())
-                    .With("Error", result.CurrentMessage ?? "Unknown error"));
+                    .With("Error", result.CurrentMessage));
         }
 
         var entity = result.Value?.FirstOrDefault();
@@ -104,7 +104,7 @@ public sealed class SqlTenantProvider : ITenantProvider
                 SqlTenantResultCodes.ByName("TenantSlugQueryFailed"),
                 ResultDetails.Create()
                     .With("Slug", slug)
-                    .With("Error", result.CurrentMessage ?? "Unknown error"));
+                    .With("Error", result.CurrentMessage));
         }
 
         var entity = result.Value?.FirstOrDefault();
@@ -133,19 +133,10 @@ public sealed class SqlTenantProvider : ITenantProvider
         {
             return GenericResult<IEnumerable<ITenant>>.Failure(
                 SqlTenantResultCodes.ByName("ActiveTenantsQueryFailed"),
-                ResultDetails.Create().With("Error", result.CurrentMessage ?? "Unknown error"));
+                ResultDetails.Create().With("Error", result.CurrentMessage));
         }
 
-        var tenants = new List<ITenant>();
-        foreach (var entity in result.Value!)
-        {
-            var tenant = await EnrichTenantEntity(entity, ct).ConfigureAwait(false);
-            if (tenant.IsFailure)
-                return tenant.ToNewResult<IEnumerable<ITenant>>();
-            tenants.Add(tenant.Value!);
-        }
-
-        return GenericResult<IEnumerable<ITenant>>.Success(tenants);
+        return await EnrichAll(result.Value!, ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -161,19 +152,29 @@ public sealed class SqlTenantProvider : ITenantProvider
         {
             return GenericResult<IEnumerable<ITenant>>.Failure(
                 SqlTenantResultCodes.ByName("AllTenantsQueryFailed"),
-                ResultDetails.Create().With("Error", result.CurrentMessage ?? "Unknown error"));
+                ResultDetails.Create().With("Error", result.CurrentMessage));
         }
 
-        var tenants = new List<ITenant>();
-        foreach (var entity in result.Value!)
+        return await EnrichAll(result.Value!, ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<IGenericResult<IEnumerable<ITenant>>> GetDeletedTenants(CancellationToken ct = default)
+    {
+        var command = Query.From<SqlTenantEntity>(_configuration.DataStoreName!, _configuration.PathName!, _configuration.TenantsTableName!)
+            .Where("IsDeleted", true)
+            .Build();
+
+        var result = await Execute<IEnumerable<SqlTenantEntity>>(command, ct).ConfigureAwait(false);
+
+        if (!result.IsSuccess)
         {
-            var tenant = await EnrichTenantEntity(entity, ct).ConfigureAwait(false);
-            if (tenant.IsFailure)
-                return tenant.ToNewResult<IEnumerable<ITenant>>();
-            tenants.Add(tenant.Value!);
+            return GenericResult<IEnumerable<ITenant>>.Failure(
+                SqlTenantResultCodes.ByName("DeletedTenantsQueryFailed"),
+                ResultDetails.Create().With("Error", result.CurrentMessage));
         }
 
-        return GenericResult<IEnumerable<ITenant>>.Success(tenants);
+        return await EnrichAll(result.Value!, ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -294,6 +295,20 @@ public sealed class SqlTenantProvider : ITenantProvider
         }
 
         return GenericResult<ITenant>.Failure(SqlTenantResultCodes.ByName("TenantResolutionFailed"));
+    }
+
+    private async Task<IGenericResult<IEnumerable<ITenant>>> EnrichAll(IEnumerable<SqlTenantEntity> entities, CancellationToken ct)
+    {
+        var tenants = new List<ITenant>();
+        foreach (var entity in entities)
+        {
+            var tenant = await EnrichTenantEntity(entity, ct).ConfigureAwait(false);
+            if (tenant.IsFailure)
+                return tenant.ToNewResult<IEnumerable<ITenant>>();
+            tenants.Add(tenant.Value!);
+        }
+
+        return GenericResult<IEnumerable<ITenant>>.Success(tenants);
     }
 
     /// <summary>

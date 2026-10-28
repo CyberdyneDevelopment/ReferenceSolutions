@@ -17,10 +17,9 @@ public sealed class PublishOrganizationHomePageEndpoint : PublishOrganizationHom
     public PublishOrganizationHomePageEndpoint(
         IHomePages pages,
         IOrganizationScope organizations,
-        IScopeAuthority authority,
         IAdministrativeAudit audit,
         ILogger<PublishOrganizationHomePageEndpoint> logger)
-        : base(pages, organizations, authority, audit, logger)
+        : base(pages, organizations, audit, logger)
     {
     }
 
