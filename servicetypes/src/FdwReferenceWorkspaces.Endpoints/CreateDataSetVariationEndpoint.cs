@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Data.DataSets.Abstractions;
+using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Workspaces;
 using Fdw.Services.Workspaces.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -21,8 +22,9 @@ public sealed class CreateDataSetVariationEndpoint : CreateDataSetVariationEndpo
         IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access,
         IDataSetConfigurationProvider dataSets,
-        IDataSetVariationConfigurationProvider variations)
-        : base(logger, workspaces, access, dataSets, variations)
+        IDataSetVariationConfigurationProvider variations,
+        IFilterCalculations calculations)
+        : base(logger, workspaces, access, dataSets, variations, calculations)
     {
     }
 }

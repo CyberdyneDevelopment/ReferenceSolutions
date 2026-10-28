@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Commands.Data.Abstractions;
 using Fdw.Data.Abstractions;
 using Fdw.Results;
+using Fdw.Services.Connections;
 using Fdw.Services.Connections.Abstractions;
 using Fdw.Data.Sqlite.Logging;
 using Fdw.Data.Sqlite.Results;
@@ -56,8 +58,9 @@ internal sealed class SqliteDataConnectionTransaction : IDataConnectionTransacti
 
         var translator = SqliteDataCommandTranslators.ByName(command.CommandType);
         if (string.Equals(translator.Name, "NotFound", StringComparison.Ordinal))
-            return GenericResult<T>.Failure(
-                SqliteDataResultCodes.ByName("InvalidCommandType"));
+        {
+            return await ExecuteWithoutTranslator<T>(command, container, cancellationToken).ConfigureAwait(false);
+        }
 
         var translationResult = await translator.Translate(command, container, cancellationToken)
             .ConfigureAwait(false);
@@ -83,6 +86,26 @@ internal sealed class SqliteDataConnectionTransaction : IDataConnectionTransacti
         return result.IsSuccess ? GenericResult.Success() : result;
     }
 
+    // A command that declares an expansion runs the simpler commands it expands into, each on this unit's connection and
+    // transaction, so a rollback undoes them together. One that assembles its own result is answered from what its steps
+    // answered, the rows they read or wrote included.
+    private async Task<IGenericResult<T>> ExecuteWithoutTranslator<T>(IDataCommand command, IDataContainer container, CancellationToken cancellationToken)
+    {
+        if (command is IAssembledExpandableDataCommand<T> assembled)
+            return await CommandExpansion.RunAssembled(
+                assembled,
+                container,
+                (step, token) => Execute<int>(step, container, token),
+                (step, token) => Execute<IReadOnlyList<IReadOnlyDictionary<string, object?>>>(step, container, token),
+                _logger,
+                cancellationToken).ConfigureAwait(false);
+
+        return command is IExpandableDataCommand expandable
+            ? await CommandExpansion.Run<T>(expandable, container, (step, token) => Execute<int>(step, container, token), _logger, cancellationToken)
+                .ConfigureAwait(false)
+            : GenericResult<T>.Failure(SqliteDataResultCodes.ByName("InvalidCommandType"));
+    }
+
     private async Task<IGenericResult<T>> ExecuteNative<T>(
         SqliteCommand command,
         IStorageContainer container,
@@ -93,6 +116,14 @@ internal sealed class SqliteDataConnectionTransaction : IDataConnectionTransacti
 
         try
         {
+            // A result of rows asks for the rows a command read or wrote (a query, or an insert with RETURNING), one dictionary each.
+            if (typeof(T) == typeof(IReadOnlyList<IReadOnlyDictionary<string, object?>>))
+            {
+                using var rowsReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                var rows = await SqliteConnection.ReadDictionaryRows(rowsReader, container, _logger, cancellationToken).ConfigureAwait(false);
+                return rows.IsFailure ? rows.ToNewResult<T>() : GenericResult<T>.Success((T)(object)rows.Value!);
+            }
+
             var isQuery = command.CommandText.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase);
 
             if (!isQuery)

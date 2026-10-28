@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 using FastEndpoints;
 using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Authorization;
+using Fdw.Services.Authorization.Abstractions;
 using Fdw.Services.Authorization.Configuration;
 using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Users;
+using Fdw.Services.Users.Abstractions;
 using Fdw.Services.Users.Configuration;
 
 namespace FdwReferenceAuth.Endpoints;
@@ -27,8 +29,8 @@ namespace FdwReferenceAuth.Endpoints;
 [ExcludeFromCodeCoverage]
 public class GetMyMembershipsEndpoint : EndpointWithoutRequest<MembershipsResponse>
 {
-    private readonly IUserTenantConfigurationProvider _memberships;
-    private readonly IUserRoleConfigurationProvider _userRoles;
+    private readonly IUserTenantsHeld _memberships;
+    private readonly IUserRolesHeld _userRoles;
     private readonly IRoleConfigurationProvider _roles;
     private readonly ITenantProvider _tenants;
     private readonly IAuthenticationContextAccessor _authContextAccessor;
@@ -40,8 +42,8 @@ public class GetMyMembershipsEndpoint : EndpointWithoutRequest<MembershipsRespon
     /// <param name="tenants">Resolves tenant display names.</param>
     /// <param name="authContextAccessor">Elevated while the caller's own rows in every tenant are read.</param>
     public GetMyMembershipsEndpoint(
-        IUserTenantConfigurationProvider memberships,
-        IUserRoleConfigurationProvider userRoles,
+        IUserTenantsHeld memberships,
+        IUserRolesHeld userRoles,
         IRoleConfigurationProvider roles,
         ITenantProvider tenants,
         IAuthenticationContextAccessor authContextAccessor)
@@ -86,9 +88,7 @@ public class GetMyMembershipsEndpoint : EndpointWithoutRequest<MembershipsRespon
         // makes when it picks the tenant a sign-in lands in.
         using var systemScope = new SystemAuthenticationContextScope(_authContextAccessor);
 
-        var memberships = await _memberships
-            .Find<IUserTenantImplementationConfiguration>(m => m.UserId == userId, ct)
-            .ConfigureAwait(false);
+        var memberships = await _memberships.Get(userId, ct).ConfigureAwait(false);
         // A failed read is not an empty membership list. Answering 200 with {items:[]} would tell
         // the caller they belong nowhere, which is a different fact from "we could not look".
         if (!memberships.IsSuccess || memberships.Value is null)
@@ -97,11 +97,7 @@ public class GetMyMembershipsEndpoint : EndpointWithoutRequest<MembershipsRespon
             return;
         }
 
-        // authz.UserRoleConfiguration.UserId is a Guid stored as VARCHAR; both sides are compared as
-        // the Guids they are (FDW-532).
-        var held = await _userRoles
-            .Find<IUserRoleImplementationConfiguration>(ur => Guid.TryParse(ur.UserId, out var assigned) && assigned == userId, ct)
-            .ConfigureAwait(false);
+        var held = await _userRoles.Get(userId, ct).ConfigureAwait(false);
         var roles = await _roles.Get(ct).ConfigureAwait(false);
         // Roles are part of the membership, not decoration: a membership listed with no roles when
         // the roles could not be read would say "a member holding nothing", which is a real and

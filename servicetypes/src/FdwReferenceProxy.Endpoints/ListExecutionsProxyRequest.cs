@@ -25,4 +25,10 @@ public sealed class ListExecutionsProxyRequest
 
     /// <summary>Gets or sets an optional root execution ID filter.</summary>
     public Guid? RootId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the kind of alert to answer each row's alert fields for, such as <c>ScheduleFailure</c> (FDW-2431). Not forwarded to the ETL server: the
+    /// proxy asks the alert system for the rows the ETL server listed. Left out, the rows are relayed as they came.
+    /// </summary>
+    public string? Alerts { get; set; }
 }

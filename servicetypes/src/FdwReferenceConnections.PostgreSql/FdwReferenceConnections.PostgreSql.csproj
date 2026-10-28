@@ -51,7 +51,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="FdwReferenceConnections.PostgreSql.Tests" />
     <InternalsVisibleTo Include="FdwReferenceConnections.Script" />
   </ItemGroup>
 

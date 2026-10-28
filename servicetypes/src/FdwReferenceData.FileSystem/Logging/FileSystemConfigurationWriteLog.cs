@@ -17,14 +17,6 @@ public static partial class FileSystemConfigurationWriteLog
     // Trace / Information (category 1 — success/non-error)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// <summary>Logs that a version-on-write configuration save is starting.</summary>
-    /// <param name="logger">The logger used to emit the log event.</param>
-    /// <param name="connectionName">The name of the FileSystem connection.</param>
-    /// <param name="container">The container being written.</param>
-    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
-    [MessageLogging(EventId = 11010, Level = LogLevel.Trace, Message = "FileSystem connection '{connectionName}' saving a new configuration version to container '{container}'")]
-    public static partial IGenericMessage SaveStarting(ILogger logger, string connectionName, string container);
-
     /// <summary>Logs that a literal in-place configuration update is starting.</summary>
     /// <param name="logger">The logger used to emit the log event.</param>
     /// <param name="connectionName">The name of the FileSystem connection.</param>
@@ -32,31 +24,6 @@ public static partial class FileSystemConfigurationWriteLog
     /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
     [MessageLogging(EventId = 11011, Level = LogLevel.Trace, Message = "FileSystem connection '{connectionName}' updating configuration rows in container '{container}'")]
     public static partial IGenericMessage UpdateStarting(ILogger logger, string connectionName, string container);
-
-    /// <summary>Logs that a soft-delete of a configuration record is starting.</summary>
-    /// <param name="logger">The logger used to emit the log event.</param>
-    /// <param name="connectionName">The name of the FileSystem connection.</param>
-    /// <param name="container">The container being soft-deleted from.</param>
-    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
-    [MessageLogging(EventId = 11012, Level = LogLevel.Trace, Message = "FileSystem connection '{connectionName}' soft-deleting a configuration record in container '{container}'")]
-    public static partial IGenericMessage DeleteStarting(ILogger logger, string connectionName, string container);
-
-    /// <summary>Logs that a prior current version was retired (IsCurrent flipped to false) before a save.</summary>
-    /// <param name="logger">The logger used to emit the log event.</param>
-    /// <param name="connectionName">The name of the FileSystem connection.</param>
-    /// <param name="container">The container whose prior current version was retired.</param>
-    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
-    [MessageLogging(EventId = 11013, Level = LogLevel.Trace, Message = "FileSystem connection '{connectionName}' retired the prior current version in container '{container}'")]
-    public static partial IGenericMessage PriorVersionRetired(ILogger logger, string connectionName, string container);
-
-    /// <summary>Logs that a configuration save completed.</summary>
-    /// <param name="logger">The logger used to emit the log event.</param>
-    /// <param name="connectionName">The name of the FileSystem connection.</param>
-    /// <param name="container">The container that was written.</param>
-    /// <param name="rowCount">The number of rows written (1 for a save).</param>
-    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
-    [MessageLogging(EventId = 11014, Level = LogLevel.Information, Message = "FileSystem connection '{connectionName}' saved {rowCount} configuration row(s) to container '{container}'")]
-    public static partial IGenericMessage SaveCompleted(ILogger logger, string connectionName, string container, int rowCount);
 
     /// <summary>Logs that a configuration update completed.</summary>
     /// <param name="logger">The logger used to emit the log event.</param>
@@ -67,14 +34,101 @@ public static partial class FileSystemConfigurationWriteLog
     [MessageLogging(EventId = 11015, Level = LogLevel.Information, Message = "FileSystem connection '{connectionName}' updated {affectedRows} configuration row(s) in container '{container}'")]
     public static partial IGenericMessage UpdateCompleted(ILogger logger, string connectionName, string container, int affectedRows);
 
-    /// <summary>Logs that a configuration soft-delete completed.</summary>
-    /// <param name="logger">The logger used to emit the log event.</param>
+    /// <summary>Traces a Delete data command starting against a container's file.</summary>
+    /// <param name="logger">The logger.</param>
     /// <param name="connectionName">The name of the FileSystem connection.</param>
-    /// <param name="container">The container that was soft-deleted from.</param>
-    /// <param name="affectedRows">The number of rows soft-deleted in place.</param>
+    /// <param name="container">The container whose rows are being removed.</param>
     /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
-    [MessageLogging(EventId = 11016, Level = LogLevel.Information, Message = "FileSystem connection '{connectionName}' soft-deleted {affectedRows} configuration row(s) in container '{container}'")]
-    public static partial IGenericMessage DeleteCompleted(ILogger logger, string connectionName, string container, int affectedRows);
+    [MessageLogging(EventId = 11019, Level = LogLevel.Trace, Message = "FileSystem connection '{connectionName}' removing rows from container '{container}'")]
+    public static partial IGenericMessage DeleteRowsStarting(ILogger logger, string connectionName, string container);
+
+    /// <summary>Reports a Delete data command that removed rows from a container's file.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="connectionName">The name of the FileSystem connection.</param>
+    /// <param name="container">The container whose rows were removed.</param>
+    /// <param name="affectedRows">The number of rows removed.</param>
+    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
+    [MessageLogging(EventId = 11020, Level = LogLevel.Information, Message = "FileSystem connection '{connectionName}' removed {affectedRows} row(s) from container '{container}'")]
+    public static partial IGenericMessage DeleteRowsCompleted(ILogger logger, string connectionName, string container, int affectedRows);
+
+    /// <summary>Traces an Insert data command starting against a container's file.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="connectionName">The name of the FileSystem connection.</param>
+    /// <param name="container">The container the rows are being added to.</param>
+    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
+    [MessageLogging(EventId = 11021, Level = LogLevel.Trace, Message = "FileSystem connection '{connectionName}' adding rows to container '{container}'")]
+    public static partial IGenericMessage InsertRowsStarting(ILogger logger, string connectionName, string container);
+
+    /// <summary>Reports an Insert data command that added rows to a container's file.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="connectionName">The name of the FileSystem connection.</param>
+    /// <param name="container">The container the rows were added to.</param>
+    /// <param name="affectedRows">The number of rows added.</param>
+    /// <param name="existingRows">The number of rows the file already held.</param>
+    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
+    [MessageLogging(EventId = 11022, Level = LogLevel.Information, Message = "FileSystem connection '{connectionName}' added {affectedRows} row(s) to container '{container}', which already held {existingRows}")]
+    public static partial IGenericMessage InsertRowsCompleted(ILogger logger, string connectionName, string container, int affectedRows, int existingRows);
+
+    /// <summary>Reports a Delete data command that flagged rows of a container's file instead of removing them.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="connectionName">The name of the FileSystem connection.</param>
+    /// <param name="container">The container whose rows were flagged.</param>
+    /// <param name="affectedRows">The number of rows flagged.</param>
+    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
+    [MessageLogging(EventId = 11025, Level = LogLevel.Information, Message = "FileSystem connection '{connectionName}' flagged {affectedRows} row(s) of container '{container}' instead of removing them")]
+    public static partial IGenericMessage SoftDeleteRowsCompleted(ILogger logger, string connectionName, string container, int affectedRows);
+
+    /// <summary>Logs that a soft delete's options cannot be used against a container.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="connectionName">The name of the FileSystem connection.</param>
+    /// <param name="container">The container the soft delete targeted.</param>
+    /// <param name="reason">Why the options were refused.</param>
+    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
+    [MessageLogging(EventId = 21008, Level = LogLevel.Error, Message = "FileSystem connection '{connectionName}': the soft delete on container '{container}' is refused: {reason}")]
+    public static partial IGenericMessage SoftDeleteRefused(ILogger logger, string connectionName, string container, string reason);
+
+    /// <summary>Traces a Find data command starting against a container's file.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="connectionName">The name of the FileSystem connection.</param>
+    /// <param name="container">The container whose rows are being searched.</param>
+    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
+    [MessageLogging(EventId = 11023, Level = LogLevel.Trace, Message = "FileSystem connection '{connectionName}' searching container '{container}'")]
+    public static partial IGenericMessage FindStarting(ILogger logger, string connectionName, string container);
+
+    /// <summary>Reports a Find data command that searched a container's file.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="connectionName">The name of the FileSystem connection.</param>
+    /// <param name="container">The container whose rows were searched.</param>
+    /// <param name="matches">The number of rows answered.</param>
+    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
+    [MessageLogging(EventId = 11024, Level = LogLevel.Information, Message = "FileSystem connection '{connectionName}' found {matches} row(s) in container '{container}'")]
+    public static partial IGenericMessage FindCompleted(ILogger logger, string connectionName, string container, int matches);
+
+    /// <summary>Logs that a Find command carried no search term.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="connectionName">The name of the FileSystem connection.</param>
+    /// <param name="container">The container the search targeted.</param>
+    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
+    [MessageLogging(EventId = 20000, Level = LogLevel.Error, Message = "FileSystem connection '{connectionName}': cannot search container '{container}' with an empty search term")]
+    public static partial IGenericMessage FindSearchTermMissing(ILogger logger, string connectionName, string container);
+
+    /// <summary>Logs that a Find command named a field the container does not declare.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="connectionName">The name of the FileSystem connection.</param>
+    /// <param name="container">The container the search targeted.</param>
+    /// <param name="field">The field the command named.</param>
+    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
+    [MessageLogging(EventId = 20001, Level = LogLevel.Error, Message = "FileSystem connection '{connectionName}': cannot search container '{container}' by field '{field}', which it does not declare")]
+    public static partial IGenericMessage FindFieldNotDeclared(ILogger logger, string connectionName, string container, string field);
+
+    /// <summary>Logs that a write command asked to return a column the container does not declare.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="connectionName">The name of the FileSystem connection.</param>
+    /// <param name="container">The container the write targeted.</param>
+    /// <param name="column">The column the command asked to return.</param>
+    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
+    [MessageLogging(EventId = 21005, Level = LogLevel.Error, Message = "FileSystem connection '{connectionName}': cannot return column '{column}' from container '{container}', which does not declare it")]
+    public static partial IGenericMessage ReturnColumnNotDeclared(ILogger logger, string connectionName, string container, string column);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Validation (category 2)
@@ -85,7 +139,7 @@ public static partial class FileSystemConfigurationWriteLog
     /// <param name="connectionName">The name of the FileSystem connection.</param>
     /// <param name="commandType">The unrecognized command type.</param>
     /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
-    [MessageLogging(EventId = 21000, Level = LogLevel.Error, Message = "FileSystem connection '{connectionName}': unrecognized command type '{commandType}' — expected Query, Insert, ConfigurationSave, Update, or ConfigurationDelete")]
+    [MessageLogging(EventId = 21000, Level = LogLevel.Error, Message = "FileSystem connection '{connectionName}': unrecognized command type '{commandType}' — expected Query, Insert, Update, Delete, ConfigurationSave, or ConfigurationRetire")]
     public static partial IGenericMessage UnrecognizedCommandType(ILogger logger, string connectionName, string commandType);
 
     /// <summary>Logs that a write command carried no usable input data.</summary>
@@ -113,15 +167,6 @@ public static partial class FileSystemConfigurationWriteLog
     /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
     [MessageLogging(EventId = 21003, Level = LogLevel.Error, Message = "FileSystem connection '{connectionName}': record type '{typeName}' has no updatable columns for container '{container}'")]
     public static partial IGenericMessage NoUpdatableColumns(ILogger logger, string connectionName, string container, string typeName);
-
-    /// <summary>Logs that no insertable columns were resolved for a ConfigurationSave command.</summary>
-    /// <param name="logger">The logger used to emit the log event.</param>
-    /// <param name="connectionName">The name of the FileSystem connection.</param>
-    /// <param name="container">The container the save targeted.</param>
-    /// <param name="typeName">The record type name whose properties yielded no insertable columns.</param>
-    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
-    [MessageLogging(EventId = 21004, Level = LogLevel.Error, Message = "FileSystem connection '{connectionName}': record type '{typeName}' has no insertable columns for container '{container}'")]
-    public static partial IGenericMessage NoInsertableColumns(ILogger logger, string connectionName, string container, string typeName);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Missing (category 3)
@@ -160,22 +205,6 @@ public static partial class FileSystemConfigurationWriteLog
     // ═══════════════════════════════════════════════════════════════════════════
     // Configuration (category 6)
     // ═══════════════════════════════════════════════════════════════════════════
-
-    /// <summary>Logs that the container declares no logical key, so version-on-write cannot proceed.</summary>
-    /// <param name="logger">The logger used to emit the log event.</param>
-    /// <param name="connectionName">The name of the FileSystem connection.</param>
-    /// <param name="container">The container that declares no logical key.</param>
-    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
-    [MessageLogging(EventId = 61010, Level = LogLevel.Error, Message = "FileSystem connection '{connectionName}': container '{container}' declares no Logical or Foreign key — cannot resolve the version-on-write logical identity")]
-    public static partial IGenericMessage LogicalKeyNotFound(ILogger logger, string connectionName, string container);
-
-    /// <summary>Logs that the container declares no physical key, so a version RowId cannot be assigned.</summary>
-    /// <param name="logger">The logger used to emit the log event.</param>
-    /// <param name="connectionName">The name of the FileSystem connection.</param>
-    /// <param name="container">The container that declares no physical key.</param>
-    /// <returns>The structured <see cref="IGenericMessage"/> for the event.</returns>
-    [MessageLogging(EventId = 61011, Level = LogLevel.Error, Message = "FileSystem connection '{connectionName}': container '{container}' declares no Physical key — cannot assign a version RowId")]
-    public static partial IGenericMessage PhysicalKeyNotFound(ILogger logger, string connectionName, string container);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Internal (category 9)

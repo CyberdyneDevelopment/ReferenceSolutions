@@ -42,6 +42,7 @@ internal static class ContainerStub
         container.Setup(c => c.Path).Returns(path.Object);
         container.Setup(c => c.Schema).Returns(schema.Object);
         container.Setup(c => c.Nodes).Returns(fields.Cast<IDataNode>().ToList());
+        container.Setup(c => c.Keys).Returns(new List<IContainerKey>());
         return container.Object;
     }
 
@@ -61,6 +62,9 @@ internal static class ContainerStub
         var asField = field.As<IField>();
         asField.Setup(f => f.Name).Returns(name);
         asField.Setup(f => f.Metadata).Returns(meta);
+        var text = new Mock<IFieldType>();
+        text.Setup(f => f.ClrType).Returns(typeof(string));
+        asField.Setup(f => f.FieldType).Returns(text.Object);
 
         return field.Object;
     }

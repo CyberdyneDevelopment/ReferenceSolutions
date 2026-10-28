@@ -20,19 +20,22 @@ public sealed class FileSystemReadCommand : FileSystemRecordCommand
     /// <param name="joins">The join expressions, copied through unchanged from the source command.</param>
     /// <param name="ordering">The ordering to apply over the decoded rows, or null.</param>
     /// <param name="paging">The page to apply over the decoded rows, or null.</param>
+    /// <param name="missingFileHoldsNoRows">Whether the rows are read to be written over, so a file that does not exist yet holds no rows instead of failing the read.</param>
     public FileSystemReadCommand(
         string relativePath,
         IDataContainer container,
         IFilterExpression? filter,
         IReadOnlyList<IJoinExpression> joins,
         IOrderingExpression? ordering = null,
-        IPagingExpression? paging = null)
+        IPagingExpression? paging = null,
+        bool missingFileHoldsNoRows = false)
         : base(relativePath, container)
     {
         Filter = filter;
         Joins = joins;
         Ordering = ordering;
         Paging = paging;
+        MissingFileHoldsNoRows = missingFileHoldsNoRows;
     }
 
     /// <summary>Gets the filter expression (WHERE clause), copied through unchanged from the source command.</summary>
@@ -47,4 +50,10 @@ public sealed class FileSystemReadCommand : FileSystemRecordCommand
 
     /// <summary>The page to apply, or null. Carried for the same reason as <see cref="Ordering"/>.</summary>
     public IPagingExpression? Paging { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the rows are read to be written over, so a file that does not exist yet holds no rows
+    /// instead of failing the read: a file is created by its first write.
+    /// </summary>
+    public bool MissingFileHoldsNoRows { get; }
 }

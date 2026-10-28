@@ -38,6 +38,16 @@ public sealed partial class ForwardedHeadersHostConfiguration : IForwardedHeader
     public string Implementation { get; set; } = string.Empty;
 
 
-    /// <summary>Gets the trusted proxy networks in CIDR form. Empty trusts none, which is the safe default.</summary>
+    /// <summary>
+    /// Gets or sets the request header that names the address of the person who made the request: X-Forwarded-For, or CF-Connecting-IP behind
+    /// Cloudflare, which sets it to the one address it saw.
+    /// </summary>
+    /// <remarks>
+    /// The row must state it. The host type refuses a row that does not, because the header that carries the person's address is a fact of the
+    /// proxies in front of the host and not something to assume.
+    /// </remarks>
+    public string ForwardedForHeaderName { get; set; } = string.Empty;
+
+    /// <summary>Gets the trusted proxy networks in CIDR form. Empty trusts any upstream.</summary>
     public IList<ForwardedHeadersTrustedProxyNetwork> TrustedProxyNetworks { get; set; } = new List<ForwardedHeadersTrustedProxyNetwork>();
 }

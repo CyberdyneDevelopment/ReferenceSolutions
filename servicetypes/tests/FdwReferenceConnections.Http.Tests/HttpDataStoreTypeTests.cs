@@ -31,12 +31,12 @@ public class HttpDataStoreTypeTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "Api")]
-    public void SupplyBuilderReturnsAGenericBuilder()
+    public void SupplyBuilderReturnsAnHttpBuilder()
     {
         IDataStoreBuilder builder = new HttpDataStoreType().SupplyBuilder();
 
         builder.ShouldNotBeNull();
-        builder.ShouldBeOfType<Fdw.Services.Data.Builders.GenericDataStoreBuilder>();
+        builder.ShouldBeOfType<FdwReferenceConnections.Http.HttpDataStoreBuilder>();
     }
 
     // Why: registration into DataStoreTypes is performed by the entry-point app's

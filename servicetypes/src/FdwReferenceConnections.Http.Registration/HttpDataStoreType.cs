@@ -10,9 +10,9 @@ namespace FdwReferenceConnections.Http;
 
 /// <summary>
 /// DataStore type for HTTP transports (REST/GeoJSON/etc.).
-/// HTTP is a non-SQL transport, so it supplies the generic builder, which builds generic
+/// HTTP is a non-SQL transport, so it supplies its own builder, which builds generic
 /// DataContainer nodes whose response Format/metadata come from the resolved container config
-/// (RecordSelector + format), with a GenericContainerPath physical address carrying the request path.
+/// (RecordSelector + format), with an HttpPath physical address carrying the request path, which a run can replace.
 /// </summary>
 /// <remarks>
 /// Why: the redesign requires one per-transport <see cref="IDataStoreBuilder"/> resolved via
@@ -54,6 +54,6 @@ public sealed class HttpDataStoreType : DataStoreTypeBase<IDataStoreImplementati
     // NotFound connection type option, whose DefaultResponseFormat is FormatTypes.NotFound — fail-loud
     // preserved, never a silent substitute.
     public override IDataStoreBuilder SupplyBuilder(ILogger? logger = null)
-        => new GenericDataStoreBuilder(ConnectionTypes.ByName("Http").DefaultResponseFormat, logger);
+        => new HttpDataStoreBuilder(ConnectionTypes.ByName("Http").DefaultResponseFormat, logger);
 
 }

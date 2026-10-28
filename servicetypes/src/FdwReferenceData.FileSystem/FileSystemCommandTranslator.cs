@@ -1,10 +1,13 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Collections;
 using Fdw.Commands.Data.Abstractions;
+using Fdw.Commands.Data.SoftDeletes;
 using Fdw.Data.Abstractions;
+using Fdw.Data.Abstractions.Mappers.PocoMappers;
 using Fdw.Data.RowSources.Abstractions;
 using Fdw.Results;
 using FdwReferenceData.FileSystem.Logging;
@@ -32,6 +35,7 @@ public sealed class FileSystemCommandTranslator : IDataCommandTranslator<IFileSy
 {
     private readonly string _connectionName;
     private readonly ILogger _logger;
+    private readonly Dictionary<string, System.Func<IDataCommand, IDataContainer, string, IGenericResult<IFileSystemCommand>>> _handlers;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileSystemCommandTranslator"/> class.
@@ -43,7 +47,23 @@ public sealed class FileSystemCommandTranslator : IDataCommandTranslator<IFileSy
         _connectionName = connectionName;
         // Why: NullLogger keeps the translator functional without DI logging — the only sanctioned ?? fallback.
         _logger = logger ?? NullLogger.Instance;
+        // Why one table: the command types this translator answers are listed once, so Handles and Translate
+        // cannot disagree about which a file supports.
+        _handlers = new Dictionary<string, System.Func<IDataCommand, IDataContainer, string, IGenericResult<IFileSystemCommand>>>(
+            System.StringComparer.OrdinalIgnoreCase)
+        {
+            ["Query"] = TranslateRead,
+            ["Insert"] = TranslateWrite,
+            ["Update"] = TranslateUpdate,
+            ["Delete"] = TranslateDelete,
+            ["Find"] = TranslateFind,
+        };
     }
+
+    /// <summary>Gets whether this translator builds a native command for the command type.</summary>
+    /// <param name="commandType">The command type name.</param>
+    /// <returns>True when <see cref="Translate"/> can build a command for it.</returns>
+    public bool Handles(string commandType) => _handlers.ContainsKey(commandType);
 
     /// <inheritdoc />
     /// <remarks>Derived from this translator's fully qualified type name, like every type option's id.</remarks>
@@ -85,26 +105,15 @@ public sealed class FileSystemCommandTranslator : IDataCommandTranslator<IFileSy
         // still fails loud downstream (FileSystemClient's own root-relative resolution rejects it).
         var relativePath = container.Path.PathValue;
 
-        // Why: dispatch explicitly by command type — Query reads, Insert bulk-writes, and the three
-        // version-on-write config verbs each map to their own native command. An unrecognized command
-        // type FAILS LOUD (NO FALLBACKS) rather than silently falling through to a read — that silent
-        // fallthrough was the exact defect this change fixes (a ConfigurationSave/Update/Delete would
-        // read stale data and report a false success without writing anything).
-        return Task.FromResult(command.CommandType switch
-        {
-            var t when string.Equals(t, "Query", System.StringComparison.OrdinalIgnoreCase)
-                => TranslateRead(command, dataContainer, relativePath),
-            var t when string.Equals(t, "Insert", System.StringComparison.OrdinalIgnoreCase)
-                => TranslateWrite(command, dataContainer, relativePath),
-            var t when string.Equals(t, "ConfigurationSave", System.StringComparison.OrdinalIgnoreCase)
-                => TranslateConfigurationSave(command, dataContainer, relativePath),
-            var t when string.Equals(t, "Update", System.StringComparison.OrdinalIgnoreCase)
-                => TranslateUpdate(command, dataContainer, relativePath),
-            var t when string.Equals(t, "ConfigurationRetire", System.StringComparison.OrdinalIgnoreCase)
-                => TranslateConfigurationRetire(command, dataContainer, relativePath),
-            _ => GenericResult<IFileSystemCommand>.Failure(
-                FileSystemConfigurationWriteLog.UnrecognizedCommandType(_logger, _connectionName, command.CommandType)),
-        });
+        // Why: dispatch explicitly by command type through the handler table. An unrecognized command type
+        // FAILS LOUD (NO FALLBACKS) rather than silently falling through to a read: that silent fallthrough
+        // was the defect where a ConfigurationSave/Update/Delete read stale data and reported a false
+        // success without writing anything.
+        return Task.FromResult(
+            _handlers.TryGetValue(command.CommandType, out var handler)
+                ? handler(command, dataContainer, relativePath)
+                : GenericResult<IFileSystemCommand>.Failure(
+                    FileSystemConfigurationWriteLog.UnrecognizedCommandType(_logger, _connectionName, command.CommandType)));
     }
 
     // Why: a read command that isn't an IQueryCommand carries no filter semantics (e.g. a raw whole-file
@@ -125,24 +134,8 @@ public sealed class FileSystemCommandTranslator : IDataCommandTranslator<IFileSy
                 // the connection to be applied over the decoded rows. Dropping them here is what
                 // made a file-backed ORDER BY silently do nothing.
                 queryCommand?.Ordering,
-                queryCommand?.Paging));
-    }
-
-    private IGenericResult<IFileSystemCommand> TranslateConfigurationSave(
-        IDataCommand command, IDataContainer container, string relativePath)
-    {
-        // ConfigurationSaveCommand<T> implements IConfigurationSaveCommand (InputData = the record POCO,
-        // FieldValues = the owner's key values). A different command carrying this type is a wiring
-        // defect — fail loud.
-        if (command is not IConfigurationSaveCommand save || save.InputData is null)
-        {
-            return GenericResult<IFileSystemCommand>.Failure(
-                FileSystemConfigurationWriteLog.WriteInputMissing(
-                    _logger, _connectionName, container.Name, "ConfigurationSave command carries no record"));
-        }
-
-        return GenericResult<IFileSystemCommand>.Success(
-            new FileSystemConfigurationSaveCommand(relativePath, container, save.InputData, save.FieldValues, save.ReplacesCurrent));
+                queryCommand?.Paging,
+                queryCommand?.ReadsForWrite is true));
     }
 
     private IGenericResult<IFileSystemCommand> TranslateUpdate(
@@ -157,42 +150,71 @@ public sealed class FileSystemCommandTranslator : IDataCommandTranslator<IFileSy
                     _logger, _connectionName, container.Name, "Update command carries no record"));
         }
 
+        var returned = ReturnColumns(command, container);
+        if (!returned.IsSuccess)
+            return returned.ToNewResult<IFileSystemCommand>();
+
         return GenericResult<IFileSystemCommand>.Success(
-            new FileSystemUpdateCommand(relativePath, container, withInput.InputData, filterable.Filter));
+            new FileSystemUpdateCommand(relativePath, container, withInput.InputData, filterable.Filter, returned.Value));
     }
 
-    private IGenericResult<IFileSystemCommand> TranslateConfigurationRetire(
+    // The columns an Insert or Update asks to have returned, each resolved to the name the container declares; a column it does
+    // not declare is refused, never skipped. None named is a row count.
+    private IGenericResult<IReadOnlyList<string>?> ReturnColumns(IDataCommand command, IDataContainer container)
+    {
+        if (command is not IReturningCommand { ReturnColumns.Count: > 0 } returning)
+            return GenericResult<IReadOnlyList<string>?>.Success(null);
+
+        var names = new List<string>(returning.ReturnColumns!.Count);
+        foreach (var column in returning.ReturnColumns)
+        {
+            var field = container.Schema.Fields.FirstOrDefault(f => string.Equals(f.Name, column, System.StringComparison.OrdinalIgnoreCase));
+            if (field is null)
+                return GenericResult<IReadOnlyList<string>?>.Failure(
+                    FileSystemConfigurationWriteLog.ReturnColumnNotDeclared(_logger, _connectionName, container.Name, column));
+            names.Add(field.Name);
+        }
+
+        return GenericResult<IReadOnlyList<string>?>.Success(names);
+    }
+
+    private IGenericResult<IFileSystemCommand> TranslateDelete(
         IDataCommand command, IDataContainer container, string relativePath)
     {
-        if (command is not IConfigurationRetireCommand retire)
+        // DeleteCommand implements IFilterableCommand (Filter); a command of this type without it is a wiring defect.
+        // A Delete with no filter is not: it removes every row, as it does on the SQL kinds.
+        if (command is not IFilterableCommand filterable)
         {
             return GenericResult<IFileSystemCommand>.Failure(
                 FileSystemConfigurationWriteLog.WriteInputMissing(
-                    _logger, _connectionName, container.Name, "ConfigurationRetire command is not a retire command"));
+                    _logger, _connectionName, container.Name, "Delete command is not a filterable command"));
         }
 
-        // Retiring an owner's rows matches the owner key values the command carries; retiring one row
-        // matches the fields of the key the command names, as the container declares them.
-        if (retire.FieldValues is { Count: > 0 } fieldValues)
-            return GenericResult<IFileSystemCommand>.Success(
-                new FileSystemConfigurationDeleteCommand(relativePath, container, fieldValues, retire.MarkDeleted));
-
-        var key = retire.KeyType is null
-            ? null
-            : container.Keys.FirstOrDefault(k => string.Equals(k.KeyType.Name, retire.KeyType.Name, System.StringComparison.Ordinal));
-        if (key is null || key.KeyFields.Count != retire.KeyValues.Count || key.KeyFields.Count == 0)
-        {
-            return GenericResult<IFileSystemCommand>.Failure(
-                FileSystemConfigurationWriteLog.WriteInputMissing(
-                    _logger, _connectionName, container.Name,
-                    $"ConfigurationRetire names key type '{retire.KeyType?.Name}' with {retire.KeyValues.Count} value(s), which the container does not declare"));
-        }
-
-        var match = new Dictionary<string, object?>(System.StringComparer.OrdinalIgnoreCase);
-        for (var i = 0; i < key.KeyFields.Count; i++)
-            match[key.KeyFields[i].LocalField.Name] = retire.KeyValues[i];
         return GenericResult<IFileSystemCommand>.Success(
-            new FileSystemConfigurationDeleteCommand(relativePath, container, match, retire.MarkDeleted));
+            new FileSystemDeleteCommand(relativePath, container, filterable.Filter, (command as ISoftDeletableCommand)?.SoftDelete));
+    }
+
+    // FindCommand<T> is generic and lives in a package this project does not reference, so its settings are read by
+    // name, as the SQL Find translators read them. A command without a search term is refused: it would match every row.
+    private IGenericResult<IFileSystemCommand> TranslateFind(
+        IDataCommand command, IDataContainer container, string relativePath)
+    {
+        var type = command.GetType();
+        var searchTerm = type.GetProperty("SearchTerm")?.GetValue(command) as string;
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return GenericResult<IFileSystemCommand>.Failure(
+                FileSystemConfigurationWriteLog.FindSearchTermMissing(_logger, _connectionName, container.Name));
+        }
+
+        return GenericResult<IFileSystemCommand>.Success(
+            new FileSystemFindCommand(
+                relativePath,
+                container,
+                searchTerm,
+                type.GetProperty("FieldNames")?.GetValue(command) as IReadOnlyList<string>,
+                type.GetProperty("CaseSensitive")?.GetValue(command) is true,
+                type.GetProperty("MaxResults")?.GetValue(command) as int?));
     }
 
     private IGenericResult<IFileSystemCommand> TranslateWrite(
@@ -213,13 +235,18 @@ public sealed class FileSystemCommandTranslator : IDataCommandTranslator<IFileSy
             return rowsResult.ToNewResult<IFileSystemCommand>();
         }
 
+        var returned = ReturnColumns(command, container);
+        if (!returned.IsSuccess)
+            return returned.ToNewResult<IFileSystemCommand>();
+
         return GenericResult<IFileSystemCommand>.Success(
-            new FileSystemWriteCommand(relativePath, container, rowsResult.Value!));
+            new FileSystemWriteCommand(relativePath, container, rowsResult.Value!, returned.Value));
     }
 
     // Why: the write payload is the schema-agnostic flat name→value row shape (the dictionary write path
-    // every record writer supports). Accept a single row, a sequence of rows, or a sequence of DataRecord
-    // (projected via ToDictionary()). Anything else is an unsupported payload — fail loud (NO FALLBACKS).
+    // every record writer supports). Accept a single row, a sequence of rows, a sequence of DataRecord
+    // (projected via ToDictionary()), or a sequence of typed rows (projected through the row type's POCO mapper,
+    // as an Update's record is). Anything else is an unsupported payload — fail loud (NO FALLBACKS).
     private IGenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>> ExtractRows(
         object input, string containerName)
     {
@@ -237,12 +264,45 @@ public sealed class FileSystemCommandTranslator : IDataCommandTranslator<IFileSy
                 return GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Success(
                     records.Select(r => r.ToDictionary()).ToList());
 
+            case IEnumerable typedRows:
+                return ProjectTypedRows(typedRows, containerName);
+
             default:
                 return GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Failure(
                     FileSystemRecordConnectorLog.WriteInputInvalid(
                         _logger, _connectionName, containerName,
                         $"unsupported write payload type '{input.GetType().Name}'"));
         }
+    }
+
+    // A typed row becomes its name→value columns through the POCO mapper of its type. A null row or a type with
+    // no mapper cannot be projected, so the payload is refused naming the type.
+    private IGenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>> ProjectTypedRows(
+        IEnumerable typedRows, string containerName)
+    {
+        var rows = new List<IReadOnlyDictionary<string, object?>>();
+        foreach (var typedRow in typedRows)
+        {
+            if (typedRow is null)
+            {
+                return GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Failure(
+                    FileSystemRecordConnectorLog.WriteInputInvalid(
+                        _logger, _connectionName, containerName, "a row to write is null"));
+            }
+
+            var mapper = PocoMapperCollection.ByName(typedRow.GetType().Name);
+            if (mapper == PocoMapperCollection.NotFound)
+            {
+                return GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Failure(
+                    FileSystemRecordConnectorLog.WriteInputInvalid(
+                        _logger, _connectionName, containerName,
+                        $"unsupported write payload type '{typedRow.GetType().Name}'"));
+            }
+
+            rows.Add(mapper.MapToParameters(typedRow));
+        }
+
+        return GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Success(rows);
     }
 
     /// <inheritdoc />

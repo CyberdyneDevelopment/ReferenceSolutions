@@ -91,6 +91,55 @@ public sealed class OrganizationStoreRetainedDocuments : IRetainedDocuments
     }
 
     /// <inheritdoc />
+    public Task<IGenericResult<RetentionOffer>> Offers(Guid tenantId, Guid organizationId, CancellationToken cancellationToken = default)
+        => Task.FromResult<IGenericResult<RetentionOffer>>(
+            GenericResult<RetentionOffer>.Success(new RetentionOffer([ModifiedDate], [DeleteAction, ArchiveAction])));
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// The types are the folders directly below the root of the organization's store that hold at least one document, found by listing the
+    /// store once; the <c>Archive</c> folder holds ended documents and is not a type. A store keeps no folder entries, so a folder with no
+    /// document in it is not a type yet.
+    /// </remarks>
+    public async Task<IGenericResult<IReadOnlyList<string>>> DocumentTypes(
+        Guid tenantId, Guid organizationId, CancellationToken cancellationToken = default)
+    {
+        var store = await _stores.For(organizationId, Purpose, cancellationToken).ConfigureAwait(false);
+        if (store.IsFailure || store.Value is not { } resolved)
+        {
+            return store.ToNewResult<IReadOnlyList<string>>();
+        }
+
+        var types = new SortedSet<string>(StringComparer.Ordinal);
+        string? continuation = null;
+        do
+        {
+            var page = await resolved.Execute(new ListCommand(DocumentPath.Root, true, PageSize, continuation), cancellationToken).ConfigureAwait(false);
+            if (page.IsFailure || page.Value is not { } listed)
+            {
+                return page.ToNewResult<IReadOnlyList<string>>();
+            }
+
+            foreach (var info in listed.Items)
+            {
+                if (TypeOf(info.Path) is { } type)
+                {
+                    types.Add(type);
+                }
+            }
+
+            continuation = listed.Continuation;
+        }
+        while (continuation is not null);
+
+        return GenericResult<IReadOnlyList<string>>.Success([.. types]);
+    }
+
+    // The folder a document sits in directly below the root, or null for a document at the root or one already archived.
+    private static string? TypeOf(DocumentPath path)
+        => path.Segments.Count > 1 && !string.Equals(path.Segments[0], ArchiveFolder, StringComparison.OrdinalIgnoreCase) ? path.Segments[0] : null;
+
+    /// <inheritdoc />
     public async Task<IGenericResult> End(
         Guid tenantId, Guid organizationId, RetainedDocument document, string endAction, CancellationToken cancellationToken = default)
     {

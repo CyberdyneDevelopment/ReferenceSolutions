@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Data.DataSets.Abstractions;
 using Fdw.Data.Transformations.Configuration;
@@ -15,7 +16,8 @@ namespace FdwReferenceCatalog.Endpoints;
 /// </summary>
 /// <remarks>
 /// The search itself lives in <see cref="SearchCatalogEndpointBase"/>; this host only supplies the providers it reads: data sets
-/// and their fields, data stores with their paths, containers and fields, calculations, transformations, pipelines and glossary terms.
+/// and the searches that find the fields of data sets and of containers at the store, data stores with their paths and containers,
+/// calculations, transformations, pipelines and glossary terms.
 /// </remarks>
 [ExcludeFromCodeCoverage]
 public sealed class SearchCatalogEndpoint : SearchCatalogEndpointBase
@@ -28,8 +30,9 @@ public sealed class SearchCatalogEndpoint : SearchCatalogEndpointBase
         IPipelineConfigurationProvider pipelines,
         ICalculationConfigurationProvider calculations,
         ITransformationConfigurationProvider transformations,
-        IGlossaryTermConfigurationProvider terms)
-        : base(logger, dataSets, dataStores, pipelines, calculations, transformations, terms)
+        IGlossaryTermConfigurationProvider terms,
+        IEnumerable<IRankedSearch> fieldSearches)
+        : base(logger, dataSets, dataStores, pipelines, calculations, transformations, terms, fieldSearches)
     {
     }
 }

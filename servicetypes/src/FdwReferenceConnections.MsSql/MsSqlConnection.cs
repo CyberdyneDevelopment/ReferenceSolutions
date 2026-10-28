@@ -137,9 +137,6 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
                 // Assign the connection to the command
                 command.Connection = sqlConnection;
 
-                // A configuration save or retire answers with the key values of the rows it touched.
-                var answersWithWriteResult = typeof(T) == typeof(ConfigurationWriteResult);
-
                 // Determine if this is a query (SELECT) or command (INSERT/UPDATE/DELETE), on the text as it
                 // was asked for: the batch below starts with the session context, not with SELECT.
                 var isQuery = commandText.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase);
@@ -156,15 +153,6 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
                 placement = placedContext;
 
                 MsSqlConnectionLogger.ExecutingSqlCommand(Logger, commandText, parameterCount);
-
-                if (answersWithWriteResult)
-                {
-                    using var writeReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-                    placement.Applied(sqlConnection);
-                    var writeResult = await ReadWriteResult(writeReader, Logger, cancellationToken).ConfigureAwait(false);
-                    MsSqlConnectionLogger.SqlCommandExecuted(Logger, commandText, writeResult.Retired.Count + (writeResult.Written is null ? 0 : 1));
-                    return GenericResult<T>.Success((T)(object)writeResult);
-                }
 
                 if (!isQuery)
                 {
@@ -204,9 +192,9 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
     }
 
     /// <summary>
-    /// Executes a data command, taking the bulk route when the command asks for it (FDW-1152): a bulk insert with more rows than
+    /// Executes a data command, taking the bulk route when the command asks for it (FDW-1152): an insert with more rows than
     /// the connection's <c>MaxSerialInsert</c>, or than one request can carry of the container's columns, is copied with
-    /// SqlBulkCopy; every other command, and a bulk insert up to the limit, is translated and run as SQL.
+    /// SqlBulkCopy; every other command, and an insert up to the limit, is translated and run as SQL.
     /// </summary>
     /// <typeparam name="T">The expected return type.</typeparam>
     /// <param name="command">The data command.</param>
@@ -215,9 +203,17 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
     /// <returns>A result containing the typed execution outcome.</returns>
     public override async Task<IGenericResult<T>> Execute<T>(
         IDataCommand command, IDataContainer container, CancellationToken cancellationToken = default)
-        => MsSqlBulkRoute.Takes(command, container, Configuration.MaxSerialInsert)
-            ? await ExecuteBulk<T>(command, container, cancellationToken).ConfigureAwait(false)
-            : await base.Execute<T>(command, container, cancellationToken).ConfigureAwait(false);
+    {
+        if (MsSqlBulkRoute.Takes(command, container, Configuration.MaxSerialInsert))
+            return await ExecuteBulk<T>(command, container, cancellationToken).ConfigureAwait(false);
+
+        // Why a find is run here: its answer is each row with the fields that matched, which the generic row mapping cannot
+        // read (FindResult<T> has no mapper), so the connection reads it as the command asks (FDW-1361).
+        if (command is IFindCommand find)
+            return await ExecuteFind<T>(find, container, cancellationToken).ConfigureAwait(false);
+
+        return await base.Execute<T>(command, container, cancellationToken).ConfigureAwait(false);
+    }
 
     // The bulk route: the rows are planned, a pooled connection is opened with the caller's session context set, and the rows are
     // copied. A database error is a coded failure like any other command's; nothing is thrown for one.
@@ -254,46 +250,6 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
             MsSqlConnectionLogger.ExecutionException(Logger, copyText, ex.Message);
             return GenericResult<T>.Failure(MsSqlConnectionLogger.BulkCopyFailed(_logger, ex));
         }
-    }
-
-    /// <summary>Reads what a configuration save or retire returned.</summary>
-    /// <remarks>
-    /// The translator's OUTPUT tags every row with the kind of write that touched it
-    /// (<see cref="ConfigurationWriteResult.KindColumn"/>): the rows a retire closed, and the row an
-    /// insert wrote. A save runs both, so each has its own result set. A row with no kind is not one
-    /// this contract describes, and refuses the read.
-    /// </remarks>
-    internal static async Task<ConfigurationWriteResult> ReadWriteResult(SqlDataReader reader, ILogger logger, CancellationToken cancellationToken)
-    {
-        var retired = new List<IReadOnlyDictionary<string, object?>>();
-        Dictionary<string, object?>? written = null;
-        do
-        {
-            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-            {
-                var row = ReadCurrentRow(reader, logger);
-                var kind = row.TryGetValue(ConfigurationWriteResult.KindColumn, out var value) ? value as string : null;
-                row.Remove(ConfigurationWriteResult.KindColumn);
-                if (string.Equals(kind, ConfigurationWriteResult.WrittenKind, StringComparison.Ordinal))
-                    written = row;
-                else if (string.Equals(kind, ConfigurationWriteResult.RetiredKind, StringComparison.Ordinal))
-                    retired.Add(row);
-                else
-                    throw new InvalidOperationException(
-                        $"A configuration write returned a row whose {ConfigurationWriteResult.KindColumn} is '{kind}'; expected '{ConfigurationWriteResult.RetiredKind}' or '{ConfigurationWriteResult.WrittenKind}'.");
-            }
-        }
-        while (await reader.NextResultAsync(cancellationToken).ConfigureAwait(false));
-
-        return new ConfigurationWriteResult(retired, written);
-    }
-
-    private static Dictionary<string, object?> ReadCurrentRow(SqlDataReader reader, ILogger logger)
-    {
-        var row = new Dictionary<string, object?>(reader.FieldCount, StringComparer.OrdinalIgnoreCase);
-        for (var i = 0; i < reader.FieldCount; i++)
-            row[reader.GetName(i)] = SqlSpatialReader.ReadValue(reader, i, logger);
-        return row;
     }
 
     /// <inheritdoc />
@@ -446,17 +402,24 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
                 using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
                 placement.Applied(sqlConnection);
                 var rows = new List<object>();
-                while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                // Dictionary rows are what a command that returns columns answers, and a statement of several inserts
+                // returns one result set for each, so every set is read.
+                var everySet = elementType == typeof(Dictionary<string, object?>);
+                do
                 {
-                    // Why: per-row materialization is already Type-based (resolves the element's
-                    // generated mapper by name) — no MakeGenericMethod / Activator.
-                    var rowResult = MapReaderRowToObject(reader, elementType, container, Logger);
-                    if (!rowResult.IsSuccess)
+                    while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                     {
-                        return rowResult.ToNewResult<global::System.Collections.Generic.IEnumerable<object>>();
+                        // Why: per-row materialization is already Type-based (resolves the element's
+                        // generated mapper by name) — no MakeGenericMethod / Activator.
+                        var rowResult = MapReaderRowToObject(reader, elementType, container, Logger);
+                        if (!rowResult.IsSuccess)
+                        {
+                            return rowResult.ToNewResult<global::System.Collections.Generic.IEnumerable<object>>();
+                        }
+                        rows.Add(rowResult.Value!);
                     }
-                    rows.Add(rowResult.Value!);
                 }
+                while (everySet && await reader.NextResultAsync(cancellationToken).ConfigureAwait(false));
                 return GenericResult<global::System.Collections.Generic.IEnumerable<object>>.Success(rows);
             }
         }
@@ -633,6 +596,33 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
 
         // No rows, return default
         return GenericResult<T>.Success(default!);
+    }
+
+    /// <summary>
+    /// Reads every row of every result set a command returned as dictionaries keyed by column name, the shape a command that
+    /// returns columns answers. A statement of several inserts returns one result set for each, so every set is read.
+    /// </summary>
+    /// <param name="reader">The reader the command returned.</param>
+    /// <param name="container">The container whose schema maps the columns.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The rows, one dictionary each; or why a row could not be read.</returns>
+    internal static async Task<IGenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>> ReadDictionaryRows(
+        SqlDataReader reader, IStorageContainer container, ILogger logger, CancellationToken cancellationToken)
+    {
+        var rows = new List<IReadOnlyDictionary<string, object?>>();
+        do
+        {
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                var row = MapReaderRowToObject(reader, typeof(Dictionary<string, object?>), container, logger);
+                if (!row.IsSuccess)
+                    return row.ToNewResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>();
+                rows.Add((IReadOnlyDictionary<string, object?>)row.Value!);
+            }
+        }
+        while (await reader.NextResultAsync(cancellationToken).ConfigureAwait(false));
+        return GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Success(rows);
     }
 
     /// <summary>

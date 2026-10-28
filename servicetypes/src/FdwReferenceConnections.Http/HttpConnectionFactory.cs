@@ -128,8 +128,12 @@ public sealed class HttpConnectionFactory : ServiceFactoryBase<IGenericConnectio
         HttpConnectionFactoryLogger.TraceCreateEntry(_logger, effectiveName);
         HttpConnectionFactoryLogger.CreatingConnection(_logger, connectionName);
 
+        if (string.IsNullOrWhiteSpace(configuration.Protocol))
+            return GenericResult<IGenericConnection>.Failure(
+                HttpConnectionFactoryLogger.NoProtocolSpecified(_logger, connectionName));
+
         HttpConnectionFactoryLogger.TraceResolvingProtocol(_logger, configuration.Protocol, connectionName);
-        var protocol = ResolveProtocol(configuration, connectionName);
+        var protocol = ResolveProtocol(configuration.Protocol);
         if (protocol is null)
             return GenericResult<IGenericConnection>.Failure(
                 HttpConnectionFactoryLogger.ProtocolNotFound(_logger, connectionName, configuration.Protocol));
@@ -146,16 +150,8 @@ public sealed class HttpConnectionFactory : ServiceFactoryBase<IGenericConnectio
     /// <summary>
     /// Resolves the protocol from the HttpProtocols TypeCollection.
     /// </summary>
-    private IHttpProtocol? ResolveProtocol(HttpConnectionConfiguration configuration, string connectionName)
+    private static IHttpProtocol? ResolveProtocol(string protocolName)
     {
-        var protocolName = configuration.Protocol;
-        if (string.IsNullOrWhiteSpace(protocolName))
-        {
-            HttpConnectionFactoryLogger.NoProtocolSpecified(_logger, connectionName);
-            // Default to REST if no protocol specified
-            protocolName = "Rest";
-        }
-
         var protocol = HttpProtocols.ByName(protocolName);
         if (protocol == null || string.Equals(protocol.Name, "NotFound", StringComparison.Ordinal))
         {

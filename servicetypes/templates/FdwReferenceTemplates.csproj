@@ -33,8 +33,8 @@
     <!-- Why Exclude rather than a narrower Include: verify-templates.sh generates into a scratch
          directory, but a stray bin/obj under a template would otherwise be packed as template
          content and shipped to every consumer. -->
-    <Content Include="Reference*\**\*" Exclude="**\bin\**;**\obj\**" />
-    <!-- items/ holds the single-file option templates, which do not start with Reference. -->
+    <Content Include="FdwReference*\**\*" Exclude="**\bin\**;**\obj\**" />
+    <!-- items/ holds the single-file option templates, which do not start with FdwReference. -->
     <Content Include="items\**\*" Exclude="**\bin\**;**\obj\**" />
     <Compile Remove="**\*" />
     <None Remove="**\*" />

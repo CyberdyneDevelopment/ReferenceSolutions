@@ -75,26 +75,44 @@ public sealed class ForwardedHeadersHostType
                 return GenericResult<IHost>.Success(host);
             }
 
-            var configuration = Read(host, Name);
-            var options = new ForwardedHeadersOptions
-            {
-                ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor
-                                 | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
-                                 | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost,
-            };
-
-            // No declared network means trust any upstream: the row says so rather than a comment.
-            options.KnownIPNetworks.Clear();
-            options.KnownProxies.Clear();
-            foreach (var network in configuration.TrustedProxyNetworks.Select(n => n.Network))
-            {
-                options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse(network));
-            }
-
-            app.UseForwardedHeaders(options);
+            app.UseForwardedHeaders(OptionsFor(Read(host, Name)));
 
             return GenericResult<IHost>.Success(host);
         });
+    }
+
+    /// <summary>Builds the middleware's options from the row.</summary>
+    /// <param name="configuration">The ForwardedHeaders row.</param>
+    /// <returns>The options: the forwarded-for header the row names, and the networks it trusts.</returns>
+    /// <exception cref="InvalidOperationException">The row does not state which header names the person's address.</exception>
+    public static ForwardedHeadersOptions OptionsFor(ForwardedHeadersHostConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        if (string.IsNullOrWhiteSpace(configuration.ForwardedForHeaderName))
+        {
+            throw new InvalidOperationException(
+                $"The ForwardedHeaders row '{configuration.Name}' does not state ForwardedForHeaderName. "
+                + "The header that names the person's address depends on the proxies in front of this host, so the row says it.");
+        }
+
+        var options = new ForwardedHeadersOptions
+        {
+            ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor
+                             | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+                             | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost,
+            ForwardedForHeaderName = configuration.ForwardedForHeaderName,
+        };
+
+        // No declared network means trust any upstream: the row says so rather than a comment.
+        options.KnownIPNetworks.Clear();
+        options.KnownProxies.Clear();
+        foreach (var network in configuration.TrustedProxyNetworks.Select(n => n.Network))
+        {
+            options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse(network));
+        }
+
+        return options;
     }
 
     // Why blocking: a phase body cannot await, and the row decides what this middleware does.

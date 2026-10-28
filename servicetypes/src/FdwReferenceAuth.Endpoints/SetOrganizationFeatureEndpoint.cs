@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Operations.Abstractions.Audit;
-using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Multitenancy.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -16,11 +15,9 @@ public sealed class SetOrganizationFeatureEndpoint : SetOrganizationFeatureEndpo
     /// <inheritdoc />
     public SetOrganizationFeatureEndpoint(
         IFeatureEnablement features,
-        IOrganizationProvider organizations,
         IAdministrativeAudit audit,
-        ISystemRoleConfiguration systemRoles,
         ILogger<SetOrganizationFeatureEndpoint> logger)
-        : base(logger, features, organizations, audit, systemRoles)
+        : base(logger, features, audit)
     {
     }
 

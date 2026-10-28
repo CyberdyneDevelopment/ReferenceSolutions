@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 using FastEndpoints;
 using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Authorization;
+using Fdw.Services.Authorization.Abstractions;
 using Fdw.Services.Authorization.Configuration;
 using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Users;
+using Fdw.Services.Users.Abstractions;
 using Fdw.Services.Users.Configuration;
 using Fdw.Services.Users.Endpoints;
 using FdwReferenceAuth.Endpoints.Logging;
@@ -41,8 +43,8 @@ namespace FdwReferenceAuth.Endpoints;
 public sealed class GetUserMembershipsEndpoint : Endpoint<UserScopedRequest, MembershipsResponse>
 {
     private readonly UserConfigurationProvider _users;
-    private readonly IUserTenantConfigurationProvider _memberships;
-    private readonly IUserRoleConfigurationProvider _userRoles;
+    private readonly IUserTenantsHeld _memberships;
+    private readonly IUserRolesHeld _userRoles;
     private readonly IRoleConfigurationProvider _roles;
     private readonly ITenantProvider _tenants;
     private readonly IAuthenticationContextAccessor _authContextAccessor;
@@ -58,8 +60,8 @@ public sealed class GetUserMembershipsEndpoint : Endpoint<UserScopedRequest, Mem
     /// <param name="logger">The logger.</param>
     public GetUserMembershipsEndpoint(
         UserConfigurationProvider users,
-        IUserTenantConfigurationProvider memberships,
-        IUserRoleConfigurationProvider userRoles,
+        IUserTenantsHeld memberships,
+        IUserRolesHeld userRoles,
         IRoleConfigurationProvider roles,
         ITenantProvider tenants,
         IAuthenticationContextAccessor authContextAccessor,
@@ -129,14 +131,9 @@ public sealed class GetUserMembershipsEndpoint : Endpoint<UserScopedRequest, Mem
         // account's own id, and only after AccountAuthority admitted the caller.
         using var systemScope = new SystemAuthenticationContextScope(_authContextAccessor);
 
-        var memberships = await _memberships
-            .Find<IUserTenantImplementationConfiguration>(m => m.UserId == userId, ct)
-            .ConfigureAwait(false);
+        var memberships = await _memberships.Get(userId, ct).ConfigureAwait(false);
 
-        // authz.UserRoleConfiguration.UserId is a Guid stored as VARCHAR; both sides are compared as the Guids they are (FDW-532).
-        var held = await _userRoles
-            .Find<IUserRoleImplementationConfiguration>(ur => Guid.TryParse(ur.UserId, out var assigned) && assigned == userId, ct)
-            .ConfigureAwait(false);
+        var held = await _userRoles.Get(userId, ct).ConfigureAwait(false);
         var roles = await _roles.Get(ct).ConfigureAwait(false);
         var tenants = await _tenants.GetAllTenants(ct).ConfigureAwait(false);
 

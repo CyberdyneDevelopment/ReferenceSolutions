@@ -4,6 +4,7 @@ using Fdw.Results;
 using Fdw.Services.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -16,12 +17,13 @@ namespace SampleNamespace;
 /// A module initializer adds this to its collection at assembly load, so referencing the package
 /// that contains it IS the registration.
 ///
-/// The phase bodies are set in the constructor, and the setter chosen is the whole decision.
-/// Registration replaces the phase body; Append runs after whatever is already chained; Prepend runs
-/// before it. No FDW base contributes a segment today, so for a direct subclass Registration and Append
-/// behave the same — <b>prefer Append</b> anyway, because if a base ever does contribute one,
-/// Registration discards it and nothing reports that it happened. Every connection option once lost
-/// its factory registration exactly that way while logging "Register completed successfully".
+/// The phase bodies are set in the constructor with Registration and Initialization. This class
+/// declares them, so it owns them outright. AppendRegistration, PrependRegistration and the Configuration
+/// and Initialization counterparts exist for a host or package extending an option it did not author;
+/// inside the declaring class they are the error STC001. Where a body needs the func another piece would
+/// have run, capture that func in a local and call it at the point in the body where it belongs. No
+/// base contributes a segment, because STC002 refuses a base that sets a phase: wiring every option of
+/// a domain needs belongs in the collection's Register body.
 ///
 /// <b>Joining a domain.</b> If this option registers into its domain's providers, the lifetime decides
 /// the phase. Into the domain's singleton configuration provider: from Initialization. Into its scoped
@@ -44,18 +46,15 @@ public sealed class SampleOption : SampleDomainTypeBase
     {
         // Runs while the container is still being built, so it can only add to it. Anything needing
         // a resolved service belongs in Initialization instead.
-        AppendRegistration((builder, loggerFactory) =>
+        Registration((builder, loggerFactory) =>
         {
             builder.Services.TryAddScoped<ISampleService, SampleService>();
 
-            // Why log, and why Trace: a registration that never ran and one that ran and was later
-            // discarded are indistinguishable from a silent log — which is exactly how the defect
-            // above survived several releases. Trace is the right level because this is the finest
-            // grain there is: one line per option per host, saying what was registered and by whom.
+            // Why log, and why Trace: a registration that never ran is indistinguishable from a silent
+            // log. Trace is the right level because this is the finest grain there is: one line per
+            // option per host, saying what was registered and by whom.
             //
-            // Why ILogger<SampleOption>: SourceContext then names the type the line was written in,
-            // so an option's own wiring is distinguishable from a segment its BASE contributed on
-            // its behalf. Read base-then-derived, the pair tells you both ran.
+            // Why ILogger<SampleOption>: SourceContext then names the type the line was written in.
             // SampleDomainLog is this domain's own [MessageLogging] class. Its EventIds follow
             // RESULTCODE-CATALOG.md (Category = Id / 10000): category 1 for this non-error
             // lifecycle line, category 6 for a setup fault such as "registered nothing", category 9
@@ -73,7 +72,7 @@ public sealed class SampleOption : SampleDomainTypeBase
 
         // Runs after Build(), so this is the only phase with a real IServiceProvider — a resolved
         // service, a middleware pipeline or a mapped route can only exist here.
-        AppendInitialization((host, loggerFactory) =>
+        Initialization((host, loggerFactory) =>
         {
             return GenericResult<IHost>.Success(host);
         });

@@ -34,8 +34,8 @@ public sealed class MsSqlDataStoreBuilder : DataStoreBuilderBase
     /// <remarks>
     /// FDW-793: <c>DataContainerFieldConfiguration.IsSystemProvided</c> was never set true for these —
     /// authored/discovered field metadata marks only IDENTITY/COMPUTED columns that way, not an
-    /// ordinary DEFAULT constraint — so <c>MsSqlInsertTranslator</c>/<c>MsSqlConfigurationSaveTranslator</c>
-    /// (both gated on <c>IField.IsSystemProvided</c>) wrote the POCO's C# default (zero date, empty
+    /// ordinary DEFAULT constraint — so <c>MsSqlInsertTranslator</c>, and the insert a <c>ConfigurationSaveCommand</c>
+    /// expands into (both gated on <c>IField.IsSystemProvided</c>), wrote the POCO's C# default (zero date, empty
     /// string) over every implementation-row and cascade-child insert instead of leaving the column
     /// for the DB default to fill. Treating every DEFAULT-bearing column as system-provided would have
     /// been wrong the other way — an ordinary app-settable defaulted column (e.g.

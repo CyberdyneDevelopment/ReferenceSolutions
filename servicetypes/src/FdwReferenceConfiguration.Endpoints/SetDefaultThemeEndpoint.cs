@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System;
 using System.Threading;
+using System.Threading.Tasks;
+using Fdw.Results;
 using Fdw.UI.Themes;
 using Fdw.UI.Themes.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -42,33 +43,10 @@ public class SetDefaultThemeEndpoint : SetDefaultThemeEndpointBase
         });
     }
 
-    // Why: Provider.Get is async; base class contract is sync. Thread-pool thread, no SyncContext.
-    protected override bool ThemeExists(string name)
-    {
-        var result = _provider.Get(name, CancellationToken.None).GetAwaiter().GetResult();
-        return result.IsSuccess && result.Value is not null;
-    }
-
-    protected override void ApplyDefault(string name)
+    protected override async Task<IGenericResult> SetDefault(string name, CancellationToken ct)
     {
         ThemeLog.SettingDefaultTheme(_logger, name);
 
-        // Why: Provider.GetAll is async; base class contract is sync. Thread-pool thread, no SyncContext.
-        var themesResult = _provider.Get(CancellationToken.None).GetAwaiter().GetResult();
-
-        foreach (var theme in themesResult.Value ?? [])
-        {
-            theme.IsDefault = string.Equals(theme.Name, name, StringComparison.OrdinalIgnoreCase);
-
-            var saveResult = _provider.Save(theme, "Theme", theme.Implementation, theme.Name, CancellationToken.None).GetAwaiter().GetResult();
-            if (!saveResult.IsSuccess)
-            {
-                ThemeLog.ThemePersistenceFailed(_logger, theme.Name, saveResult.CurrentMessage ?? "save failed");
-                ThrowError("Failed to persist theme configuration", 500);
-                return;
-            }
-        }
-
-        ThemeLog.DefaultThemeSet(_logger, name);
+        return await _provider.SetDefault(name, ct).ConfigureAwait(false);
     }
 }

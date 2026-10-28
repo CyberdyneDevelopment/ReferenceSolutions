@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System;
-using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Fdw.Results;
 using Fdw.UI.Themes;
 using Fdw.UI.Themes.Clients.Models;
 using Fdw.UI.Themes.Configuration;
@@ -45,29 +45,13 @@ public class GetDefaultThemeEndpoint : GetDefaultThemeEndpointBase<ThemeConfigur
         });
     }
 
-    protected override ThemeConfiguration LoadDefaultTheme()
+    protected override async Task<IGenericResult<ThemeConfiguration>> LoadDefaultTheme(CancellationToken ct)
     {
         ThemeLog.GettingDefaultTheme(_logger);
 
-        // Why: Provider.GetAll is async; base class contract is sync. Thread-pool thread, no SyncContext.
-        var allThemesResult = _provider.Get(CancellationToken.None).GetAwaiter().GetResult();
-        var allThemes = allThemesResult.Value ?? [];
-
-        var managed = allThemes.FirstOrDefault(t => t.IsDefault);
-
-        if (managed == null)
-        {
-            // Fall back to first theme named "fractal", or create a default
-            managed = allThemes
-                .FirstOrDefault(t => string.Equals(t.Name, "fractal", StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (managed != null)
-        {
-            return managed.ToDto();
-        }
-
-        // Ultimate fallback if no themes in database
-        return ThemeConfiguration.CreateFractalTheme();
+        var found = await _provider.GetDefault(ct).ConfigureAwait(false);
+        return found.IsSuccess && found.Value is { } managed
+            ? GenericResult<ThemeConfiguration>.Success(managed.ToDto())
+            : found.ToNewResult<ThemeConfiguration>();
     }
 }

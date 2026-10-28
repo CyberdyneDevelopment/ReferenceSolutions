@@ -31,13 +31,14 @@ namespace FdwReferenceConnections.PostgreSql;
 /// Holds a single long-lived <see cref="NpgsqlConnection"/> that is opened on first use.
 /// </summary>
 [ExcludeFromCodeCoverage] // Excluded: requires PostgreSQL connection
-public sealed class PostgreSqlConnection : ConnectionBase<NpgsqlCommand, PostgreSqlConnectionConfiguration, PostgreSqlConnection>, ISupportsHealthProbe, IRecordSourceConnection
+public sealed partial class PostgreSqlConnection : ConnectionBase<NpgsqlCommand, PostgreSqlConnectionConfiguration, PostgreSqlConnection>, ISupportsHealthProbe, IRecordSourceConnection, ITransactionalDataConnection
 {
     private readonly NpgsqlConnection _npgsqlConnection;
     private readonly ILogger<PostgreSqlConnection> _logger;
     // Why: After config-split, Name lives on the parent IConnectionImplementationConfiguration header, not on the typed body.
     // The factory extracts it and passes it explicitly so logging uses the correct connection name.
     private readonly string _connectionName;
+    private readonly bool _inUnitOfWork;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgreSqlConnection"/> class.
@@ -46,17 +47,26 @@ public sealed class PostgreSqlConnection : ConnectionBase<NpgsqlCommand, Postgre
     /// <param name="configuration">The typed PostgreSQL connection configuration.</param>
     /// <param name="npgsqlConnection">The underlying Npgsql connection.</param>
     /// <param name="connectionName">The connection name from the parent IConnectionImplementationConfiguration header.</param>
+    /// <param name="inUnitOfWork">Whether <paramref name="npgsqlConnection"/> already has a unit of work's transaction open, so every command this connection runs belongs to it.</param>
     public PostgreSqlConnection(
         ILogger<PostgreSqlConnection> logger,
         PostgreSqlConnectionConfiguration configuration,
         NpgsqlConnection npgsqlConnection,
-        string connectionName)
+        string connectionName,
+        bool inUnitOfWork = false)
         : base(logger, configuration)
     {
         _npgsqlConnection = npgsqlConnection;
         _logger = logger;
         _connectionName = connectionName;
+        _inUnitOfWork = inUnitOfWork;
     }
+
+    /// <summary>
+    /// Gets a value indicating whether this connection wraps a unit of work's connection and open transaction. A command that
+    /// assembles its own result then runs its steps here, inside that transaction, and does not begin another.
+    /// </summary>
+    protected override bool InUnitOfWork => _inUnitOfWork;
 
     /// <summary>
     /// Gets the translator for a command type using TypeCollection lookup.
@@ -172,8 +182,8 @@ public sealed class PostgreSqlConnection : ConnectionBase<NpgsqlCommand, Postgre
     }
 
     /// <summary>
-    /// Executes a data command, taking the bulk route when the command asks for it (FDW-1152): a bulk insert with more rows than
-    /// the connection's <c>MaxSerialInsert</c>, or than one command can carry of the container's columns, is streamed through a binary COPY; every other command, and a bulk insert up to the
+    /// Executes a data command, taking the bulk route when the command asks for it (FDW-1152): an insert with more rows than
+    /// the connection's <c>MaxSerialInsert</c>, or than one command can carry of the container's columns, is streamed through a binary COPY; every other command, and an insert up to the
     /// limit, is translated and run as SQL. This connection has no unit of work, so the COPY is never inside one.
     /// </summary>
     /// <typeparam name="T">The expected return type.</typeparam>
@@ -183,12 +193,20 @@ public sealed class PostgreSqlConnection : ConnectionBase<NpgsqlCommand, Postgre
     /// <returns>A result containing the typed execution outcome.</returns>
     public override async Task<IGenericResult<T>> Execute<T>(
         IDataCommand command, IDataContainer container, CancellationToken cancellationToken = default)
-        => TakesBulkRoute(command, container)
-            ? await ExecuteBulk<T>(command, container, cancellationToken).ConfigureAwait(false)
-            : await base.Execute<T>(command, container, cancellationToken).ConfigureAwait(false);
+    {
+        if (TakesBulkRoute(command, container))
+            return await ExecuteBulk<T>(command, container, cancellationToken).ConfigureAwait(false);
+
+        // Why a find is run here: its answer is each row with the fields that matched, which the generic row mapping cannot
+        // read (FindResult<T> has no mapper), so the connection reads it as the command asks (FDW-1361).
+        if (command is IFindCommand find)
+            return await ExecuteFind<T>(find, container, cancellationToken).ConfigureAwait(false);
+
+        return await base.Execute<T>(command, container, cancellationToken).ConfigureAwait(false);
+    }
 
     // Asked first: a command that would not take the bulk route even if no row could run serially has no use for it, and its
-    // container is not sized. Every data command answers; only a bulk insert with rows answers yes.
+    // container is not sized. Every data command answers; only an insert with rows answers yes.
     private const int NoSerialRows = 0;
 
     // The route is chosen by the command's rows against the most a serial insert takes (FDW-1173).
@@ -200,19 +218,19 @@ public sealed class PostgreSqlConnection : ConnectionBase<NpgsqlCommand, Postgre
     // The connection's configured MaxSerialInsert, or fewer where one command cannot carry that many rows of the container's
     // columns (the parameter limit). Rows beyond it go to the COPY, which has no such limit.
     private int SerialLimit(IStorageContainer container)
-        => Math.Min(Configuration.MaxSerialInsert, PostgreSqlBatchInsertTranslator.RowsPerRequest(container));
+        => Math.Min(Configuration.MaxSerialInsert, PostgreSqlInsertTranslator.RowsPerRequest(container));
 
     // The bulk route: a binary COPY of the planned rows. On any failure it returns a coded failure; it never reports Success
     // without actually writing the rows.
     private async Task<IGenericResult<T>> ExecuteBulk<T>(IDataCommand command, IDataContainer container, CancellationToken cancellationToken)
     {
-        if (!string.Equals(command.CommandType, "BulkInsert", StringComparison.Ordinal))
+        if (!string.Equals(command.CommandType, "Insert", StringComparison.Ordinal))
         {
             return GenericResult<T>.Failure(DatabaseCommandLog.BulkRouteUnavailable(
-                _logger, command.CommandType, _connectionName, "the PostgreSQL bulk mode copies bulk inserts only"));
+                _logger, command.CommandType, _connectionName, "the PostgreSQL bulk mode copies inserts only"));
         }
 
-        var plan = PostgreSqlBulkInsertTranslator.Plan(command, container);
+        var plan = PostgreSqlInsertTranslator.Plan(command, container);
         if (!plan.IsSuccess || plan.Value is null)
             return plan.ToNewResult<T>();
 
@@ -321,15 +339,22 @@ public sealed class PostgreSqlConnection : ConnectionBase<NpgsqlCommand, Postgre
 
             using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             var rows = new List<object>();
-            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            // Dictionary rows are what a command that returns columns answers, and a command of several inserts
+            // returns one result set for each, so every set is read.
+            var everySet = elementType == typeof(Dictionary<string, object?>);
+            do
             {
-                var rowResult = MapReaderRowToObject(reader, elementType, container);
-                if (!rowResult.IsSuccess)
+                while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    return rowResult.ToNewResult<global::System.Collections.Generic.IEnumerable<object>>();
+                    var rowResult = MapReaderRowToObject(reader, elementType, container);
+                    if (!rowResult.IsSuccess)
+                    {
+                        return rowResult.ToNewResult<global::System.Collections.Generic.IEnumerable<object>>();
+                    }
+                    rows.Add(rowResult.Value!);
                 }
-                rows.Add(rowResult.Value!);
             }
+            while (everySet && await reader.NextResultAsync(cancellationToken).ConfigureAwait(false));
 
             PostgreSqlConnectionLog.SqlCommandExecuted(_logger, command.CommandText, rows.Count);
             return GenericResult<global::System.Collections.Generic.IEnumerable<object>>.Success(rows);
@@ -450,6 +475,38 @@ public sealed class PostgreSqlConnection : ConnectionBase<NpgsqlCommand, Postgre
         {
             return GenericResult.Failure(
                 PostgreSqlConnectionLog.SqlExecutionFailed(_logger, ex, "SELECT 1"));
+        }
+    }
+
+    /// <summary>
+    /// Begins a unit of work: a clone of this connection (CloneWith keeps its password and SSL settings) is opened and a transaction begun on
+    /// it, and a second <see cref="PostgreSqlConnection"/> over the clone runs the unit's commands, so they are inside the
+    /// transaction and use everything this connection does.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>The unit of work; or the failure that stopped it beginning.</returns>
+    public async Task<IGenericResult<IDataConnectionTransaction>> BeginTransaction(CancellationToken cancellationToken = default)
+    {
+        NpgsqlConnection? unitConnection = null;
+        try
+        {
+            unitConnection = _npgsqlConnection.CloneWith(_npgsqlConnection.ConnectionString);
+            await unitConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var transaction = await unitConnection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+            PostgreSqlConnectionLog.UnitOfWorkBegan(_logger, _connectionName);
+            return GenericResult<IDataConnectionTransaction>.Success(
+                new PostgreSqlDataConnectionTransaction(
+                    new PostgreSqlConnection(_logger, Configuration, unitConnection, _connectionName, inUnitOfWork: true),
+                    transaction,
+                    _logger,
+                    _connectionName));
+        }
+        catch (Exception ex)
+        {
+            if (unitConnection is not null)
+                await unitConnection.DisposeAsync().ConfigureAwait(false);
+            return GenericResult<IDataConnectionTransaction>.Failure(
+                PostgreSqlConnectionLog.UnitOfWorkFailed(_logger, ex, "begin", _connectionName));
         }
     }
 

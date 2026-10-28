@@ -38,7 +38,6 @@ public sealed class MsSqlConnectionType
       ISchemaDiscovery<MsSqlConnection>,
       ISupportsCalculationPushdown,
       ISupportsContainerTypes,
-      ISupportsExecutableContainerTypes,
       ISupportsFieldTypes,
       ISupportsWriteModes,
       ISupportsDataPathFormats,
@@ -188,23 +187,15 @@ public sealed class MsSqlConnectionType
     /// bulk insert, and streaming reads.
     /// </summary>
     // Why: ByName() returns the TypeCollection singleton — never instantiate capabilities inline.
-    // Why insert/update/upsert: SQL Server is a full CRUD target; all write patterns are supported.
-    // Upsert and BulkUpsert are set-based: the rows travel as one JSON parameter, are staged by OPENJSON into a
-    // temp table typed like the target, then an UPDATE (or, versioned, a close) and an INSERT run (FDW-1107).
-    // InsertFromQuery is INSERT ... SELECT on one server; SoftDelete flags rows; UnitOfWork runs commands in one transaction.
-    // Execute runs an executable container (a stored procedure here); ExecutableContainerTypes says which container types.
+    // Why no data commands: every data connection answers every data command, so the list holds modes. The
+    // translator collection says which commands run natively; Upsert and BulkUpsert are set-based there: the rows
+    // travel as one JSON parameter, are staged by OPENJSON into a temp table typed like the target, then an UPDATE
+    // (or, versioned, a close) and an INSERT run (FDW-1107).
+    // SoftDelete flags rows; UnitOfWork runs commands in one transaction.
     // Vectorized: SQL Server 2025 holds vectors, and MsSqlConnection answers the nearest rows by VECTOR_DISTANCE (FDW-1354).
     public override IReadOnlyList<ICommandCapabilityType> SupportedCommands =>
     [
-        CommandCapabilityTypes.ByName("Query"),
         CommandCapabilityTypes.ByName("CompoundQuery"),
-        CommandCapabilityTypes.ByName("Execute"),
-        CommandCapabilityTypes.ByName("Insert"),
-        CommandCapabilityTypes.ByName("Update"),
-        CommandCapabilityTypes.ByName("Upsert"),
-        CommandCapabilityTypes.ByName("BulkInsert"),
-        CommandCapabilityTypes.ByName("BulkUpsert"),
-        CommandCapabilityTypes.ByName("InsertFromQuery"),
         CommandCapabilityTypes.ByName("SoftDelete"),
         CommandCapabilityTypes.ByName("UnitOfWork"),
         CommandCapabilityTypes.ByName("Stream"),
@@ -264,11 +255,6 @@ public sealed class MsSqlConnectionType
     /// <inheritdoc />
     public IReadOnlyList<string> SupportedContainerTypes =>
         ["Table", "View", "StoredProcedure", "Function"];
-
-    // ── ISupportsExecutableContainerTypes ──────────────────────────────────────
-
-    /// <inheritdoc />
-    public IReadOnlyList<string> ExecutableContainerTypes => ["StoredProcedure"];
 
     // ── ISupportsFieldTypes ────────────────────────────────────────────────────
 

@@ -16,6 +16,13 @@
     <PackageReference Include="FdwReferenceEndpoints" />
     <PackageReference Include="Fdw.Web.RestEndpoints" />
     <PackageReference Include="FastEndpoints" />
+<!--#if (IsSeal) -->
+    <!-- Why these: an endpoint generated with Mode set to Seal fails the members it has not been connected to with a declared message, and the message is generated. -->
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Messages" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" />
+<!--#endif -->
   </ItemGroup>
 
 </Project>

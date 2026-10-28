@@ -6,6 +6,7 @@ using FastEndpoints;
 using FdwReferenceEndpoints.Extensions;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Abstractions.Visualization;
+using Fdw.Web.RestEndpoints.ErrorMapping;
 
 namespace FdwReferenceVisualization.Endpoints;
 
@@ -71,8 +72,7 @@ public sealed class ComputeStatSetEndpoint : Endpoint<StatSetRequest, StatSetRes
 
         if (!result.IsSuccess)
         {
-            AddError("Failed to compute statistics");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext));
             return;
         }
 

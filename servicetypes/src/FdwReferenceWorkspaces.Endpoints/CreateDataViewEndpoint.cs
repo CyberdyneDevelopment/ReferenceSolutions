@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Fdw.Data.DataSets.Abstractions;
+using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Workspaces.Endpoints;
 
@@ -20,8 +21,9 @@ public sealed class CreateDataViewEndpoint : CreateDataViewEndpointBase
         ILogger<CreateDataViewEndpointBase> logger,
         IDataSetVariationConfigurationProvider variations,
         IDataSetConfigurationProvider dataSets,
-        IAuthenticationContextAccessor authContext)
-        : base(logger, variations, dataSets, authContext)
+        IAuthenticationContextAccessor authContext,
+        IFilterCalculations calculations)
+        : base(logger, variations, dataSets, authContext, calculations)
     {
     }
 }

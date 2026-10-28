@@ -11,6 +11,24 @@ ListSampleGroupEndpoint.cs       the HANDLER      the code that runs
 SampleGroupSummaryDto.cs         the CONTRACT     what goes over the wire
 ```
 
+## Three ways to generate it
+
+`dotnet new fdw-ref-endpoint-group --Permission widgets --Mode <Plain|Base|Seal> --Operation <List|Read|Create|Update|Delete>`
+
+| Mode | Makes | Use it when |
+|---|---|---|
+| `Plain` (default) | The group and one plain FastEndpoints endpoint with its right stated. | You write the endpoint's handling yourself. |
+| `Base` | The group and the open-generic abstract endpoint for the operation: a Crud base with the resource name, the OpenAPI summary, description and tag stated, and its generics left open. No concrete endpoint, so no option. | You are building the group's shared base in the package that owns the data. |
+| `Seal` | The group and a concrete class (not marked `sealed`) that closes the generics of the Crud base for the operation, with its constructor, summary, tag and option. Every member the base leaves abstract fails with a declared message (`SampleGroupEndpointLog.NotWired`) until you connect it to the service that owns the data. | You are putting an endpoint on the wire from a base. To close a base of your own, change the base type and its using. |
+
+`--Permission` is the resource name of a Crud endpoint: it is the route segment and the prefix of the right the base gates on (`widgets:read`, `widgets:write`, `widgets:delete`). The event id in `SampleGroupEndpointLog` (a `Seal` file) is the template's: pick the next free one in your package's range.
+
+The OpenAPI document shows each route's summary, description and tag. The Crud bases take them from `EndpointSummary`, `EndpointDescription` and `EndpointTag`, which the `Base` and `Seal` files state.
+
+## The group's own API reference
+
+Every mode also generates the group's reference page, `/api/v1/<Permission>/scalar`, and the document it reads, `GET /openapi/<Permission>`, with the option that declares it. Like the Data and Sign-in pages, the page is for a signed-in caller and the document is cut per caller: it lists only the operations the caller holds the right for, with the summary, description and tag each endpoint states. A Crud endpoint is routed at the Permission, so the document keeps the paths under it; a Plain endpoint is routed at its own route prefix, which the document also keeps.
+
 ## The declaration is the route table
 
 **Endpoint auto-discovery is off.** Nothing scans your assembly for classes that look like
@@ -143,5 +161,5 @@ Two rules fall out of it:
 ## Verbs
 
 `GET` lists only. `POST` creates, and also carries single reads that need a body. `PATCH` modifies.
-There is no `PUT`. A modify DTO uses nullable properties so "not supplied" and "set to empty" stay
+`PUT` is not used: it replaces the whole resource, so a partial update cannot say "not supplied". A modify DTO uses nullable properties so "not supplied" and "set to empty" stay
 distinguishable — collapsing those two is how a partial update silently blanks a field.

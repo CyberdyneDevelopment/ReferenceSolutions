@@ -112,8 +112,8 @@ public sealed class SqliteInsertTranslatorTests
         var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
-        result.Value!.CommandText.ShouldContain("@name");
-        result.Value.CommandText.ShouldContain("@age");
+        result.Value!.CommandText.ShouldContain("@p0");
+        result.Value.CommandText.ShouldContain("@p1");
     }
 
     [Fact]
@@ -122,7 +122,7 @@ public sealed class SqliteInsertTranslatorTests
     public async Task InsertTranslatorWithNullDataReturnsStructuredFailure()
     {
         var container = CreateContainer("contacts");
-        var command = new InsertCommand<ContactData?>(null);
+        var command = new InsertCommand<ContactData?>((ContactData?)null);
 
         var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
 

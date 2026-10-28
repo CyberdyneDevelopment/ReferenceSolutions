@@ -10,6 +10,9 @@ using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Users;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Fdw.Messages;
+using Fdw.Results;
+using Fdw.Web.RestEndpoints.ErrorMapping;
 using FdwReferenceAuth.Endpoints.Logging;
 
 namespace FdwReferenceAuth.Endpoints;
@@ -44,8 +47,9 @@ public sealed class SetDefaultTenantEndpoint : Endpoint<SetDefaultTenantRequest,
     /// <inheritdoc />
     public override void Configure()
     {
-        Post("/tenants/{id}/default");
-        Policies("tenants:write");
+        Post("/tenants/{Id}/default");
+        // Why "authenticated" and not tenants:write: this route only ever sets the CALLER's own default (the id comes from their token and the memberships are theirs).
+        Policies("authenticated");
         Tags("Tenants");
     }
 
@@ -59,21 +63,8 @@ public sealed class SetDefaultTenantEndpoint : Endpoint<SetDefaultTenantRequest,
             return;
         }
 
-        var tenantResult = await _tenantProvider.GetTenant(req.Id, ct).ConfigureAwait(false);
-        if (!tenantResult.IsSuccess)
-        {
-            TenantLog.SetDefaultTenantFailed(_logger, new InvalidOperationException(tenantResult.CurrentMessage), userIdStr, req.Id);
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
-            return;
-        }
-
-        if (tenantResult.Value is null || !tenantResult.Value.IsSelectable)
-        {
-            TenantLog.SetDefaultTenantNotMember(_logger, userIdStr, req.Id);
-            await Send.ForbiddenAsync(ct).ConfigureAwait(false);
-            return;
-        }
-
+        // Why the memberships are read first: a tenant that does not exist and a tenant the caller does not belong to are one refusal, so the
+        // answer never tells a person whether a tenant id exists. The tenant itself is read only for one the caller belongs to.
         var memberships = await _userTenantProvider
             .Find<IUserTenantImplementationConfiguration>(t => t.UserId == userId, ct)
             .ConfigureAwait(false);
@@ -86,8 +77,21 @@ public sealed class SetDefaultTenantEndpoint : Endpoint<SetDefaultTenantRequest,
 
         if (!memberships.Value.Any(t => t.TenantId == req.Id))
         {
-            TenantLog.SetDefaultTenantNotMember(_logger, userIdStr, req.Id);
-            await Send.ForbiddenAsync(ct).ConfigureAwait(false);
+            await Refuse(TenantLog.SetDefaultTenantNotMember(_logger, userIdStr, req.Id)).ConfigureAwait(false);
+            return;
+        }
+
+        var tenantResult = await _tenantProvider.GetTenant(req.Id, ct).ConfigureAwait(false);
+        if (!tenantResult.IsSuccess)
+        {
+            TenantLog.SetDefaultTenantFailed(_logger, new InvalidOperationException(tenantResult.CurrentMessage), userIdStr, req.Id);
+            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            return;
+        }
+
+        if (tenantResult.Value is null || !tenantResult.Value.IsSelectable)
+        {
+            await Refuse(TenantLog.SetDefaultTenantNotSelectable(_logger, userIdStr, req.Id)).ConfigureAwait(false);
             return;
         }
 
@@ -113,6 +117,10 @@ public sealed class SetDefaultTenantEndpoint : Endpoint<SetDefaultTenantRequest,
         TenantLog.DefaultTenantSet(_logger, userIdStr, req.Id);
         await Send.OkAsync(new SetDefaultTenantResponse { TenantId = req.Id }, ct).ConfigureAwait(false);
     }
+
+    // The refusal is answered with the status of its message's category (403) and the reason the message states for the caller.
+    private Task<FastEndpoints.Void> Refuse(IGenericMessage reason) =>
+        Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(reason), HttpContext));
 }
 
 /// <summary>Request model for setting the default tenant.</summary>

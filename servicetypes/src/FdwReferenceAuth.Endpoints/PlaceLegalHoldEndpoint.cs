@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Operations.Abstractions.Audit;
-using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Multitenancy.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -16,11 +15,9 @@ public sealed class PlaceLegalHoldEndpoint : PlaceLegalHoldEndpointBase
     /// <inheritdoc />
     public PlaceLegalHoldEndpoint(
         ILegalHolds holds,
-        IOrganizationProvider organizations,
         IAdministrativeAudit audit,
-        ISystemRoleConfiguration systemRoles,
         ILogger<PlaceLegalHoldEndpoint> logger)
-        : base(logger, holds, organizations, audit, systemRoles)
+        : base(logger, holds, audit)
     {
     }
 

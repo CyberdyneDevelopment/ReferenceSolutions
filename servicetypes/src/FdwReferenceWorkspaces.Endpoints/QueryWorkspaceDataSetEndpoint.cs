@@ -19,8 +19,9 @@ public sealed class QueryWorkspaceDataSetEndpoint : QueryWorkspaceDataSetEndpoin
     public QueryWorkspaceDataSetEndpoint(
         ILogger<QueryWorkspaceDataSetEndpointBase> logger,
         IWorkspaceReadService workspaces,
-        IDataGatewayProvider dataGateways)
-        : base(logger, workspaces, dataGateways)
+        IDataGatewayProvider dataGateways,
+        IFilterCalculations calculations)
+        : base(logger, workspaces, dataGateways, calculations)
     {
     }
 }
