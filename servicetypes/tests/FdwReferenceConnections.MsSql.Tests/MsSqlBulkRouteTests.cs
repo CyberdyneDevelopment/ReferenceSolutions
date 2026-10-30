@@ -19,6 +19,7 @@ namespace FdwReferenceConnections.MsSql.Tests;
 public sealed class MsSqlBulkRouteTests
 {
     private const int MaxSerialInsert = 1000;
+    private const int CommandTimeoutSeconds = 45;
 
     // A container of the given number of insertable columns, the first named Name.
     private static IDataContainer Container(int columns = 1)
@@ -85,7 +86,7 @@ public sealed class MsSqlBulkRouteTests
     private static SqlTransaction NeverUsedTransaction() => (SqlTransaction)RuntimeHelpers.GetUninitializedObject(typeof(SqlTransaction));
 
     private static MsSqlDataConnectionTransaction UnitOfWork(SqlConnection connection, SqlTransaction transaction, RecordingWriter writer)
-        => new(connection, transaction, NullLogger.Instance, "Main", MaxSerialInsert, writer.Write);
+        => new(connection, transaction, NullLogger.Instance, "Main", MaxSerialInsert, CommandTimeoutSeconds, writer.Write);
 
     [Theory]
     [InlineData(1000, false)]
@@ -192,12 +193,26 @@ public sealed class MsSqlBulkRouteTests
     }
 
     [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "DataIntegrity")]
+    public async Task ACommandInAUnitOfWorkTakesTheConnectionsCommandTimeout()
+    {
+        var unit = UnitOfWork(new SqlConnection(), NeverUsedTransaction(), new RecordingWriter());
+        using var command = new SqlCommand("UPDATE t SET x = 1");
+
+        // The connection is closed, so the run fails; what matters is the timeout the command was given before it ran (FDW-3279).
+        await unit.ExecuteNative<int>(command, Container(), TestContext.Current.CancellationToken);
+
+        command.CommandTimeout.ShouldBe(CommandTimeoutSeconds);
+    }
+
+    [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "DataIntegrity")]
     public async Task AFailedBulkCopyInAUnitOfWorkIsACodedFailureNotAnException()
     {
         var unit = new MsSqlDataConnectionTransaction(
-            new SqlConnection(), NeverUsedTransaction(), NullLogger.Instance, "Main", MaxSerialInsert,
+            new SqlConnection(), NeverUsedTransaction(), NullLogger.Instance, "Main", MaxSerialInsert, CommandTimeoutSeconds,
             (_, _, _, _) => throw new InvalidOperationException("the copy failed"));
 
         var result = await unit.Execute<int>(Insert(MaxSerialInsert + 1), Container(), TestContext.Current.CancellationToken);

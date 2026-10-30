@@ -28,6 +28,12 @@ public sealed class TeamsNotificationType
             channelName: "Teams",
             displayName: "Microsoft Teams Notifications",
             description: "Send notifications via Microsoft Teams webhook",
+            settings:
+            [
+                new("DefaultWebhookUrl", NotificationSettingTypes.Text, true, false),
+                new("TimeoutSeconds", NotificationSettingTypes.Number, false, false),
+                new("UseAdaptiveCards", NotificationSettingTypes.Flag, false, false),
+            ],
             defaultContainerName: "TeamsNotificationConfiguration")
     {
         Configuration(builder =>
@@ -85,4 +91,7 @@ public sealed class TeamsNotificationType
             return GenericResult<IHost>.Success(host);
         });
     }
+
+    /// <inheritdoc />
+    public override INotificationImplementationConfiguration NewConfiguration() => new TeamsNotificationConfiguration();
 }

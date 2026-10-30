@@ -103,6 +103,7 @@
     <Project Path="src/FdwReferenceSecretManagers.AzureKeyVault/FdwReferenceSecretManagers.AzureKeyVault.csproj" />
     <Project Path="src/FdwReferenceSecretManagers.EnvironmentVariable.Registration/FdwReferenceSecretManagers.EnvironmentVariable.Registration.csproj" />
     <Project Path="src/FdwReferenceSecretManagers.EnvironmentVariable/FdwReferenceSecretManagers.EnvironmentVariable.csproj" />
+    <Project Path="src/FdwReferenceSecretManagers.HashiCorpVault.Registration/FdwReferenceSecretManagers.HashiCorpVault.Registration.csproj" />
     <Project Path="src/FdwReferenceSecretManagers.HashiCorpVault/FdwReferenceSecretManagers.HashiCorpVault.csproj" />
     <Project Path="src/FdwReferenceSecretManagers.MsSql.Registration/FdwReferenceSecretManagers.MsSql.Registration.csproj" />
     <Project Path="src/FdwReferenceSecretManagers.MsSql/FdwReferenceSecretManagers.MsSql.csproj" />
@@ -235,6 +236,12 @@
     </Project>
     <Project Path="tests/FdwReferenceSecretManagers.AzureKeyVault.Tests/FdwReferenceSecretManagers.AzureKeyVault.Tests.csproj" />
     <Project Path="tests/FdwReferenceSecretManagers.EnvironmentVariable.Tests/FdwReferenceSecretManagers.EnvironmentVariable.Tests.csproj" />
+    <Project Path="tests/FdwReferenceSecretManagers.MsSql.Tests/FdwReferenceSecretManagers.MsSql.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
     <Project Path="tests/FdwReferenceSecretManagers.Sqlite.Tests/FdwReferenceSecretManagers.Sqlite.Tests.csproj" />
     <Project Path="tests/FdwReferenceSecretManagers.TestDouble/FdwReferenceSecretManagers.TestDouble.csproj">
       <BuildType Solution="Debug-Local|*" Project="Debug" />

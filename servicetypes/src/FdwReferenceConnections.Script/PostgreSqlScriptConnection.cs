@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Commands.Data.Abstractions;
+using Fdw.Messages;
 using Fdw.Results;
 using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Connections.PostgreSql.Logging;
@@ -59,8 +60,7 @@ public sealed class PostgreSqlScriptConnection : IScriptedDataConnection
         }
         catch (NpgsqlException ex)
         {
-            return GenericResult<IReadOnlyList<IDictionary<string, object?>>>.Failure(
-                ExceptionResultExtensions.FlattenException(ex).Prepend(PostgreSqlConnectionLog.QueryFailed(logger, ex, _connection.ScriptConnectionName)));
+            return GenericResult<IReadOnlyList<IDictionary<string, object?>>>.Failure(Failed(ex, command.Text));
         }
         catch (Exception ex)
         {
@@ -83,13 +83,21 @@ public sealed class PostgreSqlScriptConnection : IScriptedDataConnection
         }
         catch (NpgsqlException ex)
         {
-            return GenericResult<int>.Failure(
-                ExceptionResultExtensions.FlattenException(ex).Prepend(PostgreSqlConnectionLog.QueryFailed(logger, ex, _connection.ScriptConnectionName)));
+            return GenericResult<int>.Failure(Failed(ex, command.Text));
         }
         catch (Exception ex)
         {
             return GenericResult<int>.Failure(PostgreSqlConnectionLog.SqlExecutionFailed(logger, ex, command.Text));
         }
+    }
+
+    // What a failed script says: the connection's failure and the exception chain, and, when the script outran the connection's
+    // command timeout, first the coded message that names the connection and the seconds.
+    private IEnumerable<IGenericMessage> Failed(NpgsqlException exception, string text)
+    {
+        var messages = ExceptionResultExtensions.FlattenException(exception)
+            .Prepend(PostgreSqlConnectionLog.QueryFailed(_connection.ScriptLogger, exception, _connection.ScriptConnectionName));
+        return PostgreSqlConnection.OutranCommandTimeout(exception) ? messages.Prepend(_connection.CommandTimedOut(text)) : messages;
     }
 
     // The connection is opened on first use, as every other command on it does, and the script runs on it.

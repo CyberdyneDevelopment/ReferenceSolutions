@@ -26,7 +26,7 @@ public class GetOperationExecutionEndpoint : GetExecutionEndpointBase
         ExecutionLog.FetchingExecution(_logger, id);
     }
 
-    protected override void OnExecutionFetchFailed(Guid id, string error)
+    protected override void OnExecutionFetchFailed(Guid id, string? error)
     {
         ExecutionLog.ExecutionFetchFailed(_logger, id, error);
     }

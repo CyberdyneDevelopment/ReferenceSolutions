@@ -135,7 +135,7 @@ public sealed class UpdateOrchestrationNodeEndpoint : Endpoint<UpdateOrchestrati
         }
 
         // Why the writer: it validates the node (name, parent, policy elevation, prerequisites) before anything is stored; the provider alone does not.
-        var saveResult = await _writer.Save(node, ct).ConfigureAwait(false);
+        var saveResult = await _writer.Update(node, ct).ConfigureAwait(false);
         if (saveResult.IsFailure)
         {
             NodeLog.NodeUpdateFailed(_logger, req.Id, saveResult.CurrentMessage);

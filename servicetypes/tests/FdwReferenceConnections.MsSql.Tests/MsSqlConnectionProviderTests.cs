@@ -174,6 +174,7 @@ public sealed class MsSqlConnectionProviderTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth",

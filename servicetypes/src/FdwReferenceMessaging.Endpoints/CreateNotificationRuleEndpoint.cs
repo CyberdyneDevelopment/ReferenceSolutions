@@ -70,11 +70,10 @@ public class CreateNotificationRuleEndpoint
             ScheduleId = request.ScheduleId,
             PipelineId = request.PipelineId,
             WorkflowId = request.WorkflowId,
-            ConditionOperator = request.ConditionOperator,
             NotificationServiceType = request.NotificationServiceType,
             NotificationServiceName = request.NotificationServiceName,
             Template = request.Template,
-            Severity = request.Severity,
+            Severity = request.Severity!,
             CooldownMinutes = request.CooldownMinutes
         };
 

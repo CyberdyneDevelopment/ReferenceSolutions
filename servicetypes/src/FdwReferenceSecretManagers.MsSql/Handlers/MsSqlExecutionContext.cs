@@ -21,6 +21,7 @@ internal sealed class MsSqlExecutionContext : ISecretManagerExecutionContext
     /// <param name="logger">The logger for diagnostic output.</param>
     /// <param name="configuration">The MsSql secret manager configuration.</param>
     /// <param name="gateway">The configuration gateway for executing data commands.</param>
+    /// <param name="commandTimeoutSeconds">The secret manager's command timeout in seconds; every command it sends carries it.</param>
     /// <param name="serviceId">The service identifier.</param>
     /// <param name="dataStoreName">
     /// The DataStore name the secret/user/token tables are addressed under (e.g. "PlatformConfiguration").
@@ -38,6 +39,7 @@ internal sealed class MsSqlExecutionContext : ISecretManagerExecutionContext
         ILogger logger,
         MsSqlSecretManagerConfiguration configuration,
         IConfigurationGateway gateway,
+        int commandTimeoutSeconds,
         string serviceId,
         string dataStoreName,
         string secretManagerName,
@@ -49,6 +51,7 @@ internal sealed class MsSqlExecutionContext : ISecretManagerExecutionContext
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         MsSqlConfiguration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         Gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
+        CommandTimeout = TimeSpan.FromSeconds(commandTimeoutSeconds);
         ServiceId = serviceId ?? throw new ArgumentNullException(nameof(serviceId));
         DataStoreName = dataStoreName ?? throw new ArgumentNullException(nameof(dataStoreName));
         // Why: Name is a header field after config-split; use the threaded name or fall back to the GUID.
@@ -69,6 +72,12 @@ internal sealed class MsSqlExecutionContext : ISecretManagerExecutionContext
     /// Gets the MsSql specific configuration.
     /// </summary>
     public MsSqlSecretManagerConfiguration MsSqlConfiguration { get; }
+
+    /// <summary>Gets the command timeout every command of this secret manager carries to the data store's connection: its own, or the instance's default (FDW-3324).</summary>
+    public TimeSpan CommandTimeout { get; }
+
+    /// <summary>Gets how a failure names who set <see cref="CommandTimeout"/>.</summary>
+    public string CommandTimeoutOwner => string.Concat("secret manager '", SecretManagerName, "'");
 
     /// <summary>
     /// Gets the logical name of this secret manager instance.

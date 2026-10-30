@@ -1,13 +1,13 @@
-using System.Collections.Generic;
-using System.Linq;
-using Fdw.Services.Notifications.Endpoints.Logging;
-using Fdw.Services.Notifications.Abstractions;
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Results;
+using Fdw.Services.Notifications;
+using Fdw.Services.Notifications.Abstractions;
 using Fdw.Services.Notifications.Endpoints;
+using Fdw.Services.Notifications.Endpoints.Logging;
 using Fdw.Web.RestEndpoints.Crud;
 using Microsoft.Extensions.Logging;
 
@@ -37,22 +37,6 @@ public class CreateNotificationEndpoint
     /// <inheritdoc />
     protected override string GetResourceName(CreateNotificationRequest request) => request.Name;
 
-    // The builder takes IsEnabled so a record is never created enabled by its own property initializer:
-    // the caller states it, and it is the domain row's list field that Save writes from the record.
-    private static readonly Dictionary<string, Func<bool, INotificationImplementationConfiguration>> Builders =
-        new Dictionary<string, Func<bool, INotificationImplementationConfiguration>>(StringComparer.OrdinalIgnoreCase)
-        {
-            // Fully qualified deliberately: FdwReferenceNotifications.System and
-            // Fdw.Services.Notifications.System both shadow the System namespace when imported, which
-            // breaks generated code in this assembly.
-            ["Console"] = isEnabled => new global::FdwReferenceNotifications.Console.ConsoleNotificationConfiguration { IsEnabled = isEnabled },
-            ["Email"] = isEnabled => new global::FdwReferenceNotifications.Email.EmailNotificationConfiguration { IsEnabled = isEnabled },
-            ["System"] = isEnabled => new global::Fdw.Services.Notifications.System.SystemNotificationConfiguration { IsEnabled = isEnabled },
-            ["Teams"] = isEnabled => new global::FdwReferenceNotifications.Teams.TeamsNotificationConfiguration { IsEnabled = isEnabled },
-            ["Webhook"] = isEnabled => new global::FdwReferenceNotifications.Webhook.WebhookNotificationConfiguration { IsEnabled = isEnabled },
-        };
-
-    /// <inheritdoc />
     protected override async Task<IGenericResult<bool>> CheckExists(
         CreateNotificationRequest request,
         CancellationToken ct)
@@ -66,25 +50,34 @@ public class CreateNotificationEndpoint
         CreateNotificationRequest request,
         CancellationToken ct)
     {
-        var implementation = request.NotificationType;
-        if (string.IsNullOrEmpty(implementation) || !Builders.TryGetValue(implementation, out var build))
+        // Why the type comes from NotificationServiceTypes: it is the collection the application registered its notification types in,
+        // and each type declares the settings it needs and makes its own configuration, so no list of types is written here.
+        var type = NotificationServiceTypes.All().Values.FirstOrDefault(
+            candidate => string.Equals(candidate.Name, request.NotificationType, StringComparison.OrdinalIgnoreCase));
+        if (type is null)
         {
             return GenericResult<NotificationDetailDto>.Failure(
                 NotificationEndpointLog.UnknownNotificationImplementation(
-                    Logger, request.Name, implementation ?? string.Empty, string.Join(", ", Builders.Keys.OrderBy(k => k, StringComparer.Ordinal))));
+                    Logger, request.Name, request.NotificationType,
+                    string.Join(", ", NotificationServiceTypes.All().Values.Select(known => known.Name).OrderBy(name => name, StringComparer.Ordinal))));
         }
 
-        // Why a builder per implementation rather than one flat record: Notification is a domain with
-        // several implementations, each with its own row and settings, so "create a notification of
-        // type X" has to build X's record. A registry keyed by the discriminator is the sanctioned
-        // alternative to a type switch -- the same shape GetConnectionEndpoint uses for its mappers.
-        //
         // Name, Domain and Implementation are not set here: Save stamps them from its own arguments,
         // and the implementation row does not persist them -- they belong to the domain row.
-        var config = build(request.IsEnabled!.Value);
+        var config = type.NewConfiguration();
+        config.IsEnabled = request.IsEnabled!.Value;
+        config.Description = request.Description;
+        config.SecretManagerName = request.SecretManagerName;
+        config.SecretKeyName = request.SecretKeyName;
+
+        var applied = NotificationSettings.Apply(type, config, request.Settings, creating: true, Logger);
+        if (applied.IsFailure)
+        {
+            return applied.ToNewResult<NotificationDetailDto>();
+        }
 
         var saveResult = await _provider
-            .Save(config, "Notification", implementation, request.Name, ct)
+            .Save(config, "Notification", type.Name, request.Name, ct)
             .ConfigureAwait(false);
         if (saveResult.IsFailure)
         {
@@ -95,15 +88,14 @@ public class CreateNotificationEndpoint
         {
             Id = config.Id,
             Name = request.Name,
-            Implementation = implementation,
-            // Description is a notify.Notification domain-row column; the implementation row does not
-            // carry it, so the response echoes what the caller asked for.
-            Description = request.Description,
-            IsEnabled = request.IsEnabled!.Value
+            Implementation = type.Name,
+            Description = config.Description,
+            IsEnabled = config.IsEnabled,
+            SecretManagerName = config.SecretManagerName,
+            SecretKeyName = config.SecretKeyName
         });
     }
 
-    /// <inheritdoc />
     protected override Task SendCreatedResponse(NotificationDetailDto detail, CancellationToken ct)
         => Send.ResponseAsync(detail, 201, ct);
 

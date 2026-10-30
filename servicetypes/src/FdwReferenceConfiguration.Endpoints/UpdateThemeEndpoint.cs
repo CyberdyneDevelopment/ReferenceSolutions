@@ -83,7 +83,7 @@ public class UpdateThemeEndpoint : UpdateThemeEndpointBase<UpdateThemeByNameRequ
 
         managed.ApplyUpdate(req);
 
-        var saveResult = _provider.Save(managed, "Theme", managed.Implementation, managed.Name, CancellationToken.None).GetAwaiter().GetResult();
+        var saveResult = _provider.Update(managed, "Theme", managed.Implementation, managed.Name, CancellationToken.None).GetAwaiter().GetResult();
         if (!saveResult.IsSuccess)
         {
             ThemeLog.ThemePersistenceFailed(_logger, managed.Name, saveResult.CurrentMessage ?? "save failed");

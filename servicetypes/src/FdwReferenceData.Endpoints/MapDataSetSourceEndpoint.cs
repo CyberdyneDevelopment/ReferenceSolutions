@@ -103,7 +103,7 @@ public class MapDataSetSourceEndpoint : Endpoint<MapDataSetSourceRequest, DataSe
         source.SourceDataSetId = req.SourceDataSetId;
         source.SourceDataSetName = req.SourceDataSetName;
 
-        var saveResult = await _dataSetProvider.Save(parentDataSet, "DataSet", parentDataSet.Implementation, parentDataSet.Name, ct).ConfigureAwait(false);
+        var saveResult = await _dataSetProvider.Update(parentDataSet, "DataSet", parentDataSet.Implementation, parentDataSet.Name, ct).ConfigureAwait(false);
         if (!saveResult.IsSuccess)
         {
             DataSetEndpointLog.DataSetUpdateFailed(_logger, req.ParentDataSetName, "Save failed");

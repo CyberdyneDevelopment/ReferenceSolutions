@@ -130,7 +130,7 @@ public sealed class SqliteSetSecretHandler
                     await using (deactivateCmd.ConfigureAwait(false))
                     {
                         deactivateCmd.Transaction = transaction;
-                        deactivateCmd.CommandTimeout = config.CommandTimeoutSeconds;
+                        deactivateCmd.CommandTimeout = sqliteContext.CommandTimeoutSeconds;
                         deactivateCmd.CommandText =
                             $"UPDATE \"{config.TableName}\" " +
                             $"SET \"IsCurrent\" = 0, \"ModifyDate\" = @now " +
@@ -146,7 +146,7 @@ public sealed class SqliteSetSecretHandler
                     await using (insertCmd.ConfigureAwait(false))
                     {
                         insertCmd.Transaction = transaction;
-                        insertCmd.CommandTimeout = config.CommandTimeoutSeconds;
+                        insertCmd.CommandTimeout = sqliteContext.CommandTimeoutSeconds;
                         insertCmd.CommandText =
                             $"INSERT INTO \"{config.TableName}\" " +
                             $"(\"SecretKey\", \"SecretValue\", \"Version\", \"SecretType\", \"Description\", " +

@@ -1,3 +1,4 @@
+using Fdw.Services.Settings;
 using Fdw.Services.Connections.MsSql.Authentication;
 using Fdw.Services.Connections.Logging;
 using System.Linq;
@@ -152,7 +153,8 @@ public sealed class MsSqlConnectionType
                 sp.GetRequiredService<ILogger<MsSqlConnectionFactory>>(),
                 sp.GetRequiredService<ILogger<MsSqlConnection>>(),
                 sp.GetRequiredService<ISecretManagerProvider>(),
-                sp.GetRequiredService<IAuthenticationContextAccessor>()),
+                sp.GetRequiredService<IAuthenticationContextAccessor>(),
+                sp.GetService<Lazy<IEffectiveSettingsProvider>>()),
                 ServiceLifetime.Singleton));
             builder.Services.TryAdd(new ServiceDescriptor(
                 typeof(IMsSqlConnectionProvider),

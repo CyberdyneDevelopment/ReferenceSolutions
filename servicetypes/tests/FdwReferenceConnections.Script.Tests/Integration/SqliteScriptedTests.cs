@@ -36,7 +36,7 @@ public sealed class SqliteScriptedTests : IAsyncLifetime
         }
 
         var factory = new SqliteConnectionFactory(NullLogger<SqliteConnectionFactory>.Instance, NullLogger<FdwReferenceConnections.Sqlite.SqliteConnection>.Instance);
-        var created = factory.Create(new SqliteConnectionConfiguration { DataSource = DbPath, Mode = "ReadWriteCreate" }, resolvedSecret: null);
+        var created = factory.Create(new SqliteConnectionConfiguration { DataSource = DbPath, Mode = "ReadWriteCreate", DefaultTimeout = 30 }, resolvedSecret: null);
         created.IsSuccess.ShouldBeTrue(created.CurrentMessage);
         _connection = new SqliteScriptConnection(created.Value.ShouldBeOfType<FdwReferenceConnections.Sqlite.SqliteConnection>());
     }

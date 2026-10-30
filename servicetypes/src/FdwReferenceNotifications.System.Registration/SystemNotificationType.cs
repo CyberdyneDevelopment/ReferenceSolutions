@@ -60,6 +60,11 @@ public sealed class SystemNotificationType
             channelName: "System",
             displayName: "System Notifications",
             description: "In-system message channel that delivers notifications as tracked messages with lifecycle support",
+            settings:
+            [
+                new("DefaultSeverity", NotificationSettingTypes.Text, false, false),
+                new("DefaultMessageType", NotificationSettingTypes.Text, false, false),
+            ],
             defaultContainerName: "SystemNotificationConfiguration")
     {
         Configuration(builder =>
@@ -119,4 +124,7 @@ public sealed class SystemNotificationType
             return GenericResult<IHost>.Success(host);
         });
     }
+
+    /// <inheritdoc />
+    public override INotificationImplementationConfiguration NewConfiguration() => new SystemNotificationConfiguration();
 }

@@ -45,6 +45,26 @@ internal static class CommandStub
         return command.Object;
     }
 
+    /// <summary>A Delete command with no filter, which removes every row of the file: what a truncate before a load builds.</summary>
+    public static IDataCommand Delete()
+    {
+        var command = new Mock<IFilterableCommand>();
+        command.Setup(c => c.CommandType).Returns("Delete");
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        command.Setup(c => c.Filter).Returns((IFilterExpression?)null);
+        return command.Object;
+    }
+
+    /// <summary>An Insert command whose rows are mutable name→value dictionaries, the shape a pipeline's load sends.</summary>
+    public static IDataCommand InsertMutable(IReadOnlyList<IDictionary<string, object?>> rows)
+    {
+        var command = new Mock<IDataCommandWithInput>();
+        command.Setup(c => c.CommandType).Returns("Insert");
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        command.Setup(c => c.InputData).Returns(rows.ToList());
+        return command.Object;
+    }
+
     public static IDataCommand OfType(string commandType)
     {
         var command = new Mock<IDataCommand>();

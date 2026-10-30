@@ -58,6 +58,20 @@ public sealed partial class SqliteConnection
     /// </summary>
     public static string ConnectionType => "Sqlite";
 
+    /// <inheritdoc />
+    /// <remarks>
+    /// The command's own timeout, in whole seconds (a part of a second counts as the next), over the one the connection string gives (FDW-3324).
+    /// </remarks>
+    protected override IGenericResult ApplyCommandTimeout(SqliteCommand native, TimeSpan timeout, string owner)
+    {
+        Limit(native, timeout);
+        return GenericResult.Success();
+    }
+
+    // Internal and static so the tests can read what a command is given without a connection.
+    internal static void Limit(SqliteCommand native, TimeSpan timeout)
+        => native.CommandTimeout = (int)Math.Ceiling(timeout.TotalSeconds);
+
     /// <inheritdoc/>
     protected override async Task<IGenericResult<T>> Execute<T>(
         SqliteCommand command,

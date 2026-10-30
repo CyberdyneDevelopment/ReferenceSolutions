@@ -42,6 +42,7 @@ public sealed class MsSqlSecretManagerConfigurationValidator : AbstractValidator
 
         RuleFor(x => x.CommandTimeoutSeconds)
             .InclusiveBetween(1, 300)
-            .WithMessage("Command timeout must be between 1 and 300 seconds.");
+            .When(x => x.CommandTimeoutSeconds.HasValue)
+            .WithMessage("Command timeout must be between 1 and 300 seconds when it is stated; leave it out to take the instance's DefaultCommandTimeoutSeconds.");
     }
 }

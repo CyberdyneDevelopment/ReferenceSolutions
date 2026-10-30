@@ -21,6 +21,7 @@ internal sealed class SqliteExecutionContext : ISecretManagerExecutionContext
     /// </summary>
     /// <param name="logger">The logger for diagnostic output.</param>
     /// <param name="configuration">The SQLite secret manager configuration.</param>
+    /// <param name="commandTimeoutSeconds">The command timeout in seconds, positive, that the factory resolved for this secret manager.</param>
     /// <param name="serviceId">The service identifier.</param>
     /// <param name="secretManagerName">
     /// The logical name of the secret manager (from the <c>SecretManagerConfiguration</c> header).
@@ -30,9 +31,11 @@ internal sealed class SqliteExecutionContext : ISecretManagerExecutionContext
     public SqliteExecutionContext(
         ILogger logger,
         SqliteSecretManagerConfiguration configuration,
+        int commandTimeoutSeconds,
         string serviceId,
         string secretManagerName)
     {
+        CommandTimeoutSeconds = commandTimeoutSeconds;
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         SqliteConfiguration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         ServiceId = serviceId ?? throw new ArgumentNullException(nameof(serviceId));
@@ -49,6 +52,9 @@ internal sealed class SqliteExecutionContext : ISecretManagerExecutionContext
 
     /// <inheritdoc />
     public IGenericConfiguration Configuration => SqliteConfiguration;
+
+    /// <summary>Gets the command timeout in seconds every command of this secret manager takes: its own, or the instance's default (FDW-3284).</summary>
+    public int CommandTimeoutSeconds { get; }
 
     /// <summary>Gets the SQLite-specific configuration.</summary>
     public SqliteSecretManagerConfiguration SqliteConfiguration { get; }

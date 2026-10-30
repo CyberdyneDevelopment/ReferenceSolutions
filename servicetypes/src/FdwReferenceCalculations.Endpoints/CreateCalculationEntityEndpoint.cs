@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Calculations.Endpoints.CalculationEntities;
@@ -38,7 +36,12 @@ public class CreateCalculationEntityEndpoint : CreateCalculationEntityEndpointBa
     protected override async Task<IGenericResult<CalculationEntityDetailDto>> Create(
         CreateCalculationEntityRequest request, CancellationToken ct)
     {
-        var inputs = MapInputs(request.Inputs);
+        var inputs = CalculationEntityInputMapper.ToInputs(request.Inputs, Logger);
+        if (!inputs.IsSuccess || inputs.Value is not { } mappedInputs)
+        {
+            return inputs.ToNewResult<CalculationEntityDetailDto>();
+        }
+
         var output = new CalculationOutputSpec
         {
             OutputDataSetName = request.OutputDataSetName ?? string.Empty,
@@ -59,7 +62,7 @@ public class CreateCalculationEntityEndpoint : CreateCalculationEntityEndpointBa
             request.Name,
             request.Description,
             request.CalculationEntityType,
-            inputs,
+            mappedInputs,
             output,
             typed.Value!,
             ct).ConfigureAwait(false);
@@ -70,43 +73,6 @@ public class CreateCalculationEntityEndpoint : CreateCalculationEntityEndpointBa
         }
 
         return GenericResult<CalculationEntityDetailDto>.Success(
-            MapToDetail(result.Value!));
-    }
-
-    private static List<CalculationInput> MapInputs(IList<CalculationEntityInputDto> dtos)
-    {
-        return dtos.Select(dto => new CalculationInput
-        {
-            Kind = CalculationInputKinds.ByName(dto.InputKind),
-            DataSetName = dto.DataSetName,
-            ConnectionName = dto.ConnectionName,
-            ContainerPath = dto.ContainerPath,
-            InputAlias = dto.InputAlias
-        }).ToList();
-    }
-
-    private static CalculationEntityDetailDto MapToDetail(ICalculationEntity entity)
-    {
-        return new CalculationEntityDetailDto
-        {
-            Id = entity.Id,
-            Name = entity.Name,
-            Description = entity.Description,
-            CalculationEntityType = entity.CalculationEntityType,
-            OutputDataSetName = entity.Output.OutputDataSetName,
-            ResultFieldName = entity.Output.ResultFieldName,
-            ResultDataTypeName = entity.Output.ResultDataTypeName,
-            IsEnabled = entity.IsEnabled,
-            Inputs = entity.Inputs.Select(i => new CalculationEntityInputDto
-            {
-                InputAlias = i.InputAlias,
-                InputKind = i.Kind?.Name ?? "DataSet",
-                DataSetName = i.DataSetName,
-                ConnectionName = i.ConnectionName,
-                ContainerPath = i.ContainerPath,
-                ScalarValueType = i.ScalarValue?.ValueType?.Name,
-                ScalarSerializedValue = i.ScalarValue?.SerializedValue
-            }).ToList()
-        };
+            CalculationEntityDetailMapper.ToDetail(result.Value!));
     }
 }

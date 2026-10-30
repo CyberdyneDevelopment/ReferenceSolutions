@@ -36,42 +36,6 @@ public static class ErrorEnvelopeExtensions
     public static Task WriteBadRequest(this HttpContext context, string errorCode, string message, CancellationToken ct = default)
         => WriteErrorEnvelope(context, 400, errorCode, new[] { message }, ct);
 
-    /// <summary>
-    /// Maps an <see cref="IGenericResult"/> failure to the appropriate HTTP status + envelope.
-    /// Recognizes "not found" in the result's message chain and emits 404; returns false otherwise
-    /// (caller falls back to the 500 path).
-    /// </summary>
-    // Why: many service-layer Get/Update operations return IsSuccess=false with a "Not found"
-    // message when the resource doesn't exist. Endpoints have been hard-coding 500 for any
-    // failure, losing the distinction. This helper centralizes the mapping so callers get a
-    // single line instead of repeated if/else blocks.
-    [ExcludeFromCodeCoverage]
-    public static async Task<bool> TryWriteFromResult(
-        this HttpContext context,
-        IGenericResult result,
-        string resourceLabel,
-        CancellationToken ct = default)
-    {
-        if (result is null) return false;
-        if (result.IsSuccess) return false;
-
-        var message = result.CurrentMessage ?? string.Empty;
-        var isNotFound = LooksLikeNotFound(message)
-            || result.Messages.Any(m => LooksLikeNotFound(m?.Message ?? string.Empty));
-
-        if (isNotFound)
-        {
-            await context.WriteNotFound($"{resourceLabel} was not found.", ct).ConfigureAwait(false);
-            return true;
-        }
-
-        return false;
-    }
-
-    private static bool LooksLikeNotFound(string text)
-        => !string.IsNullOrEmpty(text)
-            && text.Contains("not found", StringComparison.OrdinalIgnoreCase);
-
     private static async Task WriteErrorEnvelope(
         HttpContext context,
         int statusCode,

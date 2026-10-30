@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using FastEndpoints;
 using FluentValidation;
 
@@ -23,6 +26,15 @@ public sealed class CreateNotificationRequest
     /// or disabled for the caller, so the request states which.
     /// </summary>
     public bool? IsEnabled { get; set; }
+
+    /// <summary>Gets or sets the secret manager the notification's secrets are named in; given with <see cref="SecretKeyName"/> or not at all.</summary>
+    public string? SecretManagerName { get; set; }
+
+    /// <summary>Gets or sets the key of the notification's secret in the secret manager; given with <see cref="SecretManagerName"/> or not at all.</summary>
+    public string? SecretKeyName { get; set; }
+
+    /// <summary>Gets or sets the type's settings by name, as <c>GET /notifications/types</c> serves them. A secret setting is not given here.</summary>
+    public Dictionary<string, JsonElement> Settings { get; set; } = new(StringComparer.Ordinal);
 }
 
 /// <summary>
@@ -40,6 +52,14 @@ public sealed class CreateNotificationRequestValidator : Validator<CreateNotific
             .NotEmpty().WithMessage("Name is required")
             .MinimumLength(1).WithMessage("Name must be at least 1 character")
             .MaximumLength(200).WithMessage("Name must not exceed 200 characters");
+
+        RuleFor(x => x.SecretKeyName)
+            .NotEmpty().When(x => !string.IsNullOrWhiteSpace(x.SecretManagerName))
+            .WithMessage("SecretKeyName is required when SecretManagerName is given");
+
+        RuleFor(x => x.SecretManagerName)
+            .NotEmpty().When(x => !string.IsNullOrWhiteSpace(x.SecretKeyName))
+            .WithMessage("SecretManagerName is required when SecretKeyName is given");
 
         RuleFor(x => x.IsEnabled)
             .NotNull().WithMessage("IsEnabled is required: state true to enable the notification or false to create it disabled");

@@ -104,7 +104,7 @@ public sealed class SetDefaultTenantEndpoint : Endpoint<SetDefaultTenantRequest,
         {
             membership.IsDefault = membership.TenantId == req.Id;
             var saved = await _userTenantProvider
-                .Save(membership, UserTenantsDomain, UserTenantsDomain, membership.Name, ct)
+                .Update(membership, UserTenantsDomain, UserTenantsDomain, membership.Name, ct)
                 .ConfigureAwait(false);
             if (!saved.IsSuccess)
             {

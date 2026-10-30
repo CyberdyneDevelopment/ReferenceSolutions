@@ -1,10 +1,12 @@
 using Fdw.Data.Sqlite;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Fdw.Commands.Data;
 using Fdw.Data;
 using Fdw.Data.Abstractions;
 using Fdw.Results;
+using Microsoft.Data.Sqlite;
 
 namespace FdwReferenceConnections.Sqlite.Tests.Translators;
 
@@ -22,6 +24,11 @@ public sealed class SqliteUpdateTranslatorTests
         public long id { get; set; }
         public string? name { get; set; }
         public int age { get; set; }
+    }
+
+    private sealed class NameOnlyData
+    {
+        public string? name { get; set; }
     }
 
     private static Mock<IDataContainer> CreateContainer(string tableName = "contacts")
@@ -42,6 +49,7 @@ public sealed class SqliteUpdateTranslatorTests
 
         var container = new Mock<IDataContainer>();
         container.Setup(c => c.Name).Returns(tableName);
+        container.As<IStorageContainer>().Setup(c => c.Name).Returns(tableName);
         container.As<IStorageContainer>().Setup(c => c.Path).Returns(dbPath);
         container.Setup(c => c.Schema).Returns(schema.Object);
         container.Setup(c => c.Metadata).Returns(metadata);
@@ -157,5 +165,125 @@ public sealed class SqliteUpdateTranslatorTests
 
         result.IsSuccess.ShouldBeFalse();
         result.CurrentMessage.ShouldNotBeNullOrEmpty();
+    }
+
+    private static object ParameterValue(SqliteCommand command, string name)
+        => command.Parameters.Cast<SqliteParameter>().Single(p => p.ParameterName == "@" + name).Value!;
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "DataGateway")]
+    public async Task UpdateTranslatorSetsTheColumnsADictionaryRecordNames()
+    {
+        // FDW-3309: a pipeline Update load sends each row as IDictionary<string, object?>. The translator
+        // looked for CLR properties and found none, so the row failed with "no properties matching".
+        var container = CreateContainer("contacts");
+        IDictionary<string, object?> record = new Dictionary<string, object?> { ["id"] = 7L, ["name"] = "Bob", ["age"] = 31 };
+        var command = new UpdateCommand<IDictionary<string, object?>>(record);
+
+        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeTrue();
+        result.Value!.CommandText.ShouldContain("\"name\" = @set_name");
+        result.Value.CommandText.ShouldContain("\"age\" = @set_age");
+        result.Value.CommandText.ShouldContain("WHERE \"id\" = @where_pk");
+        ParameterValue(result.Value, "set_name").ShouldBe("Bob");
+        ParameterValue(result.Value, "where_pk").ShouldBe(7L);
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "DataGateway")]
+    public async Task UpdateTranslatorSetsOnlyTheColumnsADictionaryRecordCarries()
+    {
+        var container = CreateContainer("contacts");
+        IDictionary<string, object?> record = new Dictionary<string, object?> { ["id"] = 7L, ["age"] = 40, ["not_a_column"] = 1 };
+        var command = new UpdateCommand<IDictionary<string, object?>>(record);
+
+        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeTrue();
+        result.Value!.CommandText.ShouldContain("\"age\" = @set_age");
+        result.Value.CommandText.ShouldNotContain("@set_name");
+        result.Value.CommandText.ShouldNotContain("not_a_column");
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "DataGateway")]
+    public async Task UpdateTranslatorBindsANullInADictionaryRecordAsDbNull()
+    {
+        var container = CreateContainer("contacts");
+        IDictionary<string, object?> record = new Dictionary<string, object?> { ["id"] = 7L, ["name"] = null };
+        var command = new UpdateCommand<IDictionary<string, object?>>(record);
+
+        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeTrue();
+        ParameterValue(result.Value!, "set_name").ShouldBe(System.DBNull.Value);
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "DataGateway")]
+    public async Task UpdateTranslatorFailsWhenADictionaryRecordNamesNoUpdatableColumn()
+    {
+        var container = CreateContainer("contacts");
+        IDictionary<string, object?> record = new Dictionary<string, object?> { ["id"] = 7L, ["other"] = "x" };
+        var command = new UpdateCommand<IDictionary<string, object?>>(record);
+
+        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeFalse();
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "DataGateway")]
+    public async Task UpdateTranslatorRefusesAnEntityRecordWithoutThePrimaryKeyWhenThereIsNoFilter()
+    {
+        // FDW-3321: with no filter and no key in the record there is no WHERE to build. The statement used
+        // to be issued without one and wrote every row of the table.
+        var container = CreateContainer("contacts");
+        var command = new UpdateCommand<NameOnlyData>(new NameOnlyData { name = "Bob" });
+
+        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.Code.ShouldNotBeNull().Name.ShouldBe("MissingPrimaryKeyValue");
+        result.Details!.GetValue<string>("Container").ShouldBe("contacts");
+        result.Details.GetValue<string>("PrimaryKeyField").ShouldBe("id");
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "DataGateway")]
+    public async Task UpdateTranslatorRefusesADictionaryRecordWithoutThePrimaryKeyWhenThereIsNoFilter()
+    {
+        var container = CreateContainer("contacts");
+        IDictionary<string, object?> record = new Dictionary<string, object?> { ["name"] = "Bob" };
+        var command = new UpdateCommand<IDictionary<string, object?>>(record);
+
+        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.Code.ShouldNotBeNull().Name.ShouldBe("MissingPrimaryKeyValue");
+        result.Details!.GetValue<string>("Container").ShouldBe("contacts");
+        result.Details.GetValue<string>("PrimaryKeyField").ShouldBe("id");
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "DataGateway")]
+    public async Task UpdateTranslatorKeepsRefusingANullPrimaryKeyWhenThereIsNoFilter()
+    {
+        var container = CreateContainer("contacts");
+        IDictionary<string, object?> record = new Dictionary<string, object?> { ["id"] = null, ["name"] = "Bob" };
+        var command = new UpdateCommand<IDictionary<string, object?>>(record);
+
+        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.Code.ShouldNotBeNull().Name.ShouldBe("NullPrimaryKeyValue");
     }
 }

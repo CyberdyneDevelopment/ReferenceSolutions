@@ -1,8 +1,11 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Calculations.Endpoints;
+using Fdw.Results;
+using Fdw.Services.Calculations;
 using Fdw.Services.Calculations.Abstractions;
 using Fdw.Services.Data.Abstractions;
 using Microsoft.Extensions.Logging;
@@ -43,41 +46,37 @@ public class WindowedCalculationEndpoint : WindowedCalculationEndpointBase
     }
 
     /// <inheritdoc/>
-    protected override async Task<WindowedCalculationResponse?> ExecuteWindowed(
+    protected override async Task<IGenericResult<WindowedCalculationResponse>> ExecuteWindowed(
         WindowedCalculationSpec spec,
         WindowedCalculationRequest request,
         CancellationToken cancellationToken)
     {
         var entityResult = await _service.GetCalculation(request.CalculationName, cancellationToken).ConfigureAwait(false);
-        if (entityResult.IsFailure)
+        if (!entityResult.IsSuccess || entityResult.Value is not { } entity)
         {
-            return new WindowedCalculationResponse
-            {
-                CalculationName = request.CalculationName,
-                WindowFunction = spec.WindowFunction,
-                ResultField = spec.OutputFieldName,
-                PartitionCount = 0,
-                RowCount = 0,
-                ResultJson = JsonSerializer.Serialize(new { Error = "Calculation entity not found" })
-            };
+            return entityResult.ToNewResult<WindowedCalculationResponse>();
         }
 
-        var entity = entityResult.Value!;
-
-        var context = new Fdw.Calculations.CalculationContext(_dataGateways);
-
-        var executeResult = await _service.ExecuteCalculation(entity.Name, context, cancellationToken).ConfigureAwait(false);
-        if (executeResult.IsFailure)
+        if (entity.TypedConfiguration is not WindowedCalculationConfiguration)
         {
-            return null;
+            return GenericResult<WindowedCalculationResponse>.Failure(
+                CalculationEndpointLog.CalculationNotWindowed(EndpointLogger, entity.Name, entity.CalculationEntityType));
         }
 
-        return new WindowedCalculationResponse
+        // The request states what runs and the most rows a data set input may hold; the calculation supplies the inputs it reads.
+        var parameters = ContextParameters(spec);
+        if (!parameters.IsSuccess || parameters.Value is not { } contextParameters)
         {
-            CalculationName = entity.Name,
-            WindowFunction = spec.WindowFunction,
-            ResultField = spec.OutputFieldName,
-            ResultJson = executeResult.Value ?? string.Empty
-        };
+            return parameters.ToNewResult<WindowedCalculationResponse>();
+        }
+
+        var context = new Fdw.Calculations.CalculationContext(_dataGateways, contextParameters);
+        var executed = await _service.ExecuteCalculation(entity.Name, context, cancellationToken).ConfigureAwait(false);
+        if (!executed.IsSuccess || executed.Value is not { } resultJson)
+        {
+            return executed.ToNewResult<WindowedCalculationResponse>();
+        }
+
+        return ToResponse(entity.Name, spec, resultJson);
     }
 }

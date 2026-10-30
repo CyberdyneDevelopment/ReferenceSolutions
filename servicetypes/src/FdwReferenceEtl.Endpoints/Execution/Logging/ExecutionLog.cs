@@ -46,7 +46,7 @@ public static partial class ExecutionLog
     public static partial IGenericMessage ExecutionNotFound(ILogger logger, Guid executionId);
 
     [MessageLogging(EventId = 8413, Level = LogLevel.Error, Message = "Failed to fetch execution '{executionId}': {message}")]
-    public static partial IGenericMessage ExecutionFetchFailed(ILogger logger, Guid executionId, string message);
+    public static partial IGenericMessage ExecutionFetchFailed(ILogger logger, Guid executionId, string? message);
 
     [MessageLogging(EventId = 8414, Level = LogLevel.Trace, Message = "Listing executions (page {page}, size {pageSize})")]
     public static partial IGenericMessage ListingExecutions(ILogger logger, int page, int pageSize);
@@ -157,6 +157,6 @@ public static partial class ExecutionLog
     [MessageLogging(EventId = 8455, Level = LogLevel.Warning, Message = "Execution '{executionId}' cannot be released: the request kept for it is gone (the host restarted); start the pipeline again, or deny this run")]
     public static partial IGenericMessage PipelineRunHoldLost(ILogger logger, Guid executionId);
 
-    [MessageLogging(EventId = 8456, Level = LogLevel.Warning, Message = "Execution '{executionId}' cannot be released: the pipeline queue is full for pipeline '{pipelineName}'")]
-    public static partial IGenericMessage PipelineQueueFullOnRelease(ILogger logger, Guid executionId, string pipelineName);
+    [MessageLogging(EventId = 8456, Level = LogLevel.Warning, Message = "Execution '{executionId}' cannot be released: the queue did not take the run of pipeline '{pipelineName}': {reason}")]
+    public static partial IGenericMessage PipelineQueueFullOnRelease(ILogger logger, Guid executionId, string pipelineName, string reason);
 }

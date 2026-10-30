@@ -35,6 +35,7 @@
     <PackageReference Include="Fdw.Services.Connections.Sql" />
     <PackageReference Include="Fdw.Services.Data.Abstractions" />
     <PackageReference Include="Fdw.Services.SecretManagers" />
+    <PackageReference Include="Fdw.Services.Settings" />
   </ItemGroup>
 
   <!-- Why: this package IS the service-type registration surface for PostgreSql, but the

@@ -81,10 +81,13 @@ public sealed partial class SqliteSecretManagerConfiguration : ISecretManagerImp
     public string TableName { get; set; } = "Secret";
 
     /// <summary>
-    /// Gets or sets the command timeout in seconds for SQLite operations.
+    /// Gets or sets the command timeout in seconds for SQLite operations, or <see langword="null"/> when the secret manager states none (FDW-3284).
     /// </summary>
-    /// <value>Default: 30 seconds</value>
-    public int CommandTimeoutSeconds { get; set; } = 30;
+    /// <remarks>
+    /// No number is assumed here or in the column. A secret manager that states none takes the instance's setting DefaultCommandTimeoutSeconds,
+    /// and is not built when that is not set either.
+    /// </remarks>
+    public int? CommandTimeoutSeconds { get; set; }
 
     #endregion
 
@@ -107,12 +110,18 @@ public sealed partial class SqliteSecretManagerConfiguration : ISecretManagerImp
 
     private Dictionary<string, object> CreatePropertiesDictionary()
     {
-        return new Dictionary<string, object>(StringComparer.Ordinal)
+        var properties = new Dictionary<string, object>(StringComparer.Ordinal)
         {
             [nameof(DataSource)] = DataSource,
-            [nameof(TableName)] = TableName,
-            [nameof(CommandTimeoutSeconds)] = CommandTimeoutSeconds
+            [nameof(TableName)] = TableName
         };
+
+        if (CommandTimeoutSeconds is { } seconds)
+        {
+            properties[nameof(CommandTimeoutSeconds)] = seconds;
+        }
+
+        return properties;
     }
 
     /// <inheritdoc/>

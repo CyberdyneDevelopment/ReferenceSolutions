@@ -61,7 +61,7 @@ public sealed class SqliteDeleteSecretHandler
             var cmd = conn.CreateCommand();
             await using (cmd.ConfigureAwait(false))
             {
-                cmd.CommandTimeout = config.CommandTimeoutSeconds;
+                cmd.CommandTimeout = sqliteContext.CommandTimeoutSeconds;
                 cmd.CommandText =
                     $"UPDATE \"{config.TableName}\" " +
                     $"SET \"IsCurrent\" = 0, \"IsDeleted\" = 1, \"ModifyDate\" = @now " +

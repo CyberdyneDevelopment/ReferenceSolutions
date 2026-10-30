@@ -96,7 +96,7 @@ public class AddDataStorePathEndpoint : Endpoint<AddDataStorePathRequest, DataSt
         store.Paths.Add(path);
 
         // One save for the whole aggregate: the implementation provider cascades its children.
-        var saveResult = await _dataStoreProvider.Save(store, "DataStore", store.Implementation, store.Name, ct).ConfigureAwait(false);
+        var saveResult = await _dataStoreProvider.Update(store, "DataStore", store.Implementation, store.Name, ct).ConfigureAwait(false);
         if (!saveResult.IsSuccess)
         {
             // Why: Log the failure via MessageLogging (log-and-return pattern). The provider's

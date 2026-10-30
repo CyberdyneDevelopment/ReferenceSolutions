@@ -7,6 +7,7 @@ using Fdw.Results;
 using Fdw.Services.Connections.Abstractions;
 using Fdw.Data.Sqlite.Logging;
 using Fdw.Services.SecretManagers.Abstractions;
+using Fdw.Services.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -25,6 +26,9 @@ public sealed class SqliteConnectionFactory : ServiceFactoryBase<IGenericConnect
     // IHttpClientFactory — SqliteConnectionType registers what this factory needs. Null only on the
     // provider-less constructor below, and the authentication type decides whether that matters.
     private readonly ISecretManagerProvider? _secretManagerProvider;
+    // Why Lazy: the settings are read through connections, so a factory that took the provider itself would wait on the connection it is
+    // building (FDW-3284). Null in a host that registers no settings and on the provider-less constructor.
+    private readonly Lazy<IEffectiveSettingsProvider>? _settings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteConnectionFactory"/> class that resolves
@@ -33,14 +37,20 @@ public sealed class SqliteConnectionFactory : ServiceFactoryBase<IGenericConnect
     /// <param name="logger">The logger for factory operations.</param>
     /// <param name="connectionLogger">The logger for connection instances.</param>
     /// <param name="secretManagerProvider">The secret-manager provider, resolved by name per connection.</param>
+    /// <param name="settings">
+    /// The host's settings, read for the command timeout of a connection that states none (FDW-3284). Optional: a host that registers no
+    /// settings never builds a connection without a stated timeout.
+    /// </param>
     public SqliteConnectionFactory(
         ILogger<SqliteConnectionFactory> logger,
         ILogger<SqliteConnection> connectionLogger,
-        ISecretManagerProvider secretManagerProvider)
+        ISecretManagerProvider secretManagerProvider,
+        Lazy<IEffectiveSettingsProvider>? settings = null)
     {
         _logger = logger ?? NullLogger<SqliteConnectionFactory>.Instance;
         _connectionLogger = connectionLogger ?? NullLogger<SqliteConnection>.Instance;
         _secretManagerProvider = secretManagerProvider;
+        _settings = settings;
     }
 
     /// <summary>
@@ -56,6 +66,7 @@ public sealed class SqliteConnectionFactory : ServiceFactoryBase<IGenericConnect
         _logger = logger ?? NullLogger<SqliteConnectionFactory>.Instance;
         _connectionLogger = connectionLogger ?? NullLogger<SqliteConnection>.Instance;
         _secretManagerProvider = null;
+        _settings = null;
     }
 
 
@@ -115,10 +126,17 @@ public sealed class SqliteConnectionFactory : ServiceFactoryBase<IGenericConnect
         if (string.IsNullOrWhiteSpace(configuration.DataSource))
             return GenericResult<IGenericConnection>.Failure(
                 SqliteConnectionLog.DataSourceMissing(_logger, effectiveName));
+
+        // Never defaulted (FDW-3284): the command timeout is the connection's own, else the instance's setting DefaultCommandTimeoutSeconds, and
+        // a connection that has neither is refused, naming it and the setting.
+        var commandTimeout = InstanceCommandTimeout.Resolve(configuration.DefaultTimeout, _settings, "connection", effectiveName, _logger);
+        if (commandTimeout.IsFailure)
+            return commandTimeout.ToNewResult<IGenericConnection>();
+
         try
         {
 
-            var connectionString = BuildConnectionString(configuration, password);
+            var connectionString = BuildConnectionString(configuration, commandTimeout.Value, password);
             return GenericResult<IGenericConnection>.Success(
                 new SqliteConnection(_connectionLogger, configuration, connectionString));
         }
@@ -129,7 +147,8 @@ public sealed class SqliteConnectionFactory : ServiceFactoryBase<IGenericConnect
         }
     }
 
-    private static string BuildConnectionString(SqliteConnectionConfiguration configuration, string? password)
+    // internal only so the offline tests can read the string the driver is given.
+    internal static string BuildConnectionString(SqliteConnectionConfiguration configuration, int commandTimeoutSeconds, string? password)
     {
         var sb = new StringBuilder();
         sb.Append(CultureInfo.InvariantCulture, $"Data Source={configuration.DataSource}");
@@ -143,8 +162,9 @@ public sealed class SqliteConnectionFactory : ServiceFactoryBase<IGenericConnect
         if (configuration.ForeignKeys)
             sb.Append(";Foreign Keys=True");
 
-        if (configuration.DefaultTimeout != 30)
-            sb.Append(CultureInfo.InvariantCulture, $";Default Timeout={configuration.DefaultTimeout}");
+        // Always written: SqliteCommand takes its timeout from the connection, so the stored value is what a command and a script get,
+        // not whatever the driver defaults to (FDW-3279).
+        sb.Append(CultureInfo.InvariantCulture, $";Default Timeout={commandTimeoutSeconds}");
 
         if (!string.IsNullOrEmpty(password))
             sb.Append(CultureInfo.InvariantCulture, $";Password={password}");

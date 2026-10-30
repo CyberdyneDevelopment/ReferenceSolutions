@@ -61,7 +61,7 @@ public sealed class MsSqlScriptConnection : IScriptedDataConnection
             await using (sqlConnection.ConfigureAwait(false))
             {
                 await sqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-                statement.Connection = sqlConnection;
+                _connection.Attach(statement, sqlConnection);
 
                 var placed = await _connection.PlaceSessionContext(sqlConnection, statement, cancellationToken).ConfigureAwait(false);
                 if (!placed.IsSuccess || placed.Value is not { } placedContext)
@@ -78,7 +78,7 @@ public sealed class MsSqlScriptConnection : IScriptedDataConnection
         catch (SqlException ex)
         {
             MsSqlConnectionLogger.SqlExecutionError(logger, text, ex.Message, ex.Number);
-            return GenericResult<IReadOnlyList<IDictionary<string, object?>>>.Failure(placement.FailureMessages(logger, ex, text));
+            return GenericResult<IReadOnlyList<IDictionary<string, object?>>>.Failure(_connection.FailureMessages(statement, placement, ex, text));
         }
         catch (Exception ex)
         {
@@ -100,7 +100,7 @@ public sealed class MsSqlScriptConnection : IScriptedDataConnection
             await using (sqlConnection.ConfigureAwait(false))
             {
                 await sqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-                statement.Connection = sqlConnection;
+                _connection.Attach(statement, sqlConnection);
 
                 var placed = await _connection.PlaceSessionContext(sqlConnection, statement, cancellationToken).ConfigureAwait(false);
                 if (!placed.IsSuccess || placed.Value is not { } placedContext)
@@ -118,7 +118,7 @@ public sealed class MsSqlScriptConnection : IScriptedDataConnection
         catch (SqlException ex)
         {
             MsSqlConnectionLogger.SqlExecutionError(logger, text, ex.Message, ex.Number);
-            return GenericResult<int>.Failure(placement.FailureMessages(logger, ex, text));
+            return GenericResult<int>.Failure(_connection.FailureMessages(statement, placement, ex, text));
         }
         catch (Exception ex)
         {

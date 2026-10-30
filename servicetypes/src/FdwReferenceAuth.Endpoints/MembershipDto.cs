@@ -39,6 +39,12 @@ public sealed class MembershipDto
     public bool IsDefault { get; set; }
 
     /// <summary>
+    /// Gets or sets the identifier of the department the person lands in when they sign in to this tenant, or null when they have marked none
+    /// (FDW-2938). Kept per tenant, beside <see cref="IsDefault"/>, because the person marks it in the tenant they act in.
+    /// </summary>
+    public string? DefaultOrganizationId { get; set; }
+
+    /// <summary>
     /// Gets or sets whether a tenant picker should offer this tenant. False for the structural
     /// sentinels (the default tenant every user belongs to, the system tenant); a UI leaves those
     /// out. Not an access rule.

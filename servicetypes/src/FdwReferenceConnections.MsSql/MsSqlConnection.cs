@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,6 +19,7 @@ using Fdw.Services.Connections.MsSql.ErrorHandlers;
 using Fdw.Services.Connections;
 using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Connections.MsSql.Logging;
+using FdwReferenceConnections.MsSql.Logging;
 using FdwReferenceConnections.MsSql.Mapping;
 using Fdw.Services.Connections.MsSql.Results;
 using Fdw.Services.Authentication.Abstractions.Security;
@@ -41,6 +43,12 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
 {
     private readonly string _connectionString;
     private readonly ILogger<MsSqlConnection> _logger;
+    // Why a field and not Configuration.CommandTimeoutSeconds: the configuration may state none (FDW-3284), and the number the factory resolved,
+    // from the configuration or from the instance's setting, is the one every command takes.
+    private readonly int _commandTimeoutSeconds;
+    // The commands that were given a timeout of their own (FDW-3324), with who set it. Attach leaves such a command alone, and a timeout
+    // failure names the owner. Weak, so a command that is gone takes its entry with it.
+    private readonly ConditionalWeakTable<SqlCommand, string> _limitOwners = new();
     // Why the ACCESSOR and not a captured IAuthenticationContext: the factory that builds this
     // connection is a DI Singleton, so a context captured at construction is captured once — at
     // composition time, when no request or execution flow exists — and stays null for the life of
@@ -56,6 +64,7 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
     /// <param name="logger">The logger instance.</param>
     /// <param name="configuration">The connection configuration.</param>
     /// <param name="connectionString">The connection string built by the factory.</param>
+    /// <param name="commandTimeoutSeconds">The command timeout in seconds, positive, that the factory resolved for this connection.</param>
     /// <param name="authenticationContextAccessor">
     /// Optional ambient accessor the connection reads the calling principal from at plan time, for
     /// RLS SESSION_CONTEXT injection.
@@ -64,10 +73,12 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
         ILogger<MsSqlConnection> logger,
         MsSqlConnectionConfiguration configuration,
         string connectionString,
+        int commandTimeoutSeconds,
         IAuthenticationContextAccessor? authenticationContextAccessor = null)
         : base(logger, configuration)
     {
         _connectionString = connectionString;
+        _commandTimeoutSeconds = commandTimeoutSeconds;
         _logger = logger;
         _authenticationContextAccessor = authenticationContextAccessor;
     }
@@ -135,7 +146,7 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
                 await sqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
                 // Assign the connection to the command
-                command.Connection = sqlConnection;
+                Attach(command, sqlConnection);
 
                 // Determine if this is a query (SELECT) or command (INSERT/UPDATE/DELETE), on the text as it
                 // was asked for: the batch below starts with the session context, not with SELECT.
@@ -182,7 +193,7 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
         catch (SqlException ex)
         {
             MsSqlConnectionLogger.SqlExecutionError(Logger, commandText, ex.Message, ex.Number);
-            return GenericResult<T>.Failure(placement.FailureMessages(_logger, ex, commandText));
+            return GenericResult<T>.Failure(FailureMessages(command, placement, ex, commandText));
         }
         catch (Exception ex)
         {
@@ -276,7 +287,7 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
         {
             sqlConnection = CreatePooledConnection();
             await sqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-            sqlCommand.Connection = sqlConnection;
+            Attach(sqlCommand, sqlConnection);
 
             MsSqlConnectionLogger.ExecutingSqlCommand(Logger, commandText, parameterCount);
 
@@ -309,7 +320,7 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
             if (reader is not null) await reader.DisposeAsync().ConfigureAwait(false);
             if (sqlConnection is not null) await sqlConnection.DisposeAsync().ConfigureAwait(false);
             MsSqlConnectionLogger.SqlExecutionError(Logger, commandText, ex.Message, ex.Number);
-            return GenericResult<IRecordSource<DataRecord>>.Failure(placement.FailureMessages(_logger, ex, commandText));
+            return GenericResult<IRecordSource<DataRecord>>.Failure(FailureMessages(sqlCommand, placement, ex, commandText));
         }
         catch (Exception ex)
         {
@@ -385,7 +396,7 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
             await using (sqlConnection.ConfigureAwait(false))
             {
                 await sqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-                command.Connection = sqlConnection;
+                Attach(command, sqlConnection);
 
                 MsSqlConnectionLogger.ExecutingSqlCommand(Logger, commandText, parameterCount);
 
@@ -427,7 +438,7 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
         {
             MsSqlConnectionLogger.SqlExecutionError(Logger, commandText, ex.Message, ex.Number);
             return GenericResult<global::System.Collections.Generic.IEnumerable<object>>.Failure(
-                placement.FailureMessages(_logger, ex, commandText));
+                FailureMessages(command, placement, ex, commandText));
         }
         catch (Exception ex)
         {
@@ -995,7 +1006,7 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
             // Why: BeginTransactionAsync on SqlConnection always returns SqlTransaction;
             // the cast is safe and avoids an interface indirection in the hot path.
             return GenericResult<IDataConnectionTransaction>.Success(
-                new MsSqlDataConnectionTransaction(sqlConnection, transaction!, _logger, connectionName, Configuration.MaxSerialInsert));
+                new MsSqlDataConnectionTransaction(sqlConnection, transaction!, _logger, connectionName, Configuration.MaxSerialInsert, _commandTimeoutSeconds));
         }
         catch (Exception ex)
         {
@@ -1094,6 +1105,53 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
             Logger,
             cancellationToken);
     }
+
+    // SQL Server's error number for a command that ran past its CommandTimeout.
+    private const int CommandTimeoutErrorNumber = -2;
+
+    // Why one method: a command takes the connection's own configured command timeout where it is given its connection, so a
+    // command no site has to remember to time and none runs at the driver's default of 30 seconds (FDW-3279). The probes and the
+    // session-context apply keep the short bounds of their own.
+    internal void Attach(SqlCommand command, SqlConnection sqlConnection)
+    {
+        command.Connection = sqlConnection;
+        if (!_limitOwners.TryGetValue(command, out _))
+        {
+            command.CommandTimeout = _commandTimeoutSeconds;
+        }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// The command's own timeout, in whole seconds (a part of a second counts as the next), over the connection's. Attach then leaves it alone.
+    /// </remarks>
+    protected override IGenericResult ApplyCommandTimeout(SqlCommand native, TimeSpan timeout, string owner)
+    {
+        Limit(native, timeout, owner);
+        return GenericResult.Success();
+    }
+
+    // Internal so the tests can give a command its own timeout without running it.
+    internal void Limit(SqlCommand native, TimeSpan timeout, string owner)
+    {
+        native.CommandTimeout = (int)Math.Ceiling(timeout.TotalSeconds);
+        _limitOwners.AddOrUpdate(native, owner);
+    }
+
+    // What a failed command says: what its placement says, and, when the command outran the timeout it was given, first the coded message
+    // that names the connection, the seconds that were applied and who set them.
+    internal IReadOnlyList<IGenericMessage> FailureMessages(SqlCommand command, SessionContextPlacement placement, SqlException exception, string commandText)
+        => TimeoutFirst(
+            _logger, exception.Number, Configuration.Name, command.CommandTimeout, commandText,
+            _limitOwners.TryGetValue(command, out var owner) ? owner : string.Empty,
+            placement.FailureMessages(_logger, exception, commandText));
+
+    // Shared with the unit-of-work transaction, which has the name and the seconds but not the connection. An empty owner is the connection.
+    internal static IReadOnlyList<IGenericMessage> TimeoutFirst(
+        ILogger logger, int sqlErrorNumber, string connectionName, int timeoutSeconds, string commandText, string owner, IReadOnlyList<IGenericMessage> messages)
+        => sqlErrorNumber == CommandTimeoutErrorNumber
+            ? [MsSqlCommandTimeoutLogger.CommandTimedOut(logger, connectionName, timeoutSeconds, commandText, owner.Length == 0 ? "the connection" : owner), .. messages]
+            : messages;
 
     // Why one method: every path that runs a translated command on a pooled connection meets the session
     // context HERE, so a DataCommand is given the same context however it is executed (FDW-977). A command
@@ -1216,7 +1274,7 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
             if (contextSet.IsFailure)
                 return contextSet.ToNewResult<List<Dictionary<string, object?>>>();
 
-            var command = new SqlCommand(sql, connection) { CommandTimeout = 30 };
+            var command = new SqlCommand(sql, connection) { CommandTimeout = _commandTimeoutSeconds };
             await using (command.ConfigureAwait(false))
             {
                 var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);

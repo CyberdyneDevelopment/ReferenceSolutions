@@ -6,6 +6,7 @@ using Fdw.Results;
 using Fdw.Security.Hashing;
 using Fdw.Services.Data.Abstractions;
 using Fdw.Services.SecretManagers.Abstractions;
+using Fdw.Services.Settings;
 using FdwReferenceSecretManagers.MsSql.Configuration;
 using FdwReferenceSecretManagers.MsSql.Logging;
 using FdwReferenceSecretManagers.MsSql.Services;
@@ -33,6 +34,9 @@ public sealed class MsSqlSecretManagerFactory : ServiceFactoryBase<ISecretManage
     private readonly IPersonalAccessTokenHasher? _tokenHasher;
     private readonly IPersonalAccessTokenGenerator? _tokenGenerator;
     private readonly string? _hmacKey;
+    // Why Lazy: the settings are read through connections, so a factory that took the provider itself would wait on the connection it is
+    // building (FDW-3284). Null in a host that registers no settings.
+    private readonly Lazy<IEffectiveSettingsProvider>? _settings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MsSqlSecretManagerFactory"/> class.
@@ -44,6 +48,7 @@ public sealed class MsSqlSecretManagerFactory : ServiceFactoryBase<ISecretManage
     /// <param name="tokenHasher">Optional PAT hasher for API key verification.</param>
     /// <param name="tokenGenerator">Optional PAT generator for API key creation.</param>
     /// <param name="hmacKey">Optional HMAC key for API key hashing operations.</param>
+    /// <param name="settings">The host's settings, read for the command timeout of a secret manager that states none (FDW-3284). Optional: a host that registers no settings never builds one without a stated timeout.</param>
     public MsSqlSecretManagerFactory(
         ILoggerFactory? loggerFactory,
         IConfigurationGatewayProvider gatewayProvider,
@@ -51,7 +56,8 @@ public sealed class MsSqlSecretManagerFactory : ServiceFactoryBase<ISecretManage
         IPasswordHasher? passwordHasher = null,
         IPersonalAccessTokenHasher? tokenHasher = null,
         IPersonalAccessTokenGenerator? tokenGenerator = null,
-        string? hmacKey = null)
+        string? hmacKey = null,
+        Lazy<IEffectiveSettingsProvider>? settings = null)
     {
         _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         _logger = _loggerFactory.CreateLogger<MsSqlSecretManagerFactory>();
@@ -61,6 +67,7 @@ public sealed class MsSqlSecretManagerFactory : ServiceFactoryBase<ISecretManage
         _tokenHasher = tokenHasher;
         _tokenGenerator = tokenGenerator;
         _hmacKey = hmacKey;
+        _settings = settings;
     }
 
     /// <inheritdoc/>
@@ -78,13 +85,20 @@ public sealed class MsSqlSecretManagerFactory : ServiceFactoryBase<ISecretManage
         {
             MsSqlSecretManagerLogger.CreatingSecretManager(_logger, effectiveName);
 
+            // Never defaulted (FDW-3284): the command timeout is the secret manager's own, else the instance's setting
+            // DefaultCommandTimeoutSeconds, and a secret manager that has neither is refused, naming it and the setting. This manager runs its
+            // commands through its data store's gateway, so the number is checked here and the connection of that data store applies its own.
+            var commandTimeout = InstanceCommandTimeout.Resolve(configuration.CommandTimeoutSeconds, _settings, "secret manager", effectiveName, _logger);
+            if (commandTimeout.IsFailure)
+                return Task.FromResult(commandTimeout.ToNewResult<ISecretManager>());
+
             var gateway = _gatewayProvider.Get(_dataStoreName);
             if (gateway.IsFailure)
                 return Task.FromResult(gateway.ToNewResult<ISecretManager>());
 
             var serviceLogger = _loggerFactory.CreateLogger<MsSqlSecretManager>();
             var service = new MsSqlSecretManager(
-                serviceLogger, configuration, gateway.Value!, _dataStoreName, effectiveName,
+                serviceLogger, configuration, gateway.Value!, _dataStoreName, commandTimeout.Value, effectiveName,
                 _passwordHasher, _tokenHasher, _tokenGenerator, _hmacKey);
 
             MsSqlSecretManagerLogger.SecretManagerCreated(_logger, effectiveName);

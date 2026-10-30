@@ -35,7 +35,8 @@ public sealed class SqliteTransactionTests : IAsyncLifetime
         _config = new SqliteConnectionConfiguration
         {
             DataSource = DbPath,
-            Mode = "ReadWriteCreate"
+            Mode = "ReadWriteCreate",
+            DefaultTimeout = 30
         };
 
         _container = BuildContainer();

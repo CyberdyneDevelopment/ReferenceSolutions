@@ -7,7 +7,7 @@ namespace FdwReferenceAuthentication.BakePermissions.Registration;
 /// <summary>
 /// MessageLogging for baking a principal's permissions into a token.
 /// </summary>
-/// <remarks>EventId range: 91244–91249, 91251.</remarks>
+/// <remarks>EventId range: 91244–91249, 91251, 91293.</remarks>
 [MessageLoggingTypeCode("AUTHENTICATION")]
 internal static partial class PermissionBakingLog
 {
@@ -80,4 +80,14 @@ internal static partial class PermissionBakingLog
     [MessageLogging(EventId = 91251, Level = LogLevel.Information,
         Message = "Principal {principalId} is a member of the global tenant; acting as tenant {tenantId} it carries its global-tenant roles [{roles}]")]
     internal static partial IGenericMessage GlobalRolesApplied(ILogger logger, Guid principalId, Guid tenantId, string roles);
+
+    /// <summary>A token is baked for a department, so it carries the orgId claim.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="principalId">Whose it is.</param>
+    /// <param name="organizationId">The department the token acts in.</param>
+    // Information: which department a sign-in landed in is how a person's default department is seen to take effect (FDW-2938);
+    // the token is opaque and the claim is not stored in the session, so this line is where the claim can be read.
+    [MessageLogging(EventId = 91293, Level = LogLevel.Information,
+        Message = "Principal {principalId} acts in department {organizationId}; the token carries the orgId claim")]
+    internal static partial IGenericMessage ActsInDepartment(ILogger logger, Guid principalId, Guid organizationId);
 }

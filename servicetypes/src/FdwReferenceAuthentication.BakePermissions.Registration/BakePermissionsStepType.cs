@@ -130,6 +130,8 @@ public sealed class BakePermissionsStepType
                 Value = organizationId.ToString(),
                 Source = ClaimSources.Local,
             });
+
+            PermissionBakingLog.ActsInDepartment(_logger, principal.Id, organizationId);
         }
 
         // Stated only for the global tenant, and read by ISystemRoleConfiguration.IsPlatformAdmin: an

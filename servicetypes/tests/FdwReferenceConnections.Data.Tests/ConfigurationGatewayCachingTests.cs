@@ -58,7 +58,7 @@ public sealed class ConfigurationGatewayCachingTests
         // .Create, so cache-hit tests short-circuit and cache-miss tests get a clean failure.
         _emptySchema = new ConfigurationSchema
         {
-            Connections = { new MsSqlConnectionConfiguration { MaxSerialInsert = 1000, Name = "PlatformConfiguration", Implementation = "MsSql" } },
+            Connections = { new MsSqlConnectionConfiguration { MaxSerialInsert = 1000, CommandTimeoutSeconds = 30, Name = "PlatformConfiguration", Implementation = "MsSql" } },
         };
     }
 

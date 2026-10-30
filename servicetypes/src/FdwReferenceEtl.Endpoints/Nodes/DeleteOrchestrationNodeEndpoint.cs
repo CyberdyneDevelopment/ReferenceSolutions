@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using FastEndpoints;
+using Fdw.Results;
 using Fdw.Services.Etl.Projects.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -65,7 +66,7 @@ public sealed class DeleteOrchestrationNodeEndpoint : Endpoint<DeleteOrchestrati
         var result = await _provider.Delete(req.Id, ct).ConfigureAwait(false);
         if (result.IsFailure)
         {
-            if (result.CurrentMessage?.Contains("not found", StringComparison.OrdinalIgnoreCase) is true)
+            if (FailureCategory.IsMissing(result))
             {
                 NodeLog.NodeNotFoundForDelete(_logger, req.Id);
                 await Send.NotFoundAsync(ct).ConfigureAwait(false);

@@ -69,7 +69,7 @@ public class UpdateWebhookNotificationEndpoint : CrudUpdateEndpointBase<WebhookN
 
         WebhookNotificationMapper.Apply(request, record);
         var saved = await _provider
-            .Save(record, WebhookNotificationMapper.Domain, WebhookNotificationMapper.Implementation, request.Name, ct)
+            .Update(record, WebhookNotificationMapper.Domain, WebhookNotificationMapper.Implementation, request.Name, ct)
             .ConfigureAwait(false);
         return saved.IsFailure
             ? saved.ToNewResult<WebhookNotificationDetail>()

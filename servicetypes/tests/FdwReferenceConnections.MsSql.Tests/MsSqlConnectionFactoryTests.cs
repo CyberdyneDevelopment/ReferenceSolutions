@@ -60,6 +60,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -84,6 +85,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -110,6 +112,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "UnknownAuth"
@@ -133,6 +136,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = string.Empty
@@ -209,6 +213,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -232,6 +237,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "SqlAuth",
@@ -259,6 +265,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "UnknownType"
@@ -281,6 +288,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "myserver",
             InstanceName = "SQLEXPRESS",
             Database = "TestDb",
@@ -304,6 +312,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "myserver",
             Port = 1434,
             Database = "TestDb",
@@ -327,6 +336,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             TrustServerCertificate = true,
@@ -350,6 +360,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             EnableConnectionPooling = false,
@@ -373,6 +384,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             EnableConnectionPooling = true,
@@ -398,6 +410,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             EnableMultipleActiveResultSets = true,
@@ -421,6 +434,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             ApplicationName = "MyApp",
@@ -444,6 +458,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             ConnectionTimeoutSeconds = 30,
@@ -467,6 +482,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth",
@@ -494,6 +510,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "SqlAuth",
@@ -521,6 +538,7 @@ public sealed class MsSqlConnectionFactoryTests
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -548,6 +566,7 @@ public sealed class MsSqlConnectionFactoryTests
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -587,6 +606,7 @@ public sealed class MsSqlConnectionFactoryTests
             new MsSqlConnectionConfiguration
             {
                 MaxSerialInsert = 1000,
+                CommandTimeoutSeconds = 30,
                 Server = "localhost",
                 Database = "TestDb",
                 AuthenticationType = "WindowsAuth"
@@ -607,6 +627,7 @@ public sealed class MsSqlConnectionFactoryTests
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -630,6 +651,7 @@ public sealed class MsSqlConnectionFactoryTests
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -653,6 +675,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -676,6 +699,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "myserver",
             Database = "TestDb",
             ConnectionTimeoutSeconds = 60,
@@ -711,6 +735,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             Encrypt = true,
@@ -734,6 +759,7 @@ public sealed class MsSqlConnectionFactoryTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "NotARealAuthType"

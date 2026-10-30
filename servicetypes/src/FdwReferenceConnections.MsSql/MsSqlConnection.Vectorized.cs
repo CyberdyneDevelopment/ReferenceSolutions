@@ -70,7 +70,7 @@ public sealed partial class MsSqlConnection : IVectorizedDataConnection
             await using (sqlConnection.ConfigureAwait(false))
             {
                 await sqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-                command.Connection = sqlConnection;
+                Attach(command, sqlConnection);
 
                 var placed = await PlaceSessionContext(sqlConnection, command, cancellationToken).ConfigureAwait(false);
                 if (!placed.IsSuccess || placed.Value is not { } placedContext)
@@ -87,7 +87,7 @@ public sealed partial class MsSqlConnection : IVectorizedDataConnection
         catch (SqlException ex)
         {
             MsSqlConnectionLogger.SqlExecutionError(Logger, commandText, ex.Message, ex.Number);
-            return GenericResult<object>.Failure(placement.FailureMessages(_logger, ex, commandText));
+            return GenericResult<object>.Failure(FailureMessages(command, placement, ex, commandText));
         }
         catch (Exception ex)
         {

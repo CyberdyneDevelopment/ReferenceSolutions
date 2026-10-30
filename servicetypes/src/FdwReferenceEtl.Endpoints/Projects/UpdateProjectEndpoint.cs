@@ -123,7 +123,7 @@ public sealed class UpdateProjectEndpoint : Endpoint<UpdateProjectRequest, Proje
         }
 
         // Why the writer: it validates the node before anything is stored; the provider alone does not.
-        var saveResult = await _writer.Save(node, ct).ConfigureAwait(false);
+        var saveResult = await _writer.Update(node, ct).ConfigureAwait(false);
         if (saveResult.IsFailure)
         {
             ProjectLog.ProjectUpdateFailed(_logger, req.Id, saveResult.CurrentMessage);

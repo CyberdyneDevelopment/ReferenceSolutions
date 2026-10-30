@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Calculations.Endpoints;
-using Fdw.Services.Data.Abstractions;
+using Fdw.Data.DataSets.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace FdwReferenceCalculations.Endpoints;
@@ -14,9 +14,8 @@ public class ExecuteCalculationEndpoint : ExecuteCalculationEndpointBase
     /// <summary>Initializes a new instance of the <see cref="ExecuteCalculationEndpoint"/> class.</summary>
     public ExecuteCalculationEndpoint(
         ILogger<ExecuteCalculationEndpoint> logger,
-        IConfigurationGateway configurationGateway,
-        IDataGatewayProvider? dataGateways = null)
-        : base(logger, configurationGateway, dataGateways)
+        IDataSetResolver resolver)
+        : base(logger, resolver)
     {
     }
 

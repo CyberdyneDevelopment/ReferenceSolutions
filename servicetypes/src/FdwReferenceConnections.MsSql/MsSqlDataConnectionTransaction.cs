@@ -35,6 +35,7 @@ internal sealed class MsSqlDataConnectionTransaction : IDataConnectionTransactio
     private readonly ILogger _logger;
     private readonly string _connectionName;
     private readonly int _maxSerialInsert;
+    private readonly int _commandTimeoutSeconds;
     private readonly BulkCopyWriter _bulkCopy;
     private bool _disposed;
 
@@ -47,8 +48,9 @@ internal sealed class MsSqlDataConnectionTransaction : IDataConnectionTransactio
         SqlTransaction transaction,
         ILogger logger,
         string connectionName,
-        int maxSerialInsert)
-        : this(connection, transaction, logger, connectionName, maxSerialInsert, MsSqlBulkCopy.Write)
+        int maxSerialInsert,
+        int commandTimeoutSeconds)
+        : this(connection, transaction, logger, connectionName, maxSerialInsert, commandTimeoutSeconds, MsSqlBulkCopy.Write)
     {
     }
 
@@ -60,6 +62,7 @@ internal sealed class MsSqlDataConnectionTransaction : IDataConnectionTransactio
         ILogger logger,
         string connectionName,
         int maxSerialInsert,
+        int commandTimeoutSeconds,
         BulkCopyWriter bulkCopy)
     {
         _connection = connection;
@@ -67,6 +70,7 @@ internal sealed class MsSqlDataConnectionTransaction : IDataConnectionTransactio
         _logger = logger;
         _connectionName = connectionName;
         _maxSerialInsert = maxSerialInsert;
+        _commandTimeoutSeconds = commandTimeoutSeconds;
         _bulkCopy = bulkCopy;
     }
 
@@ -169,7 +173,8 @@ internal sealed class MsSqlDataConnectionTransaction : IDataConnectionTransactio
         }
     }
 
-    private async Task<IGenericResult<T>> ExecuteNative<T>(
+    // internal only so the offline tests can see the timeout the command is given.
+    internal async Task<IGenericResult<T>> ExecuteNative<T>(
         SqlCommand command,
         IStorageContainer container,
         CancellationToken cancellationToken)
@@ -178,6 +183,7 @@ internal sealed class MsSqlDataConnectionTransaction : IDataConnectionTransactio
         // inside the transaction — without this the command would start a new connection.
         command.Connection = _connection;
         command.Transaction = _transaction;
+        command.CommandTimeout = _commandTimeoutSeconds;
 
         try
         {
@@ -205,7 +211,9 @@ internal sealed class MsSqlDataConnectionTransaction : IDataConnectionTransactio
         catch (SqlException ex)
         {
             MsSqlConnectionLogger.SqlExecutionError(_logger, command.CommandText, ex.Message, ex.Number);
-            return GenericResult<T>.Failure(SqlErrorHandlers.FailureMessages(_logger, ex, command.CommandText));
+            return GenericResult<T>.Failure(MsSqlConnection.TimeoutFirst(
+                _logger, ex.Number, _connectionName, _commandTimeoutSeconds, command.CommandText, string.Empty,
+                SqlErrorHandlers.FailureMessages(_logger, ex, command.CommandText)));
         }
         catch (Exception ex)
         {

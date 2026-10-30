@@ -200,15 +200,24 @@ public partial class Endpoints : ServiceTypeCollectionBase<IEndpointTypeCollecti
                 // what an option actually declared. An assembly nobody registered an endpoint from is
                 // not searched, so DisableAutoDiscovery still means what it says — nothing arrives that
                 // was not asked for.
-                foreach (var validatorType in DeclaredEndpoints.Types
-                    .Select(t => t.Assembly)
-                    .Distinct()
+                //
+                // Why the assemblies of the base types too: a declared endpoint is a concrete class here, and it derives
+                // from a base endpoint in an FDW package, which carries the validator of its request beside it. Searching
+                // only the declared type's own assembly left every such validator unseen (a calculation of a type the
+                // server does not have was executed). The walk stops at the framework's own types.
+                var searched = DeclaredEndpoints.Types.SelectMany(AssembliesOfEndpoint).Distinct().ToList();
+                var validatorTypes = searched
                     .SelectMany(assembly => assembly.GetTypes())
                     .Where(t => t is { IsAbstract: false, IsInterface: false }
-                        && typeof(FluentValidation.IValidator).IsAssignableFrom(t)))
+                        && typeof(FluentValidation.IValidator).IsAssignableFrom(t))
+                    .ToList();
+                foreach (var validatorType in validatorTypes)
                 {
                     o.SourceGeneratorDiscoveredTypes.Add(validatorType);
                 }
+
+                EndpointRegistrationLog.ValidatorsRegistered(
+                    loggerFactory?.CreateLogger(nameof(Endpoints)) ?? NullLogger.Instance, validatorTypes.Count, searched.Count);
             });
 
             // Why these are registered here and not by the host: each is the other half of something
@@ -305,6 +314,20 @@ public partial class Endpoints : ServiceTypeCollectionBase<IEndpointTypeCollecti
             return GenericResult<IHost>.Success(host);
         });
     }
+
+    // The assemblies a declared endpoint type is built from: its own and those of its base types, up to
+    // the framework's. The validator of a request travels with the base endpoint that takes it.
+    private static IEnumerable<System.Reflection.Assembly> AssembliesOfEndpoint(Type endpoint)
+    {
+        for (var type = endpoint; type is not null && !IsFrameworkType(type); type = type.BaseType)
+        {
+            yield return type.Assembly;
+        }
+    }
+
+    private static bool IsFrameworkType(Type type)
+        => type.Namespace is { } ns
+            && (ns.StartsWith("FastEndpoints", StringComparison.Ordinal) || ns.StartsWith("System", StringComparison.Ordinal));
 
     // Why the OpenAPI document is registered here rather than in each host's Program.cs: the
     // processors describe endpoints, and this collection is what knows the endpoints.

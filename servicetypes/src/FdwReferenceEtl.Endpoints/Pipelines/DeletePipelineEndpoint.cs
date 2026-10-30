@@ -2,6 +2,7 @@
 using Fdw.Services.Pipelines.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 
+using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Pipelines;
 using Fdw.Services.Pipelines.Endpoints;
 
@@ -15,8 +16,8 @@ namespace FdwReferencePipelines.Endpoints;
 public class DeletePipelineEndpoint : DeletePipelineEndpointBase<IPipelineImplementationConfiguration>
 {
     /// <inheritdoc />
-    public DeletePipelineEndpoint(PipelineServiceConfigurationProvider provider, ILogger<DeletePipelineEndpoint> logger)
-        : base(logger, provider) {
+    public DeletePipelineEndpoint(PipelineServiceConfigurationProvider provider, IConfigurationGatewayProvider gateways, ILogger<DeletePipelineEndpoint> logger)
+        : base(logger, provider, gateways) {
     }
 
     /// <inheritdoc />
