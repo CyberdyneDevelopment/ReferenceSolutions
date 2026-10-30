@@ -148,6 +148,14 @@ public sealed class DataSetProviderAdditionalTests
             where T : IDataSetImplementationConfiguration
             => Task.FromResult(GenericResult.Success());
 
+        public Task<IGenericResult> Update<T>(T implementationConfiguration, string domain, string implementationName, string name, CancellationToken ct = default)
+            where T : IDataSetImplementationConfiguration
+            => Task.FromResult(GenericResult.Success());
+
+        public Task<IGenericResult> Create<T>(T implementationConfiguration, string domain, string implementationName, string name, CancellationToken ct = default)
+            where T : IDataSetImplementationConfiguration
+            => Task.FromResult(GenericResult.Success());
+
         public Task<IGenericResult> Delete(Guid id, CancellationToken ct = default)
             => Task.FromResult(GenericResult.Success());
 

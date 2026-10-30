@@ -264,15 +264,15 @@ public sealed class ResolvePrincipalStepType
         if (provisioned.IsFailure)
             return provisioned.ToNewResult<StepOutcome>();
 
-        var tenant = await _tenants!.TenantFor(provisioned.Value, cancellationToken).ConfigureAwait(false);
-        if (tenant.IsFailure)
-            return tenant.ToNewResult<StepOutcome>();
+        var landing = await _tenants!.LandingFor(provisioned.Value, cancellationToken).ConfigureAwait(false);
+        if (landing.IsFailure)
+            return landing.ToNewResult<StepOutcome>();
 
         ResolvePrincipalLog.PrincipalProvisioned(_logger, subject.Issuer, name, provisioned.Value);
 
         return GenericResult<StepOutcome>.Success(new StepOutcome.Contributed(new ContextContribution
         {
-            Principal = new Principal { Id = provisioned.Value, TenantId = tenant.Value },
+            Principal = new Principal { Id = provisioned.Value, TenantId = landing.Value!.TenantId, OrganizationId = landing.Value.OrganizationId },
         }));
     }
 

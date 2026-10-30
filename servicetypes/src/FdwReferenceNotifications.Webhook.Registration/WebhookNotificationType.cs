@@ -58,6 +58,15 @@ public sealed class WebhookNotificationType
             channelName: "Webhook",
             displayName: "Webhook Notifications",
             description: "Send notifications via generic HTTP webhook",
+            settings:
+            [
+                new("Url", NotificationSettingTypes.Text, true, false),
+                new("Method", NotificationSettingTypes.Text, false, false),
+                new("ContentType", NotificationSettingTypes.Text, false, false),
+                new("PayloadTemplate", NotificationSettingTypes.Text, false, false),
+                new("RetryCount", NotificationSettingTypes.Number, false, false),
+                new("TimeoutSeconds", NotificationSettingTypes.Number, false, false),
+            ],
             defaultContainerName: "WebhookNotificationConfiguration")
     {
         Configuration(builder =>
@@ -126,4 +135,7 @@ public sealed class WebhookNotificationType
             return GenericResult<IHost>.Success(host);
         });
     }
+
+    /// <inheritdoc />
+    public override INotificationImplementationConfiguration NewConfiguration() => new WebhookNotificationConfiguration();
 }

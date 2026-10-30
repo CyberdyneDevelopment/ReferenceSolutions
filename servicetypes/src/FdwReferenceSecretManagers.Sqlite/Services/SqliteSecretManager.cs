@@ -40,6 +40,7 @@ public sealed class SqliteSecretManager : ISecretManager, IDisposable
     /// </summary>
     /// <param name="logger">The logger for diagnostic messages.</param>
     /// <param name="configuration">The SQLite secret manager configuration.</param>
+    /// <param name="commandTimeoutSeconds">The command timeout in seconds, positive, that the factory resolved for this secret manager.</param>
     /// <param name="secretManagerName">
     /// The logical name of the secret manager (from the <c>SecretManagerConfiguration</c> header).
     /// After config-split, <c>SqliteSecretManagerConfiguration.Name</c> returns <c>string.Empty</c>;
@@ -48,6 +49,7 @@ public sealed class SqliteSecretManager : ISecretManager, IDisposable
     public SqliteSecretManager(
         ILogger<SqliteSecretManager> logger,
         SqliteSecretManagerConfiguration configuration,
+        int commandTimeoutSeconds,
         string secretManagerName = "")
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -55,7 +57,7 @@ public sealed class SqliteSecretManager : ISecretManager, IDisposable
         _id = configuration.Id.ToString();
         _name = secretManagerName;
 
-        _executionContext = new SqliteExecutionContext(logger, configuration, _id, secretManagerName);
+        _executionContext = new SqliteExecutionContext(logger, configuration, commandTimeoutSeconds, _id, secretManagerName);
 
         SqliteSecretManagerLogger.ManagerInitialized(_logger, configuration.TableName, configuration.DataSource);
     }

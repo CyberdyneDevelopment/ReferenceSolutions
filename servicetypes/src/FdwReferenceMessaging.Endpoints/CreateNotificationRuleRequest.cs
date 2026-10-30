@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using FastEndpoints;
+using Fdw.Services.Notifications;
 using FluentValidation;
 
 namespace FdwReferenceNotifications.Endpoints;
@@ -28,9 +30,6 @@ public sealed class CreateNotificationRuleRequest
     /// <summary>Gets or sets the workflow ID this rule applies to.</summary>
     public Guid? WorkflowId { get; set; }
 
-    /// <summary>Gets or sets how multiple conditions are combined ("And" or "Or").</summary>
-    public string ConditionOperator { get; set; } = "Or";
-
     /// <summary>Gets or sets the notification service type (e.g., "Console", "Email").</summary>
     public string NotificationServiceType { get; set; } = string.Empty;
 
@@ -40,8 +39,8 @@ public sealed class CreateNotificationRuleRequest
     /// <summary>Gets or sets the message template for the notification.</summary>
     public string? Template { get; set; }
 
-    /// <summary>Gets or sets the severity level ("Info", "Warning", "Error", "Critical").</summary>
-    public string Severity { get; set; } = "Info";
+    /// <summary>Gets or sets the severity, one of those <c>GET /notifications/rules/severities</c> serves. Required: a rule states its own.</summary>
+    public string? Severity { get; set; }
 
     /// <summary>Gets or sets the minimum interval between notifications in minutes.</summary>
     public int? CooldownMinutes { get; set; }
@@ -68,5 +67,11 @@ public sealed class CreateNotificationRuleRequestValidator : Validator<CreateNot
 
         RuleFor(x => x.NotificationServiceName)
             .NotEmpty().WithMessage("NotificationServiceName is required");
+
+        RuleFor(x => x.Severity)
+            .NotEmpty().WithMessage("Severity is required")
+            .Must(NotificationRuleSeverities.Offers)
+            .When(x => !string.IsNullOrEmpty(x.Severity))
+            .WithMessage(x => $"Severity '{x.Severity}' is not offered; the choices are {string.Join(", ", NotificationRuleSeverities.All().Select(pair => pair.Key))}");
     }
 }

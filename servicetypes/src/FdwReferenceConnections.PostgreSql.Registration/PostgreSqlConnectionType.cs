@@ -1,3 +1,4 @@
+using Fdw.Services.Settings;
 using Fdw.Services.Connections.PostgreSql.Authentication;
 using Fdw.Services.Connections.Logging;
 using System.Linq;
@@ -119,7 +120,8 @@ public sealed class PostgreSqlConnectionType
                 sp => new PostgreSqlConnectionFactory(
                 sp.GetRequiredService<ILogger<PostgreSqlConnectionFactory>>(),
                 sp.GetRequiredService<ILogger<PostgreSqlConnection>>(),
-                sp.GetRequiredService<ISecretManagerProvider>()),
+                sp.GetRequiredService<ISecretManagerProvider>(),
+                sp.GetService<Lazy<IEffectiveSettingsProvider>>()),
                 ServiceLifetime.Singleton));
             builder.Services.TryAdd(new ServiceDescriptor(
                 typeof(IPostgreSqlConnectionProvider),

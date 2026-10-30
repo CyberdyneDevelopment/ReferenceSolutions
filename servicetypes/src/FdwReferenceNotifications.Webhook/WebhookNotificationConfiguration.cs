@@ -60,6 +60,10 @@ public sealed partial class WebhookNotificationConfiguration : INotificationImpl
     /// </summary>
     public string? SecretKeyName { get; set; }
 
+    /// <summary>Gets or sets what the notification is for.</summary>
+    /// <remarks>Kept on the domain row with the other fields every notification type has; the type's own table does not hold it.</remarks>
+    public string? Description { get; set; }
+
     // ========================================
     // Webhook-specific fields
     // ========================================

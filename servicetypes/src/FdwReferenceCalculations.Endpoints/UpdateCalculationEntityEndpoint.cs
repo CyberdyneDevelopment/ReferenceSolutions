@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Calculations.Endpoints.CalculationEntities;
@@ -33,16 +31,7 @@ public class UpdateCalculationEntityEndpoint : UpdateCalculationEntityEndpointBa
     protected override async Task<IGenericResult<CalculationEntityDetailDto?>> FindForUpdate(
         UpdateCalculationEntityRequest request, CancellationToken ct)
     {
-        var result = await _service.GetCalculationById(request.Id, ct).ConfigureAwait(false);
-        if (result.IsFailure)
-        {
-            return GenericResult<CalculationEntityDetailDto?>.Success((CalculationEntityDetailDto?)null);
-        }
-
-        var entity = result.Value!;
-        var detail = MapToDetail(entity);
-
-        return GenericResult<CalculationEntityDetailDto?>.Success((CalculationEntityDetailDto?)detail);
+        return CalculationEntityDetailMapper.Found(await _service.GetCalculationById(request.Id, ct).ConfigureAwait(false));
     }
 
     /// <inheritdoc/>
@@ -55,7 +44,12 @@ public class UpdateCalculationEntityEndpoint : UpdateCalculationEntityEndpointBa
         // unchanged, matching UpdateConnectionEndpointBase's pattern. Inputs is the one collection:
         // null means "not sent, keep the existing set"; an empty list is a real request to clear it,
         // which is why the request property has no default and this checks null, not Count == 0.
-        var inputs = request.Inputs is not null ? MapInputs(request.Inputs) : MapInputs(existing.Inputs);
+        var inputs = CalculationEntityInputMapper.ToInputs(request.Inputs ?? existing.Inputs, Logger);
+        if (!inputs.IsSuccess || inputs.Value is not { } mappedInputs)
+        {
+            return inputs.ToNewResult<CalculationEntityDetailDto>();
+        }
+
         var output = new CalculationOutputSpec
         {
             OutputDataSetName = request.OutputDataSetName ?? existing.OutputDataSetName ?? string.Empty,
@@ -76,7 +70,7 @@ public class UpdateCalculationEntityEndpoint : UpdateCalculationEntityEndpointBa
             request.Name ?? existing.Name,
             request.Description ?? existing.Description,
             calculationEntityType,
-            inputs,
+            mappedInputs,
             output,
             request.IsEnabled ?? existing.IsEnabled,
             typed.Value!,
@@ -88,24 +82,26 @@ public class UpdateCalculationEntityEndpoint : UpdateCalculationEntityEndpointBa
         }
 
         return GenericResult<CalculationEntityDetailDto>.Success(
-            MapToDetail(result.Value!));
+            CalculationEntityDetailMapper.ToDetail(result.Value!));
     }
 
     // The implementation is the record a calculation is written as, so an update always writes one.
-    // Sent: read it as the (possibly new) type's configuration. Omitted: keep the stored one, like every
-    // other omitted field -- unless the type is changing, where the stored settings belong to the old type.
+    // Sent with the type unchanged: each member sent replaces the stored one and each member not sent keeps it, like every
+    // other field of an update. Sent with the type changing: read as the new type's whole configuration, because the stored
+    // settings belong to the old type. Omitted: keep the stored one, unless the type is changing.
     private async Task<IGenericResult<IGenericConfiguration>> ResolveTypedConfiguration(
         UpdateCalculationEntityRequest request,
         CalculationEntityDetailDto existing,
         string calculationEntityType,
         CancellationToken ct)
     {
-        if (request.Configuration is { } configuration)
+        var typeChanges = !string.Equals(calculationEntityType, existing.CalculationEntityType, StringComparison.OrdinalIgnoreCase);
+        if (request.Configuration is { } configuration && typeChanges)
         {
             return CalculationTypedConfigurationReader.Read(calculationEntityType, configuration, Logger);
         }
 
-        if (!string.Equals(calculationEntityType, existing.CalculationEntityType, StringComparison.OrdinalIgnoreCase))
+        if (typeChanges)
         {
             return GenericResult<IGenericConfiguration>.Failure(
                 CalculationEndpointLog.TypedConfigurationRequiredForTypeChange(
@@ -118,47 +114,17 @@ public class UpdateCalculationEntityEndpoint : UpdateCalculationEntityEndpointBa
             return current.ToNewResult<IGenericConfiguration>();
         }
 
-        return current.Value!.TypedConfiguration is { } stored
-            ? GenericResult<IGenericConfiguration>.Success(stored)
-            : GenericResult<IGenericConfiguration>.Failure(
-                CalculationEndpointLog.TypedConfigurationUnreadable(
-                    Logger, calculationEntityType, "the stored configuration", "the calculation has no stored configuration; send one"));
-    }
-
-    private static List<CalculationInput> MapInputs(IList<CalculationEntityInputDto> dtos)
-    {
-        return dtos.Select(dto => new CalculationInput
+        if (current.Value!.TypedConfiguration is not { } stored)
         {
-            Kind = CalculationInputKinds.ByName(dto.InputKind),
-            DataSetName = dto.DataSetName,
-            ConnectionName = dto.ConnectionName,
-            ContainerPath = dto.ContainerPath,
-            InputAlias = dto.InputAlias
-        }).ToList();
-    }
+            return request.Configuration is { } whole
+                ? CalculationTypedConfigurationReader.Read(calculationEntityType, whole, Logger)
+                : GenericResult<IGenericConfiguration>.Failure(
+                    CalculationEndpointLog.TypedConfigurationUnreadable(
+                        Logger, calculationEntityType, "the stored configuration", "the calculation has no stored configuration; send one"));
+        }
 
-    private static CalculationEntityDetailDto MapToDetail(ICalculationEntity entity)
-    {
-        return new CalculationEntityDetailDto
-        {
-            Id = entity.Id,
-            Name = entity.Name,
-            Description = entity.Description,
-            CalculationEntityType = entity.CalculationEntityType,
-            OutputDataSetName = entity.Output.OutputDataSetName,
-            ResultFieldName = entity.Output.ResultFieldName,
-            ResultDataTypeName = entity.Output.ResultDataTypeName,
-            IsEnabled = entity.IsEnabled,
-            Inputs = entity.Inputs.Select(i => new CalculationEntityInputDto
-            {
-                InputAlias = i.InputAlias,
-                InputKind = i.Kind?.Name ?? "DataSet",
-                DataSetName = i.DataSetName,
-                ConnectionName = i.ConnectionName,
-                ContainerPath = i.ContainerPath,
-                ScalarValueType = i.ScalarValue?.ValueType?.Name,
-                ScalarSerializedValue = i.ScalarValue?.SerializedValue
-            }).ToList()
-        };
+        return request.Configuration is { } sent
+            ? CalculationTypedConfigurationReader.ReadOver(calculationEntityType, stored, sent, Logger)
+            : GenericResult<IGenericConfiguration>.Success(stored);
     }
 }

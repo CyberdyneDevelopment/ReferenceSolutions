@@ -1,3 +1,4 @@
+using Fdw.Services.Settings;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Collections;
@@ -79,7 +80,8 @@ public sealed class SqliteConnectionType
                 sp => new SqliteConnectionFactory(
                 sp.GetRequiredService<ILogger<SqliteConnectionFactory>>(),
                 sp.GetRequiredService<ILogger<SqliteConnection>>(),
-                sp.GetRequiredService<ISecretManagerProvider>()),
+                sp.GetRequiredService<ISecretManagerProvider>(),
+                sp.GetService<Lazy<IEffectiveSettingsProvider>>()),
                 ServiceLifetime.Singleton));
             builder.Services.TryAdd(new ServiceDescriptor(
                 typeof(ISqliteConnectionProvider),

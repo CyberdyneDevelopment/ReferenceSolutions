@@ -82,6 +82,28 @@ public static partial class TenantLog
         ClientMessage = "This tenant cannot be your landing tenant")]
     public static partial IGenericMessage SetDefaultTenantNotSelectable(ILogger logger, string userId, Guid tenantId);
 
+    // Why 108644: a refusal answers 403 (category 10). One message for an unknown organization, another company's, a deleted one and one the person holds no access in, so the answer never says whether an organization id exists (FDW-2938, as FDW-2892 and FDW-2887).
+    [MessageLogging(EventId = 108644, Level = LogLevel.Warning, Message = "User '{userId}' may not choose organization '{organizationId}' as their default",
+        ClientMessage = "You can only choose a department you hold access in")]
+    public static partial IGenericMessage SetDefaultOrganizationNotHeld(ILogger logger, string userId, Guid organizationId);
+
+    // The person acts in this company but holds no membership row in it (a member of the global tenant acting elsewhere), so there is nowhere to keep a default.
+    [MessageLogging(EventId = 108645, Level = LogLevel.Warning, Message = "User '{userId}' holds no membership in tenant '{tenantId}', so a default organization cannot be kept",
+        ClientMessage = "You are not a member of this company, so a default department cannot be kept for you")]
+    public static partial IGenericMessage DefaultOrganizationNoMembership(ILogger logger, string userId, Guid tenantId);
+
+    [MessageLogging(EventId = 8643, Level = LogLevel.Information, Message = "User '{userId}' set organization '{organizationId}' as their default in tenant '{tenantId}'")]
+    public static partial IGenericMessage DefaultOrganizationSet(ILogger logger, string userId, Guid organizationId, Guid tenantId);
+
+    [MessageLogging(EventId = 8644, Level = LogLevel.Information, Message = "User '{userId}' cleared their default organization in tenant '{tenantId}'")]
+    public static partial IGenericMessage DefaultOrganizationCleared(ILogger logger, string userId, Guid tenantId);
+
+    [MessageLogging(EventId = 78645, Level = LogLevel.Error, Message = "The default organization of user '{userId}' in tenant '{tenantId}' could not be saved: {reason}")]
+    public static partial IGenericMessage DefaultOrganizationNotSaved(ILogger logger, string userId, Guid tenantId, string? reason);
+
+    [MessageLogging(EventId = 78646, Level = LogLevel.Error, Message = "The change to the default organization of user '{userId}' in tenant '{tenantId}' was saved but could not be recorded in the administrative audit: {reason}")]
+    public static partial IGenericMessage DefaultOrganizationNotAudited(ILogger logger, string userId, Guid tenantId, string? reason);
+
     [MessageLogging(EventId = 8638, Level = LogLevel.Error, Message = "Failed to set default tenant '{tenantId}' for user '{userId}'")]
     public static partial IGenericMessage SetDefaultTenantFailed(ILogger logger, Exception ex, string userId, Guid tenantId);
 

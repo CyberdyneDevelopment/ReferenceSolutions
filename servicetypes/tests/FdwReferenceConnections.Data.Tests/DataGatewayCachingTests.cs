@@ -85,7 +85,7 @@ public sealed class DataGatewayCachingTests
         _connectionConfigProviderMock
             .Setup(p => p.Get(It.IsAny<Guid>(), ConfigurationLevels.RecordOnly, It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IConnectionImplementationConfiguration>.Success(
-                new MsSqlConnectionConfiguration { MaxSerialInsert = 1000, Implementation = "MsSql" }));
+                new MsSqlConnectionConfiguration { MaxSerialInsert = 1000, CommandTimeoutSeconds = 30, Implementation = "MsSql" }));
 
         _dataStoreProviderMock = new Mock<IDataStoreProvider>();
         // Why: default to "not found" so unconfigured container routing fails loud instead of NRE.

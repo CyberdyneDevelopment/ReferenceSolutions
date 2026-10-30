@@ -152,9 +152,9 @@ public sealed class PasswordCredentialStepType
         if (verified.Value is not { GrantsAccess: true })
             return GenericResult<StepOutcome>.Failure(PasswordCredentialLog.Refused(_logger, username));
 
-        var tenant = await _tenants.TenantFor(user.Id, cancellationToken).ConfigureAwait(false);
-        if (tenant.IsFailure)
-            return tenant.ToNewResult<StepOutcome>();
+        var landing = await _tenants.LandingFor(user.Id, cancellationToken).ConfigureAwait(false);
+        if (landing.IsFailure)
+            return landing.ToNewResult<StepOutcome>();
 
         PasswordCredentialLog.Proved(_logger, user.Id);
 
@@ -167,7 +167,7 @@ public sealed class PasswordCredentialStepType
                 AuthenticatedAt = DateTimeOffset.UtcNow,
             },
 
-            Principal = new Principal { Id = user.Id, TenantId = tenant.Value },
+            Principal = new Principal { Id = user.Id, TenantId = landing.Value!.TenantId, OrganizationId = landing.Value.OrganizationId },
         }));
     }
 }

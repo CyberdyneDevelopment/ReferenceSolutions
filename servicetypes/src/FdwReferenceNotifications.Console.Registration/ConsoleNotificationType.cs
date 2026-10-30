@@ -57,6 +57,10 @@ public sealed class ConsoleNotificationType
             channelName: "Console",
             displayName: "Console Notifications",
             description: "Development/test channel that logs notification content via structured logging",
+            settings:
+            [
+                new("LogLevel", NotificationSettingTypes.Text, false, false),
+            ],
             defaultContainerName: "ConsoleNotificationConfiguration")
     {
         Configuration(builder =>
@@ -120,4 +124,7 @@ public sealed class ConsoleNotificationType
             return GenericResult<IHost>.Success(host);
         });
     }
+
+    /// <inheritdoc />
+    public override INotificationImplementationConfiguration NewConfiguration() => new ConsoleNotificationConfiguration();
 }

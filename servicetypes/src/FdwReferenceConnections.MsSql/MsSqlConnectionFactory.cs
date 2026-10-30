@@ -11,6 +11,7 @@ using Fdw.Services.Connections.MsSql.Authentication;
 using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.SecretManagers.Abstractions;
 using Fdw.Services.Connections.MsSql;
+using Fdw.Services.Settings;
 using FdwReferenceConnections.MsSql.Logging;
 
 namespace FdwReferenceConnections.MsSql;
@@ -41,6 +42,10 @@ public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnecti
     // Register. Null only on the provider-less constructor below, and that is a state
     // the authentication type decides whether to care about.
     private readonly ISecretManagerProvider? _secretManagerProvider;
+    // Why Lazy: the settings are read through connections, so a factory that took the provider itself would wait on the connection it is
+    // building (FDW-3284). Null in a host that registers no settings, and on the provider-less constructor, whose connection (the one that
+    // reaches PlatformConfiguration) must state its own command timeout because the settings are read through it.
+    private readonly Lazy<IEffectiveSettingsProvider>? _settings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MsSqlConnectionFactory"/> class that resolves
@@ -54,16 +59,22 @@ public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnecti
     /// SESSION_CONTEXT injection. Optional: a host whose connection kinds declare no session
     /// contexts never registers one.
     /// </param>
+    /// <param name="settings">
+    /// The host's settings, read for the command timeout of a connection that states none (FDW-3284). Optional: a host that registers no
+    /// settings never builds a connection without a stated timeout.
+    /// </param>
     public MsSqlConnectionFactory(
         ILogger<MsSqlConnectionFactory> logger,
         ILogger<MsSqlConnection> connectionLogger,
         ISecretManagerProvider secretManagerProvider,
-        IAuthenticationContextAccessor? authenticationContextAccessor = null)
+        IAuthenticationContextAccessor? authenticationContextAccessor = null,
+        Lazy<IEffectiveSettingsProvider>? settings = null)
     {
         _logger = logger;
         _connectionLogger = connectionLogger;
         _secretManagerProvider = secretManagerProvider;
         _authenticationContextAccessor = authenticationContextAccessor;
+        _settings = settings;
     }
 
     /// <summary>
@@ -93,6 +104,7 @@ public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnecti
         _connectionLogger = connectionLogger;
         _secretManagerProvider = null;
         _authenticationContextAccessor = authenticationContextAccessor;
+        _settings = null;
     }
 
 
@@ -174,6 +186,12 @@ public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnecti
         if (configuration.MaxSerialInsert <= 0)
             return GenericResult<IGenericConnection>.Failure(DatabaseCommandLog.MaxSerialInsertNotStated(_logger, name));
 
+        // Never defaulted (FDW-3284): the command timeout is the connection's own, else the instance's setting DefaultCommandTimeoutSeconds, and
+        // a connection that has neither is refused, naming it and the setting.
+        var commandTimeout = InstanceCommandTimeout.Resolve(configuration.CommandTimeoutSeconds, _settings, "connection", name, _logger);
+        if (commandTimeout.IsFailure)
+            return commandTimeout.ToNewResult<IGenericConnection>();
+
         // Why: ByName returns the NotFound sentinel for an unrecognized type -- never null. An
         // unknown authentication type is a configuration defect, not "no authentication".
         var auth = MsSqlAuthenticationTypes.ByName(configuration.AuthenticationType);
@@ -207,6 +225,7 @@ public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnecti
             _connectionLogger,
             configuration,
             built.Value.ConnectionString,
+            commandTimeout.Value,
             _authenticationContextAccessor));
     }
 

@@ -36,7 +36,7 @@ public sealed class ConfigurationGatewayDerivedCacheTests
     private readonly Mock<IQueryCommand> _read = QueryCommandMock.Read();
     private readonly ConfigurationSchema _schema = new()
     {
-        Connections = { new MsSqlConnectionConfiguration { MaxSerialInsert = 1000, Name = "PlatformConfiguration", Implementation = "MsSql" } },
+        Connections = { new MsSqlConnectionConfiguration { MaxSerialInsert = 1000, CommandTimeoutSeconds = 30, Name = "PlatformConfiguration", Implementation = "MsSql" } },
     };
 
     [Fact]

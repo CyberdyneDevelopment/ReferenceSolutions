@@ -34,7 +34,7 @@ namespace FdwReferenceSecretManagers.HashiCorpVault;
 /// </para>
 /// </remarks>
 public sealed class HashiCorpVaultSecretManagerFactory
-    : ServiceFactoryBase<ISecretManager, HashiCorpVaultConfiguration>, ISecretManagerServiceFactory<ISecretManager, HashiCorpVaultConfiguration>
+    : ServiceFactoryBase<ISecretManager, HashiCorpVaultConfiguration>, IHashiCorpVaultSecretManagerFactory
 {
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<HashiCorpVaultSecretManagerFactory> _logger;

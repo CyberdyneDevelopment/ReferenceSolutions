@@ -22,6 +22,7 @@ public sealed class MsSqlConnectionSessionContextTests
             NullLogger<MsSqlConnection>.Instance,
             new MsSqlConnectionConfiguration(),
             connectionString: "Server=unused;",
+            commandTimeoutSeconds: 30,
             authenticationContextAccessor: new StubAuthenticationContextAccessor(authContext));
 
     // Why a stub rather than the real AuthenticationContextAccessor: that type backs Current with a
@@ -161,6 +162,7 @@ public sealed class MsSqlConnectionSessionContextTests
             NullLogger<MsSqlConnection>.Instance,
             new MsSqlConnectionConfiguration(),
             connectionString: "Server=unused;",
+            commandTimeoutSeconds: 30,
             authenticationContextAccessor: null);
 
         // Act
@@ -187,6 +189,7 @@ public sealed class MsSqlConnectionSessionContextTests
             NullLogger<MsSqlConnection>.Instance,
             new MsSqlConnectionConfiguration(),
             connectionString: "Server=unused;",
+            commandTimeoutSeconds: 30,
             authenticationContextAccessor: accessor);
 
         connection.BuildSessionContextPlan().UserId.ShouldBe(
@@ -219,6 +222,7 @@ public sealed class MsSqlConnectionSessionContextTests
             NullLogger<MsSqlConnection>.Instance,
             new MsSqlConnectionConfiguration(),
             connectionString: "Server=unused;",
+            commandTimeoutSeconds: 30,
             authenticationContextAccessor: accessor);
 
         // Act + Assert: elevated inside the scope.

@@ -59,6 +59,7 @@ public sealed class MsSqlGetSecretHandler
             .Where("SecretKey", command.SecretKey)
             .Where("IsCurrent", true)
             .Where("IsDeleted", false)
+            .CommandTimeout(sqlContext.CommandTimeout, sqlContext.CommandTimeoutOwner)
             .Build();
 
         var result = await sqlContext.Gateway

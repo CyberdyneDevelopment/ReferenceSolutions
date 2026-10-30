@@ -50,6 +50,7 @@ internal sealed class PipelineTrigger
     private readonly IAuthenticationContextAccessor _accessor;
     private readonly IPipelineExecutionQueue _pipelineQueue;
     private readonly IPipelineRunHolds _holds;
+    private readonly IPipelineRunRequestStore _requests;
     private readonly IPipelineStatusBroadcaster _broadcaster;
     private readonly PipelineRunAuthority _runAuthority;
     private readonly ILogger _logger;
@@ -62,6 +63,7 @@ internal sealed class PipelineTrigger
     /// <param name="accessor">The ambient caller, swapped for the relayed tenant's while the pipeline is resolved.</param>
     /// <param name="pipelineQueue">Queues the run.</param>
     /// <param name="holds">Keeps the request of a run that waits for approval.</param>
+    /// <param name="requests">Writes the request of a run that waits for approval first, so a restart can put the run back where it waits (FDW-3216).</param>
     /// <param name="broadcaster">Announces the run to subscribers.</param>
     /// <param name="runAuthority">Judges the run roles for what the pipeline reaches.</param>
     /// <param name="logger">The logger.</param>
@@ -73,6 +75,7 @@ internal sealed class PipelineTrigger
         IAuthenticationContextAccessor accessor,
         IPipelineExecutionQueue pipelineQueue,
         IPipelineRunHolds holds,
+        IPipelineRunRequestStore requests,
         IPipelineStatusBroadcaster broadcaster,
         PipelineRunAuthority runAuthority,
         ILogger logger)
@@ -84,6 +87,7 @@ internal sealed class PipelineTrigger
         _accessor = accessor;
         _pipelineQueue = pipelineQueue;
         _holds = holds;
+        _requests = requests;
         _broadcaster = broadcaster;
         _runAuthority = runAuthority;
         _logger = logger;
@@ -228,10 +232,9 @@ internal sealed class PipelineTrigger
 
         var enqueued = await _pipelineQueue.Enqueue(request, ct).ConfigureAwait(false);
 
-        if (!enqueued)
+        if (!enqueued.IsAccepted)
         {
-            EtlLog.ExecutionQueueFull(_logger, pipelineName);
-            return GenericResult<UnifiedTriggerResponse>.Success(new UnifiedTriggerResponse { ExecutionId = executionId, Status = "QueueFull" });
+            return await RefuseBusy(executionId, pipelineName, enqueued).ConfigureAwait(false);
         }
 
         EtlLog.ExecutionEnqueued(_logger, pipelineName, executionId);
@@ -257,6 +260,14 @@ internal sealed class PipelineTrigger
     // AwaitingApproval for a run that is not marked as waiting would leave it waiting for nobody.
     private async Task<IGenericResult<UnifiedTriggerResponse>> HoldForApproval(PipelineExecutionRequest request, CancellationToken ct)
     {
+        // Why the request is written before the run is held: the hold is in memory, so a restart would lose the run. The stored request lets the host put
+        // it back where it waits (FDW-3216). A request that cannot be written fails the start, saying why, as a hold that cannot be recorded does.
+        var kept = await _requests.Record(request, ct).ConfigureAwait(false);
+        if (kept.IsFailure)
+        {
+            return kept.ToNewResult<UnifiedTriggerResponse>();
+        }
+
         if (!_holds.Hold(request))
         {
             return GenericResult<UnifiedTriggerResponse>.Failure(EtlServerLog.PipelineHoldRefused(_logger, request.ExecutionId, request.PipelineName));
@@ -358,6 +369,25 @@ internal sealed class PipelineTrigger
         req.Parameters is null ? [] : [.. req.Parameters.Select(p => new KeyValuePair<string, string>(p.Name, p.Value))];
 
     // The run record already exists, so a run refused for what it was given closes it as failed with the reason.
+    // A run the queue did not take because the server is busy: the queue is full, or a threshold on waiting runs that stops new runs fires (FDW-3161). The
+    // caller is told the server is busy; a run a threshold stopped is closed as not executed with the threshold's reason.
+    private async Task<IGenericResult<UnifiedTriggerResponse>> RefuseBusy(Guid executionId, string pipelineName, PipelineEnqueueResult refused)
+    {
+        if (string.Equals(refused.Code, PipelineEnqueueResult.QueueFullCode, StringComparison.Ordinal))
+        {
+            EtlLog.ExecutionQueueFull(_logger, pipelineName);
+            return GenericResult<UnifiedTriggerResponse>.Success(new UnifiedTriggerResponse { ExecutionId = executionId, Status = "QueueFull", Reason = refused.Reason });
+        }
+
+        var closed = await _executionTracker.Complete(executionId, false, refused.Code, refused.Reason, CancellationToken.None).ConfigureAwait(false);
+        if (!closed.IsSuccess)
+        {
+            EtlServerLog.ExecutionCompleteFailed(_logger, executionId, pipelineName, closed.CurrentMessage);
+        }
+
+        return GenericResult<UnifiedTriggerResponse>.Success(new UnifiedTriggerResponse { ExecutionId = executionId, Status = "ServerBusy", Reason = refused.Reason });
+    }
+
     private async Task<IGenericResult<UnifiedTriggerResponse>> RefuseRun(
         Guid executionId, string pipelineName, string code, IGenericResult refusal)
     {

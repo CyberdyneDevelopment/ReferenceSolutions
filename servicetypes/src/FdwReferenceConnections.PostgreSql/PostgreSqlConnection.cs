@@ -14,10 +14,12 @@ using Fdw.Commands.Data.Abstractions.Logging;
 using Fdw.Data.Abstractions;
 using Fdw.Data.Abstractions.Mappers.PocoMappers;
 using Fdw.Data.PostgreSql;
+using Fdw.Messages;
 using Fdw.Results;
 using Fdw.Services.Connections;
 using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Connections.PostgreSql.Logging;
+using FdwReferenceConnections.PostgreSql.Logging;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 
@@ -38,6 +40,8 @@ public sealed partial class PostgreSqlConnection : ConnectionBase<NpgsqlCommand,
     // Why: After config-split, Name lives on the parent IConnectionImplementationConfiguration header, not on the typed body.
     // The factory extracts it and passes it explicitly so logging uses the correct connection name.
     private readonly string _connectionName;
+    // Why a field and not Configuration.CommandTimeout: the configuration may state none (FDW-3284), and the number the factory resolved is the one in the connection string.
+    private readonly int _commandTimeoutSeconds;
     private readonly bool _inUnitOfWork;
 
     /// <summary>
@@ -47,18 +51,21 @@ public sealed partial class PostgreSqlConnection : ConnectionBase<NpgsqlCommand,
     /// <param name="configuration">The typed PostgreSQL connection configuration.</param>
     /// <param name="npgsqlConnection">The underlying Npgsql connection.</param>
     /// <param name="connectionName">The connection name from the parent IConnectionImplementationConfiguration header.</param>
+    /// <param name="commandTimeoutSeconds">The command timeout in seconds, positive, that the factory resolved and wrote into the connection string.</param>
     /// <param name="inUnitOfWork">Whether <paramref name="npgsqlConnection"/> already has a unit of work's transaction open, so every command this connection runs belongs to it.</param>
     public PostgreSqlConnection(
         ILogger<PostgreSqlConnection> logger,
         PostgreSqlConnectionConfiguration configuration,
         NpgsqlConnection npgsqlConnection,
         string connectionName,
+        int commandTimeoutSeconds,
         bool inUnitOfWork = false)
         : base(logger, configuration)
     {
         _npgsqlConnection = npgsqlConnection;
         _logger = logger;
         _connectionName = connectionName;
+        _commandTimeoutSeconds = commandTimeoutSeconds;
         _inUnitOfWork = inUnitOfWork;
     }
 
@@ -99,6 +106,27 @@ public sealed partial class PostgreSqlConnection : ConnectionBase<NpgsqlCommand,
     internal ILogger ScriptLogger => _logger;
 
     internal string ScriptConnectionName => _connectionName;
+
+    // Npgsql raises a TimeoutException inside the NpgsqlException when a command outruns the command timeout the connection string
+    // carries (FDW-3279), so that is the one failure a script says the connection's stored seconds for.
+    internal static bool OutranCommandTimeout(NpgsqlException exception) => exception.InnerException is TimeoutException;
+
+    internal IGenericMessage CommandTimedOut(string commandText)
+        => PostgreSqlCommandTimeoutLogger.CommandTimedOut(_logger, _connectionName, _commandTimeoutSeconds, commandText);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// The command's own timeout, in whole seconds (a part of a second counts as the next), over the one the connection string gives (FDW-3324).
+    /// </remarks>
+    protected override IGenericResult ApplyCommandTimeout(NpgsqlCommand native, TimeSpan timeout, string owner)
+    {
+        Limit(native, timeout);
+        return GenericResult.Success();
+    }
+
+    // Internal and static so the tests can read what a command is given without a connection.
+    internal static void Limit(NpgsqlCommand native, TimeSpan timeout)
+        => native.CommandTimeout = (int)Math.Ceiling(timeout.TotalSeconds);
 
     /// <summary>
     /// Executes a NpgsqlCommand with a typed result using container schema for result materialization.
@@ -496,7 +524,7 @@ public sealed partial class PostgreSqlConnection : ConnectionBase<NpgsqlCommand,
             PostgreSqlConnectionLog.UnitOfWorkBegan(_logger, _connectionName);
             return GenericResult<IDataConnectionTransaction>.Success(
                 new PostgreSqlDataConnectionTransaction(
-                    new PostgreSqlConnection(_logger, Configuration, unitConnection, _connectionName, inUnitOfWork: true),
+                    new PostgreSqlConnection(_logger, Configuration, unitConnection, _connectionName, _commandTimeoutSeconds, inUnitOfWork: true),
                     transaction,
                     _logger,
                     _connectionName));

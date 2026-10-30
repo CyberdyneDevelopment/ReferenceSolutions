@@ -128,6 +128,7 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = null!, // No database
             AuthenticationType = "WindowsAuth"
@@ -147,6 +148,7 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "NotReal"
@@ -165,6 +167,7 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "NotReal"
@@ -183,6 +186,7 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -206,6 +210,7 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = null!,
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -237,6 +242,7 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
         var config = new MsSqlConnectionConfiguration
         {
             MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "NotReal" // Will fail - unknown auth type

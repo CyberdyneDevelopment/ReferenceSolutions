@@ -28,22 +28,6 @@ public class GetCalculationEntityEndpoint : GetCalculationEntityEndpointBase
     protected override async Task<IGenericResult<CalculationEntityDetailDto?>> FindByIdentifier(
         CalculationEntityIdRequest request, CancellationToken ct)
     {
-        var result = await _service.GetCalculationById(request.Id, ct);
-        if (result.IsFailure)
-        {
-            return GenericResult<CalculationEntityDetailDto?>.Success((CalculationEntityDetailDto?)null);
-        }
-
-        var entity = result.Value!;
-        var detail = new CalculationEntityDetailDto
-        {
-            Id = entity.Id,
-            Name = entity.Name,
-            Description = entity.Description,
-            CalculationEntityType = entity.CalculationEntityType,
-            IsEnabled = entity.IsEnabled
-        };
-
-        return GenericResult<CalculationEntityDetailDto?>.Success((CalculationEntityDetailDto?)detail);
+        return CalculationEntityDetailMapper.Found(await _service.GetCalculationById(request.Id, ct).ConfigureAwait(false));
     }
 }

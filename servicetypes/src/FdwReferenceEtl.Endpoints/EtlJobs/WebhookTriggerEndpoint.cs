@@ -71,6 +71,7 @@ public sealed class WebhookTriggerEndpoint : EndpointWithoutRequest
         IAuthenticationContextAccessor accessor,
         IPipelineExecutionQueue pipelineQueue,
         IPipelineRunHolds holds,
+        IPipelineRunRequestStore requests,
         IPipelineStatusBroadcaster broadcaster,
         IRoleGrants grants,
         IDataSetConfigurationProvider dataSets,
@@ -82,7 +83,7 @@ public sealed class WebhookTriggerEndpoint : EndpointWithoutRequest
         _accessor = accessor;
         _logger = logger;
         _pipelineTrigger = new PipelineTrigger(
-            executionTracker, dataGateways, pipelineProvider, pipelineConfigurations, accessor, pipelineQueue, holds, broadcaster,
+            executionTracker, dataGateways, pipelineProvider, pipelineConfigurations, accessor, pipelineQueue, holds, requests, broadcaster,
             new PipelineRunAuthority(grants, dataSets, connections, dataStores), logger);
     }
 
@@ -220,8 +221,7 @@ public sealed class WebhookTriggerEndpoint : EndpointWithoutRequest
             return;
         }
 
-        var status = string.Equals(started.Status, "QueueFull", StringComparison.Ordinal) ? 503 : 202;
-        await Send.ResponseAsync(started, status, ct).ConfigureAwait(false);
+        await Send.ResponseAsync(started, started.HttpStatus(), ct).ConfigureAwait(false);
     }
 
     // A call whose secret was proved: the trigger, and the tenant its run acts in.

@@ -94,8 +94,16 @@ public sealed class UnifiedTriggerResponse
     /// <summary>Gets or sets the execution item ID for tracking progress.</summary>
     public Guid ExecutionId { get; set; }
 
-    /// <summary>Gets or sets the initial status (e.g. "Queued", "AwaitingApproval", "QueueFull").</summary>
+    /// <summary>Gets or sets the initial status (e.g. "Queued", "AwaitingApproval", "QueueFull", "ServerBusy").</summary>
     public string Status { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets why the run was not taken, when the status says the server is busy (FDW-3161): the threshold on waiting runs that stops new runs; none otherwise.</summary>
+    public string? Reason { get; set; }
+
+    /// <summary>The HTTP status that answers this response: 503 when the server is busy (the queue is full or a threshold stops new runs), otherwise 202.</summary>
+    /// <returns>The status code.</returns>
+    public int HttpStatus() =>
+        string.Equals(Status, "QueueFull", StringComparison.Ordinal) || string.Equals(Status, "ServerBusy", StringComparison.Ordinal) ? 503 : 202;
 }
 
 /// <summary>
@@ -137,6 +145,7 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
         IAuthenticationContextAccessor accessor,
         IPipelineExecutionQueue pipelineQueue,
         IPipelineRunHolds holds,
+        IPipelineRunRequestStore requests,
         ProjectExecutionQueue projectQueue,
         IPipelineStatusBroadcaster broadcaster,
         IOrchestrationNodeConfigurationProvider nodeProvider,
@@ -155,7 +164,7 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
         // if DI does not wire up logging.
         _logger = logger ?? NullLogger<UnifiedTriggerEndpoint>.Instance;
         _pipelineTrigger = new PipelineTrigger(
-            executionTracker, dataGateways, pipelineProvider, pipelineConfigurations, accessor, pipelineQueue, holds, broadcaster,
+            executionTracker, dataGateways, pipelineProvider, pipelineConfigurations, accessor, pipelineQueue, holds, requests, broadcaster,
             new PipelineRunAuthority(grants, dataSets, connections, dataStores), _logger);
     }
 
@@ -230,8 +239,7 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
             }
 
             var r = result.Value!;
-            var status = string.Equals(r.Status, "QueueFull", StringComparison.Ordinal) ? 503 : 202;
-            await Send.ResponseAsync(r, status, ct).ConfigureAwait(false);
+            await Send.ResponseAsync(r, r.HttpStatus(), ct).ConfigureAwait(false);
             return;
         }
 
@@ -246,9 +254,8 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
             }
 
             var r = result.Value!;
-            // Why: AwaitingApproval → 202 with status field; QueueFull → 503
-            var status = string.Equals(r.Status, "QueueFull", StringComparison.Ordinal) ? 503 : 202;
-            await Send.ResponseAsync(r, status, ct).ConfigureAwait(false);
+            // Why: AwaitingApproval → 202 with status field; QueueFull and ServerBusy → 503
+            await Send.ResponseAsync(r, r.HttpStatus(), ct).ConfigureAwait(false);
             return;
         }
 

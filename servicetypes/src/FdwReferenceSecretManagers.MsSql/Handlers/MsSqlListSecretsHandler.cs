@@ -53,6 +53,7 @@ public sealed class MsSqlListSecretsHandler
         var query = DataQuery.From<SecretRow>(sqlContext.DataStoreName, config.Schema, config.TableName)
             .Where("IsCurrent", true)
             .Where("IsDeleted", false)
+            .CommandTimeout(sqlContext.CommandTimeout, sqlContext.CommandTimeoutOwner)
             .Build();
 
         var result = await sqlContext.Gateway

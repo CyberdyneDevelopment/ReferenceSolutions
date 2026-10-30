@@ -116,4 +116,14 @@ public static partial class PipelineLog
 
     [MessageLogging(EventId = 8243, Level = LogLevel.Warning, Message = "Target connection '{connectionName}' not found for pipeline '{pipelineName}'")]
     public static partial IGenericMessage TargetConnectionNotFound(ILogger logger, string connectionName, string pipelineName);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Run queue operations (8244-8249)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    [MessageLogging(EventId = 8244, Level = LogLevel.Information, Message = "Listed the pipeline run queue (every tenant: {reachesAll}): {running} running, {waiting} waiting")]
+    public static partial IGenericMessage RunQueueListed(ILogger logger, bool reachesAll, int running, int waiting);
+
+    [MessageLogging(EventId = 8245, Level = LogLevel.Warning, Message = "The pipeline run queue was requested with no tenant by a caller who does not administer the platform")]
+    public static partial IGenericMessage RunQueueRequestedWithoutTenant(ILogger logger);
 }

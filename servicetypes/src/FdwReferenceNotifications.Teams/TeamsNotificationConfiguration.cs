@@ -44,6 +44,10 @@ public sealed partial class TeamsNotificationConfiguration : INotificationImplem
     /// <summary>Gets or sets the key the secret manager resolves the webhook URL from.</summary>
     public string? SecretKeyName { get; set; }
 
+    /// <summary>Gets or sets what the notification is for.</summary>
+    /// <remarks>Kept on the domain row with the other fields every notification type has; the type's own table does not hold it.</remarks>
+    public string? Description { get; set; }
+
     // ========================================
     // Teams-specific fields
     // ========================================

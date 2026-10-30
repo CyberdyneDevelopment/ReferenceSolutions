@@ -22,6 +22,7 @@ public sealed class MsSqlConnectionSessionContextPlacementTests
             NullLogger<MsSqlConnection>.Instance,
             new MsSqlConnectionConfiguration(),
             connectionString: "Server=unused;",
+            commandTimeoutSeconds: 30,
             authenticationContextAccessor: new StubAuthenticationContextAccessor(context));
 
     private sealed class StubAuthenticationContextAccessor(IAuthenticationContext? current) : IAuthenticationContextAccessor

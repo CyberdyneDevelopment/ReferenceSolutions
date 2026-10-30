@@ -53,6 +53,17 @@ public sealed class EmailNotificationType
             channelName: "Email",
             displayName: "Email Notifications",
             description: "Send notifications via SMTP email",
+            settings:
+            [
+                new("SmtpHost", NotificationSettingTypes.Text, true, false),
+                new("SmtpPort", NotificationSettingTypes.Number, false, false),
+                new("UseSsl", NotificationSettingTypes.Flag, false, false),
+                new("Username", NotificationSettingTypes.Text, false, false),
+                new("Password", NotificationSettingTypes.Text, false, true),
+                new("FromAddress", NotificationSettingTypes.Text, true, false),
+                new("FromName", NotificationSettingTypes.Text, false, false),
+                new("ReplyToAddress", NotificationSettingTypes.Text, false, false),
+            ],
             defaultContainerName: "EmailNotificationConfiguration")
     {
         Configuration(builder =>
@@ -117,4 +128,7 @@ public sealed class EmailNotificationType
             return GenericResult<IHost>.Success(host);
         });
     }
+
+    /// <inheritdoc />
+    public override INotificationImplementationConfiguration NewConfiguration() => new EmailNotificationConfiguration();
 }

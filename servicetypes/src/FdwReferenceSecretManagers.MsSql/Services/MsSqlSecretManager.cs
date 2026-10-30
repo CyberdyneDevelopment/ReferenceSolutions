@@ -44,6 +44,7 @@ public sealed class MsSqlSecretManager : ISecretManager, IDisposable
     /// <param name="dataStoreName">
     /// The DataStore name the secret/user/token tables are addressed under (e.g. "PlatformConfiguration").
     /// </param>
+    /// <param name="commandTimeoutSeconds">The secret manager's command timeout in seconds; every command it sends carries it.</param>
     /// <param name="secretManagerName">
     /// The logical name of the secret manager (from the <c>SecretManagerConfiguration</c> header).
     /// After config-split, <c>MsSqlSecretManagerConfiguration.Name</c> returns <c>string.Empty</c>;
@@ -58,6 +59,7 @@ public sealed class MsSqlSecretManager : ISecretManager, IDisposable
         MsSqlSecretManagerConfiguration configuration,
         IConfigurationGateway gateway,
         string dataStoreName,
+        int commandTimeoutSeconds,
         string secretManagerName = "",
         IPasswordHasher? passwordHasher = null,
         IPersonalAccessTokenHasher? tokenHasher = null,
@@ -72,7 +74,7 @@ public sealed class MsSqlSecretManager : ISecretManager, IDisposable
         _name = secretManagerName;
 
         _executionContext = new MsSqlExecutionContext(
-            logger, configuration, gateway, _id, dataStoreName, secretManagerName,
+            logger, configuration, gateway, commandTimeoutSeconds, _id, dataStoreName, secretManagerName,
             passwordHasher, tokenHasher, tokenGenerator, hmacKey);
 
         MsSqlSecretManagerLogger.ManagerInitialized(_logger, configuration.Schema, configuration.TableName);

@@ -67,6 +67,7 @@ public sealed class MsSqlDeleteSecretHandler
             .Where("SecretKey", command.SecretKey)
             .Where("IsCurrent", true)
             .Where("IsDeleted", false)
+            .CommandTimeout(sqlContext.CommandTimeout, sqlContext.CommandTimeoutOwner)
             .Value(deleteRow);
 
         var result = await sqlContext.Gateway

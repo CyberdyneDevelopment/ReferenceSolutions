@@ -36,6 +36,7 @@
     <PackageReference Include="Fdw.Services.Data" />
     <PackageReference Include="Fdw.Services.Data.Abstractions" />
     <PackageReference Include="Fdw.Services.SecretManagers" />
+    <PackageReference Include="Fdw.Services.Settings" />
   </ItemGroup>
 
   <ItemGroup>

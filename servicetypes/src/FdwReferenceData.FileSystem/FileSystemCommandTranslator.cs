@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -244,7 +245,8 @@ public sealed class FileSystemCommandTranslator : IDataCommandTranslator<IFileSy
     }
 
     // Why: the write payload is the schema-agnostic flat name→value row shape (the dictionary write path
-    // every record writer supports). Accept a single row, a sequence of rows, a sequence of DataRecord
+    // every record writer supports). A row is a read-only or a mutable name→value dictionary: the mutable one is
+    // the shape a pipeline's load sends. Accept a single row, a sequence of rows, a sequence of DataRecord
     // (projected via ToDictionary()), or a sequence of typed rows (projected through the row type's POCO mapper,
     // as an Update's record is). Anything else is an unsupported payload — fail loud (NO FALLBACKS).
     private IGenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>> ExtractRows(
@@ -255,6 +257,10 @@ public sealed class FileSystemCommandTranslator : IDataCommandTranslator<IFileSy
             case IReadOnlyDictionary<string, object?> single:
                 return GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Success(
                     new[] { single });
+
+            case IDictionary<string, object?> mutableSingle:
+                return GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Success(
+                    new IReadOnlyDictionary<string, object?>[] { new ReadOnlyDictionary<string, object?>(mutableSingle) });
 
             case IEnumerable<IReadOnlyDictionary<string, object?>> rows:
                 return GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Success(
@@ -288,6 +294,18 @@ public sealed class FileSystemCommandTranslator : IDataCommandTranslator<IFileSy
                 return GenericResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>.Failure(
                     FileSystemRecordConnectorLog.WriteInputInvalid(
                         _logger, _connectionName, containerName, "a row to write is null"));
+            }
+
+            if (typedRow is IReadOnlyDictionary<string, object?> flat)
+            {
+                rows.Add(flat);
+                continue;
+            }
+
+            if (typedRow is IDictionary<string, object?> mutable)
+            {
+                rows.Add(new ReadOnlyDictionary<string, object?>(mutable));
+                continue;
             }
 
             var mapper = PocoMapperCollection.ByName(typedRow.GetType().Name);

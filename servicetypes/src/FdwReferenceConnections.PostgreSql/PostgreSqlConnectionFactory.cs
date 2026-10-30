@@ -8,6 +8,7 @@ using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Connections.PostgreSql.Authentication;
 using Fdw.Services.Connections.PostgreSql.Logging;
 using Fdw.Services.SecretManagers.Abstractions;
+using Fdw.Services.Settings;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 
@@ -27,6 +28,9 @@ public sealed class PostgreSqlConnectionFactory : ServiceFactoryBase<IGenericCon
     // IHttpClientFactory — PostgreSqlConnectionType registers what this factory needs. Null only on the
     // provider-less constructor below, and the authentication type decides whether that matters.
     private readonly ISecretManagerProvider? _secretManagerProvider;
+    // Why Lazy: the settings are read through connections, so a factory that took the provider itself would wait on the connection it is
+    // building (FDW-3284). Null in a host that registers no settings and on the provider-less constructor.
+    private readonly Lazy<IEffectiveSettingsProvider>? _settings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgreSqlConnectionFactory"/> class that resolves
@@ -35,14 +39,20 @@ public sealed class PostgreSqlConnectionFactory : ServiceFactoryBase<IGenericCon
     /// <param name="logger">The logger for factory operations.</param>
     /// <param name="connectionLogger">The logger for connection instances.</param>
     /// <param name="secretManagerProvider">The secret-manager provider, resolved by name per connection.</param>
+    /// <param name="settings">
+    /// The host's settings, read for the command timeout of a connection that states none (FDW-3284). Optional: a host that registers no
+    /// settings never builds a connection without a stated timeout.
+    /// </param>
     public PostgreSqlConnectionFactory(
         ILogger<PostgreSqlConnectionFactory> logger,
         ILogger<PostgreSqlConnection> connectionLogger,
-        ISecretManagerProvider secretManagerProvider)
+        ISecretManagerProvider secretManagerProvider,
+        Lazy<IEffectiveSettingsProvider>? settings = null)
     {
         _logger = logger;
         _connectionLogger = connectionLogger;
         _secretManagerProvider = secretManagerProvider;
+        _settings = settings;
     }
 
     /// <summary>
@@ -58,6 +68,7 @@ public sealed class PostgreSqlConnectionFactory : ServiceFactoryBase<IGenericCon
         _logger = logger;
         _connectionLogger = connectionLogger;
         _secretManagerProvider = null;
+        _settings = null;
     }
 
 
@@ -111,6 +122,14 @@ public sealed class PostgreSqlConnectionFactory : ServiceFactoryBase<IGenericCon
                 return GenericResult<IGenericConnection>.Failure(DatabaseCommandLog.MaxSerialInsertNotStated(_logger, connectionName));
             }
 
+            // Never defaulted (FDW-3284): the command timeout is the connection's own, else the instance's setting
+            // DefaultCommandTimeoutSeconds, and a connection that has neither is refused, naming it and the setting.
+            var commandTimeout = InstanceCommandTimeout.Resolve(configuration.CommandTimeout, _settings, "connection", connectionName, _logger);
+            if (commandTimeout.IsFailure)
+            {
+                return commandTimeout.ToNewResult<IGenericConnection>();
+            }
+
             var authValues = NormalizeAuthValues(configuration.AdditionalProperties);
             var auth = PostgreSqlAuthenticationTypes.ByName(authTypeName);
 
@@ -122,12 +141,12 @@ public sealed class PostgreSqlConnectionFactory : ServiceFactoryBase<IGenericCon
                 return fragmentResult.ToNewResult<IGenericConnection>();
             }
 
-            var connectionString = BuildConnectionStringBuilder(configuration, fragmentResult.Value).ConnectionString;
+            var connectionString = BuildConnectionStringBuilder(configuration, fragmentResult.Value, commandTimeout.Value).ConnectionString;
 
             // Create NpgsqlConnection - connection string goes out of scope after this
             var npgsqlConnection = new NpgsqlConnection(connectionString);
 
-            var connection = new PostgreSqlConnection(_connectionLogger, configuration, npgsqlConnection, connectionName);
+            var connection = new PostgreSqlConnection(_connectionLogger, configuration, npgsqlConnection, connectionName, commandTimeout.Value);
 
             PostgreSqlConnectionLog.ConnectionCreated(_logger, connectionName, configuration.Host, configuration.Port, configuration.Database);
 
@@ -159,14 +178,14 @@ public sealed class PostgreSqlConnectionFactory : ServiceFactoryBase<IGenericCon
     /// constructor — NpgsqlConnectionStringBuilder recognizes those keys as strongly-typed
     /// properties — then every other option is set by name. No raw key=value string appends.
     /// </remarks>
-    private static NpgsqlConnectionStringBuilder BuildConnectionStringBuilder(PostgreSqlConnectionConfiguration configuration, string authFragment)
+    private static NpgsqlConnectionStringBuilder BuildConnectionStringBuilder(PostgreSqlConnectionConfiguration configuration, string authFragment, int commandTimeoutSeconds)
     {
         var builder = new NpgsqlConnectionStringBuilder(authFragment)
         {
             Host = configuration.Host,
             Port = configuration.Port,
             Timeout = configuration.ConnectionTimeout,
-            CommandTimeout = configuration.CommandTimeout,
+            CommandTimeout = commandTimeoutSeconds,
             MinPoolSize = configuration.MinPoolSize,
             MaxPoolSize = configuration.MaxPoolSize,
         };

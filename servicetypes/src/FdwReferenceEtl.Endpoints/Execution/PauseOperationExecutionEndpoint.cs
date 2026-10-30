@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System;
 using Fdw.Operations.Abstractions.Execution;
+using Fdw.Services.Authentication.Abstractions.Security;
 using Microsoft.Extensions.Logging;
 using FdwReferenceEtl.Endpoints.Execution.Logging;
 using Fdw.Operations.Endpoints.Executions;
@@ -16,8 +17,12 @@ public class PauseOperationExecutionEndpoint : PauseExecutionEndpointBase
 {
     private readonly ILogger<PauseOperationExecutionEndpoint> _logger;
 
-    public PauseOperationExecutionEndpoint(IExecutionTracker tracker, ILogger<PauseOperationExecutionEndpoint> logger)
-        : base(logger, tracker) {
+    public PauseOperationExecutionEndpoint(
+        IExecutionTracker tracker,
+        IExecutionRunControl runControl,
+        IUserNames userNames,
+        ILogger<PauseOperationExecutionEndpoint> logger)
+        : base(logger, tracker, runControl, userNames) {
         _logger = logger;
     }
 

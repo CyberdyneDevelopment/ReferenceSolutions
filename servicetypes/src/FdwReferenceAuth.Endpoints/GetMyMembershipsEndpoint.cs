@@ -128,6 +128,7 @@ public class GetMyMembershipsEndpoint : EndpointWithoutRequest<MembershipsRespon
                     TenantId = m.TenantId.ToString(),
                     TenantName = byId.TryGetValue(m.TenantId, out var t) ? t.DisplayName : null,
                     IsDefault = m.IsDefault,
+                    DefaultOrganizationId = m.DefaultOrganizationId?.ToString(),
                     IsSelectable = byId.TryGetValue(m.TenantId, out var s) && s.IsSelectable,
                     Roles = held.Value
                         .Where(ur => ur.TenantId == m.TenantId && roleNames.ContainsKey(ur.RoleId))

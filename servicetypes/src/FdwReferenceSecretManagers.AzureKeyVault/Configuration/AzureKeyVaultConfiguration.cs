@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
@@ -108,8 +109,10 @@ public sealed partial class AzureKeyVaultConfiguration : ISecretManagerImplement
     /// </summary>
     /// <value>The Azure Active Directory tenant ID.</value>
     /// <remarks>
-    /// Required for service principal and certificate authentication.
+    /// Required for service principal and certificate authentication. Stored in the AzureTenantId column: TenantId is the
+    /// platform tenant column every row carries.
     /// </remarks>
+    [Column("AzureTenantId")]
     public string? TenantId { get; set; }
 
     /// <summary>
@@ -129,6 +132,7 @@ public sealed partial class AzureKeyVaultConfiguration : ISecretManagerImplement
     /// Required for service principal authentication with client secret.
     /// Should be stored securely and not logged.
     /// </remarks>
+    [SecretValue]
     public string? ClientSecret { get; set; }
 
     /// <summary>
@@ -148,6 +152,7 @@ public sealed partial class AzureKeyVaultConfiguration : ISecretManagerImplement
     /// Required if the certificate file is password-protected.
     /// Should be stored securely and not logged.
     /// </remarks>
+    [SecretValue]
     public string? CertificatePassword { get; set; }
 
     /// <summary>

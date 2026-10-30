@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Collections.Attributes;
 using Fdw.Commands.Data;
+using Fdw.Commands.Data.Abstractions.Timeouts;
 using Fdw.Commands.Data.Extensions;
 using Fdw.Results;
 using Fdw.Services.SecretManagers.Abstractions.Handlers;
@@ -127,6 +128,7 @@ public sealed class MsSqlSetSecretHandler
             .Where("SecretKey", secretKey)
             .Where("IsCurrent", true)
             .Where("IsDeleted", false)
+            .CommandTimeout(sqlContext.CommandTimeout, sqlContext.CommandTimeoutOwner)
             .Value(deactivateRow);
 
         var deactivateResult = await sqlContext.Gateway
@@ -149,7 +151,9 @@ public sealed class MsSqlSetSecretHandler
 
         // Why: Addressing lives in sqlContext.SecretTarget (DataStoreTarget) passed to the gateway.
         // InsertCommand carries only the entity data — no container/connection properties.
-        var insert = new InsertCommand<SecretRow>(newRow);
+        var timed = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        CommandTimeoutPolicy.Set(timed, sqlContext.CommandTimeout, sqlContext.CommandTimeoutOwner);
+        var insert = new InsertCommand<SecretRow>(newRow) { Metadata = timed };
 
         return await sqlContext.Gateway
             .Execute(insert, sqlContext.SecretTarget, cancellationToken)

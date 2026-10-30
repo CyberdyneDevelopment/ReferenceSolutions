@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Scheduling;
 using System.Diagnostics.CodeAnalysis;
 
@@ -16,8 +17,8 @@ namespace FdwReferenceSchedules.Endpoints;
 public class DeleteScheduleEndpoint : DeleteScheduleEndpointBase<IScheduleImplementationConfiguration>
 {
     /// <inheritdoc />
-    public DeleteScheduleEndpoint(ScheduleConfigurationProvider provider, ILogger<DeleteScheduleEndpoint> logger)
-        : base(logger, provider) {
+    public DeleteScheduleEndpoint(ScheduleConfigurationProvider provider, IConfigurationGatewayProvider gateways, ILogger<DeleteScheduleEndpoint> logger)
+        : base(logger, provider, gateways) {
     }
 
     /// <inheritdoc />

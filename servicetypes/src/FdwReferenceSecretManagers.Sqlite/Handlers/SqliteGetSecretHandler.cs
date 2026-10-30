@@ -62,7 +62,7 @@ public sealed class SqliteGetSecretHandler
             var cmd = conn.CreateCommand();
             await using (cmd.ConfigureAwait(false))
             {
-                cmd.CommandTimeout = config.CommandTimeoutSeconds;
+                cmd.CommandTimeout = sqliteContext.CommandTimeoutSeconds;
                 cmd.CommandText =
                     $"SELECT \"SecretKey\", \"SecretValue\", \"Version\", \"SecretType\", \"Description\", " +
                     $"\"ExpiresAt\", \"CreateDate\", \"ModifyDate\", \"IsCurrent\", \"IsDeleted\" " +

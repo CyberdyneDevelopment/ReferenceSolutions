@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -7,6 +8,7 @@ using Fdw.Security.Hashing;
 using Fdw.Services.Data.Abstractions;
 using Fdw.Services.SecretManagers;
 using Fdw.Services.SecretManagers.Abstractions;
+using Fdw.Services.Settings;
 using FdwReferenceSecretManagers.MsSql.Configuration;
 using Fdw.Results;
 
@@ -101,7 +103,8 @@ public sealed class MsSqlSecretManagerType
                 sp.GetService<IPasswordHasher>(),
                 sp.GetService<IPersonalAccessTokenHasher>(),
                 sp.GetService<IPersonalAccessTokenGenerator>(),
-                null),
+                null,
+                sp.GetService<Lazy<IEffectiveSettingsProvider>>()),
                 ServiceLifetime.Singleton));
             builder.Services.TryAdd(new ServiceDescriptor(
                 typeof(IMsSqlSecretManagerProvider),

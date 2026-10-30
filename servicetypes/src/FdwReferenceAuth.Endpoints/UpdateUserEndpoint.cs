@@ -92,7 +92,7 @@ public class UpdateUserEndpoint : UpdateUserEndpointBase<UpdateUserRequest>
         if (request.IsActive.HasValue) user.IsActive = request.IsActive.Value;
 
         return await UserProvider
-            .Save(user, UsersDomain, UsersDomain, user.Name, ct)
+            .Update(user, UsersDomain, UsersDomain, user.Name, ct)
             .ConfigureAwait(false);
     }
 }

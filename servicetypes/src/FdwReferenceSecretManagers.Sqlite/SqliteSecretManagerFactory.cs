@@ -4,6 +4,7 @@ using Fdw.Abstractions;
 using Fdw.Configuration;
 using Fdw.Results;
 using Fdw.Services.SecretManagers.Abstractions;
+using Fdw.Services.Settings;
 using FdwReferenceSecretManagers.Sqlite.Configuration;
 using FdwReferenceSecretManagers.Sqlite.Logging;
 using FdwReferenceSecretManagers.Sqlite.Services;
@@ -26,15 +27,20 @@ public sealed class SqliteSecretManagerFactory : ServiceFactoryBase<ISecretManag
 {
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<SqliteSecretManagerFactory> _logger;
+    // Why Lazy: the settings are read through connections, so a factory that took the provider itself would wait on the connection it is
+    // building (FDW-3284). Null in a host that registers no settings.
+    private readonly Lazy<IEffectiveSettingsProvider>? _settings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteSecretManagerFactory"/> class.
     /// </summary>
     /// <param name="loggerFactory">The logger factory for creating service loggers.</param>
-    public SqliteSecretManagerFactory(ILoggerFactory? loggerFactory)
+    /// <param name="settings">The host's settings, read for the command timeout of a secret manager that states none (FDW-3284). Optional: a host that registers no settings never builds one without a stated timeout.</param>
+    public SqliteSecretManagerFactory(ILoggerFactory? loggerFactory, Lazy<IEffectiveSettingsProvider>? settings = null)
     {
         _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         _logger = _loggerFactory.CreateLogger<SqliteSecretManagerFactory>();
+        _settings = settings;
     }
 
     /// <inheritdoc/>
@@ -52,14 +58,22 @@ public sealed class SqliteSecretManagerFactory : ServiceFactoryBase<ISecretManag
         {
             SqliteSecretManagerLogger.CreatingSecretManager(_logger, effectiveName);
 
-            var ensureResult = await EnsureTableExists(configuration).ConfigureAwait(false);
+            // Never defaulted (FDW-3284): the command timeout is the secret manager's own, else the instance's setting
+            // DefaultCommandTimeoutSeconds, and a secret manager that has neither is refused, naming it and the setting.
+            var commandTimeout = InstanceCommandTimeout.Resolve(configuration.CommandTimeoutSeconds, _settings, "secret manager", effectiveName, _logger);
+            if (commandTimeout.IsFailure)
+            {
+                return commandTimeout.ToNewResult<ISecretManager>();
+            }
+
+            var ensureResult = await EnsureTableExists(configuration, commandTimeout.Value).ConfigureAwait(false);
             if (ensureResult.IsFailure)
             {
                 return ensureResult.ToNewResult<ISecretManager>();
             }
 
             var serviceLogger = _loggerFactory.CreateLogger<SqliteSecretManager>();
-            var service = new SqliteSecretManager(serviceLogger, configuration, effectiveName);
+            var service = new SqliteSecretManager(serviceLogger, configuration, commandTimeout.Value, effectiveName);
 
             SqliteSecretManagerLogger.SecretManagerCreated(_logger, effectiveName);
             return GenericResult<ISecretManager>.Success(service);
@@ -71,7 +85,7 @@ public sealed class SqliteSecretManagerFactory : ServiceFactoryBase<ISecretManag
         }
     }
 
-    private async Task<IGenericResult> EnsureTableExists(SqliteSecretManagerConfiguration configuration)
+    private async Task<IGenericResult> EnsureTableExists(SqliteSecretManagerConfiguration configuration, int commandTimeoutSeconds)
     {
         SqliteSecretManagerLogger.EnsuringTable(_logger, configuration.TableName, configuration.DataSource);
 
@@ -88,7 +102,7 @@ public sealed class SqliteSecretManagerFactory : ServiceFactoryBase<ISecretManag
             var cmd = conn.CreateCommand();
             await using (cmd.ConfigureAwait(false))
             {
-                cmd.CommandTimeout = configuration.CommandTimeoutSeconds;
+                cmd.CommandTimeout = commandTimeoutSeconds;
                 cmd.CommandText =
                     $"CREATE TABLE IF NOT EXISTS \"{configuration.TableName}\" (" +
                     $"\"RowId\" TEXT NOT NULL DEFAULT (lower(hex(randomblob(16)))), " +

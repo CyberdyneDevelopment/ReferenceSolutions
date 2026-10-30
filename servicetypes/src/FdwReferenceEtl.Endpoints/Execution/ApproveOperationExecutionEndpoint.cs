@@ -89,13 +89,14 @@ public class ApproveOperationExecutionEndpoint : ApproveExecutionEndpointBase
             return GenericResult.Failure(ExecutionLog.PipelineRunHoldLost(_logger, execution.Id));
         }
 
-        if (await _pipelineQueue.Enqueue(request, ct).ConfigureAwait(false))
+        var enqueued = await _pipelineQueue.Enqueue(request, ct).ConfigureAwait(false);
+        if (enqueued.IsAccepted)
         {
             return GenericResult.Success();
         }
 
         _ = _holds.Hold(request);
-        return GenericResult.Failure(ExecutionLog.PipelineQueueFullOnRelease(_logger, execution.Id, request.PipelineName));
+        return GenericResult.Failure(ExecutionLog.PipelineQueueFullOnRelease(_logger, execution.Id, request.PipelineName, enqueued.Reason));
     }
 
     /// <inheritdoc />

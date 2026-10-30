@@ -33,6 +33,7 @@ public sealed class MsSqlConnectionSessionContextFailureTests
             Microsoft.Extensions.Logging.Abstractions.NullLogger<MsSqlConnection>.Instance,
             new MsSqlConnectionConfiguration(),
             connectionString: "Server=unused;",
+            commandTimeoutSeconds: 30,
             authenticationContextAccessor: new StubAuthenticationContextAccessor(new SystemAuthenticationContext()));
 
     private sealed class StubAuthenticationContextAccessor(IAuthenticationContext? current) : IAuthenticationContextAccessor
