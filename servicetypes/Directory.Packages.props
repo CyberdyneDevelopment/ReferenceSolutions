@@ -7,7 +7,7 @@
     - the private package feed for CI builds
   -->
   <PropertyGroup>
-    <FdwVersion>1.4.4-rc*</FdwVersion>
+    <FdwVersion>1.4.5-rc*</FdwVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <!-- Why: enables NuGet CPM transitive pinning so PackageVersion entries also override
          transitive dependencies — required to resolve pre-release FDW packages that appear
