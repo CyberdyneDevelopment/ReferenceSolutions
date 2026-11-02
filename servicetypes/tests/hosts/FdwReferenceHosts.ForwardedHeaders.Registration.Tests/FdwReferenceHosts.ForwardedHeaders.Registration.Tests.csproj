@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\hosts\FdwReferenceHosts.ForwardedHeaders.Registration\FdwReferenceHosts.ForwardedHeaders.Registration.csproj" />
+  </ItemGroup>
+  <!-- Why scoped to this assembly: coverage is only meaningful over the code this project tests.
+       Including the whole graph would report FDW's coverage as if it were ours. -->
+  <PropertyGroup>
+    <Include>[FdwReferenceHosts.ForwardedHeaders.Registration]*</Include>
+    <Exclude>[xunit.*]*,[Moq]*,[Shouldly]*</Exclude>
+  </PropertyGroup>
+</Project>
