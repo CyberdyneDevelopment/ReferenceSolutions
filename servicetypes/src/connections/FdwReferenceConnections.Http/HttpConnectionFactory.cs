@@ -289,7 +289,7 @@ public sealed class HttpConnectionFactory : ServiceFactoryBase<IGenericConnectio
 
         // Configure client from configuration
         client.BaseAddress = BuildBaseAddress(configuration.BaseUrl);
-        client.Timeout = TimeSpan.FromSeconds(configuration.TimeoutSeconds);
+        ApplyTimeout(client, configuration);
 
         // Add default headers - use protocol's content type if not specified in config
         client.DefaultRequestHeaders.Clear();
@@ -298,9 +298,20 @@ public sealed class HttpConnectionFactory : ServiceFactoryBase<IGenericConnectio
         client.DefaultRequestHeaders.Add("User-Agent", "Fdw-HTTP-Client/1.0");
         ApplyConfiguredHeaders(client, configuration);
 
-        HttpConnectionFactoryLogger.ConfiguringHttpClient(_logger, connectionName, configuration.BaseUrl, configuration.TimeoutSeconds);
+        if (configuration.TimeoutSeconds is { } seconds)
+            HttpConnectionFactoryLogger.ConfiguringHttpClient(_logger, connectionName, configuration.BaseUrl, seconds);
+        else
+            HttpConnectionFactoryLogger.ConfiguringHttpClientWithPlatformTimeout(_logger, connectionName, configuration.BaseUrl);
 
         return client;
+    }
+
+    // Why only a stated timeout: no number is invented for a connection that states none; HttpClient keeps the
+    // platform's own timeout (FDW-3580).
+    private static void ApplyTimeout(HttpClient client, HttpConnectionConfiguration configuration)
+    {
+        if (configuration.TimeoutSeconds is { } seconds)
+            client.Timeout = TimeSpan.FromSeconds(seconds);
     }
 
     // Why configured headers are applied LAST, replacing rather than adding: the two set above are what
@@ -351,7 +362,7 @@ public sealed class HttpConnectionFactory : ServiceFactoryBase<IGenericConnectio
         handler.ClientCertificates.Add(clientCertificate);
         var client = new HttpClient(handler);
         client.BaseAddress = BuildBaseAddress(configuration.BaseUrl);
-        client.Timeout = TimeSpan.FromSeconds(configuration.TimeoutSeconds);
+        ApplyTimeout(client, configuration);
         client.DefaultRequestHeaders.Clear();
         var contentType = configuration.ContentType ?? protocol.DefaultContentType;
         client.DefaultRequestHeaders.Add("Accept", contentType);

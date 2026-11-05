@@ -6,6 +6,7 @@ using FastEndpoints;
 using Fdw.Messages;
 using Fdw.Results;
 using Fdw.Services.Notifications.Abstractions;
+using Fdw.Services.Settings;
 using FdwReferenceNotifications.Endpoints;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -62,6 +63,9 @@ public sealed class NotificationEndpointTests : IAsyncLifetime
             .Setup(p => p.Delete(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult.Success());
         builder.Services.AddSingleton(_provider.Object);
+
+        // Real hosts get the lazy settings provider from FDW's settings service type; these tests state every setting they send, so nothing is read through it.
+        builder.Services.AddSingleton(new Lazy<IEffectiveSettingsProvider>(() => Mock.Of<IEffectiveSettingsProvider>()));
 
         _app = builder.Build();
         _app.UseAuthentication();

@@ -48,7 +48,7 @@ public sealed partial class WebhookNotificationConfiguration : INotificationImpl
     /// <summary>
     /// Gets or sets whether this notification channel is enabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsEnabled { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the secret manager to use for retrieving secrets.
@@ -76,12 +76,12 @@ public sealed partial class WebhookNotificationConfiguration : INotificationImpl
     /// <summary>
     /// Gets or sets the HTTP method to use (POST, PUT). Defaults to POST.
     /// </summary>
-    public string Method { get; set; } = "POST";
+    public string Method { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the content type for the request body. Defaults to application/json.
     /// </summary>
-    public string ContentType { get; set; } = "application/json";
+    public string ContentType { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets an optional custom payload template. When set, {subject}, {body},
@@ -93,10 +93,10 @@ public sealed partial class WebhookNotificationConfiguration : INotificationImpl
     /// Gets or sets how many more times a delivery is tried when the receiver cannot be reached, does not answer in time or answers with a
     /// server error (FDW-1913); a refusal is not tried again. Must not be negative. Defaults to 3.
     /// </summary>
-    public int RetryCount { get; set; } = 3;
+    public int RetryCount { get; set; }
 
     /// <summary>
     /// Gets or sets the request timeout in seconds. Defaults to 30.
     /// </summary>
-    public int TimeoutSeconds { get; set; } = 30;
+    public int TimeoutSeconds { get; set; }
 }

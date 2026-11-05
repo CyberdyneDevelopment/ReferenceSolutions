@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Scalar.AspNetCore;
 
 using FdwReferenceEndpoints.Configuration;
+using Fdw.Conventions;
 namespace FdwReferenceEndpoints;
 
 /// <summary>
@@ -103,13 +104,15 @@ internal static class ScalarDocumentation
             .AddHttpAuthentication(BearerScheme, scheme => scheme.WithToken(token));
     }
 
+    // Why the approval: a value the default theme does not give is the host's configured one (ApiReferenceHostConfiguration), which is the
+    // rule Mike set for every default: "I don't care what you set the default to as long as it is in configuration and not hardcoded".
+    [ApprovedFallback("a value the default theme does not give takes the host's configured value")]
     private static string BuildHead(WebApplication app, ApiReferenceHostConfiguration configuration)
     {
         var themesResult = app.Services.GetRequiredService<Fdw.UI.Themes.ThemeConfigurationProvider>().Get().GetAwaiter().GetResult();
         var themes = themesResult.IsSuccess ? themesResult.Value ?? [] : [];
-        var defaultTheme = themes.FirstOrDefault(t => t.IsDefault)
-            ?? themes.FirstOrDefault(t => string.Equals(t.Name, "fractal", StringComparison.OrdinalIgnoreCase))
-            ?? (themes.Count > 0 ? themes[0] : null);
+        // The theme marked default; none means the host's configured values apply. No theme is picked by a hardcoded name or by order (FDW-3646).
+        var defaultTheme = themes.FirstOrDefault(t => t.IsDefault);
 
         var tenantsJs = BuildTenantsJs(themes);
         var defaultCss = defaultTheme != null ? BuildScalarCss(defaultTheme) : string.Empty;
@@ -180,7 +183,7 @@ internal static class ScalarDocumentation
             if (i > 0) sb.Append(',');
             sb.Append(CultureInfo.InvariantCulture, $@"
                 ""{EscapeJs(t.Name)}"": {{
-                    ""title"": ""{EscapeJs(t.DisplayName ?? t.AppName ?? t.Name)} API"",
+                    ""title"": ""{EscapeJs(t.AppName)} API"",
                     ""logoUrl"": {(t.LogoUrl != null ? $@"""{EscapeJs(t.LogoUrl)}""" : "null")},
                     ""fontUrl"": null,
                     ""font"": ""{EscapeJs(t.FontFamily)}"",

@@ -6,6 +6,7 @@ using Fdw.Services.Authorization.Abstractions;
 using Fdw.Services.Scheduling;
 using Fdw.Services.Scheduling.Abstractions.Configuration;
 using Fdw.Services.Scheduling.Endpoints;
+using Fdw.Services.Settings;
 using FdwReferenceSchedules.Endpoints.Logging;
 
 namespace FdwReferenceSchedules.Endpoints;
@@ -18,8 +19,9 @@ namespace FdwReferenceSchedules.Endpoints;
 public class CreateScheduleEndpoint : CreateScheduleEndpointBase<IScheduleImplementationConfiguration>
 {
     /// <inheritdoc />
-    public CreateScheduleEndpoint(ScheduleConfigurationProvider provider, IRoleGrants grants, ILogger<CreateScheduleEndpoint> logger)
-        : base(logger, provider, grants) {
+    public CreateScheduleEndpoint(
+        ScheduleConfigurationProvider provider, IRoleGrants grants, Lazy<IEffectiveSettingsProvider> settings, ILogger<CreateScheduleEndpoint> logger)
+        : base(logger, provider, grants, settings) {
     }
 
     /// <summary>Builds schedule configuration from create request.</summary>
@@ -34,13 +36,13 @@ public class CreateScheduleEndpoint : CreateScheduleEndpointBase<IScheduleImplem
             Name = request.Name,
             PipelineId = request.PipelineId,
             PipelineName = request.PipelineName,
-            IsEnabled = request.IsEnabled,
             Implementation = request.SchedulerType,
             CronExpression = request.CronExpression,
             IntervalSeconds = request.IntervalSeconds,
             OneTimeDateTime = request.OneTimeDateTime,
             EventName = request.EventName,
             TimeZoneId = request.TimeZoneId,
+            MissedFireRule = request.MissedFireRule,
             Parameters = ScheduleParameterMapper.ToConfiguration(request.Parameters),
         };
         schedule.ReplaceRunRoles(runRoles);

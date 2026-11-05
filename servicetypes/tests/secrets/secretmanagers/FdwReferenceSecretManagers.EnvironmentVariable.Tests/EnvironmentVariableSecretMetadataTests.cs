@@ -44,13 +44,13 @@ public class EnvironmentVariableSecretMetadataTests
         metadata.Key.ShouldBe("KEY");
         metadata.Container.ShouldBe(nameof(EnvironmentVariableTarget.Process));
         metadata.Version.ShouldBeNull();
-        metadata.CreatedAt.ShouldBe(DateTimeOffset.MinValue);
-        metadata.ModifiedAt.ShouldBe(DateTimeOffset.MinValue);
+        metadata.CreatedAt.ShouldBeNull();
+        metadata.ModifiedAt.ShouldBeNull();
         metadata.ExpiresAt.ShouldBeNull();
         metadata.CreatedBy.ShouldBeNull();
         metadata.ModifiedBy.ShouldBeNull();
         metadata.IsExpired.ShouldBeFalse();
-        metadata.IsEnabled.ShouldBeTrue();
+        metadata.IsEnabled.ShouldBe(true);
         metadata.IsBinary.ShouldBeFalse();
         metadata.Tags.ShouldBeEmpty();
         metadata.AvailableVersions.ShouldBeEmpty();

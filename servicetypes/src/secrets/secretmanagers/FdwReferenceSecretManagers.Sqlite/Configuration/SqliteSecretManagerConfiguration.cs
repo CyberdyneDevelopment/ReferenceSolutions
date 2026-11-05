@@ -10,6 +10,7 @@ using Fdw.Data;
 using Fdw.Results;
 using Fdw.Services.SecretManagers.Abstractions;
 using Fdw.Services.SecretManagers.Abstractions.Logging;
+using Fdw.Conventions;
 
 namespace FdwReferenceSecretManagers.Sqlite.Configuration;
 
@@ -77,8 +78,8 @@ public sealed partial class SqliteSecretManagerConfiguration : ISecretManagerImp
     /// <summary>
     /// Gets or sets the name of the secrets table within the SQLite file.
     /// </summary>
-    /// <value>Default: "Secret"</value>
-    public string TableName { get; set; } = "Secret";
+    [CallerChoice]
+    public string TableName { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the command timeout in seconds for SQLite operations, or <see langword="null"/> when the secret manager states none (FDW-3284).

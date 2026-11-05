@@ -8,6 +8,7 @@ using FdwReferenceSecretManagers.EnvironmentVariable.Logging;
 using FdwReferenceSecretManagers.EnvironmentVariable.Services;
 using Microsoft.Extensions.Logging;
 using Fdw.Services;
+using Fdw.Conventions;
 
 namespace FdwReferenceSecretManagers.EnvironmentVariable;
 
@@ -49,7 +50,7 @@ public sealed class EnvironmentVariableSecretManagerFactory : ServiceFactoryBase
         if (configuration is EnvironmentVariableConfiguration typed)
             return CreateSecretManagerInternal(typed, typed.Name);
 
-        var actualType = configuration?.GetType().Name ?? "null";
+        var actualType = configuration?.GetType().Name ?? LogPlaceholders.NullName;
         return System.Threading.Tasks.Task.FromResult<IGenericResult<ISecretManager>>(
             GenericResult<ISecretManager>.Failure(
                 EnvironmentVariableLogger.InvalidConfigurationType(

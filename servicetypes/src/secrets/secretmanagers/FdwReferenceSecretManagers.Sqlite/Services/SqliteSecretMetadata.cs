@@ -58,10 +58,10 @@ public sealed class SqliteSecretMetadata : ISecretMetadata
     public string? Version { get; }
 
     /// <inheritdoc/>
-    public DateTimeOffset CreatedAt { get; }
+    public DateTimeOffset? CreatedAt { get; }
 
     /// <inheritdoc/>
-    public DateTimeOffset ModifiedAt { get; }
+    public DateTimeOffset? ModifiedAt { get; }
 
     /// <inheritdoc/>
     public DateTimeOffset? ExpiresAt { get; }
@@ -76,7 +76,7 @@ public sealed class SqliteSecretMetadata : ISecretMetadata
     public bool IsExpired => ExpiresAt.HasValue && DateTimeOffset.UtcNow > ExpiresAt.Value;
 
     /// <inheritdoc/>
-    public bool IsEnabled => true;
+    public bool? IsEnabled => true;
 
     /// <inheritdoc/>
     public bool IsBinary => false;

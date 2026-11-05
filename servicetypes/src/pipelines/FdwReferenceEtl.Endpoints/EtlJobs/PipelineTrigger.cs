@@ -114,14 +114,9 @@ internal sealed class PipelineTrigger
         // What the run is called until the pipeline is resolved: its name, or its id when it was named by id.
         var pipelineName = byName ? req.Name! : req.Id!.Value.ToString("D", CultureInfo.InvariantCulture);
 
-        // Why the caller's own claim wins over the request-body TenantId: an authenticated per-tenant
-        // caller's token always carries their own tenant_id, so trusting a body-supplied TenantId
-        // directly would let them request execution scoped to a DIFFERENT tenant (cross-tenant RLS
-        // escalation). The body field is only honored when the caller's own token carries no tenant
-        // scope — the case for a system/service-account caller (e.g. the scheduler, which dispatches
-        // for every tenant's schedules and so has no single tenant identity of its own).
+        // The caller's own tenant, or the requested one for a caller whose token carries none (TriggerTenant states the rule).
         var callerTenant = new ClaimsPrincipalAuthenticationContext(caller).ActiveTenantId;
-        var tenantId = callerTenant ?? req.TenantId;
+        var tenantId = TriggerTenant.For(caller, req.TenantId);
 
         var relayedTenant = callerTenant is null ? tenantId : null;
         var resolution = await ResolvePipeline(byName ? req.Name : null, byName ? null : req.Id, relayedTenant, ct).ConfigureAwait(false);
@@ -252,7 +247,10 @@ internal sealed class PipelineTrigger
         RunRoles = RunRoleSelection.Chosen(req.RunRoles),
         TenantId = tenantId,
         Parameters = values,
-        TestRowsPerSource = req.TestRowsPerSource
+        TestRowsPerSource = req.TestRowsPerSource,
+        ScheduleName = req.ScheduleName,
+        ScheduleId = req.ScheduleId,
+        TimeoutSeconds = req.TimeoutSeconds
     };
 
     // Keeps the request that would have been queued and moves the run to AwaitingApproval, so a waiting run is told from any other new run and

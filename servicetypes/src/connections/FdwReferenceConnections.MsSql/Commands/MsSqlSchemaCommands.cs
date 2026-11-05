@@ -37,12 +37,12 @@ public static class MsSqlSchemaCommands
     /// <returns>The discovered schema result.</returns>
     public static async Task<IGenericResult<SchemaDiscoveryResult>> DiscoverSchema(
         SqlConnection connection,
-        SchemaDiscoveryOptions? options = null,
+        SchemaDiscoveryOptions options,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
         logger ??= NullLogger.Instance;
-        options ??= SchemaDiscoveryOptions.Default;
+        ArgumentNullException.ThrowIfNull(options);
 
         try
         {
@@ -113,12 +113,12 @@ public static class MsSqlSchemaCommands
     /// <returns>The discovered schema result.</returns>
     public static async Task<IGenericResult<SchemaDiscoveryResult>> DiscoverSchema(
         MsSqlConnection connection,
-        SchemaDiscoveryOptions? options = null,
+        SchemaDiscoveryOptions options,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
         logger ??= NullLogger.Instance;
-        options ??= SchemaDiscoveryOptions.Default;
+        ArgumentNullException.ThrowIfNull(options);
 
         try
         {
@@ -196,12 +196,12 @@ public static class MsSqlSchemaCommands
     public static async Task<IGenericResult<DiscoveredPath>> DiscoverPath(
         SqlConnection connection,
         string schemaName,
-        SchemaDiscoveryOptions? options = null,
+        SchemaDiscoveryOptions options,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
         logger ??= NullLogger.Instance;
-        options ??= SchemaDiscoveryOptions.Default;
+        ArgumentNullException.ThrowIfNull(options);
 
         if (connection.State != ConnectionState.Open)
         {
@@ -224,12 +224,12 @@ public static class MsSqlSchemaCommands
     public static async Task<IGenericResult<DiscoveredPath>> DiscoverPath(
         MsSqlConnection connection,
         string schemaName,
-        SchemaDiscoveryOptions? options = null,
+        SchemaDiscoveryOptions options,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
         logger ??= NullLogger.Instance;
-        options ??= SchemaDiscoveryOptions.Default;
+        ArgumentNullException.ThrowIfNull(options);
 
         var connectResult = await connection.Connect(cancellationToken).ConfigureAwait(false);
         if (!connectResult.IsSuccess)
@@ -630,7 +630,7 @@ public static class MsSqlSchemaCommands
         foreach (var pattern in excludePatterns)
         {
             // Remove LIKE wildcards for simple matching
-            var cleanPattern = pattern.Replace("%", string.Empty);
+            var cleanPattern = pattern.Replace("%", string.Empty, StringComparison.Ordinal);
             if (tableName.StartsWith(cleanPattern, StringComparison.OrdinalIgnoreCase) ||
                 tableName.EndsWith(cleanPattern, StringComparison.OrdinalIgnoreCase) ||
                 tableName.Contains(cleanPattern, StringComparison.OrdinalIgnoreCase))

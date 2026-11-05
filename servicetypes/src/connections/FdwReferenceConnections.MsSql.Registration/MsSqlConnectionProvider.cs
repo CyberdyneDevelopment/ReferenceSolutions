@@ -59,6 +59,11 @@ public sealed class MsSqlConnectionProvider
         // loud naming both types, so nothing but a usable configuration reaches this method.
         MsSqlConnectionProviderLogger.TraceResolving(_logger, typed.Name);
 
+        // A connection with no AdditionalProperties is refused, naming it; it is not read as one with no values (FDW-3454). The type's
+        // validator refuses it where the connection is saved, so this reaches only a row stored before that rule or built by hand.
+        if (typed.AdditionalProperties is null)
+            return GenericResult<IGenericConnection>.Failure(MsSqlConnectionProviderLogger.AdditionalPropertiesNotStated(_logger, typed.Name));
+
         // Cheap fast path first: RequiresSecret is a constructor-set fact about the authentication
         // TYPE, so a method that never carries a password (ManagedIdentity, WindowsAuth, ...) skips
         // the values-dependent RequiredSecret(values) call entirely.
@@ -72,7 +77,7 @@ public sealed class MsSqlConnectionProvider
         // The authentication type answers what it needs; this provider never reads SecretKeyName or
         // SecretManagerName itself, because it cannot see the whole of that question.
         var requirement = authType
-            .RequiredSecret(new System.Collections.Generic.Dictionary<string, string?>(typed.AdditionalProperties ?? new System.Collections.Generic.Dictionary<string, string?>(), System.StringComparer.OrdinalIgnoreCase));
+            .RequiredSecret(new System.Collections.Generic.Dictionary<string, string?>(typed.AdditionalProperties, System.StringComparer.OrdinalIgnoreCase));
         if (!requirement.IsSuccess)
             return requirement.ToNewResult<IGenericConnection>();
 

@@ -17,6 +17,7 @@ using FdwReferenceSecretManagers.AzureKeyVault.Configuration;
 using FdwReferenceSecretManagers.AzureKeyVault.Handlers;
 using FdwReferenceSecretManagers.AzureKeyVault.Logging;
 using Microsoft.Extensions.Logging;
+using Fdw.Conventions;
 
 namespace FdwReferenceSecretManagers.AzureKeyVault.Services;
 
@@ -89,7 +90,7 @@ public sealed class AzureKeyVaultSecretManager : ISecretManager, IDisposable
                 GenericResult<object?>.Failure(AzureKeyVaultLogger.ClientNotInitialized(_logger)));
         }
 
-        AzureKeyVaultLogger.ExecutingCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? "N/A");
+        AzureKeyVaultLogger.ExecutingCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? LogPlaceholders.NoSecretKey);
 
         return ExecuteCommandInternal(managementCommand, cancellationToken);
     }
@@ -109,7 +110,7 @@ public sealed class AzureKeyVaultSecretManager : ISecretManager, IDisposable
             return GenericResult<TResult>.Failure(AzureKeyVaultLogger.ClientNotInitialized(_logger));
         }
 
-        AzureKeyVaultLogger.ExecutingTypedCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? "N/A");
+        AzureKeyVaultLogger.ExecutingTypedCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? LogPlaceholders.NoSecretKey);
 
         try
         {
@@ -146,19 +147,19 @@ public sealed class AzureKeyVaultSecretManager : ISecretManager, IDisposable
 
             return GenericResult<TResult>.Failure(
                 AzureKeyVaultLogger.OperationFailed(_logger, managementCommand.CommandType,
-                    managementCommand.SecretKey ?? "N/A", $"Result is not of type {typeof(TResult).Name}"));
+                    managementCommand.SecretKey ?? LogPlaceholders.NoSecretKey, $"Result is not of type {typeof(TResult).Name}"));
         }
         catch (RequestFailedException ex)
         {
             return GenericResult<TResult>.Failure(
                 AzureKeyVaultLogger.OperationFailed(_logger, managementCommand.CommandType,
-                    managementCommand.SecretKey ?? "N/A", ex.Message));
+                    managementCommand.SecretKey ?? LogPlaceholders.NoSecretKey, ex.Message));
         }
         catch (Exception ex)
         {
             return GenericResult<TResult>.Failure(
                 AzureKeyVaultLogger.OperationFailed(_logger, managementCommand.CommandType,
-                    managementCommand.SecretKey ?? "N/A", ex.Message));
+                    managementCommand.SecretKey ?? LogPlaceholders.NoSecretKey, ex.Message));
         }
     }
 
@@ -204,7 +205,7 @@ public sealed class AzureKeyVaultSecretManager : ISecretManager, IDisposable
             catch (Exception ex)
             {
                 return GenericResult.Failure(
-                    AzureKeyVaultLogger.OperationFailed(_logger, command.CommandType, command.SecretKey ?? "N/A", ex.Message));
+                    AzureKeyVaultLogger.OperationFailed(_logger, command.CommandType, command.SecretKey ?? LogPlaceholders.NoSecretKey, ex.Message));
             }
         }
 
@@ -314,7 +315,7 @@ public sealed class AzureKeyVaultSecretManager : ISecretManager, IDisposable
                 certificateClient: _certificateClient,
                 serviceId: _id);
 
-            AzureKeyVaultLogger.ClientInitialized(_logger, _configuration.AuthenticationMethod ?? "Unknown");
+            AzureKeyVaultLogger.ClientInitialized(_logger, _configuration.AuthenticationMethod ?? LogPlaceholders.Null);
             AzureKeyVaultLogger.CertificateClientInitialized(_logger);
 
             // Check accessibility if configured
@@ -337,7 +338,9 @@ public sealed class AzureKeyVaultSecretManager : ISecretManager, IDisposable
 
     private TokenCredential CreateCredential()
     {
-        var authMethod = _configuration.AuthenticationMethod ?? "ManagedIdentity";
+        // Why no default: AzureKeyVaultConfigurationValidator requires the method, so a configuration without one is a defect (FDW-3646).
+        var authMethod = _configuration.AuthenticationMethod
+            ?? throw new InvalidOperationException("The Azure Key Vault configuration states no AuthenticationMethod; the validator requires one.");
         var credentialType = AzureCredentialTypes.ByName(authMethod);
 
         if (ReferenceEquals(credentialType, AzureCredentialTypes.NotFound))
@@ -397,7 +400,7 @@ public sealed class AzureKeyVaultSecretManager : ISecretManager, IDisposable
                     AzureKeyVaultLogger.NoHandlerFound(_logger, command.CommandType));
             }
 
-            AzureKeyVaultLogger.ExecutingViaHandler(_logger, handler.GetType().Name, command.SecretKey ?? "N/A");
+            AzureKeyVaultLogger.ExecutingViaHandler(_logger, handler.GetType().Name, command.SecretKey ?? LogPlaceholders.NoSecretKey);
 
             // Validate command using handler
             var validationResult = handler.Validate(command);
@@ -413,13 +416,13 @@ public sealed class AzureKeyVaultSecretManager : ISecretManager, IDisposable
         {
             return GenericResult<object?>.Failure(
                 AzureKeyVaultLogger.OperationFailed(_logger, command.CommandType,
-                    command.SecretKey ?? "N/A", ex.Message));
+                    command.SecretKey ?? LogPlaceholders.NoSecretKey, ex.Message));
         }
         catch (Exception ex)
         {
             return GenericResult<object?>.Failure(
                 AzureKeyVaultLogger.OperationFailed(_logger, command.CommandType,
-                    command.SecretKey ?? "N/A", ex.Message));
+                    command.SecretKey ?? LogPlaceholders.NoSecretKey, ex.Message));
         }
     }
 

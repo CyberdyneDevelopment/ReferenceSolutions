@@ -7,6 +7,7 @@ using FdwReferenceHosts.ResponseStreaming.Configuration;
 using FdwReferenceHosts.ResponseStreaming.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Fdw.Conventions;
 
 namespace FdwReferenceHosts.ResponseStreaming;
 
@@ -52,10 +53,10 @@ public sealed class ResponseStreamingHostService : IHostService
     /// <inheritdoc />
     public Task<IGenericResult> Execute(IGenericCommand command, CancellationToken cancellationToken = default)
         => Task.FromResult<IGenericResult>(
-            GenericResult.Failure(ResponseStreamingHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? "(null)")));
+            GenericResult.Failure(ResponseStreamingHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? LogPlaceholders.Null)));
 
     /// <inheritdoc />
     public Task<IGenericResult<T>> Execute<T>(IGenericCommand command, CancellationToken cancellationToken = default)
         => Task.FromResult(
-            GenericResult<T>.Failure(ResponseStreamingHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? "(null)")));
+            GenericResult<T>.Failure(ResponseStreamingHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? LogPlaceholders.Null)));
 }

@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """Regroup public/src and public/tests by domain and rewrite every relative path that crossed a move.
 
-Usage: reorg_apply.py <repo-key fdw|rst> <repo-dir> [--apply]
+Usage: reorg_apply.py <repo-dir> [--apply]
+The domain of each project comes from <repo-dir>/domains.json (domains.py reads it).
 Without --apply it only reports. Writes nothing outside the repo it is pointed at.
 """
 import os, re, sys, json, subprocess, collections
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import domains
 
-repo_key, repo_dir = sys.argv[1], sys.argv[2]
+repo_dir = sys.argv[1]
 APPLY = "--apply" in sys.argv
 REPO = os.path.realpath(repo_dir)
 PUB = os.path.join(REPO, "public")
@@ -25,7 +26,7 @@ for kind in ("src", "tests"):
             current[dp] = (kind, os.path.basename(dp))
 moves = {}
 for p, (kind, n) in current.items():
-    dom = domains.domain_of(repo_key, n)
+    dom = domains.domain_of(REPO, n)
     if dom is None and kind == "tests": dom = "_cross"
     if dom is None: raise SystemExit(f"no domain for non-test project {n}")
     grp = domains.GROUP.get(dom)
@@ -107,7 +108,7 @@ for f in files:
         changes[f] = out
         stats["files"] += 1
 
-print(f"[{repo_key}] projects to move: {len(moves)}")
+print(f"[{os.path.basename(REPO)}] projects to move: {len(moves)}")
 byd = collections.Counter(os.path.basename(os.path.dirname(v)) for v in moves.values())
 print(" ", dict(sorted(byd.items())))
 print(f"  build files to rewrite: {stats['files']} ({stats['paths']} path values, {stats['slnx']} slnx entries)")

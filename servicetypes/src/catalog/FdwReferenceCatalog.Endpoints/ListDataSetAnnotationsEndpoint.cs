@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Catalog.Endpoints;
 using Fdw.Data.DataSets.Abstractions;
 using Fdw.Services.Quality;
+using Fdw.Services.Tags;
 
 namespace FdwReferenceCatalog.Endpoints;
 
@@ -14,8 +15,9 @@ public sealed class ListDataSetAnnotationsEndpoint : ListDataSetAnnotationsEndpo
     /// <inheritdoc />
     public ListDataSetAnnotationsEndpoint(
         IDataSetAnnotationConfigurationProvider provider,
-        IDataSetConfigurationProvider dataSets)
-        : base(provider, dataSets)
+        IDataSetConfigurationProvider dataSets,
+        ITagService tags)
+        : base(provider, dataSets, tags)
     {
     }
 }

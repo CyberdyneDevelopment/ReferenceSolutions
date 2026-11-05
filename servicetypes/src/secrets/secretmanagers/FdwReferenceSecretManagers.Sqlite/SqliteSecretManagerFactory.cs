@@ -12,6 +12,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Fdw.Services;
+using Fdw.Conventions;
 
 namespace FdwReferenceSecretManagers.Sqlite;
 
@@ -140,7 +141,7 @@ public sealed class SqliteSecretManagerFactory : ServiceFactoryBase<ISecretManag
         if (configuration is SqliteSecretManagerConfiguration typed)
             return CreateSecretManagerInternal(typed, typed.Name);
 
-        var actualType = configuration?.GetType().Name ?? "null";
+        var actualType = configuration?.GetType().Name ?? LogPlaceholders.NullName;
         return Task.FromResult<IGenericResult<ISecretManager>>(
             GenericResult<ISecretManager>.Failure(
                 SqliteSecretManagerLogger.InvalidConfigurationType(

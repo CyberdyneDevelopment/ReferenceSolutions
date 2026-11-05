@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Fdw.Results;
+using Fdw.Services.Settings;
 
 namespace FdwReferenceNotifications.Webhook.Registration;
 
@@ -61,11 +62,11 @@ public sealed class WebhookNotificationType
             settings:
             [
                 new("Url", NotificationSettingTypes.Text, true, false),
-                new("Method", NotificationSettingTypes.Text, false, false),
-                new("ContentType", NotificationSettingTypes.Text, false, false),
+                new("Method", NotificationSettingTypes.Text, false, false) { DefaultSetting = DefaultValueSettings.DefaultWebhookMethod },
+                new("ContentType", NotificationSettingTypes.Text, false, false) { DefaultSetting = DefaultValueSettings.DefaultWebhookContentType },
                 new("PayloadTemplate", NotificationSettingTypes.Text, false, false),
-                new("RetryCount", NotificationSettingTypes.Number, false, false),
-                new("TimeoutSeconds", NotificationSettingTypes.Number, false, false),
+                new("RetryCount", NotificationSettingTypes.Number, false, false) { DefaultSetting = DefaultValueSettings.DefaultWebhookRetryCount },
+                new("TimeoutSeconds", NotificationSettingTypes.Number, false, false) { DefaultSetting = DefaultValueSettings.DefaultWebhookTimeoutSeconds },
             ],
             defaultContainerName: "WebhookNotificationConfiguration")
     {

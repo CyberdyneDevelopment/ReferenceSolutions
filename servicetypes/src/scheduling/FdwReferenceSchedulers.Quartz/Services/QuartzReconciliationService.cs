@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using Fdw.Services.Scheduling;
 using Fdw.Services.Scheduling.Abstractions;
 using Fdw.Services.Scheduling.Abstractions.Configuration;
+using Fdw.Services.Scheduling.Abstractions.OptionTypes;
 using Microsoft.Extensions.Logging;
 using Fdw.Services.Authentication.Abstractions.Security;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceSchedulers.Quartz.Logging;
+using Fdw.Results;
 
 namespace FdwReferenceSchedulers.Quartz.Services;
 
@@ -108,7 +110,7 @@ public sealed class QuartzReconciliationService : SchedulerBackgroundServiceBase
         if (!serviceResult.IsSuccess || serviceResult.Value is null)
         {
             QuartzSchedulingLog.NativeCallFailed(_logger,
-                new InvalidOperationException(serviceResult.CurrentMessage ?? "Failed to build the Quartz scheduling service."),
+                new InvalidOperationException(serviceResult.NoValueReason().Message),
                 "(unknown)");
             return;
         }
@@ -119,7 +121,7 @@ public sealed class QuartzReconciliationService : SchedulerBackgroundServiceBase
         if (!schedulesResult.IsSuccess || schedulesResult.Value is null)
         {
             QuartzSchedulingLog.NativeCallFailed(_logger,
-                new InvalidOperationException(schedulesResult.CurrentMessage ?? "Failed to read sched.Schedule."),
+                new InvalidOperationException(schedulesResult.NoValueReason().Message),
                 "(unknown)");
             return;
         }
@@ -128,7 +130,7 @@ public sealed class QuartzReconciliationService : SchedulerBackgroundServiceBase
         if (!liveResult.IsSuccess || liveResult.Value is null)
         {
             QuartzSchedulingLog.NativeCallFailed(_logger,
-                new InvalidOperationException(liveResult.CurrentMessage ?? "Failed to read Quartz's live trigger set."),
+                new InvalidOperationException(liveResult.NoValueReason().Message),
                 "(unknown)");
             return;
         }
@@ -162,7 +164,11 @@ public sealed class QuartzReconciliationService : SchedulerBackgroundServiceBase
                 var desired = ToGenericSchedule(schedule);
                 if (liveSchedule is null)
                 {
-                    await service.CreateSchedule(desired, cancellationToken).ConfigureAwait(false);
+                    var created = await service.CreateSchedule(desired, cancellationToken).ConfigureAwait(false);
+                    if (created.IsSuccess)
+                    {
+                        await ApplyMissedFireRule(service, schedule, cancellationToken).ConfigureAwait(false);
+                    }
                 }
                 else if (!string.Equals(liveSchedule.ProcessId, desired.ProcessId, StringComparison.Ordinal))
                 {
@@ -200,6 +206,51 @@ public sealed class QuartzReconciliationService : SchedulerBackgroundServiceBase
         }
 
         _lastEvaluatedCount = evaluated;
+    }
+
+    // Why when the trigger is created (FDW-3788): Quartz keeps its triggers in memory, so a trigger is created whenever the scheduler starts, and it computes its next fire from
+    // that moment; the fire times that passed while the scheduler was down are gone unless this looks for them. What it does with them is the schedule's own stated rule:
+    // Skip drops them and says how many, FireOnce runs the schedule once, due at the latest of them. Only a Cron schedule has fire times to miss. A schedule that never ran has
+    // missed nothing, which is logged; a rule that is not one of the collection's is logged and nothing is run, never assumed.
+    private async Task ApplyMissedFireRule(IFrameworkSchedulingService service, IScheduleImplementationConfiguration schedule, CancellationToken cancellationToken)
+    {
+        if (!string.Equals(schedule.ScheduleType, nameof(Fdw.Services.Scheduling.Abstractions.OptionTypes.TriggerTypeImplementations.Cron), StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var rule = MissedFireRules.ByName(schedule.MissedFireRule);
+        if (ReferenceEquals(rule, MissedFireRules.NotFound))
+        {
+            QuartzSchedulingLog.MissedFireRuleUnknown(_logger, schedule.Name, schedule.MissedFireRule);
+            return;
+        }
+
+        if (schedule.LastRunTime is not { } lastRun)
+        {
+            QuartzSchedulingLog.NeverRan(_logger, schedule.Name);
+            return;
+        }
+
+        var found = MissedCronFires.Find(
+            schedule.Name, schedule.CronExpression ?? string.Empty, schedule.TimeZoneId, lastRun, DateTimeOffset.UtcNow, _logger, cancellationToken);
+        if (found.IsFailure || found.Value is not { Count: > 0, First: { } first, Latest: { } latest } missed)
+        {
+            return;
+        }
+
+        if (!rule.FiresOnce)
+        {
+            QuartzSchedulingLog.MissedFiresSkipped(_logger, schedule.Name, missed.Count, first, latest);
+            return;
+        }
+
+        QuartzSchedulingLog.MissedFiresCatchingUp(_logger, schedule.Name, missed.Count, first, latest);
+        var fired = await service.TriggerCatchup(schedule.Name, latest, cancellationToken).ConfigureAwait(false);
+        if (fired.IsFailure)
+        {
+            QuartzSchedulingLog.CatchupNotStarted(_logger, schedule.Name, fired.CurrentMessage);
+        }
     }
 
     // A Once schedule whose recorded last run is at or after its execution time has already fired.

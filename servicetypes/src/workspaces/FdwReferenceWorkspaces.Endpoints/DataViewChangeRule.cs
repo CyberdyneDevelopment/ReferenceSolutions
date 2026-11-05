@@ -28,7 +28,7 @@ internal static class DataViewChangeRule
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Success when the caller holds the right at the view's tenant; otherwise the refusal, which names the right and the scope.</returns>
     internal static Task<IGenericResult> HoldsRight(
-        IScopeAuthority scopes, IDataViewDataSetVariationConfiguration view, string right, ILogger logger, CancellationToken cancellationToken)
+        IScopeAuthority scopes, IDataSetVariationImplementationConfiguration view, string right, ILogger logger, CancellationToken cancellationToken)
         => view.TenantId is { } tenantId
             ? scopes.May(right, new ThingScope(tenantId, null), cancellationToken)
             : Task.FromResult<IGenericResult>(GenericResult.Failure(

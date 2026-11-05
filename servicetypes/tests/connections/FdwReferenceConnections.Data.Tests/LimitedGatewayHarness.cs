@@ -44,7 +44,7 @@ internal sealed class LimitedGatewayHarness
 
         _dataSetProvider
             .Setup(p => p.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(GenericResult<SimpleDataSetConfiguration>.Failure());
+            .ReturnsAsync(GenericResult<SimpleDataSetConfiguration>.Failure(new Fdw.Messages.GenericMessage("the stand-in call failed")));
 
         Connection = new Mock<IDataConnection>();
         Cursor = Connection.As<IRecordSourceConnection>();

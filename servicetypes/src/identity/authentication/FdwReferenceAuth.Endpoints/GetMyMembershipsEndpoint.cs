@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using FastEndpoints;
@@ -13,6 +12,7 @@ using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Users;
 using Fdw.Services.Users.Abstractions;
 using Fdw.Services.Users.Configuration;
+using Fdw.Claims.Abstractions;
 
 namespace FdwReferenceAuth.Endpoints;
 
@@ -75,8 +75,8 @@ public class GetMyMembershipsEndpoint : EndpointWithoutRequest<MembershipsRespon
     {
         // The subject GUID, same as GetMeEndpoint: no name claim is emitted, so User.Identity.Name
         // is null here and only the identifier claim can resolve the caller.
-        var subject = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-        if (string.IsNullOrEmpty(subject) || !Guid.TryParse(subject, out var userId))
+        // The caller's id is its sub claim, read in one place (CallerClaims, FDW-3580).
+        if (!CallerClaims.TryGetUserId(User, out var userId))
         {
             await Send.UnauthorizedAsync(ct).ConfigureAwait(false);
             return;

@@ -40,7 +40,7 @@ public sealed class ConfigurationCascadeTests
         _dataSetProviderMock = new Mock<IDataSetConfigurationProvider>();
         _dataSetProviderMock
             .Setup(p => p.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(GenericResult<SimpleDataSetConfiguration>.Failure());
+            .ReturnsAsync(GenericResult<SimpleDataSetConfiguration>.Failure(new Fdw.Messages.GenericMessage("the stand-in call failed")));
 
         // Why the interface and not the concrete DataStoreConfigurationProvider: the concrete
         // provider is sealed (every domain provider is), so Moq cannot mock it directly.

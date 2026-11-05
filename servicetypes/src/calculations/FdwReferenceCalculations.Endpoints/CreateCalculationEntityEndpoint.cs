@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Calculations.Endpoints.CalculationEntities;
@@ -64,6 +65,7 @@ public class CreateCalculationEntityEndpoint : CreateCalculationEntityEndpointBa
             request.CalculationEntityType,
             mappedInputs,
             output,
+            request.IsEnabled ?? throw new InvalidOperationException("A create-calculation request reached the endpoint without IsEnabled; its validator refuses that."),
             typed.Value!,
             ct).ConfigureAwait(false);
 

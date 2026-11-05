@@ -18,8 +18,11 @@ public sealed class CreateNotificationRuleRequest
     /// <summary>Gets or sets the optional description.</summary>
     public string? Description { get; set; }
 
-    /// <summary>Gets or sets whether the rule is enabled.</summary>
-    public bool IsEnabled { get; set; } = true;
+    /// <summary>Gets or sets whether the rule is enabled; left out, the setting DefaultNotificationRuleIsEnabled gives it (FDW-3580).</summary>
+    public bool? IsEnabled { get; set; }
+
+    /// <summary>Gets or sets how the rule's conditions combine: "And" or "Or"; left out, the setting DefaultNotificationRuleConditionOperator gives it (FDW-3580).</summary>
+    public string? ConditionOperator { get; set; }
 
     /// <summary>Gets or sets the schedule ID this rule applies to.</summary>
     public Guid? ScheduleId { get; set; }
@@ -61,6 +64,11 @@ public sealed class CreateNotificationRuleRequestValidator : Validator<CreateNot
             .NotEmpty().WithMessage("Name is required")
             .MinimumLength(1).WithMessage("Name must be at least 1 character")
             .MaximumLength(200).WithMessage("Name must not exceed 200 characters");
+
+        RuleFor(x => x.ConditionOperator)
+            .Must(op => string.Equals(op, "And", StringComparison.Ordinal) || string.Equals(op, "Or", StringComparison.Ordinal))
+            .When(x => !string.IsNullOrEmpty(x.ConditionOperator))
+            .WithMessage(x => $"ConditionOperator '{x.ConditionOperator}' is not offered; the choices are And, Or");
 
         RuleFor(x => x.NotificationServiceType)
             .NotEmpty().WithMessage("NotificationServiceType is required");

@@ -118,6 +118,12 @@ public sealed class QuartzSchedulingService : IFrameworkSchedulingService
             QuartzSchedulingTranslators.Trigger, scheduleId, cancellationToken).ConfigureAwait(false);
 
     /// <inheritdoc />
+    public async Task<IGenericResult> TriggerCatchup(string scheduleId, DateTimeOffset dueTime, CancellationToken cancellationToken = default)
+        => await Execute(
+            new TriggerScheduleCommand(scheduleId, _configuration.DataStoreName, _configuration.PathName, _configuration.ScheduleContainerName, dueTime),
+            QuartzSchedulingTranslators.Trigger, scheduleId, cancellationToken).ConfigureAwait(false);
+
+    /// <inheritdoc />
     public async Task<IGenericResult<IGenericSchedule?>> GetSchedule(string scheduleId, CancellationToken cancellationToken = default)
     {
         var triggerKey = new TriggerKey(scheduleId, "Schedules");

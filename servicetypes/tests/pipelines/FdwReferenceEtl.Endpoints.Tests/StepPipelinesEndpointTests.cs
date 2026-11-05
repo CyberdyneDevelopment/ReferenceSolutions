@@ -13,6 +13,7 @@ public sealed class StepPipelinesEndpointTests : NodeEndpointTestBase
     private static object Step(object[]? pipelines = null, object[]? prerequisites = null, int? nodeTypeId = null) => new
     {
         name = "Load sales",
+        isEnabled = true,
         nodeTypeId = nodeTypeId ?? OrchestrationNodeTypes.Step.Id,
         parentId = Guid.NewGuid(),
         pipelines,

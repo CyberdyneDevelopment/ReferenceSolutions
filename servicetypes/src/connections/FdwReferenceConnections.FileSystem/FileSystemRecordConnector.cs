@@ -91,8 +91,15 @@ internal sealed class FileSystemRecordConnector
         // Why: the format factory reads from a Stream; a text format's content is the file decoded as text and
         // re-encoded UTF-8, a binary format's (an Excel workbook is a zip) is the file's own bytes -- see ReadContent --
         // so the same Create(context) seam the HTTP path uses drives the parse.
+        // A container that leaves out one of its format's choices is refused, naming it (FDW-3823).
+        var options = formatResult.Value!.CreateOptions(container);
+        if (options.IsFailure)
+        {
+            return options.ToNewResult<IReadOnlyList<IReadOnlyDictionary<string, object?>>>();
+        }
+
         using var stream = new MemoryStream(contentResult.Value!);
-        var context = new RecordSourceContext(stream, fieldsResult.Value!, ContainerRecordOptions.BuildSourceOptions(container));
+        var context = new RecordSourceContext(stream, fieldsResult.Value!, options.Value!);
         using var source = formatResult.Value!.Create(context);
 
         // Why: sources that expose IRowSource.Cursor (Delimited/FixedWidth AND Json — see JsonRowSourceType)
@@ -216,16 +223,23 @@ internal sealed class FileSystemRecordConnector
             return fieldsResult.ToNewResult<int>();
         }
 
-        var fields = fieldsResult.Value!;
-        if (formatResult.Value!.WritesBinary)
+        // A container that leaves out one of its format's choices is refused, naming it (FDW-3823).
+        var options = formatResult.Value!.CreateOptions(container);
+        if (options.IsFailure)
         {
-            return await WriteBinary(container, relativePath, formatResult.Value, fields, rows, cancellationToken).ConfigureAwait(false);
+            return options.ToNewResult<int>();
+        }
+
+        var fields = fieldsResult.Value!;
+        if (formatResult.Value.WritesBinary)
+        {
+            return await WriteBinary(container, relativePath, formatResult.Value, fields, options.Value!, rows, cancellationToken).ConfigureAwait(false);
         }
 
         var buffer = new StringBuilder();
         using (var target = new StringWriter(buffer))
         {
-            var context = new RecordWriterContext(target, fields, ContainerRecordOptions.BuildWriterOptions(container));
+            var context = new RecordWriterContext(target, fields, options.Value!);
             using var writer = formatResult.Value!.Create(context);
 
             // Why: row writers (delimited/fixed-width) take the flat name→value dictionary directly via
@@ -253,13 +267,14 @@ internal sealed class FileSystemRecordConnector
         string relativePath,
         IRecordWriterType format,
         List<IDataField> fields,
+        RowWriterOptions options,
         IReadOnlyList<IReadOnlyDictionary<string, object?>> rows,
         CancellationToken cancellationToken)
     {
         var bytes = RecordWriterBytes.Write(
             format,
             fields,
-            ContainerRecordOptions.BuildWriterOptions(container),
+            options,
             writer => WriteRows(writer, new RecordSchema(fields), rows, cancellationToken));
         var written = await _client.WriteBytes(relativePath, bytes, cancellationToken).ConfigureAwait(false);
         if (!written.IsSuccess)

@@ -7,7 +7,7 @@
     - the private package feed for CI builds
   -->
   <PropertyGroup>
-    <FdwVersion>1.4.5-rc*</FdwVersion>
+    <FdwVersion>1.5.1-rc*</FdwVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <!-- Why: enables NuGet CPM transitive pinning so PackageVersion entries also override
          transitive dependencies — required to resolve pre-release FDW packages that appear
@@ -34,6 +34,7 @@
     <PackageVersion Include="Fdw.Services.Logging" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Hosts" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Hosts.Abstractions" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Pipelines.Endpoints" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Settings" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Telemetry" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Telemetry.Abstractions" Version="$(FdwVersion)" />
@@ -279,6 +280,8 @@
     <PackageVersion Include="Fdw.Services.Workspaces" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Workspaces.Abstractions" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Workspaces.Endpoints" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Tags.Endpoints" Version="$(FdwVersion)" />
+    <PackageVersion Include="Fdw.Services.Tags" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Workspaces.Tds" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Tds.Endpoints" Version="$(FdwVersion)" />
     <PackageVersion Include="Fdw.Services.Users" Version="$(FdwVersion)" />

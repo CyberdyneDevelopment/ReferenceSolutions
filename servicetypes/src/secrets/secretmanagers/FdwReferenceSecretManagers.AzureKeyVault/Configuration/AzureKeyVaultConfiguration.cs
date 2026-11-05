@@ -12,6 +12,7 @@ using Fdw.Results;
 using Fdw.Services.SecretManagers.Abstractions;
 using Fdw.Services.SecretManagers.Abstractions.Logging;
 using FdwReferenceSecretManagers.AzureKeyVault.CredentialTypes;
+using Fdw.Conventions;
 
 namespace FdwReferenceSecretManagers.AzureKeyVault.Configuration;
 
@@ -85,7 +86,8 @@ public sealed partial class AzureKeyVaultConfiguration : ISecretManagerImplement
     /// <summary>
     /// Gets or sets a value indicating whether this configuration is enabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    [CallerChoice]
+    public bool IsEnabled { get; set; }
 
     /// <summary>
     /// Gets or sets the Azure Key Vault URI.

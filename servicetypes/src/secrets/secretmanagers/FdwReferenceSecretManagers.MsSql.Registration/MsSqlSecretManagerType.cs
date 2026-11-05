@@ -11,6 +11,8 @@ using Fdw.Services.SecretManagers.Abstractions;
 using Fdw.Services.Settings;
 using FdwReferenceSecretManagers.MsSql.Configuration;
 using Fdw.Results;
+using System.Collections.Generic;
+using Fdw.ServiceTypes;
 
 namespace FdwReferenceSecretManagers.MsSql.Registration;
 
@@ -35,6 +37,15 @@ namespace FdwReferenceSecretManagers.MsSql.Registration;
 public sealed class MsSqlSecretManagerType
     : SecretManagerTypeBase<ISecretManager, IMsSqlSecretManagerFactory, MsSqlSecretManagerConfiguration>
 {
+    /// <summary>
+    /// Gets the tuning defaults this type carries (FDW-3823, Mike: "the thing you select carries it"), Port 1433, Encrypt true: a
+    /// configuration that states its own value uses it, and a host can change one at registration with ServiceTypeDefaults.Override.
+    /// </summary>
+    public override IReadOnlyDictionary<string, object> DeclaredDefaults
+        => _declaredDefaults ??= ServiceTypeDefaults.With(base.DeclaredDefaults, (nameof(MsSqlSecretManagerConfiguration.Port), 1433), (nameof(MsSqlSecretManagerConfiguration.Encrypt), true));
+
+    private IReadOnlyDictionary<string, object>? _declaredDefaults;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MsSqlSecretManagerType"/> class.
     /// </summary>

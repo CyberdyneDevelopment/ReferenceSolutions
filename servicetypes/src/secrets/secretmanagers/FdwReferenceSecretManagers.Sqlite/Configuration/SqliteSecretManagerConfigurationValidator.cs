@@ -29,8 +29,8 @@ public sealed class SqliteSecretManagerConfigurationValidator : AbstractValidato
             .WithMessage("Table name must be a valid SQLite identifier.");
 
         RuleFor(x => x.CommandTimeoutSeconds)
-            .InclusiveBetween(1, 300)
+            .GreaterThan(0)
             .When(x => x.CommandTimeoutSeconds.HasValue)
-            .WithMessage("Command timeout must be between 1 and 300 seconds when it is stated; leave it out to take the instance's DefaultCommandTimeoutSeconds.");
+            .WithMessage("Command timeout must be a positive number of seconds when it is stated (no ceiling in code, FDW-3823); leave it out to take the instance's DefaultCommandTimeoutSeconds.");
     }
 }

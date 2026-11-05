@@ -99,11 +99,25 @@ public sealed class SqliteDeleteTranslatorTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "DataGateway")]
-    public async Task DeleteTranslatorWithoutFilterDeletesEveryRow()
+    public async Task DeleteTranslatorWithoutFilterOrAllRowsIsRefused()
     {
-        // A command with no filter has no condition: the container is emptied.
+        // FDW-3660: a command with no filter, no soft delete and no AllRows never reaches SQLite as DELETE with no WHERE.
         var container = CreateContainer("orders");
         var command = new DeleteCommand { Filter = null };
+
+        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.CurrentMessage.ShouldNotBeNull().ShouldContain("AllRows()");
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "DataGateway")]
+    public async Task DeleteTranslatorWithAllRowsDeletesEveryRow()
+    {
+        var container = CreateContainer("orders");
+        var command = new DeleteCommand { AllRows = true };
 
         var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
 

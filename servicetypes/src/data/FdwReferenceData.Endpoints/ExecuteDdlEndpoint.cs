@@ -10,6 +10,7 @@ using Fdw.Services.Data.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceDdl.Endpoints.Logging;
+using Fdw.Results;
 
 namespace FdwReferenceDdl.Endpoints;
 
@@ -167,11 +168,11 @@ public sealed class ExecuteDdlEndpoint : Endpoint<ExecuteDdlRequest, ExecuteDdlR
             }
             else
             {
-                DdlLog.DdlExecutionFailed(_logger, req.Name, result.CurrentMessage ?? "Unknown error");
+                DdlLog.DdlExecutionFailed(_logger, req.Name, result.FailureReason().Message);
                 await Send.ResponseAsync(new ExecuteDdlResponse
                 {
                     Success = false,
-                    Message = result.CurrentMessage ?? "DDL execution failed"
+                    Message = result.FailureReason().Message
                 }, 500, ct);
             }
         }

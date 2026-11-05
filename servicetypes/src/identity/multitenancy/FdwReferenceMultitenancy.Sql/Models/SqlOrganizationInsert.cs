@@ -40,4 +40,7 @@ public sealed partial class SqlOrganizationInsert
 
     /// <summary>Gets or sets whether the organization is active.</summary>
     public bool IsActive { get; set; }
+
+    /// <summary>Gets or sets the Id of the workspace that is the organization's default (FDW-3692).</summary>
+    public Guid DefaultWorkspaceId { get; set; }
 }

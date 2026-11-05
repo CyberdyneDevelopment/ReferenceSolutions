@@ -84,9 +84,12 @@ public sealed class SqlOrganizationWriter : IOrganizationWriter
                 TenantId = organization.TenantId,
                 TenantRowId = checkedInput.Value,
                 Slug = organization.Slug,
-                IsDefault = false,
+                IsDefault = organization.IsDefault,
                 IsAdminOrg = false,
                 IsActive = true,
+                // The organization's own default workspace (FDW-3668). The row names it from the start (the column is required);
+                // the workspace itself is made by the founding service, which reads this id back from the organization.
+                DefaultWorkspaceId = Guid.CreateVersion7(),
             }), cancellationToken).ConfigureAwait(false);
         if (inserted.IsFailure)
             return inserted.ToNewResult<Guid>();
@@ -196,9 +199,19 @@ public sealed class SqlOrganizationWriter : IOrganizationWriter
         if (!existing.IsSuccess || existing.Value is null)
             return WriteFailed<int>(Guid.Empty, existing.CurrentMessage);
 
-        return existing.Value.Any(other => string.Equals(other.Slug, organization.Slug, StringComparison.OrdinalIgnoreCase))
-            ? GenericResult<int>.Failure(SqlTenantResultCodes.ByName("OrganizationSlugTaken"), ResultDetails.Create().With("Slug", organization.Slug))
-            : GenericResult<int>.Success(tenantRow.RowId);
+        return Verdict(organization, existing.Value, tenantRow.RowId);
+    }
+
+    // The slug is free among the tenant's organizations, and a default organization is made only for a tenant that has none.
+    private static IGenericResult<int> Verdict(NewOrganization organization, IEnumerable<SqlOrganizationEntity> existing, int tenantRowId)
+    {
+        var current = existing.ToList();
+        if (current.Any(other => string.Equals(other.Slug, organization.Slug, StringComparison.OrdinalIgnoreCase)))
+            return GenericResult<int>.Failure(SqlTenantResultCodes.ByName("OrganizationSlugTaken"), ResultDetails.Create().With("Slug", organization.Slug));
+
+        return organization.IsDefault && current.Any(other => other.IsDefault)
+            ? GenericResult<int>.Failure(SqlTenantResultCodes.ByName("DefaultOrganizationExists"), ResultDetails.Create().With("TenantId", organization.TenantId.ToString()))
+            : GenericResult<int>.Success(tenantRowId);
     }
 
     // Writes the implementation row that points at the organization's domain row.

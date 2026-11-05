@@ -53,7 +53,13 @@ public sealed class EnvironmentVariableListSecretsHandler
         }
 
         var secrets = new List<ISecretMetadata>();
-        var targetEnum = config.TargetEnum;
+        var target = config.ResolveTarget();
+        if (target.IsFailure)
+        {
+            return Task.FromResult(target.ToNewResult<IReadOnlyList<ISecretMetadata>>());
+        }
+
+        var targetEnum = target.Value;
         var environmentVariables = Environment.GetEnvironmentVariables(targetEnum);
 
         foreach (DictionaryEntry entry in environmentVariables)

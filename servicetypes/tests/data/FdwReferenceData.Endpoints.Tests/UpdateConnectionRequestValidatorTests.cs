@@ -22,13 +22,13 @@ public sealed class UpdateConnectionRequestValidatorTests
             Credentials = new Dictionary<string, string> { ["UsernameSecretName"] = "user", ["PasswordSecretName"] = "secret" },
         };
 
-        new UpdateConnectionRequestValidator().Validate(request).IsValid.ShouldBeTrue();
+        new ReferenceUpdateConnectionRequestValidator().Validate(request).IsValid.ShouldBeTrue();
     }
 
     [Fact]
     public void AHealthCheckSettingOrADefaultValuePolicySentAloneIsAnAcceptedUpdate()
     {
-        var validator = new UpdateConnectionRequestValidator();
+        var validator = new ReferenceUpdateConnectionRequestValidator();
 
         validator.Validate(new UpdateConnectionRequest { Name = "Orders", HealthCheckEnabled = true }).IsValid.ShouldBeTrue();
         validator.Validate(new UpdateConnectionRequest { Name = "Orders", DefaultValuePolicy = "Strict" }).IsValid.ShouldBeTrue();
@@ -37,7 +37,7 @@ public sealed class UpdateConnectionRequestValidatorTests
     [Fact]
     public void ABodyThatStatesNothingIsRefusedWithTheMessageThatNamesEveryMember()
     {
-        var result = new UpdateConnectionRequestValidator().Validate(new UpdateConnectionRequest { Name = "Orders" });
+        var result = new ReferenceUpdateConnectionRequestValidator().Validate(new UpdateConnectionRequest { Name = "Orders" });
 
         result.IsValid.ShouldBeFalse();
         result.Errors.Select(error => error.ErrorCode).ShouldContain(UpdateConnectionChanges.NothingStatedCode);
@@ -48,7 +48,7 @@ public sealed class UpdateConnectionRequestValidatorTests
     [Fact]
     public void AMemberTheConnectionDoesNotStoreIsNotAnUpdateOnItsOwn()
     {
-        var result = new UpdateConnectionRequestValidator().Validate(new UpdateConnectionRequest { Name = "Orders", IsActive = true });
+        var result = new ReferenceUpdateConnectionRequestValidator().Validate(new UpdateConnectionRequest { Name = "Orders", IsActive = true });
 
         result.IsValid.ShouldBeFalse();
         result.Errors.Select(error => error.ErrorCode).ShouldContain(UpdateConnectionChanges.NothingStatedCode);
@@ -59,6 +59,6 @@ public sealed class UpdateConnectionRequestValidatorTests
     {
         var request = new UpdateConnectionRequest { Name = "Orders", Server = string.Empty, Headers = new Dictionary<string, string?>() };
 
-        new UpdateConnectionRequestValidator().Validate(request).IsValid.ShouldBeFalse();
+        new ReferenceUpdateConnectionRequestValidator().Validate(request).IsValid.ShouldBeFalse();
     }
 }

@@ -48,7 +48,7 @@ public sealed partial class EmailNotificationConfiguration : INotificationImplem
     /// <summary>
     /// Gets or sets whether this notification channel is enabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsEnabled { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the secret manager to use for retrieving secrets.
@@ -71,17 +71,17 @@ public sealed partial class EmailNotificationConfiguration : INotificationImplem
     /// <summary>
     /// Gets or sets the SMTP server host.
     /// </summary>
-    public string SmtpHost { get; set; } = "localhost";
+    public string SmtpHost { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the SMTP server port.
     /// </summary>
-    public int SmtpPort { get; set; } = 25;
+    public int SmtpPort { get; set; }
 
     /// <summary>
     /// Gets or sets whether to use SSL/TLS.
     /// </summary>
-    public bool UseSsl { get; set; } = true;
+    public bool UseSsl { get; set; }
 
     /// <summary>
     /// Gets or sets the SMTP authentication username.
@@ -97,7 +97,7 @@ public sealed partial class EmailNotificationConfiguration : INotificationImplem
     /// <summary>
     /// Gets or sets the sender email address.
     /// </summary>
-    public string FromAddress { get; set; } = "noreply@example.com";
+    public string FromAddress { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the sender display name.

@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <Description>The DocumentRecord extension of the SQL Server connection (FDW-3731): MsSqlDocumentRecordConnection wraps a MsSqlConnection so an organization's document records (FDW-3673's record commands) are kept in the doc tables of the database it reaches (databases/DocumentRecordsDb). Only a host that references this package can be granted a SQL Server connection for the DocumentRecords purpose.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections" />
+    <PackageReference Include="Fdw.MessageLogging.Abstractions" />
+    <PackageReference Include="Fdw.Messages" />
+    <PackageReference Include="Fdw.Results" />
+    <PackageReference Include="Fdw.Services.Connections.Abstractions" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fdw.Collections.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fdw.MessageLogging.SourceGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- Why: the extension runs its SQL on the SQL Server connection's own pooled connections, session context and timeout, so it is built over it. -->
+  <ItemGroup>
+    <ProjectReference Include="..\FdwReferenceConnections.MsSql\FdwReferenceConnections.MsSql.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="FdwReferenceConnections.DocumentRecords.Tests" />
+  </ItemGroup>
+
+</Project>

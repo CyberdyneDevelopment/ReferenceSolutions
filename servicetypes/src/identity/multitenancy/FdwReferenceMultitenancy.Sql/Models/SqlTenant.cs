@@ -29,15 +29,15 @@ public sealed class SqlTenant : TenantTypeBase
         Guid id,
         string name,
         string slug,
+        ITenantTheme theme,
+        bool isSelectable,
         bool isActive = true,
         string? orgPrefix = null,
         string? connectionName = null,
-        ITenantTheme? theme = null,
         ITenantOptions? options = null,
         IEnumerable<string>? availableRoles = null,
-        bool isGlobal = false,
-        bool isSelectable = true)
-        : base(id, name, slug, orgPrefix, connectionName, theme, options, availableRoles, isGlobal, isSelectable)
+        bool isGlobal = false)
+        : base(id, name, slug, theme, isSelectable, orgPrefix, connectionName, options, availableRoles, isGlobal)
     {
         SetActive(isActive);
     }

@@ -4,10 +4,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Results;
+using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Notifications;
 using Fdw.Services.Notifications.Abstractions;
 using Fdw.Services.Notifications.Endpoints;
 using Fdw.Services.Notifications.Endpoints.Logging;
+using Fdw.Services.Settings;
 using Fdw.Web.RestEndpoints.Crud;
 using Microsoft.Extensions.Logging;
 
@@ -21,14 +23,17 @@ public class CreateNotificationEndpoint
     : CrudCreateEndpointBase<CreateNotificationRequest, NotificationDetailDto>
 {
     private readonly INotificationConfigurationProvider _provider;
+    private readonly Lazy<IEffectiveSettingsProvider> _settings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateNotificationEndpoint"/> class.
     /// </summary>
-    public CreateNotificationEndpoint(ILogger<CreateNotificationEndpoint> logger, INotificationConfigurationProvider provider)
+    public CreateNotificationEndpoint(
+        ILogger<CreateNotificationEndpoint> logger, INotificationConfigurationProvider provider, Lazy<IEffectiveSettingsProvider> settings)
         : base(logger)
     {
         _provider = provider;
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
 
     /// <inheritdoc />
@@ -64,13 +69,22 @@ public class CreateNotificationEndpoint
 
         // Name, Domain and Implementation are not set here: Save stamps them from its own arguments,
         // and the implementation row does not persist them -- they belong to the domain row.
+        // What the request leaves out takes the caller's tenant's setting (FDW-3580): "make it configurable ... in configuration and not hardcoded".
+        var tenantId = new ClaimsPrincipalAuthenticationContext(User).ActiveTenantId;
+        var enabled = InstanceDefault.Resolve(
+            request.IsEnabled, _settings, DefaultValueSettings.DefaultNotificationChannelIsEnabled, tenantId, "notification", request.Name, "IsEnabled", Logger);
+        if (enabled.IsFailure)
+        {
+            return enabled.ToNewResult<NotificationDetailDto>();
+        }
+
         var config = type.NewConfiguration();
-        config.IsEnabled = request.IsEnabled!.Value;
+        config.IsEnabled = enabled.Value;
         config.Description = request.Description;
         config.SecretManagerName = request.SecretManagerName;
         config.SecretKeyName = request.SecretKeyName;
 
-        var applied = NotificationSettings.Apply(type, config, request.Settings, creating: true, Logger);
+        var applied = NotificationSettings.ApplyNew(type, config, request.Settings, _settings, tenantId, request.Name, Logger);
         if (applied.IsFailure)
         {
             return applied.ToNewResult<NotificationDetailDto>();

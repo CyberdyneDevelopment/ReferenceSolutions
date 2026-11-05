@@ -303,7 +303,7 @@ internal sealed class FileSystemConfigurationWriter
     {
         var problem = soft.FirstProblem();
         if (problem is not null)
-            return problem;
+            return problem.Message;
 
         var names = new List<string> { soft.DeletedFlagColumn };
         if (soft.DeletedAtColumn is not null)

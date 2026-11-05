@@ -75,4 +75,20 @@ public static partial class MsSqlConnectionProviderLogger
         string connectionName,
         string declared,
         string resolved);
+
+    /// <summary>Logged when a connection reaches the provider without its AdditionalProperties (FDW-3454).</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="connectionName">The connection being built.</param>
+    /// <returns>The logged message.</returns>
+    /// <remarks>
+    /// The dictionary holds the values the authentication method requires. A missing one is not read as an empty one: the connection is
+    /// refused, naming it, so the person states the values (or an empty object when the method requires none).
+    /// </remarks>
+    [MessageLogging(
+        EventId = 21101,
+        Level = LogLevel.Error,
+        Message = "Connection '{connectionName}' states no AdditionalProperties, which hold the values its authentication method requires; state them (an empty object when it requires none)")]
+    public static partial IGenericMessage AdditionalPropertiesNotStated(
+        ILogger<MsSqlConnectionProvider> logger,
+        string connectionName);
 }

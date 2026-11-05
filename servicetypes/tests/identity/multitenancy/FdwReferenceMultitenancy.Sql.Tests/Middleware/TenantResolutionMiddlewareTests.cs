@@ -150,7 +150,7 @@ public sealed class TenantResolutionMiddlewareTests
     }
 
     private static SqlTenant CreateTenant(Guid id, string slug) =>
-        new(id, $"Tenant {slug}", slug);
+        new(id, $"Tenant {slug}", slug, new TenantTheme { PrimaryColor = "1 1% 1%", SecondaryColor = "2 2% 2%", DarkModeDefault = false }, isSelectable: true, options: new TenantOptions(), availableRoles: []);
 
     private static TenantResolutionMiddleware CreateMiddleware(RequestDelegate next) =>
         new(next, null);

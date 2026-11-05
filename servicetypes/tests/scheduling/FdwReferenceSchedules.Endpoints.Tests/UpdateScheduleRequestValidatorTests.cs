@@ -13,7 +13,7 @@ public sealed class UpdateScheduleRequestValidatorTests
 {
     private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
 
-    private static bool RefusedAsStatingNothing(string json) => new UpdateScheduleRequestValidator()
+    private static bool RefusedAsStatingNothing(string json) => new ReferenceUpdateScheduleRequestValidator()
         .Validate(JsonSerializer.Deserialize<UpdateScheduleRequest>(json, Web)!)
         .Errors.Any(error => string.Equals(error.ErrorCode, UpdateScheduleChanges.NothingStatedCode, StringComparison.Ordinal));
 
@@ -22,6 +22,7 @@ public sealed class UpdateScheduleRequestValidatorTests
     [InlineData("""{ "name": "S", "cronExpression": "0 3 * * *" }""")]
     [InlineData("""{ "name": "S", "intervalSeconds": 120 }""")]
     [InlineData("""{ "name": "S", "timeZoneId": "America/Chicago" }""")]
+    [InlineData("""{ "name": "S", "missedFireRule": "FireOnce" }""")]
     [InlineData("""{ "name": "S", "isEnabled": false }""")]
     [InlineData("""{ "name": "S", "parameters": [] }""")]
     [InlineData("""{ "name": "S", "runRoles": ["Admin"] }""")]
@@ -30,6 +31,23 @@ public sealed class UpdateScheduleRequestValidatorTests
     public void EveryMemberOnTheListAloneIsAChange(string json)
     {
         RefusedAsStatingNothing(json).ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData("Skip", true)]
+    [InlineData("FireOnce", true)]
+    [InlineData("skip", false)]
+    [InlineData("Catchup", false)]
+    [InlineData("", false)]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "Api")]
+    public void AMissedFireRuleThatIsStatedMustBeOneOfTheCollectionsAndIsRefusedNamingTheField(string rule, bool accepted)
+    {
+        var request = new UpdateScheduleRequest { Name = "S", MissedFireRule = rule };
+
+        var errors = new ReferenceUpdateScheduleRequestValidator().Validate(request).Errors.Where(error => error.PropertyName == nameof(UpdateScheduleRequest.MissedFireRule)).ToList();
+
+        (errors.Count == 0).ShouldBe(accepted);
     }
 
     [Theory]

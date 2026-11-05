@@ -77,14 +77,17 @@ public sealed class OpenTelemetryType
 #pragma warning disable VSTHRD002
             var row = domain.Get(DomainName).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002
-            if (row.IsFailure || row.Value is null)
+            // A read that failed answers with its own reason. Reporting it as "no row" hid why the row could not be read
+            // (FDW-4057: missing Json container choices read as an unconfigured row).
+            if (row.IsFailure)
+                return GenericResult<IHostApplicationBuilder>.Failure(row.FailureReason());
+
+            if (row.Value is not { } telemetry)
                 return GenericResult<IHostApplicationBuilder>.Failure(
                     OpenTelemetryLog.TelemetryRowNotConfigured(
                         loggerFactory?.CreateLogger<OpenTelemetryType>()
                             ?? NullLogger<OpenTelemetryType>.Instance,
                         DomainName));
-
-            var telemetry = row.Value;
 
             // Configured straight onto the builders, not through IDeferred*.Configure. The deferred
             // form runs its callback while the ServiceProvider is being built, and

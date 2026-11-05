@@ -95,7 +95,7 @@ public sealed class ConsoleNotificationService : INotificationService
         {
             return GenericResult<T>.Failure(
                 NotificationResultCodes.ByName("SendFailed"),
-                ResultDetails.Create().With("Message", result.CurrentMessage ?? "Unknown error"));
+                ResultDetails.Create().With("Message", result.FailureReason().Message));
         }
 
         if (result.Value is T typedResult)
@@ -123,7 +123,7 @@ public sealed class ConsoleNotificationService : INotificationService
             ? GenericResult.Success()
             : GenericResult.Failure(
                 NotificationResultCodes.ByName("SendFailed"),
-                ResultDetails.Create().With("Message", result.CurrentMessage ?? "Unknown error"));
+                ResultDetails.Create().With("Message", result.FailureReason().Message));
     }
 
     /// <inheritdoc/>

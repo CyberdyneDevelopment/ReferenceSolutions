@@ -56,6 +56,7 @@ public class SoapProtocolBaseTests
     {
         var config = new HttpConnectionConfiguration
         {
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com/soap",
             Protocol = "Soap11",
             Soap = soap,
@@ -263,9 +264,9 @@ public class SoapProtocolBaseTests
     {
         var command = new Mock<IDataCommand>();
         command.Setup(c => c.CommandType).Returns("Query");
-        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object> { ["Operation"] = "Query" });
         var container = new Mock<IStorageContainer>();
-        container.Setup(c => c.Path).Returns((IPath?)null!);
+        container.Setup(c => c.Path).Returns(Mock.Of<IPath>(p => p.PathValue == "/service"));
         container.Setup(c => c.Name).Returns("TestContainer");
 
         var result = await _protocol.Translate(command.Object, container.Object, _context, TestContext.Current.CancellationToken);
@@ -281,9 +282,9 @@ public class SoapProtocolBaseTests
     {
         var command = new Mock<IDataCommand>();
         command.Setup(c => c.CommandType).Returns("GetData");
-        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object> { ["Operation"] = "GetData" });
         var container = new Mock<IStorageContainer>();
-        container.Setup(c => c.Path).Returns((IPath?)null!);
+        container.Setup(c => c.Path).Returns(Mock.Of<IPath>(p => p.PathValue == "/service"));
         container.Setup(c => c.Name).Returns("DataService");
 
         var result = await _protocol.Translate(command.Object, container.Object, _context, TestContext.Current.CancellationToken);
@@ -303,10 +304,11 @@ public class SoapProtocolBaseTests
         command.Setup(c => c.CommandType).Returns("GetData");
         command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>
         {
+            ["Operation"] = "GetData",
             ["SoapAction"] = "http://example.com/GetData"
         });
         var container = new Mock<IStorageContainer>();
-        container.Setup(c => c.Path).Returns((IPath?)null!);
+        container.Setup(c => c.Path).Returns(Mock.Of<IPath>(p => p.PathValue == "/service"));
         container.Setup(c => c.Name).Returns("DataService");
 
         var result = await _protocol.Translate(command.Object, container.Object, _context, TestContext.Current.CancellationToken);
@@ -325,9 +327,9 @@ public class SoapProtocolBaseTests
 
         var command = new Mock<IDataCommand>();
         command.Setup(c => c.CommandType).Returns("GetData");
-        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object> { ["Operation"] = "GetData" });
         var container = new Mock<IStorageContainer>();
-        container.Setup(c => c.Path).Returns((IPath?)null!);
+        container.Setup(c => c.Path).Returns(Mock.Of<IPath>(p => p.PathValue == "/service"));
         container.Setup(c => c.Name).Returns("DataService");
 
         var result = await _protocol.Translate(command.Object, container.Object, context, TestContext.Current.CancellationToken);
@@ -346,9 +348,9 @@ public class SoapProtocolBaseTests
         var context = CreateTestContext(securityType: "None");
         var command = new Mock<IDataCommand>();
         command.Setup(c => c.CommandType).Returns("Query");
-        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object> { ["Operation"] = "Query" });
         var container = new Mock<IStorageContainer>();
-        container.Setup(c => c.Path).Returns((IPath?)null!);
+        container.Setup(c => c.Path).Returns(Mock.Of<IPath>(p => p.PathValue == "/service"));
         container.Setup(c => c.Name).Returns("Test");
 
         var result = await _protocol.Translate(command.Object, container.Object, context, TestContext.Current.CancellationToken);
@@ -365,9 +367,9 @@ public class SoapProtocolBaseTests
 
         var command = new Mock<IDataCommand>();
         command.Setup(c => c.CommandType).Returns("Query");
-        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object> { ["Operation"] = "Query" });
         var container = new Mock<IStorageContainer>();
-        container.Setup(c => c.Path).Returns((IPath?)null!);
+        container.Setup(c => c.Path).Returns(Mock.Of<IPath>(p => p.PathValue == "/service"));
         container.Setup(c => c.Name).Returns("Test");
 
         var result = await _protocol.Translate(command.Object, container.Object, context, TestContext.Current.CancellationToken);
@@ -385,9 +387,9 @@ public class SoapProtocolBaseTests
 
         var command = new Mock<IDataCommand>();
         command.Setup(c => c.CommandType).Returns("Query");
-        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object> { ["Operation"] = "Query" });
         var container = new Mock<IStorageContainer>();
-        container.Setup(c => c.Path).Returns((IPath?)null!);
+        container.Setup(c => c.Path).Returns(Mock.Of<IPath>(p => p.PathValue == "/service"));
         container.Setup(c => c.Name).Returns("Test");
 
         var result = await _protocol.Translate(command.Object, container.Object, context, TestContext.Current.CancellationToken);
@@ -631,9 +633,9 @@ public class SoapProtocolBaseTests
 
         var command = new Mock<IDataCommand>();
         command.Setup(c => c.CommandType).Returns("GetData");
-        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object> { ["Operation"] = "GetData" });
         var container = new Mock<IStorageContainer>();
-        container.Setup(c => c.Path).Returns((IPath?)null!);
+        container.Setup(c => c.Path).Returns(Mock.Of<IPath>(p => p.PathValue == "/service"));
         container.Setup(c => c.Name).Returns("MyContainer");
 
         var result = await _protocol.Translate(command.Object, container.Object, context, TestContext.Current.CancellationToken);
@@ -653,9 +655,9 @@ public class SoapProtocolBaseTests
         var context = CreateTestContext(soap: null);
         var command = new Mock<IDataCommand>();
         command.Setup(c => c.CommandType).Returns("Query");
-        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object> { ["Operation"] = "Query" });
         var container = new Mock<IStorageContainer>();
-        container.Setup(c => c.Path).Returns((IPath?)null!);
+        container.Setup(c => c.Path).Returns(Mock.Of<IPath>(p => p.PathValue == "/service"));
         container.Setup(c => c.Name).Returns("Test");
 
         var result = await _protocol.Translate(command.Object, container.Object, context, TestContext.Current.CancellationToken);
@@ -680,7 +682,7 @@ public class SoapProtocolBaseTests
             ["Operation"] = "CustomOperationName"
         });
         var container = new Mock<IStorageContainer>();
-        container.Setup(c => c.Path).Returns((IPath?)null!);
+        container.Setup(c => c.Path).Returns(Mock.Of<IPath>(p => p.PathValue == "/service"));
         container.Setup(c => c.Name).Returns("Container");
 
         var result = await _protocol.Translate(command.Object, container.Object, _context, TestContext.Current.CancellationToken);
@@ -693,20 +695,37 @@ public class SoapProtocolBaseTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "Api")]
-    public async Task TranslateFallsBackToCommandTypeForBodyElementName()
+    public async Task TranslateRefusesACommandThatNamesNoOperation()
     {
+        // The body element is the operation; the command type is not one (FDW-3580).
         var command = new Mock<IDataCommand>();
         command.Setup(c => c.CommandType).Returns("DefaultQuery");
         command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        var container = new Mock<IStorageContainer>();
+        container.Setup(c => c.Path).Returns(Mock.Of<IPath>(p => p.PathValue == "/service"));
+        container.Setup(c => c.Name).Returns("Container");
+
+        var result = await _protocol.Translate(command.Object, container.Object, _context, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeFalse();
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "Api")]
+    public async Task TranslateRefusesAContainerWithoutAPath()
+    {
+        // A request is addressed by its container's path; the container's name is a label (FDW-3580).
+        var command = new Mock<IDataCommand>();
+        command.Setup(c => c.CommandType).Returns("GetData");
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object> { ["Operation"] = "GetData" });
         var container = new Mock<IStorageContainer>();
         container.Setup(c => c.Path).Returns((IPath?)null!);
         container.Setup(c => c.Name).Returns("Container");
 
         var result = await _protocol.Translate(command.Object, container.Object, _context, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        var content = await result.Value!.Content!.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        content.ShouldContain("DefaultQuery");
+        result.IsSuccess.ShouldBeFalse();
     }
 
     #endregion

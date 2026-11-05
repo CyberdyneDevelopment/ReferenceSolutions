@@ -501,7 +501,11 @@ public sealed partial class HttpConnection
             var source = _protocol.TryOpenRecordSource(
                 container, stream, container.Schema.Fields.OfType<IDataField>().ToList(), Logger);
 
-            if (source is null)
+            // A container that leaves out one of its format's choices is refused, naming it (FDW-3823).
+            if (source.IsFailure)
+                return source.ToNewResult<IRecordSource<DataRecord>>();
+
+            if (source.Value is null)
             {
                 return GenericResult<IRecordSource<DataRecord>>.Failure(
                     HttpResultCodes.ByName("ResponseRowExtractionFailed"),
@@ -509,7 +513,7 @@ public sealed partial class HttpConnection
                         $"No row source reader available for format '{container.Format?.Name}'."));
             }
 
-            var scoped = new ResponseScopedRecordSource(source, response, stream);
+            var scoped = new ResponseScopedRecordSource(source.Value, response, stream);
             response = null;   // ownership transferred; do not dispose here
             stream = null;
             return GenericResult<IRecordSource<DataRecord>>.Success(scoped);

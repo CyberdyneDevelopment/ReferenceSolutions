@@ -15,7 +15,7 @@ public sealed class NodeTypeEndpointTests : NodeEndpointTestBase
     [Trait("Category", "Etl")]
     public async Task ANodeSentByTypeNameIsStoredWithThatType()
     {
-        var response = await Post(new { name = "Load", nodeType = "Step", parentId = Guid.NewGuid() });
+        var response = await Post(new { name = "Load", isEnabled = true, nodeType = "Step", parentId = Guid.NewGuid() });
 
         response.StatusCode.ShouldBe(HttpStatusCode.Created, await Body(response));
         Saved.ShouldNotBeNull().NodeTypeId.ShouldBe(OrchestrationNodeTypes.Step.Id);
@@ -26,7 +26,7 @@ public sealed class NodeTypeEndpointTests : NodeEndpointTestBase
     [Trait("Category", "Etl")]
     public async Task ANodeSentByTypeIdIsStillStoredWithThatType()
     {
-        var response = await Post(new { name = "Load", nodeTypeId = OrchestrationNodeTypes.Stage.Id, parentId = Guid.NewGuid() });
+        var response = await Post(new { name = "Load", isEnabled = true, nodeTypeId = OrchestrationNodeTypes.Stage.Id, parentId = Guid.NewGuid() });
 
         response.StatusCode.ShouldBe(HttpStatusCode.Created, await Body(response));
         Saved.ShouldNotBeNull().NodeTypeId.ShouldBe(OrchestrationNodeTypes.Stage.Id);
@@ -40,6 +40,7 @@ public sealed class NodeTypeEndpointTests : NodeEndpointTestBase
         var response = await Post(new
         {
             name = "Load",
+            isEnabled = true,
             nodeType = "Stage",
             nodeTypeId = OrchestrationNodeTypes.Stage.Id,
             parentId = Guid.NewGuid()
@@ -56,6 +57,7 @@ public sealed class NodeTypeEndpointTests : NodeEndpointTestBase
         var response = await Post(new
         {
             name = "Load",
+            isEnabled = true,
             nodeType = "Step",
             nodeTypeId = OrchestrationNodeTypes.Stage.Id,
             parentId = Guid.NewGuid()
@@ -70,7 +72,7 @@ public sealed class NodeTypeEndpointTests : NodeEndpointTestBase
     [Trait("Category", "Etl")]
     public async Task ATypeNameThatIsNotANodeTypeIsRefusedAndNothingIsStored()
     {
-        var response = await Post(new { name = "Load", nodeType = "Phase", parentId = Guid.NewGuid() });
+        var response = await Post(new { name = "Load", isEnabled = true, nodeType = "Phase", parentId = Guid.NewGuid() });
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, await Body(response));
         (await Detail(response)).ShouldContain("nodeType 'Phase' does not exist; send one of");
@@ -82,7 +84,7 @@ public sealed class NodeTypeEndpointTests : NodeEndpointTestBase
     [Trait("Category", "Etl")]
     public async Task ANodeThatSaysNeitherANameNorANumberIsRefusedAndNothingIsStored()
     {
-        var response = await Post(new { name = "Load", parentId = Guid.NewGuid() });
+        var response = await Post(new { name = "Load", isEnabled = true, parentId = Guid.NewGuid() });
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, await Body(response));
         (await Detail(response)).ShouldContain("Say what the node is");

@@ -66,6 +66,11 @@ public sealed class SqlTenantWriter : ITenantWriter
         if (all.Value.Any(existing => string.Equals(existing.Slug, tenant.Slug, StringComparison.OrdinalIgnoreCase)))
             return GenericResult<Guid>.Failure(SqlTenantResultCodes.ByName("TenantSlugTaken"), ResultDetails.Create().With("Slug", tenant.Slug));
 
+        // The palette is stored: a new tenant takes each value it leaves out from the default (global) tenant's row, and a read never falls back (FDW-3925).
+        if (all.Value.FirstOrDefault(existing => existing.IsGlobal) is not { } defaultTenant)
+            return GenericResult<Guid>.Failure(SqlTenantResultCodes.ByName("DefaultTenantNotFound"));
+
+        var palette = defaultTenant.Theme;
         var id = Guid.CreateVersion7();
         var written = await Write(id, store => Insert.Into<SqlTenantInsert>(store.Table)
             .DataStore(store.DataStore)
@@ -78,8 +83,21 @@ public sealed class SqlTenantWriter : ITenantWriter
                 DisplayName = tenant.Name,
                 IsActive = true,
                 IsGlobal = false,
-                IsSelectable = true,
+                IsSelectable = tenant.IsSelectable,
                 ConnectionName = tenant.ConnectionName,
+                PrimaryColor = palette.PrimaryColor,
+                SecondaryColor = palette.SecondaryColor,
+                AccentColor = palette.AccentColor,
+                BackgroundColor = palette.BackgroundColor,
+                SurfaceColor = palette.SurfaceColor,
+                OverlayColor = palette.OverlayColor,
+                SuccessColor = palette.SuccessColor,
+                WarningColor = palette.WarningColor,
+                ErrorColor = palette.ErrorColor,
+                InfoColor = palette.InfoColor,
+                TextMainColor = palette.TextMainColor,
+                TextMutedColor = palette.TextMutedColor,
+                DarkModeDefault = palette.DarkModeDefault,
             }), cancellationToken).ConfigureAwait(false);
         if (written.IsFailure)
             return written.ToNewResult<Guid>();
@@ -128,6 +146,10 @@ public sealed class SqlTenantWriter : ITenantWriter
             return current;
         if (current.Value.IsGlobal)
             return GenericResult.Failure(SqlTenantResultCodes.ByName("GlobalTenantProtected"), ResultDetails.Create().With("TenantId", tenantId.ToString()));
+
+        var organizations = await RemoveOrganizations(tenantId, cancellationToken).ConfigureAwait(false);
+        if (organizations.IsFailure)
+            return organizations;
 
         var written = await Write(tenantId, store => DeleteCommands.From(store.Table)
             .DataStore(store.DataStore)
@@ -187,6 +209,32 @@ public sealed class SqlTenantWriter : ITenantWriter
         return tenant is null
             ? GenericResult<SqlTenantState>.Failure(SqlTenantResultCodes.ByName("TenantNotFound"), ResultDetails.Create().With("TenantId", tenantId.ToString()))
             : GenericResult<SqlTenantState>.Success(tenant);
+    }
+
+    // The tables that hold a tenant's organizations (FDW-3668). Every tenant has a default organization, and the organization row points at the
+    // tenant's, so the tenant cannot be removed while they exist. The implementation rows go first: they point at the domain rows.
+    private static readonly string[] OrganizationTables = ["OrganizationConfiguration", "Organization"];
+
+    // Removes the tenant's organization rows, however many there are; a tenant with an organization that still holds roles or settings fails here,
+    // and the failure says which write.
+    private async Task<IGenericResult> RemoveOrganizations(Guid tenantId, CancellationToken cancellationToken)
+    {
+        if (_configuration is not { DataStoreName: { } dataStore, PathName: { } path })
+            return WriteFailed(tenantId, "the tenant provider configuration does not name the store and path");
+
+        var gateway = _configurationGateways.Get(dataStore);
+        if (gateway.IsFailure || gateway.Value is null)
+            return WriteFailed(tenantId, gateway.CurrentMessage);
+
+        foreach (var table in OrganizationTables)
+        {
+            var removed = await gateway.Value.Execute<int>(
+                DeleteCommands.From(table).DataStore(dataStore).Path(path).Where("TenantId", tenantId).Build(), cancellationToken).ConfigureAwait(false);
+            if (!removed.IsSuccess)
+                return WriteFailed(tenantId, removed.CurrentMessage);
+        }
+
+        return GenericResult.Success();
     }
 
     // The store, path and table the tenants are in, as the provider's configuration names them.

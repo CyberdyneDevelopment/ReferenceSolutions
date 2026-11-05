@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Endpoints;
+using Fdw.Services.Tags;
 using Microsoft.Extensions.Logging;
 
 namespace FdwReferenceDataSets.Endpoints;
@@ -15,8 +16,8 @@ public class ListDataSetsEndpoint : ListDataSetsEndpointBase
     /// <summary>
     /// Initializes a new instance of the <see cref="ListDataSetsEndpoint"/> class.
     /// </summary>
-    public ListDataSetsEndpoint(DataSetConfigurationProvider dataSetProvider, CategoryConfigurationProvider categories, ILogger<ListDataSetsEndpoint> logger)
-        : base(logger, dataSetProvider, categories)
+    public ListDataSetsEndpoint(DataSetConfigurationProvider dataSetProvider, CategoryConfigurationProvider categories, ILogger<ListDataSetsEndpoint> logger, ITagService? tags = null)
+        : base(logger, dataSetProvider, categories, tags)
     {
     }
 

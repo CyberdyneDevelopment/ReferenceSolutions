@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -11,10 +9,6 @@ using Fdw.Data.Abstractions;
 using Fdw.Data.RowSources;
 using Fdw.Data.RowSources.Abstractions;
 using Fdw.Services.Connections.Http.Abstractions.CommandCapabilities;
-using Fdw.Data.RowSources.Delimited.Abstractions;
-using Fdw.Data.RowSources.FixedWidth.Abstractions;
-using Fdw.Data.RowSources.Json.Abstractions;
-using Fdw.Data.RowSources.Xml.Abstractions;
 using Fdw.Results;
 using Fdw.Services.Connections.Http.Logging;
 using FdwReferenceConnections.Http.Logging;
@@ -94,9 +88,16 @@ public sealed class HttpRecordConnector
         }
 
         var fields = fieldsResult.Value!;
-        using HttpContent content = formatResult.Value!.WritesBinary
-            ? BinaryContent(formatResult.Value, fields, container, rows, contentType, cancellationToken)
-            : new StringContent(WriteText(formatResult.Value, fields, container, rows, cancellationToken), Encoding.UTF8, contentType);
+        // Why the format builds the options (FDW-3823): it reads the choices the container states and refuses one it leaves out.
+        var options = formatResult.Value!.CreateOptions(container);
+        if (options.IsFailure)
+        {
+            return options.ToNewResult<int>();
+        }
+
+        using HttpContent content = formatResult.Value.WritesBinary
+            ? BinaryContent(formatResult.Value, fields, options.Value!, rows, contentType, cancellationToken)
+            : new StringContent(WriteText(formatResult.Value, fields, options.Value!, rows, cancellationToken), Encoding.UTF8, contentType);
         using var request = new HttpRequestMessage(method, endpoint) { Content = content };
         using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -116,13 +117,13 @@ public sealed class HttpRecordConnector
     private static ByteArrayContent BinaryContent(
         IRecordWriterType format,
         List<IDataField> fields,
-        IDataContainer container,
+        RowWriterOptions options,
         IReadOnlyList<IReadOnlyDictionary<string, object?>> rows,
         string contentType,
         CancellationToken cancellationToken)
     {
         var bytes = RecordWriterBytes.Write(
-            format, fields, BuildWriterOptions(container), writer => WriteRows(writer, new RecordSchema(fields), rows, cancellationToken));
+            format, fields, options, writer => WriteRows(writer, new RecordSchema(fields), rows, cancellationToken));
         var content = new ByteArrayContent(bytes);
         content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
         return content;
@@ -131,14 +132,14 @@ public sealed class HttpRecordConnector
     private static string WriteText(
         IRecordWriterType format,
         List<IDataField> fields,
-        IDataContainer container,
+        RowWriterOptions options,
         IReadOnlyList<IReadOnlyDictionary<string, object?>> rows,
         CancellationToken cancellationToken)
     {
         var buffer = new StringBuilder();
         using (var target = new StringWriter(buffer))
         {
-            var context = new RecordWriterContext(target, fields, BuildWriterOptions(container));
+            var context = new RecordWriterContext(target, fields, options);
             using var writer = format.Create(context);
 
             // Why: row writers (delimited/fixed-width) take the flat name→value dictionary directly via
@@ -246,104 +247,6 @@ public sealed class HttpRecordConnector
         // special-case branch.
         return GenericResult<(string, HttpMethod, string)>.Success(
             (endpoint, new HttpMethod(methodName), contentType));
-    }
-
-    // Why: the write-side options mirror ContainerRecordOptions.BuildWriterOptions in the FileSystem
-    // connector. The Http project already carries all four format Abstractions references (for the read
-    // path), so no new project reference is required.
-    private static RowWriterOptions? BuildWriterOptions(IStorageContainer container)
-        => container.Format.Family switch
-        {
-            "Json" => BuildJsonWriterOptions(container.Metadata),
-            "Xml" => BuildXmlWriterOptions(container.Metadata),
-            "Delimited" => BuildDelimitedWriterOptions(container),
-            "FixedWidth" => BuildFixedWidthWriterOptions(container),
-            "Xlsx" => BuildXlsxWriterOptions(container),
-            _ => null
-        };
-
-    // Why the columns are the container's field order (FDW-1298): a workbook's header row and its cells must come out in a stable
-    // order supplied by the schema, never inferred; the writer refuses an empty list. SheetName is read only when the container
-    // states one, so the format's own default stands otherwise.
-    private static XlsxRowWriterOptions BuildXlsxWriterOptions(IStorageContainer container)
-    {
-        var options = new XlsxRowWriterOptions { Columns = new List<string>(FieldNames(container)) };
-        if (container.Metadata.TryGetValue("SheetName", out var sheet) && sheet is string name && !string.IsNullOrWhiteSpace(name))
-        {
-            options.SheetName = name;
-        }
-
-        return options;
-    }
-
-    private static JsonRowWriterOptions BuildJsonWriterOptions(IReadOnlyDictionary<string, object> meta)
-        => new()
-        {
-            WriteIndented = meta.TryGetValue("WriteIndented", out var wi) && wi is bool wb && wb
-        };
-
-    private static XmlRowWriterOptions BuildXmlWriterOptions(IReadOnlyDictionary<string, object> meta)
-    {
-        var options = new XmlRowWriterOptions();
-        if (meta.TryGetValue("RowElementName", out var rn) && rn is string rns && !string.IsNullOrEmpty(rns))
-            options.RowElementName = rns;
-        if (meta.TryGetValue("RootElementName", out var root) && root is string roots && !string.IsNullOrEmpty(roots))
-            options.RootElementName = roots;
-        return options;
-    }
-
-    private static DelimitedRowWriterOptions BuildDelimitedWriterOptions(IStorageContainer container)
-    {
-        var meta = container.Metadata;
-        var options = new DelimitedRowWriterOptions
-        {
-            WriteHeader = meta.TryGetValue("HasHeader", out var hh) && hh is bool hb && hb,
-            Separator = meta.TryGetValue("Separator", out var sep) && sep is string ss && !string.IsNullOrEmpty(ss)
-                ? ss
-                : ","
-        };
-        options.Columns = new List<string>(FieldNames(container));
-        return options;
-    }
-
-    private static FixedWidthRowWriterOptions BuildFixedWidthWriterOptions(IStorageContainer container)
-    {
-        var options = new FixedWidthRowWriterOptions
-        {
-            WriteHeader = container.Metadata.TryGetValue("HasHeader", out var hh) && hh is bool hb && hb
-        };
-        options.Fields = new List<FixedWidthField>(FixedWidthFields(container));
-        return options;
-    }
-
-    private static IEnumerable<string> FieldNames(IStorageContainer container)
-    {
-        var fields = container.Schema?.Fields;
-        if (fields is null) yield break;
-        foreach (var field in fields) yield return field.Name;
-    }
-
-    private static IEnumerable<FixedWidthField> FixedWidthFields(IStorageContainer container)
-    {
-        var fields = container.Schema?.Fields;
-        if (fields is null) yield break;
-        foreach (var field in fields)
-        {
-            var fieldMeta = field.Metadata;
-            if (fieldMeta is null
-                || !fieldMeta.TryGetValue("StartIndex", out var startObj)
-                || !fieldMeta.TryGetValue("Length", out var lenObj))
-            {
-                continue;
-            }
-
-            yield return new FixedWidthField
-            {
-                Name = field.Name,
-                StartIndex = Convert.ToInt32(startObj, CultureInfo.InvariantCulture),
-                Length = Convert.ToInt32(lenObj, CultureInfo.InvariantCulture)
-            };
-        }
     }
 
     // Why: the flyweight schema for the record writer is the container's IDataField children.

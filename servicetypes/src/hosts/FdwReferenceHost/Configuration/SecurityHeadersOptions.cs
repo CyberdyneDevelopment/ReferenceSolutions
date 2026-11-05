@@ -16,13 +16,10 @@ public sealed class SecurityHeadersOptions
     public string? ContentSecurityPolicy { get; set; }
 
     /// <summary>Whether to send the built-in policy when none is configured.</summary>
-    public bool EnableDefaultCsp { get; set; } = true;
+    public required bool EnableDefaultCsp { get; set; }
 
     /// <summary>
     /// Paths that should have no-cache headers. Defaults to auth and user paths.
     /// </summary>
-    public string[] SensitivePaths { get; set; } =
-    [
-        "/api/v1/auth", "/api/v1/users", "/api/v1/tenants"
-    ];
+    public required string[] SensitivePaths { get; set; }
 }

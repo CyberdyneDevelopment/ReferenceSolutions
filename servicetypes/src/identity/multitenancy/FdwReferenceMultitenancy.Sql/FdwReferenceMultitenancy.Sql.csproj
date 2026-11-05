@@ -25,6 +25,7 @@
     <PackageReference Include="Fdw.Services.Data.Abstractions" />
     <PackageReference Include="Fdw.Services.Multitenancy" />
     <PackageReference Include="Fdw.Services.Multitenancy.Abstractions" />
+    <PackageReference Include="Fdw.Validation" />
   </ItemGroup>
 
   <ItemGroup>

@@ -12,10 +12,18 @@ namespace FdwReferenceConfiguration.Endpoints;
 public static class ThemeRequestMapper
 {
     /// <summary>
-    /// Creates a <see cref="ThemeImplementationConfiguration"/> from a <see cref="CreateThemeRequest"/>.
+    /// Builds the theme a create request makes. A value the request leaves out takes the default theme's value: the default theme is
+    /// configuration (the theme row marked default, seeded with every value), not code and not a setting per field (FDW-3823, Mike: "theme
+    /// configuration you just set defaults in configuration").
     /// </summary>
-    public static ThemeImplementationConfiguration ToManaged(this CreateThemeRequest request)
+    /// <param name="request">The create request.</param>
+    /// <param name="defaultTheme">The theme marked default, whose values an omitted one takes.</param>
+    /// <returns>The theme to save.</returns>
+    public static ThemeImplementationConfiguration ToManaged(this CreateThemeRequest request, IThemeImplementationConfiguration defaultTheme)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(defaultTheme);
+
         return new ThemeImplementationConfiguration
         {
             // Why: API contract — IDs are uuid v7 for time-orderable persistence.
@@ -31,28 +39,28 @@ public static class ThemeRequestMapper
             Name = request.Name,
             DisplayName = request.DisplayName,
             Description = request.Description,
-            PrimaryColor = request.PrimaryColor ?? "#7209B7",
-            SecondaryColor = request.SecondaryColor ?? "#F72585",
-            TertiaryColor = request.TertiaryColor,
-            BackgroundColor = request.BackgroundColor ?? "#0F1115",
-            SurfaceColor = request.SurfaceColor ?? "#16191F",
-            ErrorColor = request.ErrorColor ?? "#DC2626",
-            WarningColor = request.WarningColor ?? "#F59E0B",
-            SuccessColor = request.SuccessColor ?? "#10B981",
-            InfoColor = request.InfoColor ?? "#00B4D8",
-            TextPrimary = request.TextPrimary ?? "#E2E8F0",
-            TextSecondary = request.TextSecondary ?? "#94A3B8",
-            TextDisabled = request.TextDisabled,
-            TextOnPrimary = request.TextOnPrimary,
-            TextOnSecondary = request.TextOnSecondary,
-            FontFamily = request.FontFamily ?? "Space Grotesk, system-ui, sans-serif",
-            FontFamilyMono = request.FontFamilyMono ?? "JetBrains Mono, monospace",
-            FontSizeBase = request.FontSizeBase ?? 14,
-            BorderRadius = request.BorderRadius ?? 6,
-            IsDarkMode = request.IsDarkMode ?? true,
-            LogoUrl = request.LogoUrl,
-            AppName = request.AppName ?? "Fdw",
-            FaviconUrl = request.FaviconUrl
+            PrimaryColor = request.PrimaryColor ?? defaultTheme.PrimaryColor,
+            SecondaryColor = request.SecondaryColor ?? defaultTheme.SecondaryColor,
+            TertiaryColor = request.TertiaryColor ?? defaultTheme.TertiaryColor,
+            BackgroundColor = request.BackgroundColor ?? defaultTheme.BackgroundColor,
+            SurfaceColor = request.SurfaceColor ?? defaultTheme.SurfaceColor,
+            ErrorColor = request.ErrorColor ?? defaultTheme.ErrorColor,
+            WarningColor = request.WarningColor ?? defaultTheme.WarningColor,
+            SuccessColor = request.SuccessColor ?? defaultTheme.SuccessColor,
+            InfoColor = request.InfoColor ?? defaultTheme.InfoColor,
+            TextPrimary = request.TextPrimary ?? defaultTheme.TextPrimary,
+            TextSecondary = request.TextSecondary ?? defaultTheme.TextSecondary,
+            TextDisabled = request.TextDisabled ?? defaultTheme.TextDisabled,
+            TextOnPrimary = request.TextOnPrimary ?? defaultTheme.TextOnPrimary,
+            TextOnSecondary = request.TextOnSecondary ?? defaultTheme.TextOnSecondary,
+            FontFamily = request.FontFamily ?? defaultTheme.FontFamily,
+            FontFamilyMono = request.FontFamilyMono ?? defaultTheme.FontFamilyMono,
+            FontSizeBase = request.FontSizeBase ?? defaultTheme.FontSizeBase,
+            BorderRadius = request.BorderRadius ?? defaultTheme.BorderRadius,
+            IsDarkMode = request.IsDarkMode ?? defaultTheme.IsDarkMode,
+            LogoUrl = request.LogoUrl ?? defaultTheme.LogoUrl,
+            AppName = request.AppName ?? defaultTheme.AppName,
+            FaviconUrl = request.FaviconUrl ?? defaultTheme.FaviconUrl
         };
     }
 

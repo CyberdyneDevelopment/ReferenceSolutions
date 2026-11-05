@@ -58,8 +58,15 @@ public class SyncSchemaEndpoint : SyncSchemaEndpointBase
         CancellationToken ct)
     {
         // The schema service runs the connection's chosen discovery option and says why when it cannot.
+        // The discovery's choices come from the request (FDW-3823); one left out is refused, naming it.
+        var discovery = DataStoreDiscoveryChoices.FromRequest(
+            request.ExcludedSchemas, request.IncludeOnlySchemas, request.DiscoverViews, request.DiscoverIndexes, request.DiscoverForeignKeys,
+            request.DiscoverDescriptions, request.ConnectionName, _logger);
+        if (discovery.IsFailure)
+            return discovery.ToNewResult<SyncSchemaResponse>();
+
         var discoveryResult = await _schema.DiscoverContainers(
-            request.ConnectionName, DataStoreDiscoveryOptions.Default, ct).ConfigureAwait(false);
+            request.ConnectionName, discovery.Value!, ct).ConfigureAwait(false);
         if (discoveryResult.IsFailure || discoveryResult.Value is not { } discovered)
             return discoveryResult.ToNewResult<SyncSchemaResponse>();
 

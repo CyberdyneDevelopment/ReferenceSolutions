@@ -39,7 +39,7 @@ public sealed class DataSetAggregateCompositionTests
         var provider = new DataSetConfigurationProvider(
             NullLogger<DataSetConfigurationProvider>.Instance,
             GatewayProviderFor(gateway),
-            "PlatformConfiguration", "data", "DataSet");
+            "PlatformConfiguration", "data", "DataSet", new Fdw.Services.Configuration.UnavailablePlacement());
         provider.Register(Implementation, implementationProvider);
 
         var result = await provider.Get(DataSetId, TestContext.Current.CancellationToken);

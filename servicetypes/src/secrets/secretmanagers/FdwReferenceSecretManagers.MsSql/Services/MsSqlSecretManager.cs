@@ -15,6 +15,7 @@ using FdwReferenceSecretManagers.MsSql.Handlers;
 using FdwReferenceSecretManagers.MsSql.Logging;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using Fdw.Conventions;
 
 namespace FdwReferenceSecretManagers.MsSql.Services;
 
@@ -97,7 +98,7 @@ public sealed class MsSqlSecretManager : ISecretManager, IDisposable
         ISecretManagerCommand managementCommand,
         CancellationToken cancellationToken = default)
     {
-        MsSqlSecretManagerLogger.TraceExecuteEntry(_logger, managementCommand?.CommandType ?? "null");
+        MsSqlSecretManagerLogger.TraceExecuteEntry(_logger, managementCommand?.CommandType ?? LogPlaceholders.NullName);
 
         if (managementCommand == null)
         {
@@ -105,7 +106,7 @@ public sealed class MsSqlSecretManager : ISecretManager, IDisposable
                 GenericResult<object?>.Failure(MsSqlSecretManagerLogger.CommandNull(_logger)));
         }
 
-        MsSqlSecretManagerLogger.ExecutingCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? "N/A");
+        MsSqlSecretManagerLogger.ExecutingCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? LogPlaceholders.NoSecretKey);
 
         return ExecuteCommandInternal(managementCommand, cancellationToken);
     }
@@ -120,7 +121,7 @@ public sealed class MsSqlSecretManager : ISecretManager, IDisposable
             return GenericResult<TResult>.Failure(MsSqlSecretManagerLogger.CommandNull(_logger));
         }
 
-        MsSqlSecretManagerLogger.ExecutingTypedCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? "N/A");
+        MsSqlSecretManagerLogger.ExecutingTypedCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? LogPlaceholders.NoSecretKey);
 
         var result = await ExecuteCommandInternal(managementCommand, cancellationToken).ConfigureAwait(false);
 
@@ -143,12 +144,12 @@ public sealed class MsSqlSecretManager : ISecretManager, IDisposable
         IReadOnlyList<ISecretManagerCommand> commands,
         CancellationToken cancellationToken = default)
     {
-        MsSqlSecretManagerLogger.TraceExecuteBatchEntry(_logger, commands?.Count ?? 0);
-
         if (commands == null)
         {
             throw new ArgumentNullException(nameof(commands));
         }
+
+        MsSqlSecretManagerLogger.TraceExecuteBatchEntry(_logger, commands.Count);
 
         if (commands.Count == 0)
         {
@@ -195,7 +196,7 @@ public sealed class MsSqlSecretManager : ISecretManager, IDisposable
         {
             return GenericResult.Failure(
                 MsSqlSecretManagerLogger.BatchOperationException(_logger, ex, command.CommandType,
-                    command.SecretKey ?? "N/A", ex.Message));
+                    command.SecretKey ?? LogPlaceholders.NoSecretKey, ex.Message));
         }
     }
     /// <inheritdoc/>
@@ -206,7 +207,7 @@ public sealed class MsSqlSecretManager : ISecretManager, IDisposable
             throw new ArgumentNullException(nameof(managementCommand));
         }
 
-        MsSqlSecretManagerLogger.TraceValidateCommandEntry(_logger, managementCommand.CommandType ?? "null");
+        MsSqlSecretManagerLogger.TraceValidateCommandEntry(_logger, managementCommand.CommandType ?? LogPlaceholders.NullName);
 
         if (string.IsNullOrWhiteSpace(managementCommand.CommandType))
         {
@@ -292,7 +293,7 @@ public sealed class MsSqlSecretManager : ISecretManager, IDisposable
         {
             return GenericResult<object?>.Failure(
                 MsSqlSecretManagerLogger.OperationFailed(_logger, command.CommandType,
-                    command.SecretKey ?? "N/A", ex.Message));
+                    command.SecretKey ?? LogPlaceholders.NoSecretKey, ex.Message));
         }
     }
 

@@ -17,6 +17,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FdwReferenceEtl.Endpoints.Tests;
 
@@ -70,7 +72,7 @@ public abstract class NodeEndpointTestBase : IAsyncLifetime
         builder.Services.AddSingleton(Provider.Object);
         builder.Services.AddSingleton(PipelineProvider());
         builder.Services.AddSingleton<IValidator<OrchestrationNodeImplementationConfiguration>>(
-            new OrchestrationNodeConfigurationValidator(Mock.Of<IServerPolicyDefaults>()));
+            new OrchestrationNodeConfigurationValidator(ServerPolicyDefaults()));
         builder.Services.AddSingleton<OrchestrationNodeConfigurationWriter>();
 
         _app = builder.Build();
@@ -151,5 +153,23 @@ public abstract class NodeEndpointTestBase : IAsyncLifetime
                 permissions.ToString().Split(',').Select(p => new Claim("perm", p.Trim())), Name);
             return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), Name)));
         }
+    }
+
+    // The server's policy defaults the node validator checks a node against, read through their provider (FDW-3580).
+    private static IServerPolicyDefaultConfigurationProvider ServerPolicyDefaults()
+    {
+        var provider = new Mock<IServerPolicyDefaultConfigurationProvider>();
+        provider.Setup(p => p.GetCurrent(It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult(GenericResult<IServerPolicyDefaultImplementationConfiguration>.Success(
+                new ServerPolicyDefaultConfiguration
+                {
+                    Name = "Default",
+                    Domain = "ServerPolicyDefault",
+                    Implementation = "ServerPolicyDefault",
+                    StepFailurePolicy = "HaltStage",
+                    StageFailurePolicy = "HaltProject",
+                    MaxParallelPipelines = 4,
+                })));
+        return provider.Object;
     }
 }

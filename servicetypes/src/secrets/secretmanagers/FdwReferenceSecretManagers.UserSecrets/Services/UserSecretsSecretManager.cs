@@ -13,6 +13,7 @@ using FdwReferenceSecretManagers.UserSecrets.Configuration;
 using FdwReferenceSecretManagers.UserSecrets.Handlers;
 using FdwReferenceSecretManagers.UserSecrets.Logging;
 using Microsoft.Extensions.Logging;
+using Fdw.Conventions;
 
 namespace FdwReferenceSecretManagers.UserSecrets.Services;
 
@@ -99,7 +100,7 @@ public sealed class UserSecretsSecretManager : ISecretManager, IDisposable
                 GenericResult<object?>.Failure(UserSecretsLogger.SecretsNotLoaded(_logger)));
         }
 
-        UserSecretsLogger.ExecutingCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? "N/A");
+        UserSecretsLogger.ExecutingCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? LogPlaceholders.NoSecretKey);
 
         return ExecuteCommandInternal(managementCommand, cancellationToken);
     }
@@ -119,7 +120,7 @@ public sealed class UserSecretsSecretManager : ISecretManager, IDisposable
             return GenericResult<TResult>.Failure(UserSecretsLogger.SecretsNotLoaded(_logger));
         }
 
-        UserSecretsLogger.ExecutingTypedCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? "N/A");
+        UserSecretsLogger.ExecutingTypedCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? LogPlaceholders.NoSecretKey);
 
         var result = await ExecuteCommandInternal(managementCommand, cancellationToken).ConfigureAwait(false);
 
@@ -178,7 +179,7 @@ public sealed class UserSecretsSecretManager : ISecretManager, IDisposable
             catch (Exception ex)
             {
                 return GenericResult.Failure(
-                    UserSecretsLogger.OperationFailed(_logger, command.CommandType, command.SecretKey ?? "N/A", ex.Message));
+                    UserSecretsLogger.OperationFailed(_logger, command.CommandType, command.SecretKey ?? LogPlaceholders.NoSecretKey, ex.Message));
             }
         }
 
@@ -345,7 +346,7 @@ public sealed class UserSecretsSecretManager : ISecretManager, IDisposable
         }
         catch (Exception ex)
         {
-            UserSecretsLogger.SecretsLoadFailed(_logger, _secretsFilePath ?? "unknown", ex.Message);
+            UserSecretsLogger.SecretsLoadFailed(_logger, _secretsFilePath ?? LogPlaceholders.NoPath, ex.Message);
             _secrets = _configuration.Optional ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) : null;
             _isAccessible = _configuration.Optional;
         }
@@ -485,7 +486,7 @@ public sealed class UserSecretsSecretManager : ISecretManager, IDisposable
             return Task.FromResult<IGenericResult<object?>>(
                 GenericResult<object?>.Failure(
                     UserSecretsLogger.OperationFailed(_logger, command.CommandType,
-                        command.SecretKey ?? "N/A", ex.Message)));
+                        command.SecretKey ?? LogPlaceholders.NoSecretKey, ex.Message)));
         }
     }
 

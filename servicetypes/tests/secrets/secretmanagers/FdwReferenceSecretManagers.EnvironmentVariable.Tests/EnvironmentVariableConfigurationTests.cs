@@ -3,7 +3,7 @@ using FdwReferenceSecretManagers.EnvironmentVariable.Configuration;
 namespace FdwReferenceSecretManagers.EnvironmentVariable.Tests;
 
 /// <summary>
-/// Tests for <see cref="EnvironmentVariableConfiguration"/>: <see cref="EnvironmentVariableConfiguration.TargetEnum"/>
+/// Tests for <see cref="EnvironmentVariableConfiguration"/>: <see cref="EnvironmentVariableConfiguration.ResolveTarget"/>
 /// parsing, the <see cref="EnvironmentVariableConfiguration.Properties"/> projection, and
 /// <see cref="EnvironmentVariableConfiguration.Validate"/> delegating to the validator.
 /// </summary>
@@ -12,31 +12,35 @@ public class EnvironmentVariableConfigurationTests
     [Fact]
     [Trait("Priority", "P2")]
     [Trait("Category", "Configuration")]
-    public void TargetEnumValidStringParsesToEnumValue()
+    public void ResolveTargetValidStringParsesToEnumValue()
     {
         // Arrange
         var config = new EnvironmentVariableConfiguration { Target = nameof(EnvironmentVariableTarget.Machine) };
 
         // Act
-        var target = config.TargetEnum;
+        var target = config.ResolveTarget();
 
         // Assert
-        target.ShouldBe(EnvironmentVariableTarget.Machine);
+        target.IsSuccess.ShouldBeTrue();
+        target.Value.ShouldBe(EnvironmentVariableTarget.Machine);
     }
 
-    [Fact]
+    [Theory]
+    [InlineData("")]
+    [InlineData("NotARealTarget")]
+    [InlineData("42")]
     [Trait("Priority", "P2")]
     [Trait("Category", "Configuration")]
-    public void TargetEnumInvalidStringFallsBackToProcess()
+    public void ResolveTargetOfAValueThatIsNoTargetAnswersAFailureAndNeverThrows(string value)
     {
-        // Arrange
-        var config = new EnvironmentVariableConfiguration { Target = "NotARealTarget" };
+        // Arrange - the target is the caller's choice (FDW-3823): a value that is no target is refused, not read as Process, and not thrown.
+        var config = new EnvironmentVariableConfiguration { Target = value };
 
         // Act
-        var target = config.TargetEnum;
+        var target = config.ResolveTarget();
 
         // Assert
-        target.ShouldBe(EnvironmentVariableTarget.Process);
+        target.IsFailure.ShouldBeTrue();
     }
 
     [Fact]
@@ -45,7 +49,7 @@ public class EnvironmentVariableConfigurationTests
     public void PropertiesIncludesPrefixWhenSet()
     {
         // Arrange
-        var config = new EnvironmentVariableConfiguration { Prefix = "FDW_SECRET_" };
+        var config = new EnvironmentVariableConfiguration { Prefix = "FDW_SECRET_", StripPrefix = true };
 
         // Act
         var properties = config.Properties;
@@ -77,7 +81,7 @@ public class EnvironmentVariableConfigurationTests
     public void ValidateValidConfigurationReturnsSuccess()
     {
         // Arrange
-        var config = new EnvironmentVariableConfiguration { Prefix = "FDW_SECRET_", Separator = "__" };
+        var config = new EnvironmentVariableConfiguration { Prefix = "FDW_SECRET_", Separator = "__", Target = nameof(EnvironmentVariableTarget.Process) };
 
         // Act
         var result = config.Validate();

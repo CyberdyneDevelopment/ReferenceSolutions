@@ -39,7 +39,7 @@ public sealed class HttpConnectionMapsTests
             .ReturnsAsync(GenericResult<object?>.Success(1));
         var client = new HttpClient(new Handler());
         var context = new HttpProtocolContext(new Mock<IGenericConfiguration>().Object, NullLoggerFactory.Instance, null, null, null);
-        return new HttpConnection(NullLogger<HttpConnection>.Instance, new HttpConnectionConfiguration { BaseUrl = "http://example.test/" }, client, _protocol.Object, context);
+        return new HttpConnection(NullLogger<HttpConnection>.Instance, new HttpConnectionConfiguration { Protocol = "Rest", AuthenticationType = "None", Lifetime = "Scoped", BaseUrl = "http://example.test/" }, client, _protocol.Object, context);
     }
 
     private static IDataCommand Command(string type)

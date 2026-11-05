@@ -9,6 +9,7 @@ using Fdw.Services.SecretManagers;
 using Fdw.Services.SecretManagers.Abstractions;
 using FdwReferenceSecretManagers.UserSecrets.Configuration;
 using Fdw.Results;
+using Fdw.ServiceTypes;
 
 namespace FdwReferenceSecretManagers.UserSecrets.Registration;
 
@@ -47,6 +48,15 @@ namespace FdwReferenceSecretManagers.UserSecrets.Registration;
 public sealed class UserSecretsSecretManagerType
     : SecretManagerTypeBase<ISecretManager, IUserSecretsSecretManagerFactory, UserSecretsConfiguration>
 {
+    /// <summary>
+    /// Gets the tuning defaults this type carries (FDW-3823, Mike: "the thing you select carries it"), ReloadOnChange true: a
+    /// configuration that states its own value uses it, and a host can change one at registration with ServiceTypeDefaults.Override.
+    /// </summary>
+    public override IReadOnlyDictionary<string, object> DeclaredDefaults
+        => _declaredDefaults ??= ServiceTypeDefaults.With(base.DeclaredDefaults, (nameof(UserSecretsConfiguration.ReloadOnChange), true));
+
+    private IReadOnlyDictionary<string, object>? _declaredDefaults;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="UserSecretsSecretManagerType"/> class.
     /// </summary>

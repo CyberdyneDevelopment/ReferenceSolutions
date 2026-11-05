@@ -21,6 +21,7 @@
     <PackageReference Include="Fdw.Services.Data.Abstractions" />
     <PackageReference Include="Fdw.Services.Scheduling" />
     <PackageReference Include="Fdw.Services.Scheduling.Abstractions" />
+    <PackageReference Include="Fdw.Validation" />
     <PackageReference Include="Quartz" />
   </ItemGroup>
 

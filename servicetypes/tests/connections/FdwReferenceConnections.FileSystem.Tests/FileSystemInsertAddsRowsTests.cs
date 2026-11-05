@@ -107,6 +107,49 @@ public sealed class FileSystemInsertAddsRowsTests
         File.Exists(harness.FilePath).ShouldBeFalse();
     }
 
+    [Fact]
+    [Trait("Category", "Write")]
+    public async Task AnExpansionWhoseSecondStepFailsLeavesTheFileAsItWas()
+    {
+        // FDW-3601: outside a unit of work the connection runs an expansion's steps in one unit, so a failed second step puts back
+        // what the first one removed.
+        using var harness = new FileHarness();
+        await harness.Insert(Row("1", "Ada"), Row("2", "Bob"));
+        var upsert = CommandStub.Expandable("Upsert", CommandStub.Delete(), CommandStub.OfType("Frobnicate"));
+
+        var result = await harness.Connection.Execute<int>(upsert, harness.Container, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeFalse();
+        (await harness.Names()).ShouldBe(new[] { "Ada", "Bob" });
+    }
+
+    [Fact]
+    [Trait("Category", "Write")]
+    public async Task ADeleteThatStatesNoRowsIsRefusedAndTheFileKeepsItsRows()
+    {
+        // FDW-3660: a delete with no filter, no soft delete and no AllRows is refused by the translator; the file is untouched.
+        using var harness = new FileHarness();
+        await harness.Insert(Row("1", "Ada"), Row("2", "Bob"));
+
+        var result = await harness.Connection.Execute<int>(CommandStub.UnscopedDelete(), harness.Container, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeFalse();
+        (await harness.Names()).ShouldBe(new[] { "Ada", "Bob" });
+    }
+
+    [Fact]
+    [Trait("Category", "Write")]
+    public async Task ADeleteThatAsksForEveryRowEmptiesTheFile()
+    {
+        using var harness = new FileHarness();
+        await harness.Insert(Row("1", "Ada"), Row("2", "Bob"));
+
+        var result = await harness.Connection.Execute<int>(CommandStub.Delete(), harness.Container, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeTrue();
+        (await harness.Names()).ShouldBeEmpty();
+    }
+
     private static Dictionary<string, object?> Row(string id, string name) => new() { ["Id"] = id, ["Name"] = name };
 
     private sealed class FileHarness : IDisposable

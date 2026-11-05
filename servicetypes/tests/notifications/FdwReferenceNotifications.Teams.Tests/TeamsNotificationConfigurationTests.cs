@@ -8,7 +8,7 @@ public class TeamsNotificationConfigurationTests
     [Fact]
     [Trait("Priority", "P2")]
     [Trait("Category", "CoreFramework")]
-    public void DefaultConstructorSetsExpectedDefaults()
+    public void DefaultConstructorAssumesNoValue()
     {
         // Arrange & Act
         var config = new TeamsNotificationConfiguration();
@@ -19,10 +19,10 @@ public class TeamsNotificationConfigurationTests
         // lookups as a WHERE that matches nothing.
         config.Id.ShouldBe(Guid.Empty);
         config.Implementation.ShouldBeEmpty();
-        config.IsEnabled.ShouldBeTrue();
+        config.IsEnabled.ShouldBeFalse();
         config.DefaultWebhookUrl.ShouldBeNull();
-        config.TimeoutSeconds.ShouldBe(30);
-        config.UseAdaptiveCards.ShouldBeTrue();
+        config.TimeoutSeconds.ShouldBe(0);
+        config.UseAdaptiveCards.ShouldBeFalse();
         config.SecretManagerName.ShouldBeNull();
         config.SecretKeyName.ShouldBeNull();
     }

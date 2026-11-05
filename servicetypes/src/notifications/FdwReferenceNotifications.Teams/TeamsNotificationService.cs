@@ -11,6 +11,7 @@ using Fdw.Services.Notifications.Logging;
 using FdwReferenceNotifications.Teams.Logging;
 using Fdw.Services.Notifications.Results;
 using Microsoft.Extensions.Logging;
+using Fdw.Conventions;
 
 namespace FdwReferenceNotifications.Teams;
 
@@ -113,7 +114,6 @@ public sealed class TeamsNotificationService : INotificationService
                 : new[] { Configuration.DefaultWebhookUrl! };
 
             string? lastError = null;
-            var allSucceeded = true;
 
             using var httpClient = _httpClientFactory.CreateClient("TeamsNotifications");
             httpClient.Timeout = TimeSpan.FromSeconds(Configuration.TimeoutSeconds);
@@ -133,11 +133,11 @@ public sealed class TeamsNotificationService : INotificationService
                     var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                     TeamsNotificationLogger.TeamsWebhookNonSuccess(_logger, (int)response.StatusCode, responseBody);
                     lastError = $"Teams webhook returned {response.StatusCode}: {responseBody}";
-                    allSucceeded = false;
                 }
             }
 
-            if (allSucceeded)
+            // Why lastError decides: a webhook that answered with a failure is the only way a send fails, and it records its reason.
+            if (lastError is not { } error)
             {
                 TeamsNotificationLogger.TeamsSent(_logger);
                 return GenericResult<INotificationResult>.Success(
@@ -146,7 +146,7 @@ public sealed class TeamsNotificationService : INotificationService
             else
             {
                 return GenericResult<INotificationResult>.Success(
-                    NotificationResult.Failed(request.RequestId, lastError ?? "Unknown error"));
+                    NotificationResult.Failed(request.RequestId, error));
             }
         }
         catch (Exception ex)
@@ -231,7 +231,7 @@ public sealed class TeamsNotificationService : INotificationService
         }
         return Task.FromResult(GenericResult<T>.Failure(
             NotificationResultCodes.ByName("UnsupportedCommand"),
-            ResultDetails.Create().With("CommandType", command?.GetType().Name ?? "null")));
+            ResultDetails.Create().With("CommandType", command?.GetType().Name ?? LogPlaceholders.NullName)));
     }
 
     /// <inheritdoc/>
@@ -243,7 +243,7 @@ public sealed class TeamsNotificationService : INotificationService
         }
         return Task.FromResult(GenericResult.Failure(
             NotificationResultCodes.ByName("UnsupportedCommand"),
-            ResultDetails.Create().With("CommandType", command?.GetType().Name ?? "null")));
+            ResultDetails.Create().With("CommandType", command?.GetType().Name ?? LogPlaceholders.NullName)));
     }
 
     /// <inheritdoc/>

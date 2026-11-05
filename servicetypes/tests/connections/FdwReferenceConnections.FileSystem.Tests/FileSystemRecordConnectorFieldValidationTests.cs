@@ -63,6 +63,8 @@ public sealed class FileSystemRecordConnectorFieldValidationTests
 
         var container = new Mock<IDataContainer>();
         container.Setup(c => c.Name).Returns("TestContainer");
+        // IDataContainer redeclares Name (new string Name), so the IStorageContainer.Name the row formats read (RowFormatChoices owner) needs its own setup.
+        container.As<IStorageContainer>().Setup(c => c.Name).Returns("TestContainer");
         container.Setup(c => c.Format).Returns(formatType.Object);
         container.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
         container.Setup(c => c.Path).Returns(path.Object);

@@ -62,4 +62,28 @@ public static partial class QuartzSchedulingLog
     /// <summary>The handler reported success but returned no process result, so the run is recorded as Failed.</summary>
     [MessageLogging(EventId = 12, Level = LogLevel.Error, Message = "Schedule '{scheduleId}' (process '{processId}'): the scheduled execution handler reported success but returned no process result; the run is recorded as Failed")]
     public static partial IGenericMessage HandlerReturnedNoResult(ILogger logger, string scheduleId, string processId);
+
+    /// <summary>A cron schedule's rule is Skip: the fire times it missed while the scheduler was down are dropped (FDW-3788).</summary>
+    [MessageLogging(EventId = 13, Level = LogLevel.Information, Message = "Schedule '{scheduleId}' missed {count} cron fire time(s) between {first} and {latest} while the scheduler was down; its rule is Skip, so none is run")]
+    public static partial IGenericMessage MissedFiresSkipped(ILogger logger, string scheduleId, int count, DateTimeOffset first, DateTimeOffset latest);
+
+    /// <summary>A cron schedule's rule is FireOnce: it is run once for the fire times it missed (FDW-3788).</summary>
+    [MessageLogging(EventId = 14, Level = LogLevel.Information, Message = "Schedule '{scheduleId}' missed {count} cron fire time(s) between {first} and {latest} while the scheduler was down; its rule is FireOnce, so it is run once now, due {latest}")]
+    public static partial IGenericMessage MissedFiresCatchingUp(ILogger logger, string scheduleId, int count, DateTimeOffset first, DateTimeOffset latest);
+
+    /// <summary>A schedule that has never run has missed no fire time (FDW-3788).</summary>
+    [MessageLogging(EventId = 15, Level = LogLevel.Information, Message = "Schedule '{scheduleId}' has never run, so it has missed no fire time")]
+    public static partial IGenericMessage NeverRan(ILogger logger, string scheduleId);
+
+    /// <summary>A schedule states a missed-fire rule that is not one of the collection's, so its missed fire times are not looked for (FDW-3788).</summary>
+    [MessageLogging(EventId = 16, Level = LogLevel.Error, Message = "Schedule '{scheduleId}' states the missed-fire rule '{rule}', which is not a rule; its missed fire times are not looked for")]
+    public static partial IGenericMessage MissedFireRuleUnknown(ILogger logger, string scheduleId, string rule);
+
+    /// <summary>The fire times a cron schedule missed could not be worked out (FDW-3788).</summary>
+    [MessageLogging(EventId = 17, Level = LogLevel.Error, Message = "The cron fire times that schedule '{scheduleId}' missed could not be worked out: {reason}")]
+    public static partial IGenericMessage MissedFiresNotWorkedOut(ILogger logger, string scheduleId, string reason);
+
+    /// <summary>The catch-up run of a schedule could not be started (FDW-3788).</summary>
+    [MessageLogging(EventId = 18, Level = LogLevel.Error, Message = "The catch-up run of schedule '{scheduleId}' could not be started: {reason}")]
+    public static partial IGenericMessage CatchupNotStarted(ILogger logger, string scheduleId, string? reason);
 }

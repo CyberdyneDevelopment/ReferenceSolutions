@@ -109,13 +109,13 @@ public class AzureKeyVaultSecretMetadataTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "Security")]
-    public void CreatedAt_ReturnsMinValueWhenCreatedOnIsNull()
+    public void CreatedAt_IsNullWhenCreatedOnIsNull()
     {
         // Arrange
         var sut = new AzureKeyVaultSecretMetadata("MySecret", null, null, null, null, true, null);
 
         // Act & Assert
-        sut.CreatedAt.ShouldBe(DateTimeOffset.MinValue);
+        sut.CreatedAt.ShouldBeNull();
     }
 
     [Fact]
@@ -134,13 +134,13 @@ public class AzureKeyVaultSecretMetadataTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "Security")]
-    public void ModifiedAt_ReturnsMinValueWhenUpdatedOnIsNull()
+    public void ModifiedAt_IsNullWhenUpdatedOnIsNull()
     {
         // Arrange
         var sut = new AzureKeyVaultSecretMetadata("MySecret", null, null, null, null, true, null);
 
         // Act & Assert
-        sut.ModifiedAt.ShouldBe(DateTimeOffset.MinValue);
+        sut.ModifiedAt.ShouldBeNull();
     }
 
     [Fact]
@@ -257,13 +257,26 @@ public class AzureKeyVaultSecretMetadataTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "Security")]
-    public void RecoveryLevel_ReturnsDefaultValue()
+    public void RecoveryLevel_IsWhatTheVaultStates()
+    {
+        // Arrange
+        var sut = new AzureKeyVaultSecretMetadata("MySecret", null, null, null, null, true, null, recoveryLevel: "Recoverable+Purgeable");
+
+        // Act & Assert
+        sut.RecoveryLevel.ShouldBe("Recoverable+Purgeable");
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "Security")]
+    public void RecoveryLevel_TheVaultDoesNotStateIsNoneAndHasNoEntry()
     {
         // Arrange
         var sut = new AzureKeyVaultSecretMetadata("MySecret", null, null, null, null, true, null);
 
         // Act & Assert
-        sut.RecoveryLevel.ShouldBe("Recoverable+Purgeable");
+        sut.RecoveryLevel.ShouldBeNull();
+        sut.Properties.ShouldNotContainKey("RecoveryLevel");
     }
 
     [Fact]
@@ -518,7 +531,7 @@ public class AzureKeyVaultSecretMetadataTests
     public void Properties_IncludesRecoveryLevelEntry()
     {
         // Arrange
-        var sut = new AzureKeyVaultSecretMetadata("MySecret", null, null, null, null, true, null);
+        var sut = new AzureKeyVaultSecretMetadata("MySecret", null, null, null, null, true, null, recoveryLevel: "Recoverable+Purgeable");
 
         // Act
         var properties = sut.Properties;
@@ -635,7 +648,7 @@ public class AzureKeyVaultSecretMetadataTests
         var sut = new AzureKeyVaultSecretMetadata("MySecret", null, null, null, null, false, null);
 
         // Assert
-        sut.IsEnabled.ShouldBeFalse();
+        sut.IsEnabled.ShouldBe(false);
     }
 
     [Fact]
@@ -729,7 +742,7 @@ public class AzureKeyVaultSecretMetadataTests
         sut.VaultName.ShouldBeNull();
         sut.IsDeleted.ShouldBeFalse();
         sut.DeletedOn.ShouldBeNull();
-        sut.RecoveryLevel.ShouldBe("Recoverable+Purgeable");
+        sut.RecoveryLevel.ShouldBeNull();
     }
 
     [Fact]
@@ -744,7 +757,7 @@ public class AzureKeyVaultSecretMetadataTests
 
         // Act
         var sut = new AzureKeyVaultSecretMetadata(
-            "MySecret", "v1", createdOn, updatedOn, expiresOn, true, null);
+            "MySecret", "v1", createdOn, updatedOn, expiresOn, true, null, recoveryLevel: "Recoverable");
 
         // Assert
         var properties = sut.Properties;
@@ -771,7 +784,7 @@ public class AzureKeyVaultSecretMetadataTests
 
         // Assert
         sut.Name.ShouldBe("TestSecret");
-        sut.IsEnabled.ShouldBeTrue(); // Enabled defaults to null -> true
+        sut.IsEnabled.ShouldBeNull(); // the SDK reported no Enabled; nothing is assumed (FDW-3646)
     }
 
     [Fact]
@@ -842,6 +855,6 @@ public class AzureKeyVaultSecretMetadataTests
         var sut = new AzureKeyVaultSecretMetadata(secretProps);
 
         // Assert
-        sut.IsEnabled.ShouldBeFalse();
+        sut.IsEnabled.ShouldBe(false);
     }
 }

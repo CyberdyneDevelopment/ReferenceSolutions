@@ -1,3 +1,4 @@
+using Fdw.ServiceTypes;
 using Fdw.Services.Settings;
 using Fdw.Services.Connections.PostgreSql.Authentication;
 using Fdw.Services.Connections.Logging;
@@ -46,6 +47,16 @@ public sealed class PostgreSqlConnectionType
 {
     private ILogger<PostgreSqlConnectionType>? _logger;
     private IPostgreSqlSchemaDiscoverer? _discoverer;
+
+    /// <summary>
+    /// Gets the tuning defaults this type carries (FDW-3823, Mike: "the thing you select carries it"), Port 5432, SslMode Prefer, MinPoolSize 0, MaxPoolSize 100: a configuration that states its own
+    /// value uses it, and a host can change one at registration with ServiceTypeDefaults.Override. What the caller chooses (where it connects,
+    /// which schema, how it authenticates, whether it trusts a certificate) has no default.
+    /// </summary>
+    public override IReadOnlyDictionary<string, object> DeclaredDefaults
+        => _declaredDefaults ??= ServiceTypeDefaults.With(base.DeclaredDefaults, (nameof(PostgreSqlConnectionConfiguration.Port), 5432), (nameof(PostgreSqlConnectionConfiguration.SslMode), "Prefer"), (nameof(PostgreSqlConnectionConfiguration.MinPoolSize), 0), (nameof(PostgreSqlConnectionConfiguration.MaxPoolSize), 100));
+
+    private IReadOnlyDictionary<string, object>? _declaredDefaults;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgreSqlConnectionType"/> class.
@@ -242,7 +253,9 @@ public sealed class PostgreSqlConnectionType
             ExcludedSchemas = options.ExcludedSchemas,
             IncludeOnlySchemas = options.IncludeOnlySchemas,
             DiscoverViews = options.DiscoverViews,
-            DiscoverIndexes = options.DiscoverIndexes
+            DiscoverIndexes = options.DiscoverIndexes,
+            DiscoverForeignKeys = options.DiscoverForeignKeys,
+            DiscoverDescriptions = options.DiscoverDescriptions,
         };
 
         var discoverResult = await _discoverer.DiscoverSchema(connection, pgOptions, cancellationToken).ConfigureAwait(false);

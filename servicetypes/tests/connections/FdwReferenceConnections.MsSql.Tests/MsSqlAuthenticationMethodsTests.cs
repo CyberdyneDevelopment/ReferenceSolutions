@@ -42,7 +42,7 @@ public class MsSqlAuthenticationMethodsTests
     [Fact]
     public void AConnectionsSlotsCarryTheDeclaredLabels()
     {
-        var configuration = new MsSqlConnectionConfiguration { Name = "Warehouse", AuthenticationType = "SqlAuth" };
+        var configuration = new MsSqlConnectionConfiguration { Port = 1433, Encrypt = true, EnableConnectionPooling = true, MaxPoolSize = 100, Server = "localhost", DefaultSchema = "dbo", Name = "Warehouse", AuthenticationType = "SqlAuth" };
 
         var slots = new MsSqlConnectionType().CredentialSlots(configuration);
 

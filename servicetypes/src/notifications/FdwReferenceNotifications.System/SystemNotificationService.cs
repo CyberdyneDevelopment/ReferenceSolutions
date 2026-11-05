@@ -93,11 +93,11 @@ public sealed class SystemNotificationService : INotificationService
         var result = await _messageService.CreateMessage(createRequest, cancellationToken).ConfigureAwait(false);
         if (!result.IsSuccess)
         {
-            SystemNotificationLogger.SendFailed(_logger, _configuration.Name, result.CurrentMessage ?? "Unknown error");
+            SystemNotificationLogger.SendFailed(_logger, _configuration.Name, result.FailureReason().Message);
 
             return GenericResult<INotificationResult>.Failure(
                 NotificationResultCodes.ByName("SendFailed"),
-                ResultDetails.Create().With("Message", result.CurrentMessage ?? "Unknown error"));
+                ResultDetails.Create().With("Message", result.FailureReason().Message));
         }
 
         SystemNotificationLogger.NotificationSent(_logger, _configuration.Name, request.Subject);
@@ -121,7 +121,7 @@ public sealed class SystemNotificationService : INotificationService
         {
             return GenericResult<T>.Failure(
                 NotificationResultCodes.ByName("SendFailed"),
-                ResultDetails.Create().With("Message", result.CurrentMessage ?? "Unknown error"));
+                ResultDetails.Create().With("Message", result.FailureReason().Message));
         }
 
         if (result.Value is T typedResult)
@@ -149,7 +149,7 @@ public sealed class SystemNotificationService : INotificationService
             ? GenericResult.Success()
             : GenericResult.Failure(
                 NotificationResultCodes.ByName("SendFailed"),
-                ResultDetails.Create().With("Message", result.CurrentMessage ?? "Unknown error"));
+                ResultDetails.Create().With("Message", result.FailureReason().Message));
     }
 
     /// <inheritdoc/>

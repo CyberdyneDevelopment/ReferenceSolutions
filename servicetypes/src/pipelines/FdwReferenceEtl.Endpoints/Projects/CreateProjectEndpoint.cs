@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using FastEndpoints;
+using Fdw.Results;
 using Fdw.Services.Etl.Projects.Abstractions.Configuration;
 using Fdw.Services.Etl.Projects.Writers;
 using Fdw.Web.RestEndpoints.ErrorMapping;
@@ -34,6 +35,9 @@ public sealed class CreateProjectRequest
     /// run wait; false states it needs no approval; null (left out) inherits the server's default.
     /// </summary>
     public bool? RequireApprovalToRun { get; set; }
+
+    /// <summary>Whether the project runs. Required: the caller's choice, never assumed (FDW-3931).</summary>
+    public bool? IsEnabled { get; set; }
 }
 
 /// <summary>
@@ -78,6 +82,16 @@ public sealed class CreateProjectEndpoint : Endpoint<CreateProjectRequest, Proje
     {
         ProjectLog.CreatingProject(_logger, req.Name);
 
+        // Whether the project runs is the caller's choice; a request that does not say is refused, never given an answer (FDW-3931).
+        if (req.IsEnabled is not { } isEnabled)
+        {
+            var unstated = GenericResult.Failure(ProjectLog.ProjectEnablementNotStated(_logger, req.Name));
+            ProjectLog.ProjectCreateFailed(_logger, req.Name, unstated.CurrentMessage);
+            var (unstatedStatus, unstatedProblem) = ResultHttpStatusMapper.Map(unstated, HttpContext);
+            await Send.ResultAsync(TypedResults.Json(unstatedProblem, statusCode: unstatedStatus)).ConfigureAwait(false);
+            return;
+        }
+
         var config = new OrchestrationNodeImplementationConfiguration
         {
             // Why: API contract — IDs are uuid v7 for time-orderable persistence.
@@ -90,7 +104,7 @@ public sealed class CreateProjectEndpoint : Endpoint<CreateProjectRequest, Proje
             Name = req.Name,
             Description = req.Description,
             Ordinal = req.Ordinal,
-            IsEnabled = true,
+            IsEnabled = isEnabled,
             RequireApprovalToRun = req.RequireApprovalToRun,
         };
 

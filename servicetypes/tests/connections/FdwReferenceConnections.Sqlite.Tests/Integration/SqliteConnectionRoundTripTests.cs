@@ -35,6 +35,8 @@ public sealed class SqliteConnectionRoundTripTests : IAsyncLifetime
 
         _config = new SqliteConnectionConfiguration
         {
+            Cache = "Default",
+            AuthenticationType = "None",
             DataSource = DbPath,
             Mode = "ReadWriteCreate",
             DefaultTimeout = 30

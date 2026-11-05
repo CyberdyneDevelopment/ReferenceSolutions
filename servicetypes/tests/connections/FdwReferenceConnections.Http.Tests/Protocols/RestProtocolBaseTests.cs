@@ -26,6 +26,9 @@ public class RestProtocolBaseTests
     {
         var config = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com"
         };
         return new HttpProtocolContext(
@@ -780,6 +783,9 @@ public class RestProtocolBaseTests
         // Arrange
         var config = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com"
         };
         var context = new HttpProtocolContext(
@@ -807,6 +813,8 @@ public class RestProtocolBaseTests
         // Arrange
         var config = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com",
             AuthenticationType = "ApiKey",
             AdditionalProperties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
@@ -854,6 +862,8 @@ public class RestProtocolBaseTests
         // Arrange
         var config = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com",
             AuthenticationType = "Bearer",
             AdditionalProperties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
@@ -907,9 +917,9 @@ public class RestProtocolBaseTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "Api")]
-    public void ParseErrorResponseWithNullMessageReturnsStatusCodeOnly()
+    public void ParseErrorResponseWithNullMessageReturnsStatusLine()
     {
-        // Arrange - When "message" property exists but is null, returns code-only format
+        // Arrange - A "message" property that is null holds no text, so it is passed over and the status line is answered (FDW-3580)
         var response = new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
             ReasonPhrase = "Bad Request"
@@ -919,8 +929,8 @@ public class RestProtocolBaseTests
         // Act
         var result = _protocol.ParseErrorResponse(response, content, _context);
 
-        // Assert - Null check returns code-only format per implementation
-        result.ShouldBe("HTTP 400");
+        // Assert - the status code and reason phrase, as for a body with no error text
+        result.ShouldBe("HTTP 400: Bad Request");
     }
 
     [Fact]

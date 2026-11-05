@@ -12,6 +12,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Fdw.Services.Connections.MsSql.Discovery;
+using Fdw.Configuration.Persistence.Schema;
 
 namespace FdwReferenceConnections.MsSql.Discovery;
 
@@ -172,10 +173,10 @@ public sealed class MsSqlSchemaDiscoverer : IMsSqlSchemaDiscoverer
     /// <inheritdoc/>
     public async Task<IGenericResult<SchemaDiscoveryResult>> DiscoverSchema(
         MsSqlConnection connection,
-        SchemaDiscoveryOptions? options,
+        SchemaDiscoveryOptions options,
         CancellationToken cancellationToken)
     {
-        options ??= SchemaDiscoveryOptions.Default;
+        ArgumentNullException.ThrowIfNull(options);
 
         try
         {
@@ -1001,7 +1002,7 @@ public sealed class MsSqlSchemaDiscoverer : IMsSqlSchemaDiscoverer
             // the exception is observed via ex to satisfy FDW022, but there is no meaningful
             // additional detail to surface since a timeout is the expected/only reason this fires.
             _ = ex;
-            return pattern.Contains('%')
+            return pattern.Contains('%', StringComparison.Ordinal)
                 ? value.Contains(pattern.Replace("%", string.Empty, StringComparison.Ordinal), StringComparison.OrdinalIgnoreCase)
                 : string.Equals(value, pattern, StringComparison.OrdinalIgnoreCase);
         }

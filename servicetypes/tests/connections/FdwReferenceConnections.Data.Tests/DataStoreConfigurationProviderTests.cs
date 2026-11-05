@@ -176,6 +176,47 @@ public sealed class DataStoreConfigurationProviderTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IEnumerable<object>>.Success(pathRowsPerHeader));
 
+        // Why: a list read takes the rows of every table as a set (FDW-3906), each as the columns the store returned. A table the test holds
+        // nothing in answers empty, registered first so the specific answers below take precedence. Every row carries the physical key
+        // (RowId) its children's Foreign key holds; the implementation row names its domain row, a path names its implementation row.
+        mockGateway
+            .Setup(g => g.Execute<IEnumerable<System.Collections.Generic.Dictionary<string, object?>>>(
+                It.IsAny<IDataCommand>(), It.IsAny<DataStoreTarget>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<IEnumerable<System.Collections.Generic.Dictionary<string, object?>>>.Success([]));
+
+        mockGateway
+            .Setup(g => g.Execute<IEnumerable<System.Collections.Generic.Dictionary<string, object?>>>(
+                It.IsAny<IDataCommand>(),
+                It.Is<DataStoreTarget>(t => string.Equals(t.Container, "DataStore", StringComparison.Ordinal)),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<IEnumerable<System.Collections.Generic.Dictionary<string, object?>>>.Success(
+                headers.Select((h, i) => new System.Collections.Generic.Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["RowId"] = i + 1, ["Id"] = h.Id, ["Name"] = h.Name, ["Domain"] = "DataStore", ["Implementation"] = h.Implementation,
+                }).ToList()));
+
+        mockGateway
+            .Setup(g => g.Execute<IEnumerable<System.Collections.Generic.Dictionary<string, object?>>>(
+                It.IsAny<IDataCommand>(),
+                It.Is<DataStoreTarget>(t => string.Equals(t.Container, "DataStoreConfiguration", StringComparison.Ordinal)),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<IEnumerable<System.Collections.Generic.Dictionary<string, object?>>>.Success(
+                headers.Select((h, i) => new System.Collections.Generic.Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["RowId"] = 10 + i, ["DataStoreRowId"] = i + 1, ["Id"] = h.Id, ["Name"] = h.Name, ["ConnectionId"] = h.ConnectionId,
+                }).ToList()));
+
+        mockGateway
+            .Setup(g => g.Execute<IEnumerable<System.Collections.Generic.Dictionary<string, object?>>>(
+                It.IsAny<IDataCommand>(),
+                It.Is<DataStoreTarget>(t => string.Equals(t.Container, "DataPath", StringComparison.Ordinal)),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<IEnumerable<System.Collections.Generic.Dictionary<string, object?>>>.Success(
+                headers.SelectMany((h, i) => pathRowsPerHeader.Select((p, j) => new System.Collections.Generic.Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["RowId"] = 100 + (i * 10) + j, ["DataStoreConfigurationRowId"] = 10 + i, ["Id"] = p.Id, ["Name"] = p.Name,
+                })).ToList()));
+
         var implementationProvider = new DataStoreImplementationConfigurationProvider(
             NullLogger<DataStoreImplementationConfigurationProvider>.Instance,
             GatewayProviderFor(mockGateway.Object),
@@ -184,7 +225,7 @@ public sealed class DataStoreConfigurationProviderTests
         var provider = new DataStoreConfigurationProvider(
             NullLogger<DataStoreConfigurationProvider>.Instance,
             GatewayProviderFor(mockGateway.Object),
-            "PlatformConfiguration", "data", "DataStore");
+            "PlatformConfiguration", "data", "DataStore", new Fdw.Services.Configuration.UnavailablePlacement());
         provider.Register(Implementation, implementationProvider);
 
         return (mockGateway, provider);
@@ -262,6 +303,11 @@ public sealed class DataStoreConfigurationProviderTests
         failingProvider
             .Setup(p => p.Get(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IDataStoreImplementationConfiguration>.Failure(new GenericMessage("typed body read failed")));
+
+        // A list read composes the rows of an implementation as a set (FDW-3906), so the set read fails the same way.
+        failingProvider
+            .Setup(p => p.GetSet(It.IsAny<IEnumerable<Guid>>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<IReadOnlyDictionary<Guid, IDataStoreImplementationConfiguration>>.Failure(new GenericMessage("typed body read failed")));
         provider.Register("Failing", failingProvider.Object);
 
         var result = await provider.Get(TestContext.Current.CancellationToken);

@@ -25,7 +25,7 @@ public sealed class DataStoreNameRequestValidator : Validator<DataStoreNameReque
 
 /// <summary>
 /// Validator for <see cref="UpdateDataStoreRequest"/>.
-/// Why: PUT with no updateable fields was returning 200 (no-op). Reject as 400.
+/// Why: PATCH with no updateable fields was returning 200 (no-op). Reject as 400.
 /// </summary>
 [ExcludeFromCodeCoverage]
 public sealed class UpdateDataStoreRequestValidator : Validator<UpdateDataStoreRequest>

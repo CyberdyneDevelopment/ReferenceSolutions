@@ -61,6 +61,36 @@ public sealed class MsSqlConnectionProviderTests
     private MsSqlConnectionProvider NewProvider(ISecretManagerProvider secretManagerProvider)
         => new(_factoryMock.Object, secretManagerProvider, _providerLogger.Object);
 
+    [Theory]
+    [InlineData("SqlAuth")]
+    [InlineData("WindowsAuth")]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "DataIntegrity")]
+    public async Task CreateRefusesAConnectionWithNoAdditionalPropertiesNamingItInsteadOfReadingAnEmptyDictionary(string authenticationType)
+    {
+        // FDW-3454: the provider read a missing dictionary as an empty one.
+        var configuration = new MsSqlConnectionConfiguration
+        {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
+            Name = "Orders",
+            Server = "localhost",
+            Database = "TestDb",
+            AuthenticationType = authenticationType,
+            AdditionalProperties = null!,
+        };
+
+        var result = await NewProvider(Mock.Of<ISecretManagerProvider>()).Create(configuration, TestContext.Current.CancellationToken);
+
+        result.IsFailure.ShouldBeTrue();
+        result.Messages[^1].Code.ShouldEndWith("-21101");
+        result.CurrentMessage.ShouldNotBeNull().ShouldContain("Orders");
+        _factoryMock.Verify(f => f.Create(It.IsAny<MsSqlConnectionConfiguration>(), It.IsAny<string?>()), Times.Never);
+    }
+
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "DataIntegrity")]
@@ -173,8 +203,14 @@ public sealed class MsSqlConnectionProviderTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth",

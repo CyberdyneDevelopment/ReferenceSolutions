@@ -99,7 +99,7 @@ public sealed class SqliteConnectionFactory : ServiceFactoryBase<IGenericConnect
                 SqliteConnectionLog.SecretManagerNotFound(
                     _logger,
                     EffectiveName(configuration, configuration.Name),
-                    configuration.AuthenticationType ?? "(none)"));
+                    configuration.AuthenticationType));
 
         return Build(configuration, configuration.Name, resolvedSecret);
     }

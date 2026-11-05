@@ -58,7 +58,7 @@ public sealed class RecursiveComposeReadTests
         // Act -- read through the domain provider the implementation is registered under: the
         // implementation joins to the domain container that registered it.
         var domain = new DataStoreConfigurationProvider(
-            NullLogger<DataStoreConfigurationProvider>.Instance, GatewayProviderFor(gateway), "ConfigurationDb", "data", "DataStore");
+            NullLogger<DataStoreConfigurationProvider>.Instance, GatewayProviderFor(gateway), "ConfigurationDb", "data", "DataStore", new Fdw.Services.Configuration.UnavailablePlacement());
         domain.Register("MsSql", provider);
         var result = await domain.Get(store.Id, TestContext.Current.CancellationToken);
 

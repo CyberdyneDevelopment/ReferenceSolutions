@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Azure.Security.KeyVault.Secrets;
 using Fdw.Services.SecretManagers.Abstractions;
+using Fdw.Conventions;
+using System.Collections.Immutable;
 
 namespace FdwReferenceSecretManagers.AzureKeyVault.Services;
 
@@ -22,15 +24,17 @@ public sealed class AzureKeyVaultSecretMetadata : ISecretMetadata
     /// <param name="enabled">Whether the secret is enabled.</param>
     /// <param name="tags">The secret tags.</param>
     /// <param name="vaultName">The name of the Azure Key Vault.</param>
+    /// <param name="recoveryLevel">The recovery level the vault states for the secret, or <see langword="null"/> when it states none (FDW-4060).</param>
     public AzureKeyVaultSecretMetadata(
         string name,
         string? version,
         DateTimeOffset? createdOn,
         DateTimeOffset? updatedOn,
         DateTimeOffset? expiresOn,
-        bool enabled,
+        bool? enabled,
         IReadOnlyDictionary<string, string>? tags,
-        string? vaultName = null)
+        string? vaultName = null,
+        string? recoveryLevel = null)
     {
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Version = version;
@@ -39,11 +43,13 @@ public sealed class AzureKeyVaultSecretMetadata : ISecretMetadata
         ExpiresOn = expiresOn;
         IsEnabled = enabled;
         VaultName = vaultName;
-        Tags = tags ?? new Dictionary<string, string>(StringComparer.Ordinal);
+        Tags = tags ?? ImmutableDictionary<string, string>.Empty;
 
-        // Set other properties based on Azure Key Vault behavior
-        IsDeleted = false; // Would need to check DeletedOn in real implementation
-        RecoveryLevel = "Recoverable+Purgeable"; // Default for most Azure Key Vault configurations
+        // Why IsDeleted is false: a SecretProperties describes a live secret; Key Vault returns a deleted one as a DeletedSecret.
+        // Why RecoveryLevel is the vault's: it was "Recoverable+Purgeable" whatever the vault said, a value in code standing in
+        // for the vault's own answer (FDW-4060).
+        IsDeleted = false;
+        RecoveryLevel = recoveryLevel;
 
         // Get properties dictionary
         var properties = new Dictionary<string, object>(StringComparer.Ordinal)
@@ -64,8 +70,10 @@ public sealed class AzureKeyVaultSecretMetadata : ISecretMetadata
         if (expiresOn.HasValue)
             properties[nameof(ExpiresOn)] = expiresOn.Value;
 
-        properties["Enabled"] = enabled;
-        properties[nameof(RecoveryLevel)] = RecoveryLevel;
+        if (enabled.HasValue)
+            properties["Enabled"] = enabled.Value;
+        if (recoveryLevel is not null)
+            properties[nameof(RecoveryLevel)] = recoveryLevel;
 
         Properties = properties;
     }
@@ -81,9 +89,10 @@ public sealed class AzureKeyVaultSecretMetadata : ISecretMetadata
             createdOn: properties.CreatedOn,
             updatedOn: properties.UpdatedOn,
             expiresOn: properties.ExpiresOn,
-            enabled: properties.Enabled ?? true,
+            enabled: properties.Enabled,
             tags: properties.Tags?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.Ordinal),
-            vaultName: properties.VaultUri?.Host)
+            vaultName: properties.VaultUri?.Host,
+            recoveryLevel: properties.RecoveryLevel)
     {
     }
 
@@ -100,10 +109,10 @@ public sealed class AzureKeyVaultSecretMetadata : ISecretMetadata
     public string? Version { get; }
 
     /// <inheritdoc/>
-    public DateTimeOffset CreatedAt => CreatedOn ?? DateTimeOffset.MinValue;
+    public DateTimeOffset? CreatedAt => CreatedOn;
 
     /// <inheritdoc/>
-    public DateTimeOffset ModifiedAt => UpdatedOn ?? DateTimeOffset.MinValue;
+    public DateTimeOffset? ModifiedAt => UpdatedOn;
 
     /// <inheritdoc/>
     public DateTimeOffset? ExpiresAt => ExpiresOn;
@@ -118,7 +127,7 @@ public sealed class AzureKeyVaultSecretMetadata : ISecretMetadata
     public bool IsExpired => ExpiresOn.HasValue && ExpiresOn.Value <= DateTimeOffset.UtcNow;
 
     /// <inheritdoc/>
-    public bool IsEnabled { get; }
+    public bool? IsEnabled { get; }
 
     /// <inheritdoc/>
     public bool IsBinary => false; // Azure Key Vault secrets are text-based
@@ -170,7 +179,7 @@ public sealed class AzureKeyVaultSecretMetadata : ISecretMetadata
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"AzureKeyVault Secret: {Name} (Version: {Version ?? "latest"}, Enabled: {IsEnabled})";
+        return $"AzureKeyVault Secret: {Name} (Version: {Version ?? LogPlaceholders.LatestVersion}, Enabled: {IsEnabled})";
     }
 
     /// <inheritdoc/>

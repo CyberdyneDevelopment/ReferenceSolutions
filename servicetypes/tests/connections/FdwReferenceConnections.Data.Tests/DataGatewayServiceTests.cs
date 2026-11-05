@@ -39,7 +39,7 @@ public sealed class DataGatewayServiceTests
         // Why: DataGatewayService probes the DataSet provider for every container execute call.
         // Without a default setup, Moq returns null Task, causing NullReferenceException at the await site.
         _dataSetProviderMock.Setup(p => p.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(GenericResult<SimpleDataSetConfiguration>.Failure());
+            .ReturnsAsync(GenericResult<SimpleDataSetConfiguration>.Failure(new Fdw.Messages.GenericMessage("the stand-in call failed")));
 
         // Why the interface and not the concrete DataStoreConfigurationProvider: the concrete
         // provider is sealed (every domain provider is), so Moq cannot mock it directly. The
@@ -425,7 +425,7 @@ public sealed class DataGatewayServiceTests
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
-        result.Messages.Any(m => m.Message.Contains("Connection error")).ShouldBeTrue();
+        result.Messages.Any(m => m.Message.Contains("Connection error", StringComparison.Ordinal)).ShouldBeTrue();
     }
 
     [Fact]
@@ -548,7 +548,7 @@ public sealed class DataGatewayServiceTests
         // ResolveDataSetAndSources. Return Failure directly to simulate dataset not found.
         _dataSetProviderMock
             .Setup(p => p.Get("MissingDataSet", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(GenericResult<FederatedDataSetConfiguration>.Failure());
+            .ReturnsAsync(GenericResult<FederatedDataSetConfiguration>.Failure(new Fdw.Messages.GenericMessage("the stand-in call failed")));
 
         var service = new DataGatewayService(_loggerFactory, _connectionProviderMock.Object, _dataSetProviderMock.Object, _dataStoreConfigProviderMock.Object, _limitResolverMock.Object, _counterStore, TestFieldTransformations.NoAttachments(), dataStoreProvider: _dataStoreProviderMock.Object);
         var commandMock = new Mock<IDataCommand>();

@@ -11,7 +11,7 @@ public class MsSqlHostIdentityTests
 {
     private static MsSqlConnectionConfiguration Configured(string authenticationType, string? azureAdMode = null)
     {
-        var configuration = new MsSqlConnectionConfiguration { MaxSerialInsert = 1000, CommandTimeoutSeconds = 30, Name = "Warehouse", AuthenticationType = authenticationType };
+        var configuration = new MsSqlConnectionConfiguration { Port = 1433, Encrypt = true, EnableConnectionPooling = true, MaxPoolSize = 100, Server = "localhost", DefaultSchema = "dbo", MaxSerialInsert = 1000, CommandTimeoutSeconds = 30, Name = "Warehouse", AuthenticationType = authenticationType };
         if (azureAdMode is not null)
             configuration.AdditionalProperties["AzureAdMode"] = azureAdMode;
         return configuration;

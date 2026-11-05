@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Collections;
 using Fdw.Commands.Data.Abstractions;
+using Fdw.Commands.Data.Abstractions.Logging;
 using Fdw.Commands.Data.SoftDeletes;
 using Fdw.Data.Abstractions;
 using Fdw.Data.Abstractions.Mappers.PocoMappers;
@@ -183,13 +184,17 @@ public sealed class FileSystemCommandTranslator : IDataCommandTranslator<IFileSy
         IDataCommand command, IDataContainer container, string relativePath)
     {
         // DeleteCommand implements IFilterableCommand (Filter); a command of this type without it is a wiring defect.
-        // A Delete with no filter is not: it removes every row, as it does on the SQL kinds.
         if (command is not IFilterableCommand filterable)
         {
             return GenericResult<IFileSystemCommand>.Failure(
                 FileSystemConfigurationWriteLog.WriteInputMissing(
                     _logger, _connectionName, container.Name, "Delete command is not a filterable command"));
         }
+
+        // A delete states its rows: a filter, soft-delete options, or AllRows, which empties the file. One with none is
+        // refused, as on the SQL kinds (FDW-3660).
+        if (DeleteScope.Problem(filterable) is { } problem)
+            return GenericResult<IFileSystemCommand>.Failure(DeleteScopeLog.Refused(_logger, container.Name, problem));
 
         return GenericResult<IFileSystemCommand>.Success(
             new FileSystemDeleteCommand(relativePath, container, filterable.Filter, (command as ISoftDeletableCommand)?.SoftDelete));

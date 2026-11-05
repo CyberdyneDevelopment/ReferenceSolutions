@@ -53,7 +53,7 @@ public sealed class SqliteConnectionProvider : ImplementationServiceProviderBase
 
         // Cheap fast path first: RequiresSecret is a constructor-set fact about the authentication
         // TYPE, so None skips the values-dependent RequiredSecret(values) call entirely.
-        var authType = SqliteAuthenticationTypes.ByName(typed.AuthenticationType ?? string.Empty);
+        var authType = SqliteAuthenticationTypes.ByName(typed.AuthenticationType);
         if (!authType.RequiresSecret)
             return _factory.Create(typed, resolvedSecret: null);
 

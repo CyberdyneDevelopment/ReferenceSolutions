@@ -33,6 +33,11 @@ public static partial class EnvironmentVariableLogger
     [MessageLogging(EventId = 21004, Level = LogLevel.Error, Message = "Command is null")]
     public static partial IGenericMessage CommandNull(ILogger logger);
 
+    // Why Error with no fallback (FDW-3823): the target is the caller's choice, and a name that is none of Process, User or Machine must not read
+    // another environment's variables.
+    [MessageLogging(EventId = 21020, Level = LogLevel.Error, Message = "Environment variable target '{target}' is not Process, User or Machine")]
+    public static partial IGenericMessage TargetInvalid(ILogger logger, string target);
+
     // Why: a secret that can't be fetched means the dependent connection can't be built — the
     // requested operation cannot complete. Error, not Warning.
     [MessageLogging(EventId = 31000, Level = LogLevel.Error, Message = "Environment variable '{variableName}' not found")]

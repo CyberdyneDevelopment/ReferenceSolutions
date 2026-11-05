@@ -6,6 +6,7 @@ using Fdw.Results;
 using Fdw.Services.Scheduling.Abstractions;
 using Quartz;
 using FdwReferenceSchedulers.Quartz.Logging;
+using FdwReferenceSchedulers.Quartz.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace FdwReferenceSchedulers.Quartz.Translators;
@@ -36,6 +37,14 @@ public sealed class QuartzTriggerScheduleTranslator : QuartzSchedulingTranslator
         {
             try
             {
+                // A catch-up run (FDW-3788) carries the time it was due in the job data of its own trigger; the job records it as a Catchup due then.
+                if (trigger.CatchupDueTime is { } due)
+                {
+                    var data = new JobDataMap { [ScheduledPipelineJob.CatchupDueKey] = due.ToString("o", System.Globalization.CultureInfo.InvariantCulture) };
+                    await scheduler.TriggerJob(jobKey, data, ct).ConfigureAwait(false);
+                    return GenericResult.Success();
+                }
+
                 await scheduler.TriggerJob(jobKey, cancellationToken: ct).ConfigureAwait(false);
                 return GenericResult.Success();
             }

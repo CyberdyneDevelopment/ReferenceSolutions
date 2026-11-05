@@ -13,6 +13,7 @@ using FdwReferenceSecretManagers.MsSql.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Fdw.Services;
+using Fdw.Conventions;
 
 namespace FdwReferenceSecretManagers.MsSql;
 
@@ -119,7 +120,7 @@ public sealed class MsSqlSecretManagerFactory : ServiceFactoryBase<ISecretManage
         if (configuration is MsSqlSecretManagerConfiguration typed)
             return CreateSecretManagerInternal(typed, typed.Name);
 
-        var actualType = configuration?.GetType().Name ?? "null";
+        var actualType = configuration?.GetType().Name ?? LogPlaceholders.NullName;
         return System.Threading.Tasks.Task.FromResult<IGenericResult<ISecretManager>>(
             GenericResult<ISecretManager>.Failure(
                 MsSqlSecretManagerLogger.InvalidConfigurationType(

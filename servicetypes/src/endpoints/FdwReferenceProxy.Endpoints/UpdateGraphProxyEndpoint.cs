@@ -31,7 +31,7 @@ public sealed class UpdateGraphProxyEndpoint : Endpoint<GraphPayload, GraphPaylo
     /// <inheritdoc/>
     public override void Configure()
     {
-        Put("/pipelines/{Name}/graph");
+        Patch("/pipelines/{Name}/graph");
         Policies("pipelines:write");
         Summary(s =>
         {
@@ -45,7 +45,7 @@ public sealed class UpdateGraphProxyEndpoint : Endpoint<GraphPayload, GraphPaylo
     public override async Task HandleAsync(GraphPayload req, CancellationToken ct)
     {
         var name = Route<string>("Name")!;
-        ProxyLog.ProxyRequest(_logger, "PUT", "Etl", $"pipelines/{name}/graph");
+        ProxyLog.ProxyRequest(_logger, "PATCH", "Etl", $"pipelines/{name}/graph");
 
         var result = await _client.ReplaceGraph(name, req, ct).ConfigureAwait(false);
 

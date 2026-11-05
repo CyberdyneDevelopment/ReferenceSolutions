@@ -106,7 +106,7 @@ public class SearchDataSetSourceEndpoint : Endpoint<SearchDataSetSourceRequest, 
             {
                 Id = ds.Id,
                 Name = ds.Name,
-                DisplayName = ds.DisplayName ?? ds.Name,
+                DisplayName = ds.DisplayName ?? string.Empty,
                 Category = label.Value.Name,
                 CategoryPath = label.Value.Path,
             });

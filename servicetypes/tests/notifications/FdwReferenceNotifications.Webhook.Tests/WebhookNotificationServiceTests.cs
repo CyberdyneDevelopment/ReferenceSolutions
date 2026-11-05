@@ -32,7 +32,8 @@ public sealed class WebhookNotificationServiceTests
             channelName: "Webhook",
             recipients: new[] { "https://hooks.example.com" },
             subject: "Test Subject",
-            message: message);
+            message: message,
+            priority: NotificationPriorities.Normal);
 
     private static (WebhookNotificationService service, Mock<HttpMessageHandler> handler) BuildServiceWithHandler(
         WebhookNotificationConfiguration config,

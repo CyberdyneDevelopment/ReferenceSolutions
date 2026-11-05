@@ -211,7 +211,7 @@ public sealed class SqlTenantProvider : ITenantProvider
                 SqlTenantResultCodes.ByName("TenantAccessValidationFailed"),
                 ResultDetails.Create()
                     .With("UserId", userId)
-                    .With("Error", tenants.CurrentMessage ?? "the tenants could not be read"));
+                    .With("Error", tenants.FailureReason().Message));
         }
 
         if (tenants.Value is null)
@@ -244,7 +244,7 @@ public sealed class SqlTenantProvider : ITenantProvider
                 SqlTenantResultCodes.ByName("TenantAccessValidationFailed"),
                 ResultDetails.Create()
                     .With("UserId", userId)
-                    .With("Error", memberships.CurrentMessage ?? "the memberships could not be read"));
+                    .With("Error", memberships.NoValueReason().Message));
         }
 
         var memberOf = memberships.Value.Select(m => m.TenantId).ToHashSet();
@@ -319,18 +319,18 @@ public sealed class SqlTenantProvider : ITenantProvider
         // Create theme from entity properties
         var theme = new TenantTheme
         {
-            PrimaryColor = entity.PrimaryColor ?? TenantTheme.Default.PrimaryColor,
-            SecondaryColor = entity.SecondaryColor ?? TenantTheme.Default.SecondaryColor,
-            AccentColor = entity.AccentColor ?? TenantTheme.Default.AccentColor,
-            BackgroundColor = entity.BackgroundColor ?? TenantTheme.Default.BackgroundColor,
-            SurfaceColor = entity.SurfaceColor ?? TenantTheme.Default.SurfaceColor,
-            OverlayColor = entity.OverlayColor ?? TenantTheme.Default.OverlayColor,
-            SuccessColor = entity.SuccessColor ?? TenantTheme.Default.SuccessColor,
-            WarningColor = entity.WarningColor ?? TenantTheme.Default.WarningColor,
-            ErrorColor = entity.ErrorColor ?? TenantTheme.Default.ErrorColor,
-            InfoColor = entity.InfoColor ?? TenantTheme.Default.InfoColor,
-            TextMainColor = entity.TextMainColor ?? TenantTheme.Default.TextMainColor,
-            TextMutedColor = entity.TextMutedColor ?? TenantTheme.Default.TextMutedColor,
+            PrimaryColor = entity.PrimaryColor,
+            SecondaryColor = entity.SecondaryColor,
+            AccentColor = entity.AccentColor,
+            BackgroundColor = entity.BackgroundColor,
+            SurfaceColor = entity.SurfaceColor,
+            OverlayColor = entity.OverlayColor,
+            SuccessColor = entity.SuccessColor,
+            WarningColor = entity.WarningColor,
+            ErrorColor = entity.ErrorColor,
+            InfoColor = entity.InfoColor,
+            TextMainColor = entity.TextMainColor,
+            TextMutedColor = entity.TextMutedColor,
             LogoUrl = entity.LogoUrl,
             FaviconUrl = entity.FaviconUrl,
             CustomCssUrl = entity.CustomCssUrl,

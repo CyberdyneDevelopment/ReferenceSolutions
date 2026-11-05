@@ -22,6 +22,7 @@
     <PackageReference Include="Fdw.Services.Connections.Abstractions" />
     <PackageReference Include="Fdw.Services.Telemetry" />
     <PackageReference Include="Fdw.Services.Telemetry.Abstractions" />
+    <PackageReference Include="Fdw.Validation" />
   </ItemGroup>
 
   <ItemGroup>

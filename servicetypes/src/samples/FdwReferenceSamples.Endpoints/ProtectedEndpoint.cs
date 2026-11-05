@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Fdw.Web.RestEndpoints.Security;
 using Microsoft.Extensions.Logging;
 using FdwReferenceSamples.Endpoints.Logging;
+using Fdw.Conventions;
 
 namespace FdwReferenceSamples.Endpoints;
 
@@ -66,7 +67,7 @@ public sealed class ProtectedEndpoint : AuthenticatedEndpointBase<ProtectedRespo
     public override async Task HandleAsync(CancellationToken ct)
 #pragma warning restore AsyncFixer01
     {
-        var username = User.Identity?.Name ?? "Unknown";
+        var username = User.Identity?.Name ?? LogPlaceholders.Anonymous;
         var roles = User.Claims
             .Where(c => string.Equals(c.Type, "role", StringComparison.Ordinal) || string.Equals(c.Type, ClaimTypes.Role, StringComparison.Ordinal))
             .Select(c => c.Value)

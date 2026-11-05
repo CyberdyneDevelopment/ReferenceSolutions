@@ -20,10 +20,10 @@ public class SqlOrganizationEntityTests
     }
 
     [Fact]
-    public void ToConfigurationKeepsAnOrganizationWithNoDefaultWorkspaceAsNull()
+    public void ToConfigurationKeepsTheEmptyIdOfAnEntityThatNamesNoWorkspace()
     {
         var entity = new SqlOrganizationEntity { Id = Guid.NewGuid(), Slug = "default" };
 
-        entity.ToConfiguration().DefaultWorkspaceId.ShouldBeNull();
+        entity.ToConfiguration().DefaultWorkspaceId.ShouldBe(Guid.Empty);
     }
 }

@@ -70,11 +70,9 @@ public class GetMeEndpoint : EndpointWithoutRequest<GetMeResponse>
         // Why: OpenIddict bakes the user's identity into the JWT 'sub' claim as the user's GUID Id,
         // not a username, and emits no name claim — so User.Identity.Name is always null here and the
         // old GetUser(username) lookup could never resolve the caller (every /me, including admin's,
-        // returned 401/NotFound). Resolve the subject GUID from the standard identifier claim
-        // (ClaimTypes.NameIdentifier maps from 'sub'; the raw 'sub' is read as a fallback claim name,
-        // not a fallback value, when inbound claim mapping is disabled) and look the user up by Id.
-        var subject = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-        if (string.IsNullOrEmpty(subject) || !Guid.TryParse(subject, out var userId))
+        // returned 401/NotFound). The caller's id is its 'sub' claim, read in one place (CallerClaims,
+        // FDW-3580), and the user is looked up by that Id.
+        if (!CallerClaims.TryGetUserId(User, out var userId))
         {
             await Send.UnauthorizedAsync(ct).ConfigureAwait(false);
             return;

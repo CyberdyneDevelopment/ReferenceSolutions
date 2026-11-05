@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using System.Threading;
@@ -48,7 +49,8 @@ public sealed class GetSchedulesProxyEndpoint : EndpointWithoutRequest<IReadOnly
     {
         ProxyLog.ProxyRequest(_logger, "GET", "Scheduler", "schedules");
 
-        var result = await _client.List(ct);
+        // ?tag= is forwarded as sent, so the scheduler host that holds the tags answers it; it is never dropped here (FDW-3816).
+        var result = await _client.List(HttpContext.Request.Query["tag"].Where(value => !string.IsNullOrWhiteSpace(value)).Select(value => value!).ToList(), ct);
 
         if (!result.IsSuccess)
         {

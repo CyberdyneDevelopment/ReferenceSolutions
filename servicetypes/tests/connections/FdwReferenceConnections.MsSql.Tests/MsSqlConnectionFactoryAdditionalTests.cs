@@ -127,8 +127,14 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
         // Database is not validated inside auth types — it is the connection string builder's concern.
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = null!, // No database
             AuthenticationType = "WindowsAuth"
@@ -147,8 +153,14 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
     {
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "NotReal"
@@ -166,8 +178,14 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
     {
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "NotReal"
@@ -185,8 +203,14 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
     {
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -209,8 +233,14 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
     {
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = null!,
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -241,8 +271,14 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
     {
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "NotReal" // Will fail - unknown auth type

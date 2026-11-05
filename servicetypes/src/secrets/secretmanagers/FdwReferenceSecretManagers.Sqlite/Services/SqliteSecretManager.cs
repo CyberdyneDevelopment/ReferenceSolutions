@@ -13,6 +13,7 @@ using FdwReferenceSecretManagers.Sqlite.Handlers;
 using FdwReferenceSecretManagers.Sqlite.Logging;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
+using Fdw.Conventions;
 
 namespace FdwReferenceSecretManagers.Sqlite.Services;
 
@@ -79,7 +80,7 @@ public sealed class SqliteSecretManager : ISecretManager, IDisposable
         ISecretManagerCommand managementCommand,
         CancellationToken cancellationToken = default)
     {
-        SqliteSecretManagerLogger.TraceExecuteEntry(_logger, managementCommand?.CommandType ?? "null");
+        SqliteSecretManagerLogger.TraceExecuteEntry(_logger, managementCommand?.CommandType ?? LogPlaceholders.NullName);
 
         if (managementCommand == null)
         {
@@ -87,7 +88,7 @@ public sealed class SqliteSecretManager : ISecretManager, IDisposable
                 GenericResult<object?>.Failure(SqliteSecretManagerLogger.CommandNull(_logger)));
         }
 
-        SqliteSecretManagerLogger.ExecutingCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? "N/A");
+        SqliteSecretManagerLogger.ExecutingCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? LogPlaceholders.NoSecretKey);
 
         return ExecuteCommandInternal(managementCommand, cancellationToken);
     }
@@ -102,7 +103,7 @@ public sealed class SqliteSecretManager : ISecretManager, IDisposable
             return GenericResult<TResult>.Failure(SqliteSecretManagerLogger.CommandNull(_logger));
         }
 
-        SqliteSecretManagerLogger.ExecutingTypedCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? "N/A");
+        SqliteSecretManagerLogger.ExecutingTypedCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? LogPlaceholders.NoSecretKey);
 
         var result = await ExecuteCommandInternal(managementCommand, cancellationToken).ConfigureAwait(false);
 
@@ -125,12 +126,12 @@ public sealed class SqliteSecretManager : ISecretManager, IDisposable
         IReadOnlyList<ISecretManagerCommand> commands,
         CancellationToken cancellationToken = default)
     {
-        SqliteSecretManagerLogger.TraceExecuteBatchEntry(_logger, commands?.Count ?? 0);
-
         if (commands == null)
         {
             throw new ArgumentNullException(nameof(commands));
         }
+
+        SqliteSecretManagerLogger.TraceExecuteBatchEntry(_logger, commands.Count);
 
         if (commands.Count == 0)
         {
@@ -177,7 +178,7 @@ public sealed class SqliteSecretManager : ISecretManager, IDisposable
         {
             return GenericResult.Failure(
                 SqliteSecretManagerLogger.BatchOperationException(_logger, ex, command.CommandType,
-                    command.SecretKey ?? "N/A", ex.Message));
+                    command.SecretKey ?? LogPlaceholders.NoSecretKey, ex.Message));
         }
     }
 
@@ -189,7 +190,7 @@ public sealed class SqliteSecretManager : ISecretManager, IDisposable
             throw new ArgumentNullException(nameof(managementCommand));
         }
 
-        SqliteSecretManagerLogger.TraceValidateCommandEntry(_logger, managementCommand.CommandType ?? "null");
+        SqliteSecretManagerLogger.TraceValidateCommandEntry(_logger, managementCommand.CommandType ?? LogPlaceholders.NullName);
 
         if (string.IsNullOrWhiteSpace(managementCommand.CommandType))
         {
@@ -275,7 +276,7 @@ public sealed class SqliteSecretManager : ISecretManager, IDisposable
         {
             return GenericResult<object?>.Failure(
                 SqliteSecretManagerLogger.OperationFailed(_logger, ex, command.CommandType,
-                    command.SecretKey ?? "N/A", ex.Message));
+                    command.SecretKey ?? LogPlaceholders.NoSecretKey, ex.Message));
         }
     }
 

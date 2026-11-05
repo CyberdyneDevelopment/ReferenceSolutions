@@ -49,10 +49,10 @@ public sealed class EnvironmentVariableSecretMetadata : ISecretMetadata
     public string? Version => null; // Environment variables don't have versions
 
     /// <inheritdoc/>
-    public DateTimeOffset CreatedAt => DateTimeOffset.MinValue; // Unknown
+    public DateTimeOffset? CreatedAt => null; // An environment variable records no creation time
 
     /// <inheritdoc/>
-    public DateTimeOffset ModifiedAt => DateTimeOffset.MinValue; // Unknown
+    public DateTimeOffset? ModifiedAt => null; // An environment variable records no modification time
 
     /// <inheritdoc/>
     public DateTimeOffset? ExpiresAt => null; // Environment variables don't expire
@@ -67,7 +67,7 @@ public sealed class EnvironmentVariableSecretMetadata : ISecretMetadata
     public bool IsExpired => false; // Environment variables don't expire
 
     /// <inheritdoc/>
-    public bool IsEnabled => true; // Always enabled if present
+    public bool? IsEnabled => true; // Always enabled if present
 
     /// <inheritdoc/>
     public bool IsBinary => false; // Environment variables are always strings
@@ -78,7 +78,7 @@ public sealed class EnvironmentVariableSecretMetadata : ISecretMetadata
         get
         {
             var value = Environment.GetEnvironmentVariable(_environmentVariableName, _target);
-            return value?.Length * sizeof(char) ?? 0;
+            return (value ?? string.Empty).Length * sizeof(char);
         }
     }
 

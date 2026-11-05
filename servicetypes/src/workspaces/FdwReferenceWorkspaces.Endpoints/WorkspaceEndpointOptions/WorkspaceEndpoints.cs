@@ -1,4 +1,5 @@
 using Fdw.Services.Authentication.Abstractions.Security;
+using Fdw.Services.Multitenancy.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Fdw.Services.Authorization;
@@ -102,6 +103,15 @@ public partial class WorkspaceEndpoints : EndpointTypeCollectionBase<WorkspaceEn
                     sp.GetRequiredService<IPermissionConfigurationProvider>(),
                     sp.GetRequiredService<IRolePermissionConfigurationProvider>(),
                     sp.GetService<ILogger<WorkspacePermissions>>()));
+
+            // Makes and removes an organization's default workspace for the founding of a tenant or an organization (FDW-3668). Scoped like
+            // the permissions it uses; it reads the ambient authentication context, because a new tenant's workspace is written as that tenant.
+            builder.Services.TryAddScoped<IDefaultWorkspaceFounding>(sp =>
+                new DefaultWorkspaceFounding(
+                    sp.GetRequiredService<IWorkspaceConfigurationProvider>(),
+                    sp.GetRequiredService<IWorkspacePermissions>(),
+                    sp.GetRequiredService<IAuthenticationContextAccessor>(),
+                    sp.GetService<ILogger<DefaultWorkspaceFounding>>()));
 
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });

@@ -9,6 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Fdw.Services.Multitenancy.Abstractions" />
+    <PackageReference Include="Fdw.Validation" />
     <ProjectReference Include="..\FdwReferenceConnections.FileSystem.Abstractions\FdwReferenceConnections.FileSystem.Abstractions.csproj" />
     <PackageReference Include="Fdw.Services.Connections.Abstractions" />
     <PackageReference Include="Fdw.Services.Connections" />

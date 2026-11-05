@@ -11,6 +11,7 @@ using FdwReferenceSecretManagers.EnvironmentVariable.Configuration;
 using FdwReferenceSecretManagers.EnvironmentVariable.Handlers;
 using FdwReferenceSecretManagers.EnvironmentVariable.Logging;
 using Microsoft.Extensions.Logging;
+using Fdw.Conventions;
 
 namespace FdwReferenceSecretManagers.EnvironmentVariable.Services;
 
@@ -73,7 +74,7 @@ public sealed class EnvironmentVariableSecretManager : ISecretManager, IDisposab
         ISecretManagerCommand managementCommand,
         CancellationToken cancellationToken = default)
     {
-        EnvironmentVariableLogger.TraceExecuteEntry(_logger, managementCommand?.CommandType ?? "null");
+        EnvironmentVariableLogger.TraceExecuteEntry(_logger, managementCommand?.CommandType ?? LogPlaceholders.NullName);
 
         if (managementCommand == null)
         {
@@ -81,7 +82,7 @@ public sealed class EnvironmentVariableSecretManager : ISecretManager, IDisposab
                 GenericResult<object?>.Failure(EnvironmentVariableLogger.CommandNull(_logger)));
         }
 
-        EnvironmentVariableLogger.ExecutingCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? "N/A");
+        EnvironmentVariableLogger.ExecutingCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? LogPlaceholders.NoSecretKey);
 
         return ExecuteCommandInternal(managementCommand, cancellationToken);
     }
@@ -96,7 +97,7 @@ public sealed class EnvironmentVariableSecretManager : ISecretManager, IDisposab
             return GenericResult<TResult>.Failure(EnvironmentVariableLogger.CommandNull(_logger));
         }
 
-        EnvironmentVariableLogger.ExecutingTypedCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? "N/A");
+        EnvironmentVariableLogger.ExecutingTypedCommand(_logger, managementCommand.CommandType, managementCommand.SecretKey ?? LogPlaceholders.NoSecretKey);
 
         var result = await ExecuteCommandInternal(managementCommand, cancellationToken).ConfigureAwait(false);
 
@@ -118,12 +119,12 @@ public sealed class EnvironmentVariableSecretManager : ISecretManager, IDisposab
         IReadOnlyList<ISecretManagerCommand> commands,
         CancellationToken cancellationToken = default)
     {
-        EnvironmentVariableLogger.TraceExecuteBatchEntry(_logger, commands?.Count ?? 0);
-
         if (commands == null)
         {
             throw new ArgumentNullException(nameof(commands));
         }
+
+        EnvironmentVariableLogger.TraceExecuteBatchEntry(_logger, commands.Count);
 
         if (commands.Count == 0)
         {
@@ -152,7 +153,7 @@ public sealed class EnvironmentVariableSecretManager : ISecretManager, IDisposab
             catch (Exception ex)
             {
                 return GenericResult.Failure(
-                    EnvironmentVariableLogger.OperationFailed(_logger, command.CommandType, command.SecretKey ?? "N/A", ex.Message));
+                    EnvironmentVariableLogger.OperationFailed(_logger, command.CommandType, command.SecretKey ?? LogPlaceholders.NoSecretKey, ex.Message));
             }
         }
 
@@ -266,7 +267,7 @@ public sealed class EnvironmentVariableSecretManager : ISecretManager, IDisposab
             return Task.FromResult<IGenericResult<object?>>(
                 GenericResult<object?>.Failure(
                     EnvironmentVariableLogger.OperationFailed(_logger, command.CommandType,
-                        command.SecretKey ?? "N/A", ex.Message)));
+                        command.SecretKey ?? LogPlaceholders.NoSecretKey, ex.Message)));
         }
     }
 

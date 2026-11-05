@@ -22,8 +22,8 @@ public sealed class CreateNotificationRequest
     public string? Description { get; set; }
 
     /// <summary>
-    /// Gets or sets whether the notification is enabled. Required: a channel is not silently enabled
-    /// or disabled for the caller, so the request states which.
+    /// Gets or sets whether the notification is enabled; left out, the caller's tenant's setting
+    /// DefaultNotificationChannelIsEnabled gives it (FDW-3580).
     /// </summary>
     public bool? IsEnabled { get; set; }
 
@@ -60,8 +60,5 @@ public sealed class CreateNotificationRequestValidator : Validator<CreateNotific
         RuleFor(x => x.SecretManagerName)
             .NotEmpty().When(x => !string.IsNullOrWhiteSpace(x.SecretKeyName))
             .WithMessage("SecretManagerName is required when SecretKeyName is given");
-
-        RuleFor(x => x.IsEnabled)
-            .NotNull().WithMessage("IsEnabled is required: state true to enable the notification or false to create it disabled");
     }
 }

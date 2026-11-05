@@ -42,7 +42,7 @@ public sealed partial class ConsoleNotificationConfiguration : INotificationImpl
     /// <summary>
     /// Gets or sets whether this notification channel is enabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsEnabled { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the secret manager to use for retrieving secrets.
@@ -66,5 +66,5 @@ public sealed partial class ConsoleNotificationConfiguration : INotificationImpl
     /// Gets or sets the log level to use when emitting notification content.
     /// Defaults to Information.
     /// </summary>
-    public string LogLevel { get; set; } = "Information";
+    public string LogLevel { get; set; } = string.Empty;
 }

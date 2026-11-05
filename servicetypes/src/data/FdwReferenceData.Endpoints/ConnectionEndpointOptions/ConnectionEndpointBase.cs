@@ -33,17 +33,24 @@ public abstract class ConnectionEndpointBase<TEndpoint> : ConnectionEndpointBase
     where TEndpoint : class
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ConnectionEndpointBase{TEndpoint}"/> class.
+    /// Initializes a new instance of the <see cref="ConnectionEndpointBase{TEndpoint}"/> class for the sole option wrapping its endpoint
+    /// class, named as every endpoint option is: after <typeparamref name="TEndpoint"/> without its "Endpoint" suffix.
+    /// </summary>
+    protected ConnectionEndpointBase()
+        : base(DeriveName(typeof(TEndpoint)), typeof(TEndpoint), $"The {DeriveName(typeof(TEndpoint))} endpoint.")
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConnectionEndpointBase{TEndpoint}"/> class with its own name.
     /// </summary>
     /// <param name="name">
-    /// The option's own distinguishing name. Required when more than one option closes over the
-    /// same <typeparamref name="TEndpoint"/> — e.g. several typed presets (MsSql, Http, FileSystem,
-    /// ...) that all route through one shared endpoint class. The base id is derived from this name,
-    /// not from <typeparamref name="TEndpoint"/>, so options sharing an endpoint still get distinct,
-    /// stable ids. Omit it only when this option is the sole one wrapping its endpoint class.
+    /// The option's own distinguishing name, for an option that shares <typeparamref name="TEndpoint"/> with others, e.g. several typed
+    /// presets (MsSql, Http, FileSystem, ...) that all route through one shared endpoint class. The base id is derived from this name, not
+    /// from <typeparamref name="TEndpoint"/>, so options sharing an endpoint still get distinct, stable ids.
     /// </param>
-    protected ConnectionEndpointBase(string? name = null)
-        : base(name ?? DeriveName(typeof(TEndpoint)), typeof(TEndpoint), $"The {name ?? DeriveName(typeof(TEndpoint))} endpoint.")
+    protected ConnectionEndpointBase(string name)
+        : base(name ?? throw new ArgumentNullException(nameof(name)), typeof(TEndpoint), $"The {name} endpoint.")
     {
     }
 }

@@ -66,12 +66,13 @@ public sealed class StreamRecordsEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task AWildcardAcceptGetsTheFormatTheEndpointDeclares()
+    public async Task ARequestThatNamesNoFormatIs400BeforeAnyBodyIsWritten()
     {
+        // FDW-3823: the format is the caller's choice; a wildcard Accept and no format value name none, and the endpoint picks none for it.
         var response = await _host.Get("/paced/export?rows=2", "*/*", TestContext.Current.CancellationToken);
 
-        response.StatusCode.ShouldBe(200);
-        response.Header("Content-Type").ShouldBe("application/json");
+        response.StatusCode.ShouldBe(400);
+        response.Body.ShouldContain("names no record format");
     }
 
     [Fact]

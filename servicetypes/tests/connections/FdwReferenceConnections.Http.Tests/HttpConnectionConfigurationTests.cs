@@ -8,23 +8,23 @@ public class HttpConnectionConfigurationTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "Api")]
-    public void DefaultValuesAreCorrect()
+    public void ANewConfigurationAssumesNoValueTheConnectionMustState()
     {
+        // Why: FDW chooses no protocol, authentication method or lifetime for a connection, and no timeout:
+        // each is stated by the connection, or the validator refuses it; an unstated timeout leaves the
+        // platform's own (FDW-3580).
         var sut = new HttpConnectionConfiguration();
 
         sut.ConnectionType.ShouldBe("Http");
         sut.BaseUrl.ShouldBe(string.Empty);
-        sut.Protocol.ShouldBe("Rest");
-        sut.TimeoutSeconds.ShouldBe(30);
+        sut.Protocol.ShouldBe(string.Empty);
+        sut.TimeoutSeconds.ShouldBeNull();
         sut.ContentType.ShouldBeNull();
-        // Why: authentication is now a selector + a KVP the chosen method parses — the default method is
-        // "None" and its KVP is empty. SecretManagerName/SecretKeyName are no longer connection columns;
-        // they are keys a secret-backed method declares in the AdditionalProperties KVP.
-        sut.AuthenticationType.ShouldBe("None");
+        sut.AuthenticationType.ShouldBe(string.Empty);
         sut.AdditionalProperties.ShouldNotBeNull();
         sut.AdditionalProperties.Count.ShouldBe(0);
         sut.Soap.ShouldBeNull();
-        sut.Lifetime.ShouldBe("Scoped");
+        sut.Lifetime.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -34,6 +34,8 @@ public class HttpConnectionConfigurationTests
     {
         var sut = new HttpConnectionConfiguration
         {
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com",
             TimeoutSeconds = 30,
             Protocol = "Rest"
@@ -52,6 +54,8 @@ public class HttpConnectionConfigurationTests
     {
         var sut = new HttpConnectionConfiguration
         {
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             BaseUrl = "",
             TimeoutSeconds = 30,
             Protocol = "Rest"
@@ -71,6 +75,8 @@ public class HttpConnectionConfigurationTests
     {
         var sut = new HttpConnectionConfiguration
         {
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com",
             TimeoutSeconds = 0,
             Protocol = "Rest"
@@ -90,6 +96,8 @@ public class HttpConnectionConfigurationTests
     {
         var sut = new HttpConnectionConfiguration
         {
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com",
             TimeoutSeconds = -5,
             Protocol = "Rest"
@@ -108,6 +116,8 @@ public class HttpConnectionConfigurationTests
     {
         var sut = new HttpConnectionConfiguration
         {
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com",
             TimeoutSeconds = 30,
             Protocol = ""
@@ -127,6 +137,8 @@ public class HttpConnectionConfigurationTests
     {
         var sut = new HttpConnectionConfiguration
         {
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             BaseUrl = "",
             TimeoutSeconds = 0,
             Protocol = ""
@@ -145,6 +157,7 @@ public class HttpConnectionConfigurationTests
     {
         var sut = new HttpConnectionConfiguration
         {
+            AuthenticationType = "None",
             BaseUrl = "https://example.com",
             Protocol = "Soap12",
             TimeoutSeconds = 60,
@@ -166,6 +179,8 @@ public class HttpConnectionConfigurationTests
     {
         var sut = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            Lifetime = "Scoped",
             AuthenticationType = "WsSecurity",
             AdditionalProperties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
             {
@@ -187,6 +202,9 @@ public class HttpConnectionConfigurationTests
     {
         var sut = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             Soap = new HttpSoapSettings
             {
                 DefaultNamespace = "http://example.com/ns",
@@ -211,6 +229,8 @@ public class HttpConnectionConfigurationTests
         // Arrange
         var sut = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            Lifetime = "Scoped",
             AuthenticationType = "ApiKey",
             AdditionalProperties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
             {
@@ -256,6 +276,9 @@ public class HttpConnectionConfigurationTests
         // Arrange
         var sut = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             Soap = new HttpSoapSettings
             {
                 DefaultNamespace = "http://example.com/soap",
@@ -297,6 +320,9 @@ public class HttpConnectionConfigurationTests
         // Arrange
         var sut = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.test.com"
         };
 
@@ -306,7 +332,8 @@ public class HttpConnectionConfigurationTests
         // Assert
         interfaceRef.BaseUrl.ShouldBe("https://api.test.com");
         interfaceRef.Protocol.ShouldBe("Rest");
-        interfaceRef.TimeoutSeconds.ShouldBe(30);
+        // A configuration that states no timeout carries none (FDW-3580): HttpClient keeps the platform's own.
+        interfaceRef.TimeoutSeconds.ShouldBeNull();
         interfaceRef.ContentType.ShouldBeNull();
     }
 }

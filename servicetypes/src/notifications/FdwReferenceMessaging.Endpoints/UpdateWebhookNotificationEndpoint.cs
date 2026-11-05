@@ -34,8 +34,6 @@ public class UpdateWebhookNotificationEndpoint : CrudUpdateEndpointBase<WebhookN
     /// <inheritdoc />
     protected override string Route => "/notifications/webhook/{Name}";
 
-    /// <inheritdoc />
-    protected override HttpVerb UpdateVerb => HttpVerb.PUT;
 
     /// <inheritdoc />
     protected override string EndpointSummary => "Change a Webhook notification service";

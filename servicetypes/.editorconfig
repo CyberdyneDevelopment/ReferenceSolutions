@@ -1,0 +1,8 @@
+# Tier 1 string-comparison and cancellation rules (FDW-3578), the SDK half: CA1307, CA1309, CA1310 and CA2016
+# ship with the .NET SDK and run under AnalysisLevel latest-recommended, and fail the build here as in fractaldataworks.
+# MA0006, MA0040 and FDW009 reach this repository through FDW-3581's shipped analyzer package.
+[*.cs]
+dotnet_diagnostic.CA1307.severity = error    # Specify StringComparison for clarity
+dotnet_diagnostic.CA1309.severity = error    # Use ordinal StringComparison
+dotnet_diagnostic.CA1310.severity = error    # Specify StringComparison for correctness
+dotnet_diagnostic.CA2016.severity = error    # Forward the CancellationToken parameter

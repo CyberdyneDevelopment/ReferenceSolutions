@@ -65,7 +65,7 @@ public sealed class MsSqlListSecretsHandler
             return result.ToNewResult<IReadOnlyList<ISecretMetadata>>();
         }
 
-        var secrets = (result.Value ?? Enumerable.Empty<SecretRow>())
+        var secrets = (result.Value ?? [])
             .Select(row => (ISecretMetadata)new MsSqlSecretMetadata(
                 key: row.SecretKey,
                 schema: config.Schema,

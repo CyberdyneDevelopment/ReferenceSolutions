@@ -4,6 +4,7 @@ using Fdw.Services.Data;
 using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Data.Configuration;
 using Fdw.Services.Data.Endpoints;
+using Fdw.Services.Tags;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
@@ -23,8 +24,9 @@ public class ListDataStoresEndpoint : ListDataStoresEndpointBase
         ConnectionConfigurationProvider connectionProvider,
         IAuthorizationService authorization,
         IConfigurationGatewayProvider configurationGateways,
-        ILogger<ListDataStoresEndpoint> logger)
-        : base(logger, dataStoreProvider, connectionProvider, authorization, configurationGateways)
+        ILogger<ListDataStoresEndpoint> logger,
+        ITagService? tags = null)
+        : base(logger, dataStoreProvider, connectionProvider, authorization, configurationGateways, tags)
     {
     }
 

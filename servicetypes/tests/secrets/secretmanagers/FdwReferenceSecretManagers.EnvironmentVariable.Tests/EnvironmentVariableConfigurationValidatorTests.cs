@@ -12,6 +12,7 @@ public class EnvironmentVariableConfigurationValidatorTests
     {
         Prefix = prefix,
         Separator = separator,
+        Target = nameof(EnvironmentVariableTarget.Process),
     };
 
     [Fact]

@@ -19,6 +19,8 @@ public sealed class MsSqlConnectionInstanceTimeoutTests
             Name = "Warehouse",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = commandTimeoutSeconds,
+            // The connect timeout is resolved first and is not what these tests read (FDW-3580): it is stated so the command timeout is reached.
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"

@@ -32,6 +32,7 @@
     <PackageReference Include="Fdw.Services.Authentication.Abstractions" />
     <PackageReference Include="Fdw.Services.Connections.Abstractions" />
     <PackageReference Include="Fdw.Services.Data.Abstractions" />
+    <PackageReference Include="Fdw.Validation" />
   </ItemGroup>
 
 </Project>

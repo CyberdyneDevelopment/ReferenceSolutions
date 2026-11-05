@@ -22,6 +22,7 @@ public class EnvironmentVariableCommandHandlersTests
             Prefix = prefix,
             StripPrefix = stripPrefix,
             Separator = "__",
+            Target = nameof(EnvironmentVariableTarget.Process),
         };
         return new EnvironmentVariableExecutionContext(NullLogger.Instance, config, config.Id.ToString());
     }
@@ -133,6 +134,38 @@ public class EnvironmentVariableCommandHandlersTests
 
         // Act
         var result = await handler.InvokeBoxed(command, context, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeFalse();
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "Security")]
+    public async System.Threading.Tasks.Task InvokeBoxedGetSecretWithNoTargetAnswersAFailureAndNeverThrows()
+    {
+        // Arrange - the target is the caller's choice (FDW-3823); a configuration that states none is a failure result, not a throw.
+        var config = new EnvironmentVariableConfiguration { Id = Guid.NewGuid(), Prefix = "FDWTEST_", Separator = "__" };
+        var context = new EnvironmentVariableExecutionContext(NullLogger.Instance, config, config.Id.ToString());
+
+        // Act
+        var result = await new EnvironmentVariableGetSecretHandler().InvokeBoxed(new GetSecretManagerCommand(null, "ANY"), context, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeFalse();
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "Security")]
+    public async System.Threading.Tasks.Task InvokeBoxedListSecretsWithNoTargetAnswersAFailureAndNeverThrows()
+    {
+        // Arrange
+        var config = new EnvironmentVariableConfiguration { Id = Guid.NewGuid(), Prefix = "FDWTEST_", Separator = "__" };
+        var context = new EnvironmentVariableExecutionContext(NullLogger.Instance, config, config.Id.ToString());
+
+        // Act
+        var result = await new EnvironmentVariableListSecretsHandler().InvokeBoxed(ListSecretsManagerCommand.All(null), context, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeFalse();

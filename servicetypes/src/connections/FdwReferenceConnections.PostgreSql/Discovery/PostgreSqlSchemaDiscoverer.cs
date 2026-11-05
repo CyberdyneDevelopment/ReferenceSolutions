@@ -176,10 +176,10 @@ public sealed class PostgreSqlSchemaDiscoverer : IPostgreSqlSchemaDiscoverer
     /// <inheritdoc/>
     public async Task<IGenericResult<SchemaDiscoveryResult>> DiscoverSchema(
         PostgreSqlConnection connection,
-        SchemaDiscoveryOptions? options,
+        SchemaDiscoveryOptions options,
         CancellationToken cancellationToken)
     {
-        options ??= SchemaDiscoveryOptions.Default;
+        ArgumentNullException.ThrowIfNull(options);
 
         try
         {

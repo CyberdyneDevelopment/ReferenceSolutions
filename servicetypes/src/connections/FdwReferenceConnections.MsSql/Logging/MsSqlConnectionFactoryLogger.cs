@@ -209,4 +209,10 @@ public static partial class MsSqlConnectionFactoryLogger
     /// </summary>
     [MessageLogging(EventId = 11015, Level = LogLevel.Debug, Message = "Connection '{connectionName}' resolved its secret from secret manager '{declared}'")]
     public static partial IGenericMessage SecretResolvedFromManager(ILogger<MsSqlConnectionFactory> logger, string connectionName, string declared);
+
+    /// <summary>
+    /// Logs that a pooled connection states pool sizes SQL Server cannot use (FDW-4109): nothing stands in for them.
+    /// </summary>
+    [MessageLogging(EventId = 21010, Level = LogLevel.Error, Message = "Connection '{connectionName}' enables connection pooling with MinPoolSize {minPoolSize} and MaxPoolSize {maxPoolSize}; a pooled connection states a MaxPoolSize of at least 1 and a MinPoolSize from 0 to MaxPoolSize")]
+    public static partial IGenericMessage PoolSizeNotUsable(ILogger<MsSqlConnectionFactory> logger, string connectionName, int minPoolSize, int maxPoolSize);
 }

@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Web.RestEndpoints.Security;
+using Fdw.Conventions;
 
 namespace FdwReferenceSamples.Endpoints;
 
@@ -83,7 +84,7 @@ public sealed class AdminDataEndpoint : AdminEndpointBase<AdminDataResponse>
         return Send.OkAsync(new AdminDataResponse
         {
             Message = "This is admin data with Admin role and highest rate limit (10000 req/min)",
-            User = User.Identity?.Name ?? "Unknown",
+            User = User.Identity?.Name ?? LogPlaceholders.Anonymous,
             Roles = roles,
             Timestamp = DateTime.UtcNow,
             RateLimitPolicy = "Admin"

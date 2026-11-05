@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Fdw.Services.Connections.Abstractions.Authentication;
 using Fdw.Services.Connections.Results;
+using FdwReferenceConnections.FileSystem.Validation;
 
 namespace FdwReferenceConnections.FileSystem.Registration;
 
@@ -40,6 +41,10 @@ public sealed class FileSystemConnectionType
     {
         // Endpoint behavior: the flat request carried the root folder in BaseUrl.
         EndpointAlias("baseUrl", nameof(FileSystemConnectionConfiguration.Root));
+
+        // What a file system connection must state (its root folder) is the configuration validator's; a create or update that
+        // fails it is refused before it is saved (FDW-3541).
+        EndpointValidation(new FileSystemConnectionConfigurationValidator());
 
         // Why Initialize and not Register: this wiring needs a LIVE container (it resolves the
         // domain provider and its typed-body providers), and Register runs while the container

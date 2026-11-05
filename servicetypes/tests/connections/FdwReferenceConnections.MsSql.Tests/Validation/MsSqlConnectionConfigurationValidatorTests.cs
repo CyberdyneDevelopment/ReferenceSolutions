@@ -20,6 +20,7 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Encrypt = true,
             MaxSerialInsert = 1000,
             Server = "localhost",
             Database = "TestDatabase",
@@ -47,6 +48,10 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
             MaxSerialInsert = 1000,
             Server = string.Empty,
             Database = "TestDatabase",
@@ -68,6 +73,10 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
             MaxSerialInsert = 1000,
             Server = "localhost",
             Database = string.Empty,
@@ -89,6 +98,9 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
             MaxSerialInsert = 1000,
             Server = "localhost",
             Database = "TestDatabase",
@@ -111,6 +123,9 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
             MaxSerialInsert = 1000,
             Server = "localhost",
             Database = "TestDatabase",
@@ -135,6 +150,9 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
             MaxSerialInsert = 1000,
             Server = "localhost",
             Database = "TestDatabase",
@@ -157,10 +175,15 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
             MaxSerialInsert = 1000,
             Server = "localhost",
             Database = "TestDatabase",
             CommandTimeoutSeconds = 0,
+            ConnectionTimeoutSeconds = 15,
             DefaultSchema = "dbo"
         };
 
@@ -179,6 +202,10 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
             MaxSerialInsert = 1000,
             Server = "localhost",
             Database = "TestDatabase",
@@ -201,6 +228,8 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
             MaxSerialInsert = 1000,
             Server = "localhost",
             Database = "TestDatabase",
@@ -226,6 +255,8 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
             MaxSerialInsert = 1000,
             Server = "localhost",
             Database = "TestDatabase",
@@ -250,6 +281,8 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
             MaxSerialInsert = 1000,
             Server = "localhost",
             Database = "TestDatabase",
@@ -274,6 +307,8 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
             MaxSerialInsert = 1000,
             Server = "localhost",
             Database = "TestDatabase",
@@ -298,6 +333,10 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
             MaxSerialInsert = 1000,
             Server = "localhost",
             Database = "TestDatabase",
@@ -319,6 +358,10 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
             MaxSerialInsert = 1000,
             Server = "localhost",
             Database = "TestDatabase",
@@ -340,6 +383,10 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
         // Arrange
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
             MaxSerialInsert = 1000,
             Server = string.Empty,
             Database = string.Empty,
@@ -362,6 +409,11 @@ public sealed class MsSqlConnectionConfigurationValidatorTests
     {
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = maxSerialInsert,
             Server = "localhost",
             Database = "TestDatabase"

@@ -23,6 +23,7 @@
     <PackageReference Include="Fdw.Services.SecretManagers" />
     <PackageReference Include="Fdw.Services.SecretManagers.Abstractions" />
     <PackageReference Include="Fdw.Tds.Endpoints" />
+    <PackageReference Include="Fdw.Validation" />
   </ItemGroup>
 
   <ItemGroup>
