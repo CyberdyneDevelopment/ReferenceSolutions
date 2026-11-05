@@ -106,7 +106,9 @@ public partial class WorkspaceEndpoints : EndpointTypeCollectionBase<WorkspaceEn
 
             // Makes and removes an organization's default workspace for the founding of a tenant or an organization (FDW-3668). Scoped like
             // the permissions it uses; it reads the ambient authentication context, because a new tenant's workspace is written as that tenant.
-            builder.Services.TryAddScoped<IDefaultWorkspaceFounding>(sp =>
+            // AddScoped, not TryAdd: Fdw.Services.Users registers a refusing IDefaultWorkspaceFounding for a host without this group (FDW-4178), and
+            // the last registration wins, so this one replaces it whichever of the two registers first.
+            builder.Services.AddScoped<IDefaultWorkspaceFounding>(sp =>
                 new DefaultWorkspaceFounding(
                     sp.GetRequiredService<IWorkspaceConfigurationProvider>(),
                     sp.GetRequiredService<IWorkspacePermissions>(),

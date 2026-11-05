@@ -1,10 +1,11 @@
 using FdwReferenceSecretManagers.EnvironmentVariable.Configuration;
+using FdwReferenceSecretManagers.EnvironmentVariable.Targets;
 
 namespace FdwReferenceSecretManagers.EnvironmentVariable.Tests;
 
 /// <summary>
-/// Tests for <see cref="EnvironmentVariableConfiguration"/>: <see cref="EnvironmentVariableConfiguration.ResolveTarget"/>
-/// parsing, the <see cref="EnvironmentVariableConfiguration.Properties"/> projection, and
+/// Tests for <see cref="EnvironmentVariableConfiguration"/>: <see cref="EnvironmentVariableConfiguration.IdentifyTarget"/>
+/// (the <see cref="EnvironmentVariableTargets"/> option a Target names, FDW-4144), the <see cref="EnvironmentVariableConfiguration.Properties"/> projection, and
 /// <see cref="EnvironmentVariableConfiguration.Validate"/> delegating to the validator.
 /// </summary>
 public class EnvironmentVariableConfigurationTests
@@ -12,32 +13,36 @@ public class EnvironmentVariableConfigurationTests
     [Fact]
     [Trait("Priority", "P2")]
     [Trait("Category", "Configuration")]
-    public void ResolveTargetValidStringParsesToEnumValue()
+    public void IdentifyTargetOfAnOptionNameAnswersThatOption()
     {
         // Arrange
-        var config = new EnvironmentVariableConfiguration { Target = nameof(EnvironmentVariableTarget.Machine) };
+        var config = new EnvironmentVariableConfiguration { Target = "Machine" };
 
         // Act
-        var target = config.ResolveTarget();
+        var target = config.IdentifyTarget();
 
         // Assert
         target.IsSuccess.ShouldBeTrue();
-        target.Value.ShouldBe(EnvironmentVariableTarget.Machine);
+        var option = target.Value.ShouldNotBeNull();
+        option.Name.ShouldBe("Machine");
+        option.SystemTarget.ShouldBe(EnvironmentVariableTarget.Machine);
     }
 
     [Theory]
     [InlineData("")]
     [InlineData("NotARealTarget")]
     [InlineData("42")]
+    [InlineData("process")]
     [Trait("Priority", "P2")]
     [Trait("Category", "Configuration")]
-    public void ResolveTargetOfAValueThatIsNoTargetAnswersAFailureAndNeverThrows(string value)
+    public void IdentifyTargetOfAValueThatNamesNoOptionAnswersAFailureAndNeverThrows(string value)
     {
-        // Arrange - the target is the caller's choice (FDW-3823): a value that is no target is refused, not read as Process, and not thrown.
+        // Arrange - the target is the caller's choice (FDW-3823): a value that names no option (names match exactly, so "process" is none)
+        // is refused, not read as Process, and not thrown.
         var config = new EnvironmentVariableConfiguration { Target = value };
 
         // Act
-        var target = config.ResolveTarget();
+        var target = config.IdentifyTarget();
 
         // Assert
         target.IsFailure.ShouldBeTrue();
@@ -81,7 +86,7 @@ public class EnvironmentVariableConfigurationTests
     public void ValidateValidConfigurationReturnsSuccess()
     {
         // Arrange
-        var config = new EnvironmentVariableConfiguration { Prefix = "FDW_SECRET_", Separator = "__", Target = nameof(EnvironmentVariableTarget.Process) };
+        var config = new EnvironmentVariableConfiguration { Prefix = "FDW_SECRET_", Separator = "__", Target = "Process" };
 
         // Act
         var result = config.Validate();

@@ -22,7 +22,7 @@ public class EnvironmentVariableCommandHandlersTests
             Prefix = prefix,
             StripPrefix = stripPrefix,
             Separator = "__",
-            Target = nameof(EnvironmentVariableTarget.Process),
+            Target = "Process",
         };
         return new EnvironmentVariableExecutionContext(NullLogger.Instance, config, config.Id.ToString());
     }

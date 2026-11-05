@@ -12,6 +12,7 @@ using Fdw.Services.SecretManagers.Abstractions;
 using Fdw.Services.SecretManagers.Abstractions.Logging;
 using Fdw.Conventions;
 using FdwReferenceSecretManagers.EnvironmentVariable.Logging;
+using FdwReferenceSecretManagers.EnvironmentVariable.Targets;
 
 namespace FdwReferenceSecretManagers.EnvironmentVariable.Configuration;
 
@@ -139,21 +140,24 @@ public sealed partial class EnvironmentVariableConfiguration : ISecretManagerImp
     /// Process: Variables for the current process (default).
     /// User: Variables for the current user account.
     /// Machine: System-wide variables (requires elevated permissions to set).
-    /// Stored as string to match NVARCHAR(50) column; resolved to <see cref="EnvironmentVariableTarget"/> via <see cref="ResolveTarget"/>.
+    /// Stored as the name of an <see cref="EnvironmentVariableTargets"/> option (NVARCHAR(50)); <see cref="IdentifyTarget"/> answers the option.
     /// </remarks>
     [CallerChoice]
     public string Target { get; set; } = string.Empty;
 
     /// <summary>
-    /// Parses <see cref="Target"/> to the typed enum. Target is the caller's choice, with no default (FDW-3823): the validator refuses a
-    /// configuration whose Target is missing or not an <see cref="EnvironmentVariableTarget"/> name, so a validated one always resolves; an unvalidated
-    /// one (empty, unknown, or a number that names no target) answers a failure, never a throw and never Process.
+    /// Identifies the <see cref="EnvironmentVariableTargets"/> option <see cref="Target"/> names (FDW-4144). Target is the caller's choice, with no
+    /// default (FDW-3823): the validator refuses a configuration whose Target is missing or names no option, so a validated one is always
+    /// identified; an unvalidated one (empty or unknown) answers a failure, never a throw and never Process.
     /// </summary>
-    /// <returns>The target, or a failure naming the value.</returns>
-    public IGenericResult<EnvironmentVariableTarget> ResolveTarget()
-        => Enum.TryParse<EnvironmentVariableTarget>(Target, ignoreCase: true, out var target) && Enum.IsDefined(target)
-            ? GenericResult<EnvironmentVariableTarget>.Success(target)
-            : GenericResult<EnvironmentVariableTarget>.Failure(EnvironmentVariableLogger.TargetInvalid(_logger, Target));
+    /// <returns>The target option, or a failure naming the value.</returns>
+    public IGenericResult<IEnvironmentVariableTarget> IdentifyTarget()
+    {
+        var target = EnvironmentVariableTargets.ByName(Target);
+        return ReferenceEquals(target, EnvironmentVariableTargets.NotFound)
+            ? GenericResult<IEnvironmentVariableTarget>.Failure(EnvironmentVariableLogger.TargetInvalid(_logger, Target))
+            : GenericResult<IEnvironmentVariableTarget>.Success(target);
+    }
 
     #endregion
 

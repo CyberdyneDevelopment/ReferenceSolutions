@@ -53,14 +53,13 @@ public sealed class EnvironmentVariableListSecretsHandler
         }
 
         var secrets = new List<ISecretMetadata>();
-        var target = config.ResolveTarget();
-        if (target.IsFailure)
+        var target = config.IdentifyTarget();
+        if (target.IsFailure || target.Value is not { } option)
         {
             return Task.FromResult(target.ToNewResult<IReadOnlyList<ISecretMetadata>>());
         }
 
-        var targetEnum = target.Value;
-        var environmentVariables = Environment.GetEnvironmentVariables(targetEnum);
+        var environmentVariables = Environment.GetEnvironmentVariables(option.SystemTarget);
 
         foreach (DictionaryEntry entry in environmentVariables)
         {
@@ -82,7 +81,7 @@ public sealed class EnvironmentVariableListSecretsHandler
             secrets.Add(new EnvironmentVariableSecretMetadata(
                 key: displayKey,
                 environmentVariableName: key,
-                target: targetEnum));
+                target: option));
 
             if (secrets.Count >= maxResults)
             {

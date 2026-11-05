@@ -202,6 +202,12 @@
     </Project>
     <Project Path="tests/connections/FdwReferenceConnections.Http.Tests/FdwReferenceConnections.Http.Tests.csproj" />
     <Project Path="tests/connections/FdwReferenceConnections.MsSql.Tests/FdwReferenceConnections.MsSql.Tests.csproj" />
+    <Project Path="tests/connections/FdwReferenceConnections.PostgreSql.Tests/FdwReferenceConnections.PostgreSql.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
     <Project Path="tests/connections/FdwReferenceConnections.Script.Tests/FdwReferenceConnections.Script.Tests.csproj">
       <BuildType Solution="Debug-Local|*" Project="Debug" />
       <BuildType Solution="Develop-Local|*" Project="Debug" />
@@ -291,6 +297,15 @@
       <BuildType Solution="Release-Local|*" Project="Debug" />
     </Project>
     <Project Path="tests/notifications/FdwReferenceNotifications.Webhook.Tests/FdwReferenceNotifications.Webhook.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/observability/" />
+  <Folder Name="/tests/observability/telemetry/">
+    <Project Path="tests/observability/telemetry/FdwReferenceLogging.Serilog.Tests/FdwReferenceLogging.Serilog.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
   </Folder>
   <Folder Name="/tests/pipelines/">
     <Project Path="tests/pipelines/FdwReferenceEtl.Endpoints.Tests/FdwReferenceEtl.Endpoints.Tests.csproj">

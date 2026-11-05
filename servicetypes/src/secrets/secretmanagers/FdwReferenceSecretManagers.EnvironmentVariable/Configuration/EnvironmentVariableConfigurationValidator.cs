@@ -1,5 +1,6 @@
 using System;
 using FluentValidation;
+using FdwReferenceSecretManagers.EnvironmentVariable.Targets;
 
 namespace FdwReferenceSecretManagers.EnvironmentVariable.Configuration;
 
@@ -26,7 +27,7 @@ public sealed class EnvironmentVariableConfigurationValidator : AbstractValidato
         RuleFor(x => x.Target)
             .NotEmpty()
             .WithMessage("Target is required: Process, User or Machine.")
-            .Must(target => Enum.TryParse<EnvironmentVariableTarget>(target, ignoreCase: true, out _))
+            .Must(target => !ReferenceEquals(EnvironmentVariableTargets.ByName(target), EnvironmentVariableTargets.NotFound))
             .WithMessage("Target must be Process, User or Machine.");
 
         // Prefix is required - no silent fallback to looking up raw secret keys

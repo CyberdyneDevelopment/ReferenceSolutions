@@ -5,6 +5,7 @@ using Fdw.Results;
 using Fdw.Services;
 using Fdw.Services.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
+using FdwReferenceSerilog.Levels;
 using FdwReferenceLogging.Serilog.Logging;
 using Serilog;
 using Serilog.Events;
@@ -38,7 +39,8 @@ public sealed class SerilogLoggingFactory
 
         // Why parsed and not defaulted: an unrecognised level is a configuration error. Falling back
         // to Information would silently run production at the wrong verbosity.
-        if (!Enum.TryParse<LogEventLevel>(configuration.MinimumLevel, ignoreCase: true, out var level))
+        var level = SerilogLevels.ByName(configuration.MinimumLevel);
+        if (ReferenceEquals(level, SerilogLevels.NotFound))
         {
             return Failed(SerilogLoggingFactoryLogger.MinimumLevelNotRecognised(
                 _logger, configuration.Name, configuration.MinimumLevel));
@@ -46,17 +48,18 @@ public sealed class SerilogLoggingFactory
 
         _ = SerilogLoggingFactoryLogger.BuildingPipeline(_logger, configuration.Name);
 
-        var settings = new LoggerConfiguration().MinimumLevel.Is(level);
+        var settings = new LoggerConfiguration().MinimumLevel.Is(level.SerilogLevel);
 
         foreach (var levelOverride in configuration.Overrides)
         {
-            if (!Enum.TryParse<LogEventLevel>(levelOverride.Level, ignoreCase: true, out var overrideLevel))
+            var overrideLevel = SerilogLevels.ByName(levelOverride.Level);
+            if (ReferenceEquals(overrideLevel, SerilogLevels.NotFound))
             {
                 return Failed(SerilogLoggingFactoryLogger.OverrideLevelNotRecognised(
                     _logger, configuration.Name, levelOverride.SourceContext, levelOverride.Level));
             }
 
-            settings = settings.MinimumLevel.Override(levelOverride.SourceContext, overrideLevel);
+            settings = settings.MinimumLevel.Override(levelOverride.SourceContext, overrideLevel.SerilogLevel);
         }
 
         settings = ApplyEnrichers(settings, configuration);

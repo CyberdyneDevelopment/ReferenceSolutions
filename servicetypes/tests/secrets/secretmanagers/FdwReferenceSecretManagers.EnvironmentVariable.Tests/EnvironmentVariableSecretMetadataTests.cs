@@ -1,4 +1,5 @@
 using FdwReferenceSecretManagers.EnvironmentVariable.Services;
+using FdwReferenceSecretManagers.EnvironmentVariable.Targets;
 
 namespace FdwReferenceSecretManagers.EnvironmentVariable.Tests;
 
@@ -14,7 +15,7 @@ public class EnvironmentVariableSecretMetadataTests
     public void ConstructorNullKeyThrowsArgumentNullException()
     {
         // Act
-        var act = () => new EnvironmentVariableSecretMetadata(null!, "VAR", EnvironmentVariableTarget.Process);
+        var act = () => new EnvironmentVariableSecretMetadata(null!, "VAR", new ProcessTarget());
 
         // Assert
         Should.Throw<ArgumentNullException>(act);
@@ -26,7 +27,7 @@ public class EnvironmentVariableSecretMetadataTests
     public void ConstructorNullEnvironmentVariableNameThrowsArgumentNullException()
     {
         // Act
-        var act = () => new EnvironmentVariableSecretMetadata("key", null!, EnvironmentVariableTarget.Process);
+        var act = () => new EnvironmentVariableSecretMetadata("key", null!, new ProcessTarget());
 
         // Assert
         Should.Throw<ArgumentNullException>(act);
@@ -38,11 +39,11 @@ public class EnvironmentVariableSecretMetadataTests
     public void PropertiesReflectEnvironmentVariableLimitations()
     {
         // Arrange
-        var metadata = new EnvironmentVariableSecretMetadata("KEY", "PREFIX_KEY", EnvironmentVariableTarget.Process);
+        var metadata = new EnvironmentVariableSecretMetadata("KEY", "PREFIX_KEY", new ProcessTarget());
 
         // Assert
         metadata.Key.ShouldBe("KEY");
-        metadata.Container.ShouldBe(nameof(EnvironmentVariableTarget.Process));
+        metadata.Container.ShouldBe("Process");
         metadata.Version.ShouldBeNull();
         metadata.CreatedAt.ShouldBeNull();
         metadata.ModifiedAt.ShouldBeNull();
@@ -64,7 +65,7 @@ public class EnvironmentVariableSecretMetadataTests
     public void PropertiesDictionaryContainsEnvironmentVariableNameAndTarget()
     {
         // Arrange
-        var metadata = new EnvironmentVariableSecretMetadata("KEY", "PREFIX_KEY", EnvironmentVariableTarget.User);
+        var metadata = new EnvironmentVariableSecretMetadata("KEY", "PREFIX_KEY", new UserTarget());
 
         // Act
         var properties = metadata.Properties;
@@ -81,7 +82,7 @@ public class EnvironmentVariableSecretMetadataTests
     {
         // Arrange
         var variableName = $"FDWTEST_{Guid.NewGuid():N}";
-        var metadata = new EnvironmentVariableSecretMetadata("KEY", variableName, EnvironmentVariableTarget.Process);
+        var metadata = new EnvironmentVariableSecretMetadata("KEY", variableName, new ProcessTarget());
 
         // Act
         var size = metadata.SizeInBytes;
@@ -100,7 +101,7 @@ public class EnvironmentVariableSecretMetadataTests
         Environment.SetEnvironmentVariable(variableName, "hello", EnvironmentVariableTarget.Process);
         try
         {
-            var metadata = new EnvironmentVariableSecretMetadata("KEY", variableName, EnvironmentVariableTarget.Process);
+            var metadata = new EnvironmentVariableSecretMetadata("KEY", variableName, new ProcessTarget());
 
             // Act
             var size = metadata.SizeInBytes;

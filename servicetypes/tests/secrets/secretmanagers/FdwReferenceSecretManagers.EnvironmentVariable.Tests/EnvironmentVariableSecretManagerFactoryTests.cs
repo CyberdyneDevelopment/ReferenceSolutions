@@ -20,7 +20,7 @@ public class EnvironmentVariableSecretManagerFactoryTests
         Id = Guid.NewGuid(),
         Prefix = "FDW_SECRET_",
         Separator = "__",
-        Target = nameof(EnvironmentVariableTarget.Process),
+        Target = "Process",
     };
 
     private static ILoggerFactory MakeLoggerFactory()

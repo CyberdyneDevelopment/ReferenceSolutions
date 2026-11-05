@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using global::Serilog;
 using global::Serilog.Extensions.Hosting;
+using FdwReferenceSerilog.Levels;
 namespace FdwReferenceLogging.Serilog.Registration;
 
 /// <summary>
@@ -126,8 +127,8 @@ public sealed class SerilogLoggingType
                         FormattableString.Invariant(
                             $"the '{DomainName}' row is a {row.Value.GetType().Name}, not a {nameof(SerilogLoggingConfiguration)}")));
 
-            if (!Enum.TryParse<global::Serilog.Events.LogEventLevel>(
-                    serilogRow.MinimumLevel, ignoreCase: true, out var level))
+            var level = SerilogLevels.ByName(serilogRow.MinimumLevel);
+            if (ReferenceEquals(level, SerilogLevels.NotFound))
                 return GenericResult<IHost>.Failure(
                     SerilogLoggingLog.LoggerNotBuiltFromRow(
                         log, DomainName,
@@ -137,15 +138,15 @@ public sealed class SerilogLoggingType
 
             foreach (var levelOverride in serilogRow.Overrides)
             {
-                if (!Enum.TryParse<global::Serilog.Events.LogEventLevel>(
-                        levelOverride.Level, ignoreCase: true, out var overrideLevel))
+                var overrideLevel = SerilogLevels.ByName(levelOverride.Level);
+                if (ReferenceEquals(overrideLevel, SerilogLevels.NotFound))
                     return GenericResult<IHost>.Failure(
                         SerilogLoggingLog.LoggerNotBuiltFromRow(
                             log, DomainName,
                             FormattableString.Invariant(
                                 $"override level '{levelOverride.Level}' for '{levelOverride.SourceContext}' is not a Serilog level")));
 
-                overrides.Add((levelOverride.SourceContext, overrideLevel));
+                overrides.Add((levelOverride.SourceContext, overrideLevel.SerilogLevel));
             }
 
             if (global::Serilog.Log.Logger is not ReloadableLogger bootstrap)
@@ -158,7 +159,7 @@ public sealed class SerilogLoggingType
             // bootstrap logger -- the host's startup LoggerFactory hands it to every registration
             // body -- is redirected to the configured pipeline, not just the ones made from now on.
             // Freeze then fixes the pipeline so those loggers stop paying for the indirection.
-            bootstrap.Reload(settings => ConfiguredPipeline(settings, level, overrides, serilogRow));
+            bootstrap.Reload(settings => ConfiguredPipeline(settings, level.SerilogLevel, overrides, serilogRow));
             bootstrap.Freeze();
 
             return GenericResult<IHost>.Success(host);

@@ -53,13 +53,13 @@ public sealed class EnvironmentVariableGetSecretHandler
         var config = envContext.EnvironmentVariableConfiguration;
         var variableName = GetEnvironmentVariableName(command.SecretKey, config);
         EnvironmentVariableLogger.TraceSecretKeyLookup(envContext.Logger, command.SecretKey, variableName);
-        var target = config.ResolveTarget();
-        if (target.IsFailure)
+        var target = config.IdentifyTarget();
+        if (target.IsFailure || target.Value is not { } option)
         {
             return Task.FromResult(target.ToNewResult<SecretValue>());
         }
 
-        var value = Environment.GetEnvironmentVariable(variableName, target.Value);
+        var value = Environment.GetEnvironmentVariable(variableName, option.SystemTarget);
 
         if (value == null)
         {
