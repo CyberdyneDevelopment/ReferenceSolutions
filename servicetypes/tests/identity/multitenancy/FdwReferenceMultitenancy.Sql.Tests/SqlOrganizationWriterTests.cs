@@ -31,14 +31,15 @@ public sealed class SqlOrganizationWriterTests
     }
 
     private static (SqlOrganizationWriter Writer, Mock<IConfigurationGateway> Gateway) Writer(
-        bool tenantExists = true, string[]? existingSlugs = null, Func<int, int>? writeRows = null)
+        bool tenantExists = true, string[]? existingSlugs = null, Func<int, int>? writeRows = null, bool tenantHasDefault = false)
     {
         var written = 0;
         var gateway = new Mock<IConfigurationGateway>();
         gateway.Setup(g => g.Execute<IEnumerable<SqlTenantRow>>(It.IsAny<IDataCommand>(), It.IsAny<DataStoreTarget>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IEnumerable<SqlTenantRow>>.Success(tenantExists ? [new SqlTenantRow { RowId = 3, Id = Tenant }] : []));
         gateway.Setup(g => g.Execute<IEnumerable<SqlOrganizationEntity>>(It.IsAny<IDataCommand>(), It.IsAny<DataStoreTarget>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(GenericResult<IEnumerable<SqlOrganizationEntity>>.Success([.. (existingSlugs ?? []).Select(slug => new SqlOrganizationEntity { Slug = slug })]));
+            .ReturnsAsync(GenericResult<IEnumerable<SqlOrganizationEntity>>.Success(
+                [.. (existingSlugs ?? []).Select(slug => new SqlOrganizationEntity { Slug = slug, IsDefault = tenantHasDefault && slug == "default" })]));
         gateway.Setup(g => g.Execute<IEnumerable<SqlOrganizationRow>>(It.IsAny<IDataCommand>(), It.IsAny<DataStoreTarget>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IEnumerable<SqlOrganizationRow>>.Success([new SqlOrganizationRow { RowId = 7, Id = Legal }]));
         gateway.Setup(g => g.Execute<int>(It.IsAny<IDataCommand>(), It.IsAny<DataStoreTarget>(), It.IsAny<CancellationToken>()))
@@ -66,6 +67,30 @@ public sealed class SqlOrganizationWriterTests
         made.IsSuccess.ShouldBeTrue();
         made.Value.ShouldNotBe(Guid.Empty);
         Writes(gateway, Times.Exactly(2));
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    public async Task ADefaultOrganizationIsMadeForATenantThatHasNone()
+    {
+        var (writer, gateway) = Writer(existingSlugs: []);
+
+        var made = await writer.Create(new NewOrganization(Tenant, "Default Organization", "default", IsDefault: true), TestContext.Current.CancellationToken);
+
+        made.IsSuccess.ShouldBeTrue();
+        Writes(gateway, Times.Exactly(2));
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    public async Task ASecondDefaultOrganizationForATenantMakesNothing()
+    {
+        var (writer, gateway) = Writer(existingSlugs: ["default"], tenantHasDefault: true);
+
+        var made = await writer.Create(new NewOrganization(Tenant, "Other Default", "other", IsDefault: true), TestContext.Current.CancellationToken);
+
+        made.IsFailure.ShouldBeTrue();
+        Writes(gateway, Times.Never());
     }
 
     [Theory]

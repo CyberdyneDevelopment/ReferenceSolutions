@@ -4,7 +4,9 @@ using System;
 using System.Threading.Tasks;
 using Fdw.Results;
 using Fdw.Services.Notifications.Configuration;
+using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Notifications.Endpoints;
+using Fdw.Services.Settings;
 using Fdw.Web.RestEndpoints.Crud;
 using Microsoft.Extensions.Logging;
 
@@ -24,14 +26,17 @@ public class CreateNotificationRuleEndpoint
     private const string RuleImplementation = "NotificationRule";
 
     private readonly INotificationRuleConfigurationProvider _provider;
+    private readonly Lazy<IEffectiveSettingsProvider> _settings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateNotificationRuleEndpoint"/> class.
     /// </summary>
-    public CreateNotificationRuleEndpoint(ILogger<CreateNotificationRuleEndpoint> logger, INotificationRuleConfigurationProvider provider)
+    public CreateNotificationRuleEndpoint(
+        ILogger<CreateNotificationRuleEndpoint> logger, INotificationRuleConfigurationProvider provider, Lazy<IEffectiveSettingsProvider> settings)
         : base(logger)
     {
         _provider = provider;
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
 
     /// <inheritdoc />
@@ -61,12 +66,30 @@ public class CreateNotificationRuleEndpoint
         CreateNotificationRuleRequest request,
         CancellationToken ct)
     {
+        // What the request leaves out takes the caller's tenant's setting (FDW-3580): "make it configurable ... in configuration and not hardcoded".
+        var tenantId = new ClaimsPrincipalAuthenticationContext(User).ActiveTenantId;
+        var enabled = InstanceDefault.Resolve(
+            request.IsEnabled, _settings, DefaultValueSettings.DefaultNotificationRuleIsEnabled, tenantId, "notification rule", request.Name, "IsEnabled", Logger);
+        if (enabled.IsFailure)
+        {
+            return enabled.ToNewResult<NotificationRuleSummaryDto>();
+        }
+
+        var conditionOperator = InstanceDefault.ResolveText(
+            request.ConditionOperator, _settings, DefaultValueSettings.DefaultNotificationRuleConditionOperator, tenantId, "notification rule", request.Name,
+            "ConditionOperator", Logger);
+        if (conditionOperator.IsFailure || conditionOperator.Value is not { } combine)
+        {
+            return GenericResult<NotificationRuleSummaryDto>.Failure(conditionOperator.NoValueReason());
+        }
+
         // Why: Do not set Id/CreatedAt — Save assigns identity for new records (Id == default signals INSERT).
         var config = new NotificationRuleImplementationConfiguration
         {
             Name = request.Name,
             Description = request.Description,
-            IsEnabled = request.IsEnabled,
+            IsEnabled = enabled.Value,
+            ConditionOperator = combine,
             ScheduleId = request.ScheduleId,
             PipelineId = request.PipelineId,
             WorkflowId = request.WorkflowId,

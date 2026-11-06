@@ -1,4 +1,3 @@
-using System.Linq;
 using FdwReferenceNotifications.Endpoints;
 using Shouldly;
 using Xunit;
@@ -6,8 +5,8 @@ using Xunit;
 namespace FdwReferenceMessaging.Endpoints.Tests;
 
 /// <summary>
-/// A notification is created enabled or disabled because the caller said so (FDW-1180): the request states
-/// <c>IsEnabled</c>, and one that leaves it out is refused with the reason.
+/// A notification is created enabled or disabled as the caller says (FDW-1180); one that leaves <c>IsEnabled</c> out takes the caller's
+/// tenant's setting DefaultNotificationChannelIsEnabled when it is made, so the validator does not refuse it (FDW-3580).
 /// </summary>
 public class CreateNotificationRequestValidatorTests
 {
@@ -22,11 +21,9 @@ public class CreateNotificationRequestValidatorTests
     }
 
     [Fact]
-    public void ALeftOutIsEnabledIsRefusedWithTheReason()
+    public void ALeftOutIsEnabledIsAcceptedForItsSettingToGive()
     {
-        var errors = Validator.Validate(Request(null)).Errors.Where(e => e.PropertyName == nameof(CreateNotificationRequest.IsEnabled)).ToList();
-
-        errors.ShouldHaveSingleItem().ErrorMessage.ShouldContain("IsEnabled is required");
+        Validator.Validate(Request(null)).Errors.ShouldNotContain(e => e.PropertyName == nameof(CreateNotificationRequest.IsEnabled));
     }
 
     [Fact]

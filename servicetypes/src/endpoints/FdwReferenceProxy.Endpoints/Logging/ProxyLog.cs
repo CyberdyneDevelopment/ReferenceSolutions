@@ -28,10 +28,4 @@ public static partial class ProxyLog
     // job, not a failure in itself. NOTE: zero call sites found (dead declaration) — flagged, not removed.
     [MessageLogging(EventId = 1903, Level = LogLevel.Warning, Message = "Proxy circuit breaker open for {service}")]
     public static partial IGenericMessage ProxyCircuitBreakerOpen(ILogger logger, string service);
-
-    [MessageLogging(EventId = 1904, Level = LogLevel.Information, Message = "ETL webhook received: execution {executionId} status {status}")]
-    public static partial IGenericMessage EtlWebhookReceived(ILogger logger, string executionId, string status);
-
-    [MessageLogging(EventId = 1905, Level = LogLevel.Warning, Message = "ETL webhook received for unknown execution {executionId}")]
-    public static partial IGenericMessage EtlWebhookUnknownExecution(ILogger logger, string executionId);
 }

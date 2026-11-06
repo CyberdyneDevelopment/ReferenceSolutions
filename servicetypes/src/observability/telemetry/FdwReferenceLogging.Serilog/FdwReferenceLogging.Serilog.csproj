@@ -22,6 +22,7 @@
     <PackageReference Include="Fdw.Services.Connections.Abstractions" />
     <PackageReference Include="Fdw.Services.Logging" />
     <PackageReference Include="Fdw.Services.Logging.Abstractions" />
+    <PackageReference Include="Fdw.Validation" />
   </ItemGroup>
 
   <ItemGroup>

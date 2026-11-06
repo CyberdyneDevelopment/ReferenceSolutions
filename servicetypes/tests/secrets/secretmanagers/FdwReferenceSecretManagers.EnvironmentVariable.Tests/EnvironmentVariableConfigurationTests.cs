@@ -1,10 +1,11 @@
 using FdwReferenceSecretManagers.EnvironmentVariable.Configuration;
+using FdwReferenceSecretManagers.EnvironmentVariable.Targets;
 
 namespace FdwReferenceSecretManagers.EnvironmentVariable.Tests;
 
 /// <summary>
-/// Tests for <see cref="EnvironmentVariableConfiguration"/>: <see cref="EnvironmentVariableConfiguration.TargetEnum"/>
-/// parsing, the <see cref="EnvironmentVariableConfiguration.Properties"/> projection, and
+/// Tests for <see cref="EnvironmentVariableConfiguration"/>: <see cref="EnvironmentVariableConfiguration.IdentifyTarget"/>
+/// (the <see cref="EnvironmentVariableTargets"/> option a Target names, FDW-4144), the <see cref="EnvironmentVariableConfiguration.Properties"/> projection, and
 /// <see cref="EnvironmentVariableConfiguration.Validate"/> delegating to the validator.
 /// </summary>
 public class EnvironmentVariableConfigurationTests
@@ -12,31 +13,39 @@ public class EnvironmentVariableConfigurationTests
     [Fact]
     [Trait("Priority", "P2")]
     [Trait("Category", "Configuration")]
-    public void TargetEnumValidStringParsesToEnumValue()
+    public void IdentifyTargetOfAnOptionNameAnswersThatOption()
     {
         // Arrange
-        var config = new EnvironmentVariableConfiguration { Target = nameof(EnvironmentVariableTarget.Machine) };
+        var config = new EnvironmentVariableConfiguration { Target = "Machine" };
 
         // Act
-        var target = config.TargetEnum;
+        var target = config.IdentifyTarget();
 
         // Assert
-        target.ShouldBe(EnvironmentVariableTarget.Machine);
+        target.IsSuccess.ShouldBeTrue();
+        var option = target.Value.ShouldNotBeNull();
+        option.Name.ShouldBe("Machine");
+        option.SystemTarget.ShouldBe(EnvironmentVariableTarget.Machine);
     }
 
-    [Fact]
+    [Theory]
+    [InlineData("")]
+    [InlineData("NotARealTarget")]
+    [InlineData("42")]
+    [InlineData("process")]
     [Trait("Priority", "P2")]
     [Trait("Category", "Configuration")]
-    public void TargetEnumInvalidStringFallsBackToProcess()
+    public void IdentifyTargetOfAValueThatNamesNoOptionAnswersAFailureAndNeverThrows(string value)
     {
-        // Arrange
-        var config = new EnvironmentVariableConfiguration { Target = "NotARealTarget" };
+        // Arrange - the target is the caller's choice (FDW-3823): a value that names no option (names match exactly, so "process" is none)
+        // is refused, not read as Process, and not thrown.
+        var config = new EnvironmentVariableConfiguration { Target = value };
 
         // Act
-        var target = config.TargetEnum;
+        var target = config.IdentifyTarget();
 
         // Assert
-        target.ShouldBe(EnvironmentVariableTarget.Process);
+        target.IsFailure.ShouldBeTrue();
     }
 
     [Fact]
@@ -45,7 +54,7 @@ public class EnvironmentVariableConfigurationTests
     public void PropertiesIncludesPrefixWhenSet()
     {
         // Arrange
-        var config = new EnvironmentVariableConfiguration { Prefix = "FDW_SECRET_" };
+        var config = new EnvironmentVariableConfiguration { Prefix = "FDW_SECRET_", StripPrefix = true };
 
         // Act
         var properties = config.Properties;
@@ -77,7 +86,7 @@ public class EnvironmentVariableConfigurationTests
     public void ValidateValidConfigurationReturnsSuccess()
     {
         // Arrange
-        var config = new EnvironmentVariableConfiguration { Prefix = "FDW_SECRET_", Separator = "__" };
+        var config = new EnvironmentVariableConfiguration { Prefix = "FDW_SECRET_", Separator = "__", Target = "Process" };
 
         // Act
         var result = config.Validate();

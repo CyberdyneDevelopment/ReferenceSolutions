@@ -21,6 +21,7 @@
     <PackageReference Include="Fdw.Services.Multitenancy" />
     <PackageReference Include="Fdw.SignalR" />
     <PackageReference Include="Fdw.UI.Themes" />
+    <PackageReference Include="Fdw.Validation" />
     <PackageReference Include="Fdw.Web.Http.Authentication" />
     <PackageReference Include="Fdw.Web.RestEndpoints" />
     <PackageReference Include="Fdw.Services.Abstractions" />

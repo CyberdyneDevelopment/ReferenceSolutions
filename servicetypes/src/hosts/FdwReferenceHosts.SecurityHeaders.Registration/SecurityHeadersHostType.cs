@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using Fdw.Collections;
 using Fdw.Results;
+using Fdw.ServiceTypes;
 using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Hosts;
 using Microsoft.AspNetCore.Builder;
@@ -33,6 +35,18 @@ public sealed class SecurityHeadersHostType
     /// <summary>Gets where this middleware sits in the pipeline.</summary>
     /// <remarks>Why 30: headers are set on the way out, so the middleware goes on early.</remarks>
     public override int PipelinePosition => 30;
+
+    // The paths whose responses are marked sensitive. A tuning default declared here, where the registration can change it, not in the options
+    // class (FDW-3823); the middleware reads it through ServiceTypeDefaults.
+    private IReadOnlyDictionary<string, object>? _declared;
+
+    // The paths whose responses are never cached, declared once (CA1861).
+    private static readonly string[] DeclaredSensitivePaths = ["/api/v1/auth", "/api/v1/users", "/api/v1/tenants"];
+
+    /// <inheritdoc />
+    public override IReadOnlyDictionary<string, object> DeclaredDefaults => _declared ??= ServiceTypeDefaults.With(
+        base.DeclaredDefaults,
+        (nameof(FdwReferenceHost.Configuration.SecurityHeadersOptions.SensitivePaths), DeclaredSensitivePaths));
 
     /// <summary>Initializes a new instance of the <see cref="SecurityHeadersHostType"/> class.</summary>
     public SecurityHeadersHostType()
@@ -76,11 +90,19 @@ public sealed class SecurityHeadersHostType
             }
 
             var configuration = Read(host, Name);
+            if (!ServiceTypeDefaults.TryResolve(this, nameof(FdwReferenceHost.Configuration.SecurityHeadersOptions.SensitivePaths), out var declared)
+                || declared is not string[] sensitivePaths)
+            {
+                throw new InvalidOperationException(
+                    $"The SecurityHeaders host type '{Name}' has no sensitive paths: neither the registration nor the type declares them.");
+            }
+
             app.UseMiddleware<SecurityHeadersMiddleware>(
                 new FdwReferenceHost.Configuration.SecurityHeadersOptions
                 {
                     AllowFraming = configuration.AllowFraming,
                     EnableDefaultCsp = configuration.EnableDefaultCsp,
+                    SensitivePaths = sensitivePaths,
                 });
 
             return GenericResult<IHost>.Success(host);

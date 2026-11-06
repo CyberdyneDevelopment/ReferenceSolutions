@@ -228,6 +228,11 @@ public sealed class MsSqlBulkRouteTests
         var factory = new MsSqlConnectionFactory(NullLogger<MsSqlConnectionFactory>.Instance, NullLogger<MsSqlConnection>.Instance);
         var configuration = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             Name = "Main",
             Server = "localhost",
             Database = "TestDb",

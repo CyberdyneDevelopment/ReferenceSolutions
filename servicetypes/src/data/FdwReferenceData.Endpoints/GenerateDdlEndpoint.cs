@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -28,6 +29,24 @@ public sealed class GenerateDdlRequest
 
     /// <summary>Gets or sets optional schema filter.</summary>
     public string? SchemaFilter { get; set; }
+
+    /// <summary>Gets or sets the schemas a discovery leaves out; an empty list leaves out none. Required (FDW-3823).</summary>
+    public IList<string>? ExcludedSchemas { get; set; }
+
+    /// <summary>Gets or sets the only schemas a discovery reads; null reads every schema not left out.</summary>
+    public IList<string>? IncludeOnlySchemas { get; set; }
+
+    /// <summary>Gets or sets whether a discovery reads views. Required (FDW-3823).</summary>
+    public bool? DiscoverViews { get; set; }
+
+    /// <summary>Gets or sets whether a discovery reads indexes. Required (FDW-3823).</summary>
+    public bool? DiscoverIndexes { get; set; }
+
+    /// <summary>Gets or sets whether a discovery reads foreign keys. Required (FDW-3823).</summary>
+    public bool? DiscoverForeignKeys { get; set; }
+
+    /// <summary>Gets or sets whether a discovery reads descriptions. Required (FDW-3823).</summary>
+    public bool? DiscoverDescriptions { get; set; }
 }
 
 /// <summary>
@@ -90,7 +109,18 @@ public sealed class GenerateDdlEndpoint : Endpoint<GenerateDdlRequest, GenerateD
 
         // The schema service runs the connection's chosen discovery option; when it cannot discover, its
         // failure names why and carries the status.
-        var discoveryResult = await _schema.DiscoverContainers(req.Name, DataStoreDiscoveryOptions.Default, ct).ConfigureAwait(false);
+        // The discovery's choices come from the request (FDW-3823); one left out is refused, naming it.
+        var discovery = DataStoreDiscoveryChoices.FromRequest(
+            req.ExcludedSchemas, req.IncludeOnlySchemas, req.DiscoverViews, req.DiscoverIndexes, req.DiscoverForeignKeys,
+            req.DiscoverDescriptions, req.Name, _logger);
+        if (discovery.IsFailure)
+        {
+            var (choiceStatus, choiceProblem) = ResultHttpStatusMapper.Map(discovery, HttpContext);
+            await Send.ResultAsync(TypedResults.Json(choiceProblem, statusCode: choiceStatus)).ConfigureAwait(false);
+            return;
+        }
+
+        var discoveryResult = await _schema.DiscoverContainers(req.Name, discovery.Value!, ct).ConfigureAwait(false);
         if (discoveryResult.IsFailure || discoveryResult.Value is not { } containers)
         {
             var (statusCode, problem) = ResultHttpStatusMapper.Map(discoveryResult, HttpContext);

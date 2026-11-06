@@ -24,7 +24,7 @@ public interface IPostgreSqlSchemaDiscoverer
     /// <returns>A result containing the discovered schema, or failure information.</returns>
     Task<IGenericResult<SchemaDiscoveryResult>> DiscoverSchema(
         PostgreSqlConnection connection,
-        SchemaDiscoveryOptions? options,
+        SchemaDiscoveryOptions options,
         CancellationToken cancellationToken);
 
     /// <summary>

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +8,9 @@ using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Data.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using FdwReferenceDdl.Endpoints.ColumnTypes;
 using FdwReferenceDdl.Endpoints.Logging;
+using Fdw.Results;
 
 namespace FdwReferenceDdl.Endpoints;
 
@@ -144,10 +145,20 @@ public sealed class ExecuteDdlEndpoint : Endpoint<ExecuteDdlRequest, ExecuteDdlR
 
             foreach (var col in req.Columns)
             {
-                var sqlDbType = ParseSqlDbType(col.SqlType);
+                // FDW-4153: the column's type is one of the SqlColumnTypes options; a type that is none of them is refused, never taken as
+                // NVARCHAR.
+                var columnType = SqlColumnTypes.Named(col.SqlType);
+                if (ReferenceEquals(columnType, SqlColumnTypes.NotFound))
+                {
+                    DdlLog.ColumnTypeUnknown(_logger, req.Name, col.Name, col.SqlType);
+                    AddError($"Column '{col.Name}' names SQL type '{col.SqlType}', which is no known column type");
+                    await Send.ErrorsAsync(400, ct);
+                    return;
+                }
+
                 command.WithColumn(
                     col.Name,
-                    sqlDbType,
+                    columnType.DbType,
                     maxLength: col.MaxLength,
                     isRequired: col.IsRequired,
                     isPrimaryKey: col.IsPrimaryKey,
@@ -167,11 +178,11 @@ public sealed class ExecuteDdlEndpoint : Endpoint<ExecuteDdlRequest, ExecuteDdlR
             }
             else
             {
-                DdlLog.DdlExecutionFailed(_logger, req.Name, result.CurrentMessage ?? "Unknown error");
+                DdlLog.DdlExecutionFailed(_logger, req.Name, result.FailureReason().Message);
                 await Send.ResponseAsync(new ExecuteDdlResponse
                 {
                     Success = false,
-                    Message = result.CurrentMessage ?? "DDL execution failed"
+                    Message = result.FailureReason().Message
                 }, 500, ct);
             }
         }
@@ -184,38 +195,5 @@ public sealed class ExecuteDdlEndpoint : Endpoint<ExecuteDdlRequest, ExecuteDdlR
                 Message = "An internal error occurred during DDL execution."
             }, 500, ct);
         }
-    }
-
-    private static SqlDbType ParseSqlDbType(string typeName)
-    {
-        if (Enum.TryParse<SqlDbType>(typeName, ignoreCase: true, out var result))
-        {
-            return result;
-        }
-
-        return typeName.ToUpperInvariant() switch
-        {
-            "INT" or "INTEGER" => SqlDbType.Int,
-            "BIGINT" or "LONG" => SqlDbType.BigInt,
-            "SMALLINT" or "SHORT" => SqlDbType.SmallInt,
-            "TINYINT" or "BYTE" => SqlDbType.TinyInt,
-            "BIT" or "BOOLEAN" or "BOOL" => SqlDbType.Bit,
-            "NVARCHAR" or "STRING" or "TEXT" => SqlDbType.NVarChar,
-            "VARCHAR" => SqlDbType.VarChar,
-            "NCHAR" => SqlDbType.NChar,
-            "CHAR" => SqlDbType.Char,
-            "DATETIME" => SqlDbType.DateTime,
-            "DATETIME2" => SqlDbType.DateTime2,
-            "DATE" => SqlDbType.Date,
-            "TIME" => SqlDbType.Time,
-            "DATETIMEOFFSET" => SqlDbType.DateTimeOffset,
-            "DECIMAL" or "NUMERIC" => SqlDbType.Decimal,
-            "FLOAT" or "DOUBLE" => SqlDbType.Float,
-            "REAL" => SqlDbType.Real,
-            "UNIQUEIDENTIFIER" or "GUID" => SqlDbType.UniqueIdentifier,
-            "VARBINARY" or "BINARY" => SqlDbType.VarBinary,
-            "XML" => SqlDbType.Xml,
-            _ => SqlDbType.NVarChar
-        };
     }
 }

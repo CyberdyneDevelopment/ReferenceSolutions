@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Fdw.Services.Notifications.Abstractions;
 using Fdw.Services.Notifications.Endpoints;
 using Microsoft.Extensions.Logging;
+using Fdw.Results;
 
 namespace FdwReferenceNotifications.Endpoints;
 
@@ -33,7 +34,7 @@ public class ListUserPreferencesEndpoint : ListUserPreferencesEndpointBase
         var result = await _preferenceService.GetPreferences(userId, ct).ConfigureAwait(false);
         if (!result.IsSuccess)
         {
-            throw new InvalidOperationException(result.CurrentMessage ?? "Failed to load notification preferences.");
+            throw new InvalidOperationException(result.FailureReason().Message);
         }
 
         return (result.Value ?? [])

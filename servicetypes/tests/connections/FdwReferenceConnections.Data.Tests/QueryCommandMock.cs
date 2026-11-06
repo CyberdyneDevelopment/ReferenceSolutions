@@ -3,11 +3,12 @@ using Fdw.Commands.Data.Abstractions;
 namespace Fdw.Services.Data.Tests;
 
 // Builds the loose IQueryCommand double the caching tests hand to the gateway. A loose Moq double returns null for
-// every member it is not told about, including the collection ones the real QueryCommand always answers (an empty
-// list), and CacheKeyBuilder.ComputeCacheKey reads Joins without a null check because the interface says it is never
-// null. Joins is the only non-nullable member the cache key reads (Filter, Ordering and Paging are nullable), so
-// stating it here is what makes the double honour the interface. One place, so a member the key starts reading
-// later is added once rather than in every test file.
+// every member it is not told about, including the ones the real QueryCommand always answers (its command type and
+// category, an empty list of joins), and CacheKeyBuilder.ComputeCacheKey writes every member that can change a read's
+// answer into the key (CacheKeyText, FDW-3620) without a null check where the interface says it is never null. The
+// non-nullable members it reads are CommandType, Category, Metadata and Joins (Filter, Ordering, Paging, Projection
+// and Aggregation are nullable, the flags are bools), so stating them here is what makes the double honour the
+// interface. One place, so a member the key starts reading later is added once rather than in every test file.
 internal static class QueryCommandMock
 {
     // Why IQueryCommand and not IDataCommand: the gateway caches READS, and a read is what IQueryCommand names. A
@@ -17,6 +18,7 @@ internal static class QueryCommandMock
     {
         var mock = new Mock<IQueryCommand>();
         mock.Setup(c => c.CommandType).Returns("Query");
+        mock.Setup(c => c.Category).Returns("Data");
         mock.Setup(c => c.Metadata).Returns(metadata);
         mock.Setup(c => c.Joins).Returns([]);
         return mock;

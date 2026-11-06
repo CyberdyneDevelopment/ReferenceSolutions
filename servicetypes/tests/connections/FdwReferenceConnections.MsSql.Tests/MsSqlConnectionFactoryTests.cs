@@ -59,8 +59,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -84,8 +90,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -111,8 +123,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "UnknownAuth"
@@ -135,8 +153,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = string.Empty
@@ -212,8 +236,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -236,8 +266,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "SqlAuth",
@@ -264,8 +300,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "UnknownType"
@@ -287,8 +329,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "myserver",
             InstanceName = "SQLEXPRESS",
             Database = "TestDb",
@@ -311,8 +359,13 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "myserver",
             Port = 1434,
             Database = "TestDb",
@@ -335,8 +388,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             TrustServerCertificate = true,
@@ -359,8 +418,13 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             EnableConnectionPooling = false,
@@ -383,8 +447,12 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             EnableConnectionPooling = true,
@@ -409,8 +477,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             EnableMultipleActiveResultSets = true,
@@ -433,8 +507,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             ApplicationName = "MyApp",
@@ -457,6 +537,11 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
             Server = "localhost",
@@ -481,8 +566,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth",
@@ -509,8 +600,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "SqlAuth",
@@ -537,8 +634,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -565,8 +668,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -605,8 +714,14 @@ public sealed class MsSqlConnectionFactoryTests
         var result = ((IServiceFactory)factory).Create<ISecretManager>(
             new MsSqlConnectionConfiguration
             {
+                Port = 1433,
+                Encrypt = true,
+                EnableConnectionPooling = true,
+                MaxPoolSize = 100,
+                DefaultSchema = "dbo",
                 MaxSerialInsert = 1000,
                 CommandTimeoutSeconds = 30,
+                ConnectionTimeoutSeconds = 15,
                 Server = "localhost",
                 Database = "TestDb",
                 AuthenticationType = "WindowsAuth"
@@ -626,8 +741,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -650,8 +771,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -674,8 +801,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "WindowsAuth"
@@ -698,6 +831,8 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
             Server = "myserver",
@@ -734,8 +869,13 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             Encrypt = true,
@@ -758,8 +898,14 @@ public sealed class MsSqlConnectionFactoryTests
 
         var config = new MsSqlConnectionConfiguration
         {
+            Port = 1433,
+            Encrypt = true,
+            EnableConnectionPooling = true,
+            MaxPoolSize = 100,
+            DefaultSchema = "dbo",
             MaxSerialInsert = 1000,
             CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
             Server = "localhost",
             Database = "TestDb",
             AuthenticationType = "NotARealAuthType"
@@ -768,5 +914,50 @@ public sealed class MsSqlConnectionFactoryTests
         var result = factory.Create(config, resolvedSecret: null);
 
         result.IsSuccess.ShouldBeFalse();
+    }
+
+    private static MsSqlConnectionConfiguration PoolingConfiguration(bool pooling, int minPoolSize, int maxPoolSize)
+        => new()
+        {
+            Name = "Pooled",
+            EnableConnectionPooling = pooling,
+            MinPoolSize = minPoolSize,
+            MaxPoolSize = maxPoolSize,
+            MaxSerialInsert = 1000,
+            CommandTimeoutSeconds = 30,
+            ConnectionTimeoutSeconds = 15,
+            Server = "localhost",
+            Database = "TestDb",
+            AuthenticationType = "WindowsAuth"
+        };
+
+    [Theory]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "DataIntegrity")]
+    [InlineData(0, 0)]
+    [InlineData(-1, 10)]
+    [InlineData(20, 10)]
+    public void APooledConnectionWithUnusablePoolSizesIsRefusedNamingThem(int minPoolSize, int maxPoolSize)
+    {
+        // FDW-4109: SqlConnectionStringBuilder throws on these; the factory refuses them with a structured failure instead.
+        var factory = new MsSqlConnectionFactory(_factoryLogger.Object, _connectionLogger.Object);
+
+        var result = factory.Create(PoolingConfiguration(true, minPoolSize, maxPoolSize), resolvedSecret: null);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.CurrentMessage.ShouldNotBeNull().ShouldContain("MaxPoolSize");
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "DataIntegrity")]
+    public void AConnectionThatDoesNotPoolStatesNoPoolSizesAndIsBuilt()
+    {
+        var factory = new MsSqlConnectionFactory(_factoryLogger.Object, _connectionLogger.Object);
+
+        var result = factory.Create(PoolingConfiguration(false, 0, 0), resolvedSecret: null);
+
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBeOfType<MsSqlConnection>();
     }
 }

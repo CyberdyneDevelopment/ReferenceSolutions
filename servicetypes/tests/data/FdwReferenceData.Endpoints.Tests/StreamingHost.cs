@@ -206,12 +206,25 @@ public class PacedStreamEndpoint(ResponseStreamingOptions streaming)
 
     protected override string PolicyName => "paced:export";
 
-    protected override string DefaultFormat => "Json";
-
     // One character, so every row drains on its own and the timing is the source's, not the buffer's.
     protected override int DrainThresholdChars => 1;
 
     protected override void ConfigureEndpoint() => AllowAnonymous();
+
+    // Every choice the writers read, stated as an export request states them (FDW-3823: a writer takes no choice by default).
+    protected override IReadOnlyDictionary<string, object> FormatChoices(PacedRequest request) => new Dictionary<string, object>(StringComparer.Ordinal)
+    {
+        ["HasHeader"] = true,
+        ["Separator"] = ",",
+        ["QuoteChar"] = "\"",
+        ["WriteByteOrderMark"] = false,
+        ["NeutralizeFormulas"] = false,
+        ["SkipValidation"] = false,
+        ["RootElementName"] = "Rows",
+        ["RowElementName"] = "Row",
+        ["OmitXmlDeclaration"] = true,
+        ["SheetName"] = "Data",
+    };
 
     /// <summary>The code a refused open carries: a validation number (2xxxx), so its category answers 400.</summary>
     public const string RefusalCode = "PACED-20001";

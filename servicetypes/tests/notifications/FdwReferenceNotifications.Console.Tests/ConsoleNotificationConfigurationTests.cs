@@ -8,13 +8,14 @@ public sealed class ConsoleNotificationConfigurationTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "Configuration")]
-    public void DefaultLogLevelIsInformation()
+    public void DefaultConstructorAssumesNoLogLevel()
     {
         // Arrange / Act
         var config = new ConsoleNotificationConfiguration();
 
         // Assert
-        config.LogLevel.ShouldBe("Information");
+        // A row states its log level; none is assumed (FDW-3580).
+        config.LogLevel.ShouldBeEmpty();
     }
 
     [Fact]

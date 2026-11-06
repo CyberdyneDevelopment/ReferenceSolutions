@@ -103,6 +103,7 @@ public sealed class CreateScheduleProxyEndpoint : Endpoint<ProxyCreateScheduleRe
             OneTimeDateTime = req.OneTimeDateTime,
             EventName = req.EventName,
             TimeZoneId = req.TimeZoneId,
+            MissedFireRule = req.MissedFireRule,
             IsEnabled = req.IsEnabled,
             Parameters = req.Parameters,
             RunRoles = req.RunRoles,

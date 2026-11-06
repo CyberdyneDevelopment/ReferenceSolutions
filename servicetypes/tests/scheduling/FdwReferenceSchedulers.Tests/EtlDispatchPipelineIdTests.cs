@@ -21,15 +21,23 @@ public sealed class EtlDispatchPipelineIdTests
 {
     private static readonly Guid PipelineId = new("33333333-3333-3333-3333-333333333333");
     private static readonly Guid TenantId = new("11111111-1111-1111-1111-111111111111");
+    private static readonly Guid ScheduleId = new("44444444-4444-4444-4444-444444444444");
 
     private readonly Mock<IPipelineJobClient> _client = new();
     private readonly Mock<IScheduleConfigurationProvider> _schedules = new();
 
     private EtlDispatchExecutionHandler Build() => new(_client.Object, _schedules.Object, NullLogger<EtlDispatchExecutionHandler>.Instance);
 
-    private void Schedule(Guid pipelineId, params string[] runRoles)
+    private void Schedule(Guid pipelineId, params string[] runRoles) => Schedule(pipelineId, null, runRoles);
+
+    private void Schedule(Guid pipelineId, int? timeoutSeconds, params string[] runRoles)
     {
-        var schedule = new ScheduleImplementationConfiguration { Name = "NightlyAt2", PipelineId = pipelineId, PipelineName = "Nightly", TenantId = TenantId };
+        var schedule = new ScheduleImplementationConfiguration { Id = ScheduleId, Name = "NightlyAt2", PipelineId = pipelineId, PipelineName = "Nightly", TenantId = TenantId };
+        if (timeoutSeconds is { } seconds)
+        {
+            schedule.TimeoutSeconds = seconds;
+        }
+
         schedule.ReplaceRunRoles(runRoles);
         _schedules
             .Setup(s => s.Get("NightlyAt2", It.IsAny<CancellationToken>()))
@@ -133,5 +141,27 @@ public sealed class EtlDispatchPipelineIdTests
         sent.ShouldNotBeNull();
         sent.Parameters.ShouldNotBeNull();
         sent.Parameters.Select(p => (p.Name, p.Value)).OrderBy(p => p.Name).ShouldBe([("Region", "EU"), ("Since", "2026-10-01T00:00:00Z")]);
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "Etl")]
+    public async Task TheScheduleNameItsIdAndTheTimeoutItStatesAreRelayedToTheEtlServer()
+    {
+        Schedule(PipelineId, 900, "DataWriter");
+        TriggerPipelineRequest? sent = null;
+        _client
+            .Setup(c => c.Trigger(It.IsAny<TriggerPipelineRequest>(), It.IsAny<CancellationToken>()))
+            .Callback((TriggerPipelineRequest r, CancellationToken _) => sent = r)
+            .ReturnsAsync(GenericResult<TriggerPipelineResponse>.Success(new TriggerPipelineResponse { ExecutionId = Guid.NewGuid() }));
+
+        var result = await Build().ExecuteScheduledProcess(PipelineId.ToString("D"), "NightlyAt2", DateTime.UtcNow, DateTime.UtcNow,
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeTrue();
+        sent.ShouldNotBeNull();
+        sent.ScheduleName.ShouldBe("NightlyAt2");
+        sent.ScheduleId.ShouldBe(ScheduleId);
+        sent.TimeoutSeconds.ShouldBe(900);
     }
 }

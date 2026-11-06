@@ -54,6 +54,12 @@ public sealed class ProxyCreateScheduleRequest
     public string TimeZoneId { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets what the scheduler does with a cron fire time that passed while it was down (FDW-3788): <c>Skip</c> or <c>FireOnce</c>. Required: it is
+    /// not defaulted, and a create that leaves it out is refused by the scheduler's validator.
+    /// </summary>
+    public string MissedFireRule { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets whether the schedule is enabled.
     /// </summary>
     public bool IsEnabled { get; set; } = true;

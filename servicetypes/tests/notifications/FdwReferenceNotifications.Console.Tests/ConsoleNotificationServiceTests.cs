@@ -20,7 +20,8 @@ public sealed class ConsoleNotificationServiceTests
             channelName: "Console",
             recipients: Array.Empty<string>(),
             subject: "Test Subject",
-            message: message);
+            message: message,
+            priority: NotificationPriorities.Normal);
 
     private static ConsoleNotificationService BuildService(ConsoleNotificationConfiguration? config = null)
     {

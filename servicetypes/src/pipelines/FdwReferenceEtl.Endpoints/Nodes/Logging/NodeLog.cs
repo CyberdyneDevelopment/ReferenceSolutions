@@ -58,6 +58,12 @@ public static partial class NodeLog
     [MessageLogging(EventId = 9242, Level = LogLevel.Error, Message = "Failed to create node '{name}': {message}")]
     public static partial IGenericMessage NodeCreateFailed(ILogger logger, string name, string? message);
 
+    /// <summary>A node is created without saying whether it runs. That is the caller's choice and nothing assumes it (FDW-3931).</summary>
+    [MessageLogging(EventId = 21013, Level = LogLevel.Warning,
+        Message = "Node '{name}' does not say whether it runs: send isEnabled",
+        ClientMessage = "Say whether the node runs: send isEnabled")]
+    public static partial IGenericMessage NodeEnablementNotStated(ILogger logger, string name);
+
     // ═══════════════════════════════════════════════════════════════════════════
     // Update operations (9245-9249)
     // ═══════════════════════════════════════════════════════════════════════════

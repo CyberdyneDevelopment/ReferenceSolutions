@@ -7,6 +7,7 @@ using FdwReferenceHosts.OutboundIdentity.Configuration;
 using FdwReferenceHosts.OutboundIdentity.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Fdw.Conventions;
 
 namespace FdwReferenceHosts.OutboundIdentity;
 
@@ -52,10 +53,10 @@ public sealed class OutboundIdentityHostService : IHostService
     /// <inheritdoc />
     public Task<IGenericResult> Execute(IGenericCommand command, CancellationToken cancellationToken = default)
         => Task.FromResult<IGenericResult>(
-            GenericResult.Failure(OutboundIdentityHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? "(null)")));
+            GenericResult.Failure(OutboundIdentityHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? LogPlaceholders.Null)));
 
     /// <inheritdoc />
     public Task<IGenericResult<T>> Execute<T>(IGenericCommand command, CancellationToken cancellationToken = default)
         => Task.FromResult(
-            GenericResult<T>.Failure(OutboundIdentityHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? "(null)")));
+            GenericResult<T>.Failure(OutboundIdentityHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? LogPlaceholders.Null)));
 }

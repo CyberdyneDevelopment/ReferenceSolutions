@@ -5,6 +5,7 @@ using Fdw.Services.Authentication.Steps;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceAuthentication.OidcRedirect.Authentication;
+using System.Collections.Immutable;
 
 namespace FdwReferenceAuthentication.OidcRedirect;
 
@@ -92,7 +93,7 @@ public sealed class OidcAuthorityReader
                     _log, row.Name, row.ClientAuthenticationType ?? string.Empty, OidcClientAuthenticationTypes.KnownNames()));
 
         var clientAuthenticationProperties = new Dictionary<string, string?>(
-            row.AdditionalProperties ?? new Dictionary<string, string?>(), StringComparer.OrdinalIgnoreCase);
+            row.AdditionalProperties ?? ImmutableDictionary<string, string?>.Empty, StringComparer.OrdinalIgnoreCase);
         if (!clientAuthentication.Validate(clientAuthenticationProperties).IsSuccess)
             return GenericResult<IOidcAuthorityConfiguration>.Failure(
                 OidcAuthorityLog.ClientAuthenticationPropertiesInvalid(

@@ -15,7 +15,7 @@ public sealed class CreateOrchestrationNodeEndpointTests : NodeEndpointTestBase
     [Trait("Category", "Etl")]
     public async Task AStageWithNoParentIsRefusedWithAClientErrorAndNothingIsStored()
     {
-        var response = await Post(new { name = "Load", nodeTypeId = OrchestrationNodeTypes.Stage.Id });
+        var response = await Post(new { name = "Load", isEnabled = true, nodeTypeId = OrchestrationNodeTypes.Stage.Id });
 
         ((int)response.StatusCode).ShouldBeInRange(400, 499, await Body(response));
         VerifyStored(Times.Never());
@@ -26,7 +26,7 @@ public sealed class CreateOrchestrationNodeEndpointTests : NodeEndpointTestBase
     [Trait("Category", "Etl")]
     public async Task AStageWithAParentIsStoredOnce()
     {
-        var response = await Post(new { name = "Load", nodeTypeId = OrchestrationNodeTypes.Stage.Id, parentId = Guid.NewGuid() });
+        var response = await Post(new { name = "Load", isEnabled = true, nodeTypeId = OrchestrationNodeTypes.Stage.Id, parentId = Guid.NewGuid() });
 
         response.StatusCode.ShouldBe(HttpStatusCode.Created, await Body(response));
         VerifyStored(Times.Once());
@@ -41,7 +41,7 @@ public sealed class CreateOrchestrationNodeEndpointTests : NodeEndpointTestBase
             .Setup(p => p.Save(It.IsAny<OrchestrationNodeImplementationConfiguration>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("the database is down"));
 
-        var response = await Post(new { name = "Load", nodeTypeId = OrchestrationNodeTypes.Stage.Id, parentId = Guid.NewGuid() });
+        var response = await Post(new { name = "Load", isEnabled = true, nodeTypeId = OrchestrationNodeTypes.Stage.Id, parentId = Guid.NewGuid() });
 
         // The writer reports a failed store as a Dependency result (category 7), which the shared mapper answers with 502.
         response.StatusCode.ShouldBe(HttpStatusCode.BadGateway, await Body(response));

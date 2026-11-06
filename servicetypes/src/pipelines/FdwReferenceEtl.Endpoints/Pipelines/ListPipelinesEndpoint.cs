@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Pipelines;
 using Fdw.Services.Pipelines.Endpoints;
+using Fdw.Services.Tags;
 
 namespace FdwReferencePipelines.Endpoints;
 
@@ -14,8 +15,9 @@ public class ListPipelinesEndpoint : ListPipelinesEndpointBase
     /// <inheritdoc />
     public ListPipelinesEndpoint(
         PipelineServiceConfigurationProvider configProvider,
-        ILogger<ListPipelinesEndpoint> logger)
-        : base(logger, configProvider) {
+        ILogger<ListPipelinesEndpoint> logger,
+        ITagService? tags = null)
+        : base(logger, configProvider, tags) {
     }
 
     /// <inheritdoc />

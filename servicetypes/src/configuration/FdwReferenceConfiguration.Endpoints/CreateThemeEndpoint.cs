@@ -7,6 +7,8 @@ using Fdw.UI.Themes.Endpoints;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceConfiguration.Endpoints.Logging;
+using Fdw.Results;
+using System;
 
 namespace FdwReferenceConfiguration.Endpoints;
 
@@ -60,13 +62,22 @@ public class CreateThemeEndpoint : CreateThemeEndpointBase<CreateThemeRequest, T
         // We use GetAwaiter().GetResult() here because the base class contract is synchronous.
         // This is acceptable only because the endpoint is already running on a thread-pool thread
         // (FastEndpoints uses ASP.NET Core middleware) and no SynchronizationContext is present.
-        var managed = req.ToManaged();
+        // A value the request leaves out takes the default theme's (FDW-3823): the default theme is configuration.
+        var defaultTheme = _provider.GetDefault(CancellationToken.None).GetAwaiter().GetResult();
+        if (defaultTheme.IsFailure || defaultTheme.Value is not { } theme)
+        {
+            ThrowError(defaultTheme.NoValueReason().Message, 400);
+            return default!;
+        }
+
+        var managed = req.ToManaged(theme);
+
         ThemeLog.CreatingTheme(_logger, req.Name);
 
         var saveResult = _provider.Save(managed, "Theme", managed.Implementation, managed.Name, CancellationToken.None).GetAwaiter().GetResult();
         if (!saveResult.IsSuccess)
         {
-            ThemeLog.ThemePersistenceFailed(_logger, req.Name, saveResult.CurrentMessage ?? "save failed");
+            ThemeLog.ThemePersistenceFailed(_logger, req.Name, saveResult.FailureReason().Message);
             ThrowError("Failed to persist theme configuration", 500);
             return default!;
         }

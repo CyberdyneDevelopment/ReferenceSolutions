@@ -32,6 +32,9 @@ public class JsonApiProtocolTests
     {
         var config = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com/v1"
         };
         return new HttpProtocolContext(

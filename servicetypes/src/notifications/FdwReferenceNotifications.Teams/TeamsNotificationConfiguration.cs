@@ -36,7 +36,7 @@ public sealed partial class TeamsNotificationConfiguration : INotificationImplem
     public IServiceLifetime Lifetime { get; set; } = ServiceLifetimes.Transient;
 
     /// <summary>Gets or sets a value indicating whether this notification service is enabled.</summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsEnabled { get; set; }
 
     /// <summary>Gets or sets the secret manager that resolves this channel's webhook URL.</summary>
     public string? SecretManagerName { get; set; }
@@ -56,11 +56,11 @@ public sealed partial class TeamsNotificationConfiguration : INotificationImplem
     public string? DefaultWebhookUrl { get; set; }
 
     /// <summary>Gets or sets how long a post to Teams may take before it is abandoned.</summary>
-    public int TimeoutSeconds { get; set; } = 30;
+    public int TimeoutSeconds { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether messages are sent as Adaptive Cards rather than
     /// the legacy MessageCard payload.
     /// </summary>
-    public bool UseAdaptiveCards { get; set; } = true;
+    public bool UseAdaptiveCards { get; set; }
 }

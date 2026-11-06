@@ -46,10 +46,10 @@ public sealed partial class QuartzSchedulerConfiguration : ISchedulerImplementat
     public string PathName { get; set; } = string.Empty;
 
     /// <summary>Gets or sets the Quartz instance name (identifies this scheduler cluster member).</summary>
-    public string InstanceName { get; set; } = "QuartzScheduler";
+    public string InstanceName { get; set; } = string.Empty;
 
     /// <summary>Gets or sets the size of Quartz's thread pool.</summary>
-    public int ThreadCount { get; set; } = 5;
+    public int ThreadCount { get; set; }
 
     /// <summary>Gets or sets whether misfired triggers should be handled clustered (multiple app instances sharing one job store).</summary>
     public bool EnableClustering { get; set; }

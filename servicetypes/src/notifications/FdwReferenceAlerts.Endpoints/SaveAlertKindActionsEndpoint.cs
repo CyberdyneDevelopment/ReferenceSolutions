@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace FdwReferenceMessages.Endpoints;
 
 /// <summary>
-/// Chooses the actions a kind of alert offers the caller's company (PUT /alerts/kinds/{Kind}/actions).
+/// Chooses the actions a kind of alert offers the caller's company (POST /alerts/kinds/{Kind}/actions).
 /// </summary>
 [ExcludeFromCodeCoverage]
 public class SaveAlertKindActionsEndpoint : SaveAlertKindActionsEndpointBase

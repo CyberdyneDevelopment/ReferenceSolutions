@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Fdw.Conventions;
 
 namespace FdwReferenceAuthentication.ForeignToken.Registration;
 
@@ -166,7 +167,7 @@ public sealed class ForeignTokenStepType
         {
             return GenericResult<StepOutcome>.Failure(
                 ForeignTokenLog.Rejected(_logger, configuration.Issuer,
-                    validated.Exception?.GetType().Name ?? "unknown"));
+                    validated.Exception?.GetType().Name ?? LogPlaceholders.NoExceptionType));
         }
 
         var subjectId = validated.ClaimsIdentity.FindFirst("sub")?.Value;

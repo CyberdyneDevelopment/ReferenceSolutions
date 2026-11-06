@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Web.RestEndpoints.Security;
+using Fdw.Conventions;
 
 namespace FdwReferenceSamples.Endpoints;
 
@@ -70,7 +71,7 @@ public sealed class AuthenticatedDataEndpoint : AuthenticatedEndpointBase<Authen
         return Send.OkAsync(new AuthenticatedDataResponse
         {
             Message = "This is authenticated data with higher rate limit (500 req/min)",
-            User = User.Identity?.Name ?? "Unknown",
+            User = User.Identity?.Name ?? LogPlaceholders.Anonymous,
             Timestamp = DateTime.UtcNow,
             RateLimitPolicy = "Authenticated"
         }, ct);

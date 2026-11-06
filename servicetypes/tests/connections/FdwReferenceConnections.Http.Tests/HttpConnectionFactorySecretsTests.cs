@@ -21,6 +21,8 @@ public sealed class HttpConnectionFactorySecretsTests
             .ToDictionary(property => property, property => (string?)$"S_{property}", StringComparer.OrdinalIgnoreCase);
         return new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            Lifetime = "Scoped",
             Name = "Orders",
             BaseUrl = "http://orders.example/api/",
             AuthenticationType = authenticationType,

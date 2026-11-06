@@ -7,6 +7,7 @@ using FdwReferenceHosts.ResponseBuffering.Configuration;
 using FdwReferenceHosts.ResponseBuffering.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Fdw.Conventions;
 
 namespace FdwReferenceHosts.ResponseBuffering;
 
@@ -52,10 +53,10 @@ public sealed class ResponseBufferingHostService : IHostService
     /// <inheritdoc />
     public Task<IGenericResult> Execute(IGenericCommand command, CancellationToken cancellationToken = default)
         => Task.FromResult<IGenericResult>(
-            GenericResult.Failure(ResponseBufferingHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? "(null)")));
+            GenericResult.Failure(ResponseBufferingHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? LogPlaceholders.Null)));
 
     /// <inheritdoc />
     public Task<IGenericResult<T>> Execute<T>(IGenericCommand command, CancellationToken cancellationToken = default)
         => Task.FromResult(
-            GenericResult<T>.Failure(ResponseBufferingHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? "(null)")));
+            GenericResult<T>.Failure(ResponseBufferingHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? LogPlaceholders.Null)));
 }

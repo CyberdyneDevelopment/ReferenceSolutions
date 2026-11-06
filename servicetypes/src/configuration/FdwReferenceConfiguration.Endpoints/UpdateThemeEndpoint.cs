@@ -7,6 +7,7 @@ using Fdw.UI.Themes.Endpoints;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceConfiguration.Endpoints.Logging;
+using Fdw.Results;
 
 namespace FdwReferenceConfiguration.Endpoints;
 
@@ -86,7 +87,7 @@ public class UpdateThemeEndpoint : UpdateThemeEndpointBase<UpdateThemeByNameRequ
         var saveResult = _provider.Update(managed, "Theme", managed.Implementation, managed.Name, CancellationToken.None).GetAwaiter().GetResult();
         if (!saveResult.IsSuccess)
         {
-            ThemeLog.ThemePersistenceFailed(_logger, managed.Name, saveResult.CurrentMessage ?? "save failed");
+            ThemeLog.ThemePersistenceFailed(_logger, managed.Name, saveResult.FailureReason().Message);
             ThrowError("Failed to persist theme configuration", 500);
             return default!;
         }

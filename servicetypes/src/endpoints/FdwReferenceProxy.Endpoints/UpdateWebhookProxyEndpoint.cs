@@ -18,7 +18,7 @@ public sealed class UpdateWebhookProxyEndpoint : WebhookProxyEndpointBase
     protected override string RequiredPolicy => "webhooks:write";
 
     /// <inheritdoc />
-    protected override System.Net.Http.HttpMethod Method => System.Net.Http.HttpMethod.Put;
+    protected override System.Net.Http.HttpMethod Method => System.Net.Http.HttpMethod.Patch;
 
     /// <inheritdoc />
     protected override string TargetPath() => $"webhooks/{Route<string>("Name")}";
@@ -26,7 +26,7 @@ public sealed class UpdateWebhookProxyEndpoint : WebhookProxyEndpointBase
     /// <inheritdoc />
     public override void Configure()
     {
-        Put("/webhooks/{Name}");
+        Patch("/webhooks/{Name}");
         ConfigureWebhooks("Replace a webhook trigger (proxy)", "Forwards the replacement to the ETL server.");
     }
 }

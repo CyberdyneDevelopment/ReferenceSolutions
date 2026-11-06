@@ -9,6 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Fdw.Services.Multitenancy;
 using FdwReferenceMultitenancy.Sql.Registration;
 using Fdw.Services.Authentication.Abstractions.Security;
+using Fdw.Services.Configuration;
+using Fdw.Services.Workspaces;
 
 namespace FdwReferenceMultitenancy.Sql.Tests;
 
@@ -136,6 +138,20 @@ public class SqlMultitenancyTypeTests
         var provider = new SqlOrganizationProvider(Mock.Of<IConfigurationGatewayProvider>(), config, null);
 
         provider.ShouldNotBeNull();
+    }
+
+    // Why here: the Sql option calls RegisterAlwaysOnContexts, which registers the placement for every multitenancy option (FDW-3692); the API
+    // loads this option, the ETL host and the scheduler load SingleTenant, which gets the same registration (tested in Fdw.Services.Tests). The
+    // pipeline, data store and calculation registrations all read the placement with ConfigurationPlacementSource.From, which is what this
+    // asks of the host the option built.
+    [Fact]
+    public void EveryHostThatLoadsTheOptionPlacesNewMembersInTheDefaultWorkspace()
+    {
+        var host = BuildHost(MockGatewayReturning());
+
+        var placement = ConfigurationPlacementSource.From(host.Services);
+
+        placement.ShouldBeOfType<DefaultWorkspacePlacement>();
     }
 
     // Why the host and not services.BuildServiceProvider(): phase 3 takes the IHost now, and building

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Fdw.Data.DataSets.Abstractions;
 using Fdw.Data.Transformations.Configuration;
 using Fdw.Services.Pipelines.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -13,8 +14,9 @@ namespace FdwReferencePipelines.Endpoints;
 public class ValidateGraphEndpoint : ValidateGraphEndpointBase
 {
     /// <inheritdoc />
-    public ValidateGraphEndpoint(ITransformationConfigurationProvider transformations, ILogger<ValidateGraphEndpoint> logger)
-        : base(logger, transformations)
+    public ValidateGraphEndpoint(
+        ITransformationConfigurationProvider transformations, IDataSetConfigurationProvider dataSets, ILogger<ValidateGraphEndpoint> logger)
+        : base(logger, transformations, dataSets)
     {
     }
 

@@ -2,45 +2,15 @@ using System.Diagnostics.CodeAnalysis;
 using FastEndpoints;
 using FluentValidation;
 using Fdw.Services.Authorization.Endpoints;
+using Fdw.Services.Authorization.Endpoints.Validators;
 
 namespace FdwReferenceAuth.Endpoints.Validators;
 
 /// <summary>
-/// Validator for <see cref="CreateRoleRequest"/>.
+/// The create-role rules of this host: FDW's (<see cref="CreateRoleRequestValidator"/>), with nothing the host adds (FDW-3572).
 /// </summary>
 [ExcludeFromCodeCoverage]
-public sealed class CreateRoleRequestValidator : Validator<CreateRoleRequest>
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CreateRoleRequestValidator"/> class.
-    /// </summary>
-    public CreateRoleRequestValidator()
-    {
-        RuleFor(x => x.Name)
-            .NotEmpty()
-            .WithMessage("Role name is required")
-            .MinimumLength(3)
-            .WithMessage("Role name must be at least 3 characters")
-            .MaximumLength(100)
-            .WithMessage("Role name cannot exceed 100 characters")
-            .Matches(@"^[a-zA-Z][a-zA-Z0-9_-]*$")
-            .WithMessage("Role name must start with a letter and contain only letters, numbers, underscores, or hyphens");
-
-        When(x => x.DisplayName is not null, () =>
-        {
-            RuleFor(x => x.DisplayName)
-                .MaximumLength(200)
-                .WithMessage("Display name cannot exceed 200 characters");
-        });
-
-        When(x => x.Description is not null, () =>
-        {
-            RuleFor(x => x.Description)
-                .MaximumLength(1000)
-                .WithMessage("Description cannot exceed 1000 characters");
-        });
-    }
-}
+public sealed class ReferenceCreateRoleRequestValidator : CreateRoleRequestValidator;
 
 /// <summary>
 /// Validator for <see cref="UpdateRoleRequest"/>.

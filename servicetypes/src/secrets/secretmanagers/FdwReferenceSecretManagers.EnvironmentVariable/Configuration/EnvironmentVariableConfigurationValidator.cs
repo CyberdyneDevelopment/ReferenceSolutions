@@ -1,4 +1,6 @@
+using System;
 using FluentValidation;
+using FdwReferenceSecretManagers.EnvironmentVariable.Targets;
 
 namespace FdwReferenceSecretManagers.EnvironmentVariable.Configuration;
 
@@ -19,6 +21,14 @@ public sealed class EnvironmentVariableConfigurationValidator : AbstractValidato
         RuleFor(x => x.Separator)
             .NotEmpty()
             .WithMessage("Separator is required for nested key support.");
+
+        // Why required with no default (FDW-3823): the target is where secrets are read from, the caller's choice; a guessed one would read
+        // another environment's variables without a word.
+        RuleFor(x => x.Target)
+            .NotEmpty()
+            .WithMessage("Target is required: Process, User or Machine.")
+            .Must(target => !ReferenceEquals(EnvironmentVariableTargets.ByName(target), EnvironmentVariableTargets.NotFound))
+            .WithMessage("Target must be Process, User or Machine.");
 
         // Prefix is required - no silent fallback to looking up raw secret keys
         RuleFor(x => x.Prefix)

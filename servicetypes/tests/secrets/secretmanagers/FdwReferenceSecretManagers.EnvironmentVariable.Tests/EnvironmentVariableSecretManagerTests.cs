@@ -33,7 +33,7 @@ public class EnvironmentVariableSecretManagerTests
         StripPrefix = stripPrefix,
         CaseSensitive = caseSensitive,
         Separator = "__",
-        Target = nameof(EnvironmentVariableTarget.Process),
+        Target = "Process",
     };
 
     private static string UniquePrefix() => $"FDWTEST_{Guid.NewGuid():N}_";

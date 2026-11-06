@@ -37,7 +37,7 @@ public sealed partial class SqlOrganizationEntity
     public bool IsActive { get; set; }
 
     /// <summary>Gets or sets the durable id of the workspace this org names as its default, or null when it names none.</summary>
-    public Guid? DefaultWorkspaceId { get; set; }
+    public Guid DefaultWorkspaceId { get; set; }
 
     /// <summary>Gets or sets the optional visibility group identifier.</summary>
     public Guid? VisibilityGroupId { get; set; }

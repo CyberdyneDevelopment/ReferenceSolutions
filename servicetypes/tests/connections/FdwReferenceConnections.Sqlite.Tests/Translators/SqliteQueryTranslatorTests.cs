@@ -35,6 +35,7 @@ public sealed class SqliteQueryTranslatorTests
 
         var container = new Mock<IDataContainer>();
         container.Setup(c => c.Name).Returns(name);
+        container.As<IStorageContainer>().Setup(c => c.Name).Returns(name);
         container.As<IStorageContainer>().Setup(c => c.Path).Returns(dbPath);
         container.Setup(c => c.Schema).Returns(containerSchema.Object);
         container.Setup(c => c.Metadata).Returns(new Dictionary<string, object>(StringComparer.Ordinal));
@@ -383,5 +384,50 @@ public sealed class SqliteQueryTranslatorTests
         result.Code.ShouldNotBeNull();
         result.Code!.Name.ShouldBe("NoFieldsToProject");
         result.Code.ShouldNotBe(SqliteDataResultCodes.NotFound);
+    }
+
+    private static Mock<IQueryCommand> PagedQueryWithNoOrdering()
+    {
+        var paging = new Mock<IPagingExpression>();
+        paging.Setup(p => p.Skip).Returns(10);
+        paging.Setup(p => p.Take).Returns(5);
+
+        var cmd = new Mock<IQueryCommand>();
+        cmd.Setup(c => c.Filter).Returns((IFilterExpression?)null);
+        cmd.Setup(c => c.Projection).Returns((IProjectionExpression?)null);
+        cmd.Setup(c => c.Ordering).Returns((IOrderingExpression?)null);
+        cmd.Setup(c => c.Paging).Returns(paging.Object);
+        cmd.Setup(c => c.Joins).Returns(new List<IJoinExpression>());
+        return cmd;
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "DataIntegrity")]
+    public async Task TranslateRefusesAPagedReadWithNoOrderingWhenTheContainerDeclaresNoKey()
+    {
+        // FDW-3454: the order was the first field, then the first returned field, then "1"; a guess is not an order.
+        var container = CreateContainer("orders", new[] { CreateField("amount").Object, CreateField("id").Object });
+
+        var result = await _sut.Translate(PagedQueryWithNoOrdering().Object, container.Object, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.Messages[^1].Code.ShouldEndWith("-21020");
+        result.CurrentMessage.ShouldNotBeNull().ShouldContain("orders");
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "DataIntegrity")]
+    public async Task TranslateOrdersAPagedReadByTheDeclaredKeyNotByTheFirstField()
+    {
+        var container = CreateContainer("orders", new[] { CreateField("amount").Object, CreateField("id").Object });
+        container.Setup(c => c.Metadata).Returns(new Dictionary<string, object>(StringComparer.Ordinal) { ["SurrogateKeyField"] = "id" });
+
+        var result = await _sut.Translate(PagedQueryWithNoOrdering().Object, container.Object, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeTrue();
+        result.Value!.CommandText.ShouldContain("ORDER BY \"id\"");
+        result.Value.CommandText.ShouldNotContain("ORDER BY \"amount\"");
     }
 }

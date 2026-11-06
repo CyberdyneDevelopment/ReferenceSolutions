@@ -306,6 +306,12 @@ public static partial class EtlServerLog
         Message = "Trigger for name='{name}' id='{id}' states TestRowsPerSource, but only a pipeline can be a test run")]
     public static partial IGenericMessage TestRunOnlyForPipeline(ILogger logger, string? name, Guid? id);
 
+    [MessageLogging(
+        EventId = 10368,
+        Level = LogLevel.Warning,
+        Message = "Trigger for name='{name}' id='{id}' states TimeoutSeconds, but only a pipeline run takes a time limit")]
+    public static partial IGenericMessage TimeoutOnlyForPipeline(ILogger logger, string? name, Guid? id);
+
     // Execution control endpoints (10270-10279)
 
     [MessageLogging(

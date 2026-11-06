@@ -28,13 +28,37 @@ public class EntraIdAuthProcessorTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "DataIntegrity")]
-    public void BuildAuthFragmentWithNullAzureAdModeUsesDefault()
+    public void BuildAuthFragmentWithNoAzureAdModeUsesSqlClientDefault()
     {
+        // No mode is SqlClient's own default mode, "Active Directory Default" (FDW-3580).
         var auth = new EntraIdConfiguration();
         var result = auth.BuildAuthFragment(Kvp(), null);
 
         result.IsSuccess.ShouldBeTrue();
         result.Value!.ShouldContain("Authentication=Active Directory Default;");
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "DataIntegrity")]
+    public void BuildAuthFragmentWithUnknownAzureAdModeIsRefused()
+    {
+        // A mode SqlClient does not take is refused, never read as the default (FDW-3580).
+        var auth = new EntraIdConfiguration();
+        var result = auth.BuildAuthFragment(Kvp(("AzureAdMode", "Kerberos")), null);
+
+        result.IsSuccess.ShouldBeFalse();
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "DataIntegrity")]
+    public void ValidateRefusesAnUnknownAzureAdMode()
+    {
+        var auth = new EntraIdConfiguration();
+
+        auth.Validate(Kvp(("AzureAdMode", "Kerberos"))).IsSuccess.ShouldBeFalse();
+        auth.Validate(Kvp(("AzureAdMode", "ManagedIdentity"))).IsSuccess.ShouldBeTrue();
     }
 
     [Fact]

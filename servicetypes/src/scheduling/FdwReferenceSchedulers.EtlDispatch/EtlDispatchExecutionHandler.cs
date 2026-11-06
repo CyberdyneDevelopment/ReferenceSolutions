@@ -86,6 +86,12 @@ public sealed class EtlDispatchExecutionHandler : IGenericScheduledExecutionHand
                 Id = pipelineId,
                 TriggerSource = JobTriggerSourceTypes.Scheduled.Name,
                 ScheduleName = scheduleId,
+
+                // The schedule's domain Id (FDW-3975): the thresholds attached to the schedule are found by it, and the schedule was read just now.
+                ScheduleId = schedule.Value.Id,
+
+                // The timeout the schedule states (FDW-3805): the ETL host stops the run when it has passed. Null is a schedule that states none, and its run has no time limit.
+                TimeoutSeconds = schedule.Value.TimeoutSeconds,
                 TenantId = schedule.Value.TenantId,
                 Parameters = [.. schedule.Value.Parameters.Select(p => new PipelineParameterValue { Name = p.Key, Value = string.Concat(p.Value) })],
                 // The roles the schedule's creator named (FDW-1161): every fire acts with exactly these, judged again for what the

@@ -29,7 +29,7 @@ public sealed class DeleteDataViewEndpoint : DeleteDataViewEndpointBase
     }
 
     /// <inheritdoc />
-    protected override async Task<IGenericResult> MayChange(IDataViewDataSetVariationConfiguration view, CancellationToken cancellationToken)
+    protected override async Task<IGenericResult> MayChange(IDataSetVariationImplementationConfiguration view, CancellationToken cancellationToken)
     {
         var saver = await base.MayChange(view, cancellationToken).ConfigureAwait(false);
         return saver.IsSuccess

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Fdw.Results;
+using Fdw.Services.Settings;
 
 namespace FdwReferenceNotifications.Email.Registration;
 
@@ -56,8 +57,8 @@ public sealed class EmailNotificationType
             settings:
             [
                 new("SmtpHost", NotificationSettingTypes.Text, true, false),
-                new("SmtpPort", NotificationSettingTypes.Number, false, false),
-                new("UseSsl", NotificationSettingTypes.Flag, false, false),
+                new("SmtpPort", NotificationSettingTypes.Number, false, false) { DefaultSetting = DefaultValueSettings.DefaultEmailSmtpPort },
+                new("UseSsl", NotificationSettingTypes.Flag, false, false) { DefaultSetting = DefaultValueSettings.DefaultEmailUseSsl },
                 new("Username", NotificationSettingTypes.Text, false, false),
                 new("Password", NotificationSettingTypes.Text, false, true),
                 new("FromAddress", NotificationSettingTypes.Text, true, false),

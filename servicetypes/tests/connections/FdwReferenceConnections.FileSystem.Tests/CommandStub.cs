@@ -45,8 +45,20 @@ internal static class CommandStub
         return command.Object;
     }
 
-    /// <summary>A Delete command with no filter, which removes every row of the file: what a truncate before a load builds.</summary>
+    /// <summary>A Delete command with no filter that asks for every row (AllRows), which removes every row of the file: what a
+    /// truncate before a load builds (FDW-3660).</summary>
     public static IDataCommand Delete()
+    {
+        var command = new Mock<IDeleteScopeCommand>();
+        command.Setup(c => c.CommandType).Returns("Delete");
+        command.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        command.Setup(c => c.Filter).Returns((IFilterExpression?)null);
+        command.Setup(c => c.AllRows).Returns(true);
+        return command.Object;
+    }
+
+    /// <summary>A Delete command with no filter, no soft delete and no AllRows: it states no rows, so it is refused (FDW-3660).</summary>
+    public static IDataCommand UnscopedDelete()
     {
         var command = new Mock<IFilterableCommand>();
         command.Setup(c => c.CommandType).Returns("Delete");

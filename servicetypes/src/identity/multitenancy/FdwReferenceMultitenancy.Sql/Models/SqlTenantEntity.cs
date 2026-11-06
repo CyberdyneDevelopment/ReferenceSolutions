@@ -43,62 +43,62 @@ public sealed partial class SqlTenantEntity
     /// <summary>
     /// Gets or sets the primary theme color.
     /// </summary>
-    public string? PrimaryColor { get; set; }
+    public string PrimaryColor { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the secondary theme color.
     /// </summary>
-    public string? SecondaryColor { get; set; }
+    public string SecondaryColor { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the accent theme color.
     /// </summary>
-    public string? AccentColor { get; set; }
+    public string AccentColor { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the background surface color.
     /// </summary>
-    public string? BackgroundColor { get; set; }
+    public string BackgroundColor { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the surface color.
     /// </summary>
-    public string? SurfaceColor { get; set; }
+    public string SurfaceColor { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the overlay surface color.
     /// </summary>
-    public string? OverlayColor { get; set; }
+    public string OverlayColor { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the success feedback color.
     /// </summary>
-    public string? SuccessColor { get; set; }
+    public string SuccessColor { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the warning feedback color.
     /// </summary>
-    public string? WarningColor { get; set; }
+    public string WarningColor { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the error feedback color.
     /// </summary>
-    public string? ErrorColor { get; set; }
+    public string ErrorColor { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the info feedback color.
     /// </summary>
-    public string? InfoColor { get; set; }
+    public string InfoColor { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the main typography color.
     /// </summary>
-    public string? TextMainColor { get; set; }
+    public string TextMainColor { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the muted typography color.
     /// </summary>
-    public string? TextMutedColor { get; set; }
+    public string TextMutedColor { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the logo URL.

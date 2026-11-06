@@ -1,9 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Fdw.Data.DataSets.Abstractions;
 using Fdw.Data.RowSources.Abstractions;
-using Fdw.Data.RowSources.Delimited.Abstractions;
 using Fdw.Results;
 using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Data.Results;
@@ -59,11 +59,6 @@ public class ExportDataSetEndpoint : StreamRecordsEndpointBase<ExportDataSetRequ
     /// <inheritdoc />
     protected override string PolicyName => "datasets:export";
 
-    // Why Json: this endpoint's callers are the UI and other services, which read JSON. A client
-    // wanting a spreadsheet asks for text/csv and the base serves it from the same cursor.
-    /// <inheritdoc />
-    protected override string DefaultFormat => "Json";
-
     /// <inheritdoc />
     protected override string EndpointSummary => "Export a data set";
 
@@ -79,21 +74,31 @@ public class ExportDataSetEndpoint : StreamRecordsEndpointBase<ExportDataSetRequ
     /// <inheritdoc />
     protected override void ConfigureEndpoint() => Tags("DataSets");
 
-    // Why on here and not in the format's defaults (FDW-1298): this endpoint's CSV is a file someone opens in a spreadsheet. The
-    // byte order mark is what makes Excel read it as UTF-8, and the formula guard stops a text cell that starts with = + - @ from
-    // being run as a formula. Both change the bytes a machine reader sees, so the delimited format leaves them off for every other
-    // use of it. A caller wanting the data unchanged asks for Json.
+    // Why the request states them (FDW-3823): a format's choices are never defaulted. The console sends what it wants: for a CSV a person
+    // opens in a spreadsheet, the byte order mark (Excel reads it as UTF-8) and the formula guard (FDW-1298).
     /// <inheritdoc />
-    protected override RowWriterOptions WriterOptions(IRecordWriterType format, IReadOnlyList<string> columns)
+    protected override IReadOnlyDictionary<string, object> FormatChoices(ExportDataSetRequest request)
     {
-        var options = base.WriterOptions(format, columns);
-        if (options is DelimitedRowWriterOptions delimited)
-        {
-            delimited.WriteByteOrderMark = true;
-            delimited.NeutralizeFormulas = true;
-        }
+        var stated = new Dictionary<string, object>(StringComparer.Ordinal);
+        Stated(stated, nameof(request.HasHeader), request.HasHeader);
+        Stated(stated, nameof(request.Separator), request.Separator);
+        Stated(stated, nameof(request.QuoteChar), request.QuoteChar);
+        Stated(stated, nameof(request.WriteByteOrderMark), request.WriteByteOrderMark);
+        Stated(stated, nameof(request.NeutralizeFormulas), request.NeutralizeFormulas);
+        Stated(stated, nameof(request.WriteIndented), request.WriteIndented);
+        Stated(stated, nameof(request.SkipValidation), request.SkipValidation);
+        Stated(stated, nameof(request.RootElementName), request.RootElementName);
+        Stated(stated, nameof(request.RowElementName), request.RowElementName);
+        Stated(stated, nameof(request.Indent), request.Indent);
+        Stated(stated, nameof(request.OmitXmlDeclaration), request.OmitXmlDeclaration);
+        Stated(stated, nameof(request.SheetName), request.SheetName);
+        return stated;
+    }
 
-        return options;
+    private static void Stated(Dictionary<string, object> stated, string key, object? value)
+    {
+        if (value is not null)
+            stated[key] = value;
     }
 
     /// <inheritdoc />

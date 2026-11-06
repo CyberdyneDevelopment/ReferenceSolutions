@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Fdw.Commands.Data;
 using Fdw.Commands.Data.Abstractions;
+using Fdw.Data;
 using Fdw.Data.Abstractions;
 using Fdw.Results;
 using Fdw.Services.Connections.Abstractions;
@@ -34,6 +35,8 @@ public sealed class SqliteTransactionTests : IAsyncLifetime
 
         _config = new SqliteConnectionConfiguration
         {
+            Cache = "Default",
+            AuthenticationType = "None",
             DataSource = DbPath,
             Mode = "ReadWriteCreate",
             DefaultTimeout = 30
@@ -213,6 +216,37 @@ public sealed class SqliteTransactionTests : IAsyncLifetime
         result.Value.ShouldBe(2);
         (await transaction.Rollback(ct)).IsSuccess.ShouldBeTrue();
         (await QueryAllRows(ct)).Count.ShouldBe(0);
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "DataIntegrity")]
+    public async Task AnUpsertExpansionWhoseInsertFailsLeavesTheRowItDeletedInPlace()
+    {
+        // FDW-3601: Sqlite has no Upsert translator, so an upsert runs as a delete by key and an insert. Outside a unit of work
+        // the connection now runs the two in one transaction: when the insert fails (name is NOT NULL), the delete is rolled back.
+        var ct = TestContext.Current.CancellationToken;
+        var connection = (IDataConnection)_connection!;
+        (await connection.Execute<int>(new InsertCommand<ContactRow>(new ContactRow { name = "Ann", age = 30 }), _container, ct)).IsSuccess.ShouldBeTrue();
+        var upsert = new Mock<IExpandableDataCommand>();
+        upsert.Setup(c => c.CommandType).Returns("Upsert");
+        upsert.Setup(c => c.Metadata).Returns(new Dictionary<string, object>());
+        upsert.Setup(c => c.Expand(It.IsAny<IStorageContainer>())).Returns(
+            GenericResult<IReadOnlyList<ExpandedCommand>>.Success(
+            [
+                new ExpandedCommand(
+                    new DeleteCommand { Filter = new FilterExpression { Root = new FilterCondition { PropertyName = "name", Operator = new EqualOperator(), Value = "Ann" } } },
+                    CountsAsAffected: false),
+                new ExpandedCommand(new InsertCommand<ContactRow>(new ContactRow { name = null, age = 31 })),
+            ]));
+
+        var result = await connection.Execute<int>(upsert.Object, _container, ct);
+
+        result.IsFailure.ShouldBeTrue();
+        var rows = await QueryAllRows(ct);
+        rows.Count.ShouldBe(1);
+        rows[0]["name"].ShouldBe("Ann");
+        System.Convert.ToInt64(rows[0]["age"], System.Globalization.CultureInfo.InvariantCulture).ShouldBe(30L);
     }
 
     [Fact]

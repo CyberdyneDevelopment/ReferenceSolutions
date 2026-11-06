@@ -58,6 +58,12 @@ public static partial class ProjectLog
     [MessageLogging(EventId = 9212, Level = LogLevel.Error, Message = "Failed to create project '{name}': {message}")]
     public static partial IGenericMessage ProjectCreateFailed(ILogger logger, string name, string? message);
 
+    /// <summary>A project is created without saying whether it runs. That is the caller's choice and nothing assumes it (FDW-3931).</summary>
+    [MessageLogging(EventId = 21014, Level = LogLevel.Warning,
+        Message = "Project '{name}' does not say whether it runs: send isEnabled",
+        ClientMessage = "Say whether the project runs: send isEnabled")]
+    public static partial IGenericMessage ProjectEnablementNotStated(ILogger logger, string name);
+
     // ═══════════════════════════════════════════════════════════════════════════
     // Update operations (9215-9219)
     // ═══════════════════════════════════════════════════════════════════════════

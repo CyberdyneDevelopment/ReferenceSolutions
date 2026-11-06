@@ -24,7 +24,7 @@ public interface IMsSqlSchemaDiscoverer
     /// <returns>A result containing the discovered schema, or failure information.</returns>
     Task<IGenericResult<SchemaDiscoveryResult>> DiscoverSchema(
         MsSqlConnection connection,
-        SchemaDiscoveryOptions? options,
+        SchemaDiscoveryOptions options,
         CancellationToken cancellationToken);
 
     /// <summary>

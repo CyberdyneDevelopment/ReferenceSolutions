@@ -29,4 +29,7 @@ public static partial class DdlLog
 
     [MessageLogging(EventId = 8555, Level = LogLevel.Error, Message = "DDL execution failed on connection '{connectionName}': {message}")]
     public static partial IGenericMessage DdlExecutionFailed(ILogger logger, string connectionName, string message);
+
+    [MessageLogging(EventId = 8556, Level = LogLevel.Warning, Message = "DDL on connection '{connectionName}' refused: column '{columnName}' names SQL type '{sqlType}', which is no known column type")]
+    public static partial IGenericMessage ColumnTypeUnknown(ILogger logger, string connectionName, string columnName, string sqlType);
 }

@@ -10,6 +10,9 @@ using Fdw.Data;
 using Fdw.Results;
 using Fdw.Services.SecretManagers.Abstractions;
 using Fdw.Services.SecretManagers.Abstractions.Logging;
+using Fdw.Conventions;
+using FdwReferenceSecretManagers.EnvironmentVariable.Logging;
+using FdwReferenceSecretManagers.EnvironmentVariable.Targets;
 
 namespace FdwReferenceSecretManagers.EnvironmentVariable.Configuration;
 
@@ -78,7 +81,8 @@ public sealed partial class EnvironmentVariableConfiguration : ISecretManagerImp
     /// <summary>
     /// Gets or sets a value indicating whether this configuration is enabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    [CallerChoice]
+    public bool IsEnabled { get; set; }
 
     /// <summary>
     /// Gets or sets the prefix to filter environment variables.
@@ -114,7 +118,8 @@ public sealed partial class EnvironmentVariableConfiguration : ISecretManagerImp
     /// so double underscore "__" is commonly used to represent hierarchy.
     /// For example, "DATABASE__CONNECTION__STRING" maps to "Database:Connection:String".
     /// </remarks>
-    public string Separator { get; set; } = "__";
+    [CallerChoice]
+    public string Separator { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets a value indicating whether to strip the prefix from returned keys.
@@ -124,7 +129,8 @@ public sealed partial class EnvironmentVariableConfiguration : ISecretManagerImp
     /// When true, environment variable "APP_DATABASE_PASSWORD" is returned
     /// as "DATABASE_PASSWORD". When false, the full name is returned.
     /// </remarks>
-    public bool StripPrefix { get; set; } = true;
+    [CallerChoice]
+    public bool StripPrefix { get; set; }
 
     /// <summary>
     /// Gets or sets the target for environment variable retrieval.
@@ -134,15 +140,24 @@ public sealed partial class EnvironmentVariableConfiguration : ISecretManagerImp
     /// Process: Variables for the current process (default).
     /// User: Variables for the current user account.
     /// Machine: System-wide variables (requires elevated permissions to set).
-    /// Stored as string to match NVARCHAR(50) column; resolved to <see cref="EnvironmentVariableTarget"/> via <see cref="TargetEnum"/>.
+    /// Stored as the name of an <see cref="EnvironmentVariableTargets"/> option (NVARCHAR(50)); <see cref="IdentifyTarget"/> answers the option.
     /// </remarks>
-    public string Target { get; set; } = nameof(EnvironmentVariableTarget.Process);
+    [CallerChoice]
+    public string Target { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets <see cref="Target"/> parsed to the typed enum, defaulting to <see cref="EnvironmentVariableTarget.Process"/>.
+    /// Identifies the <see cref="EnvironmentVariableTargets"/> option <see cref="Target"/> names (FDW-4144). Target is the caller's choice, with no
+    /// default (FDW-3823): the validator refuses a configuration whose Target is missing or names no option, so a validated one is always
+    /// identified; an unvalidated one (empty or unknown) answers a failure, never a throw and never Process.
     /// </summary>
-    public EnvironmentVariableTarget TargetEnum =>
-        Enum.TryParse<EnvironmentVariableTarget>(Target, ignoreCase: true, out var t) ? t : EnvironmentVariableTarget.Process;
+    /// <returns>The target option, or a failure naming the value.</returns>
+    public IGenericResult<IEnvironmentVariableTarget> IdentifyTarget()
+    {
+        var target = EnvironmentVariableTargets.ByName(Target);
+        return ReferenceEquals(target, EnvironmentVariableTargets.NotFound)
+            ? GenericResult<IEnvironmentVariableTarget>.Failure(EnvironmentVariableLogger.TargetInvalid(_logger, Target))
+            : GenericResult<IEnvironmentVariableTarget>.Success(target);
+    }
 
     #endregion
 

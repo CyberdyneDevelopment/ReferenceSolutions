@@ -32,6 +32,9 @@ public class GraphQLProtocolBaseTests
         // Why: Name is a header field on ConnectionConfiguration after config-split; cannot be set on typed body.
         var config = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com/graphql"
         };
         return new HttpProtocolContext(
@@ -612,16 +615,16 @@ public class GraphQLProtocolBaseTests
     [Fact]
     [Trait("Priority", "P1")]
     [Trait("Category", "Api")]
-    public void FormatGraphQLErrorWithNullMessageReturnsUnknownError()
+    public void FormatGraphQLErrorWithNullMessageReturnsEmptyText()
     {
-        // Arrange
+        // Arrange: an error the server sent without a message (FDW-3580: no stand-in message is made up for it).
         var error = new GraphQLError { Message = null };
 
         // Act
         var result = _protocol.FormatGraphQLError(error);
 
         // Assert
-        result.ShouldBe("Unknown error");
+        result.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -1119,6 +1122,9 @@ public class GraphQLProtocolBaseTests
         // Arrange
         var config = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com/graphql"
         };
         var context = new HttpProtocolContext(
@@ -1146,6 +1152,8 @@ public class GraphQLProtocolBaseTests
         // Arrange
         var config = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com/graphql",
             AuthenticationType = "ApiKey",
             AdditionalProperties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)

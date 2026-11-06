@@ -25,6 +25,7 @@ public sealed class SqlTenantWriterTests
         tenant.SetupGet(t => t.IsActive).Returns(isActive);
         tenant.SetupGet(t => t.IsGlobal).Returns(isGlobal);
         tenant.SetupGet(t => t.ConnectionName).Returns(connection);
+        tenant.SetupGet(t => t.Theme).Returns(new TenantTheme { PrimaryColor = "1 1% 1%", SecondaryColor = "2 2% 2%", DarkModeDefault = true });
         return tenant.Object;
     }
 
@@ -56,6 +57,18 @@ public sealed class SqlTenantWriterTests
         return (writer, gateway);
     }
 
+    private static SqlTenantWriter WriterOver(Mock<ITenantProvider> tenants, Mock<IConfigurationGateway> gateway)
+    {
+        gateway.Setup(g => g.Execute<int>(It.IsAny<IDataCommand>(), It.IsAny<DataStoreTarget>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<int>.Success(1));
+        var gateways = new Mock<IConfigurationGatewayProvider>();
+        gateways.Setup(g => g.Get("PlatformConfiguration")).Returns(GenericResult<IConfigurationGateway>.Success(gateway.Object));
+        return new SqlTenantWriter(gateways.Object, tenants.Object, new SqlTenantConfiguration
+        {
+            DataStoreName = "PlatformConfiguration", PathName = "tenant", TenantsTableName = "Tenants",
+        });
+    }
+
     private static void NothingWritten(Mock<IConfigurationGateway> gateway) =>
         gateway.Verify(g => g.Execute<int>(It.IsAny<IDataCommand>(), It.IsAny<DataStoreTarget>(), It.IsAny<CancellationToken>()), Times.Never);
 
@@ -66,7 +79,7 @@ public sealed class SqlTenantWriterTests
     {
         var (writer, gateway) = Writer();
 
-        var made = await writer.Create(new NewTenant("Beta", "beta", null, null), TestContext.Current.CancellationToken);
+        var made = await writer.Create(new NewTenant("Beta", "beta", null, null, true, "Main", "main"), TestContext.Current.CancellationToken);
 
         made.IsSuccess.ShouldBeTrue();
         made.Value.ShouldNotBe(Guid.Empty);
@@ -82,7 +95,7 @@ public sealed class SqlTenantWriterTests
     {
         var (writer, gateway) = Writer();
 
-        var made = await writer.Create(new NewTenant("Another", slug, null, null), TestContext.Current.CancellationToken);
+        var made = await writer.Create(new NewTenant("Another", slug, null, null, true, "Main", "main"), TestContext.Current.CancellationToken);
 
         made.IsFailure.ShouldBeTrue();
         NothingWritten(gateway);
@@ -98,7 +111,39 @@ public sealed class SqlTenantWriterTests
     {
         var (writer, gateway) = Writer();
 
-        var made = await writer.Create(new NewTenant(name, slug, null, null), TestContext.Current.CancellationToken);
+        var made = await writer.Create(new NewTenant(name, slug, null, null, true, "Main", "main"), TestContext.Current.CancellationToken);
+
+        made.IsFailure.ShouldBeTrue();
+        NothingWritten(gateway);
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "Security")]
+    public async Task ATenantIsMadeOnceWhenADefaultTenantExistsToTakeItsPaletteFrom()
+    {
+        var (writer, gateway) = Writer();
+
+        var made = await writer.Create(new NewTenant("Beta", "beta", null, null, true, "Main", "main"), TestContext.Current.CancellationToken);
+
+        // That the colours are the default tenant's is the insert's content; this pins that the write happens exactly once and only with a default tenant.
+        made.IsSuccess.ShouldBeTrue();
+        gateway.Verify(g => g.Execute<int>(It.IsAny<IDataCommand>(), It.IsAny<DataStoreTarget>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "Security")]
+    public async Task ATenantWithNoDefaultTenantToTakeItsPaletteFromIsRefusedAndNothingIsWritten()
+    {
+        var onlyAcme = Tenant(Acme, "acme", "Acme", true, false, "AcmeDb");
+        var tenants = new Mock<ITenantProvider>();
+        tenants.Setup(t => t.GetAllTenants(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<IEnumerable<ITenant>>.Success([onlyAcme]));
+        var gateway = new Mock<IConfigurationGateway>();
+        var writer = WriterOver(tenants, gateway);
+
+        var made = await writer.Create(new NewTenant("Beta", "beta", null, null, true, "Main", "main"), TestContext.Current.CancellationToken);
 
         made.IsFailure.ShouldBeTrue();
         NothingWritten(gateway);
@@ -147,6 +192,19 @@ public sealed class SqlTenantWriterTests
 
         renamed.IsFailure.ShouldBeTrue();
         NothingWritten(gateway);
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    public async Task ATenantIsDeletedAfterItsOrganizationsAreRemoved()
+    {
+        var (writer, gateway) = Writer();
+
+        var deleted = await writer.Delete(Acme, TestContext.Current.CancellationToken);
+
+        deleted.IsSuccess.ShouldBeTrue();
+        // the organization configuration rows, the organization rows, then the tenant row
+        gateway.Verify(g => g.Execute<int>(It.IsAny<IDataCommand>(), It.IsAny<DataStoreTarget>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
     }
 
     [Fact]

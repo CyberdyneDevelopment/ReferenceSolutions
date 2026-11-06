@@ -40,8 +40,8 @@ public sealed class UpdateScheduleProxyEndpoint : Endpoint<ProxyUpdateScheduleRe
     public override void Configure()
     {
         // Why PATCH and not PUT: an update states only what it changes, which is what the
-        // nullable request properties above express. CrudUpdateEndpointBase.UpdateVerb is PATCH
-        // for the same reason, and this proxy must present the verb its downstream accepts.
+        // nullable request properties above express. Every CRUD update is PATCH (the API takes no
+        // PUT, FDW058), and this proxy must present the verb its downstream accepts.
         Patch("/schedules/{name}");
         Policies("schedules:write");
         Summary(s =>
@@ -108,6 +108,7 @@ public sealed class UpdateScheduleProxyEndpoint : Endpoint<ProxyUpdateScheduleRe
                 CronExpression = req.CronExpression,
                 IntervalSeconds = req.IntervalSeconds,
                 TimeZoneId = req.TimeZoneId,
+                MissedFireRule = req.MissedFireRule,
                 IsEnabled = req.IsEnabled,
                 Parameters = req.Parameters,
                 RunRoles = req.RunRoles,

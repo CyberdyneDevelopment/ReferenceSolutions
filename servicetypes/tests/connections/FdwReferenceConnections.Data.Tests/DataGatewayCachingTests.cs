@@ -56,7 +56,7 @@ public sealed class DataGatewayCachingTests
         // Without a default setup Moq returns null Task causing NRE at the await site.
         _dataSetProviderMock
             .Setup(p => p.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(GenericResult<SimpleDataSetConfiguration>.Failure());
+            .ReturnsAsync(GenericResult<SimpleDataSetConfiguration>.Failure(new Fdw.Messages.GenericMessage("the stand-in call failed")));
 
         // Why the interface and not the concrete DataStoreConfigurationProvider: the concrete
         // provider is sealed (every domain provider is), so Moq cannot mock it directly. The
@@ -85,7 +85,7 @@ public sealed class DataGatewayCachingTests
         _connectionConfigProviderMock
             .Setup(p => p.Get(It.IsAny<Guid>(), ConfigurationLevels.RecordOnly, It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IConnectionImplementationConfiguration>.Success(
-                new MsSqlConnectionConfiguration { MaxSerialInsert = 1000, CommandTimeoutSeconds = 30, Implementation = "MsSql" }));
+                new MsSqlConnectionConfiguration { Port = 1433, Encrypt = true, EnableConnectionPooling = true, MaxPoolSize = 100, Server = "localhost", DefaultSchema = "dbo", MaxSerialInsert = 1000, CommandTimeoutSeconds = 30, Implementation = "MsSql" }));
 
         _dataStoreProviderMock = new Mock<IDataStoreProvider>();
         // Why: default to "not found" so unconfigured container routing fails loud instead of NRE.

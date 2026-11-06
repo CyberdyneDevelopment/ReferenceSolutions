@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Fdw.Results;
+using Fdw.Services.Settings;
 
 namespace FdwReferenceNotifications.Console.Registration;
 
@@ -59,7 +60,7 @@ public sealed class ConsoleNotificationType
             description: "Development/test channel that logs notification content via structured logging",
             settings:
             [
-                new("LogLevel", NotificationSettingTypes.Text, false, false),
+                new("LogLevel", NotificationSettingTypes.Text, false, false) { DefaultSetting = DefaultValueSettings.DefaultConsoleLogLevel },
             ],
             defaultContainerName: "ConsoleNotificationConfiguration")
     {

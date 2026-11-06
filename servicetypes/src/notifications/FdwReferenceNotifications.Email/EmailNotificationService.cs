@@ -95,7 +95,7 @@ public sealed class EmailNotificationService : INotificationService
         try
         {
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(Configuration.FromName ?? Configuration.FromAddress, Configuration.FromAddress));
+            message.From.Add(new MailboxAddress(Configuration.FromName ?? string.Empty, Configuration.FromAddress));
 
             foreach (var recipient in request.Recipients)
             {
@@ -177,7 +177,7 @@ public sealed class EmailNotificationService : INotificationService
         {
             return GenericResult<T>.Failure(
                 NotificationResultCodes.ByName("SendFailed"),
-                ResultDetails.Create().With("Message", result.CurrentMessage ?? "Unknown error"));
+                ResultDetails.Create().With("Message", result.FailureReason().Message));
         }
 
         if (result.Value is T typedResult)
@@ -205,7 +205,7 @@ public sealed class EmailNotificationService : INotificationService
             ? GenericResult.Success()
             : GenericResult.Failure(
                 NotificationResultCodes.ByName("SendFailed"),
-                ResultDetails.Create().With("Message", result.CurrentMessage ?? "Unknown error"));
+                ResultDetails.Create().With("Message", result.FailureReason().Message));
     }
 
     private static bool IsValidEmail(string email)

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Fdw.Results;
 using Fdw.Services.Scheduling.Abstractions.Configuration;
 using Fdw.Services.Scheduling.Endpoints;
+using Fdw.Services.Tags;
 using FdwReferenceSchedules.Endpoints.Logging;
 
 namespace FdwReferenceSchedules.Endpoints;
@@ -18,8 +19,8 @@ namespace FdwReferenceSchedules.Endpoints;
 public class ListSchedulesEndpoint : ListSchedulesEndpointBase
 {
     /// <inheritdoc />
-    public ListSchedulesEndpoint(IScheduleConfigurationProvider provider, ILogger<ListSchedulesEndpoint> logger)
-        : base(logger, provider) {
+    public ListSchedulesEndpoint(IScheduleConfigurationProvider provider, ILogger<ListSchedulesEndpoint> logger, ITagService? tags = null)
+        : base(logger, provider, tags) {
     }
 
     /// <inheritdoc />
@@ -27,8 +28,8 @@ public class ListSchedulesEndpoint : ListSchedulesEndpointBase
     {
         ScheduleLog.ListingSchedules(Logger, request.Page, request.PageSize);
         var result = await base.LoadItems(request, ct).ConfigureAwait(false);
-        if (result.IsSuccess)
-            ScheduleLog.SchedulesListed(Logger, result.Value?.Count ?? 0);
+        if (result.IsSuccess && result.Value is { } schedules)
+            ScheduleLog.SchedulesListed(Logger, schedules.Count);
         return result;
     }
 

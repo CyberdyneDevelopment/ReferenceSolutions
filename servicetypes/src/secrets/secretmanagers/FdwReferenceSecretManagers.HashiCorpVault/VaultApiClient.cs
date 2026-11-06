@@ -11,6 +11,7 @@ using FdwReferenceSecretManagers.HashiCorpVault.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Fdw.Services.SecretManagers;
+using Fdw.Conventions;
 
 namespace FdwReferenceSecretManagers.HashiCorpVault;
 
@@ -129,7 +130,7 @@ public sealed class VaultApiClient : IDisposable
         }
 
         var lease = ReadLease(root, fields);
-        VaultLog.CredentialIssued(_logger, context.ConfigurationName, secretKey, lease.ExpiresAt?.ToString("O") ?? "no lease");
+        VaultLog.CredentialIssued(_logger, context.ConfigurationName, secretKey, lease.ExpiresAt?.ToString("O") ?? LogPlaceholders.NoLease);
 
         return GenericResult<SecretValue>.Success(
             new SecretValue(secretKey, secret, version: null, expiresAt: lease.ExpiresAt, metadata: lease.Metadata));

@@ -41,6 +41,15 @@ public sealed class ScheduledPipelineJob : IJob
     /// <summary>The job data key naming the schedule that owns this job.</summary>
     public const string ScheduleIdKey = "ScheduleId";
 
+    /// <summary>The job data key carrying the time a catch-up run was due (FDW-3788), written round-trip; absent from every other fire.</summary>
+    public const string CatchupDueKey = "CatchupDue";
+
+    /// <summary>The trigger type an ordinary fire is recorded with.</summary>
+    private const string ScheduledTriggerType = "Scheduled";
+
+    /// <summary>The trigger type a run for the fire times missed while the scheduler was down is recorded with (FDW-3788).</summary>
+    private const string CatchupTriggerType = "Catchup";
+
     /// <summary>The job data key naming the connection to record execution history in.</summary>
     public const string DataStoreNameKey = "DataStoreName";
 
@@ -121,6 +130,21 @@ public sealed class ScheduledPipelineJob : IJob
         var scheduledFireTime = context.ScheduledFireTimeUtc?.UtcDateTime ?? context.FireTimeUtc.UtcDateTime;
         var actualFireTime = context.FireTimeUtc.UtcDateTime;
 
+        // Why the due time replaces the scheduled time (FDW-3788): a catch-up run is fired by hand for a time that passed, and it says which time. It is read from the data of its
+        // own trigger; a value that cannot be read fails the fire loudly and records nothing, never a Catchup due now.
+        var triggerType = ScheduledTriggerType;
+        if (context.MergedJobDataMap.GetString(CatchupDueKey) is { Length: > 0 } dueText)
+        {
+            if (!DateTimeOffset.TryParse(dueText, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out var due))
+            {
+                QuartzSchedulingLog.JobDataMissing(_logger, jobKey, CatchupDueKey);
+                return;
+            }
+
+            triggerType = CatchupTriggerType;
+            scheduledFireTime = due.UtcDateTime;
+        }
+
         // Why elevated: a background fire has no ClaimsPrincipal, so without this the connection
         // resolves to the deny-everywhere principal and reaches only fn_TenantFilter's shared-row
         // branch — reads come back partial and silent, and an insert whose row is not visible is
@@ -155,7 +179,7 @@ public sealed class ScheduledPipelineJob : IJob
 
         await RecordExecution(
             scheduleId, processId, dataStoreName, pathName, scheduleContainerName,
-            scheduledFireTime, actualFireTime, status, errorMessage, context.CancellationToken)
+            triggerType, scheduledFireTime, actualFireTime, status, errorMessage, context.CancellationToken)
             .ConfigureAwait(false);
 
         await RecordRunFields(
@@ -206,7 +230,7 @@ public sealed class ScheduledPipelineJob : IJob
 
     private async Task RecordExecution(
         string scheduleId, string processId, string dataStoreName, string pathName, string scheduleContainerName,
-        DateTime scheduledFireTime, DateTime actualFireTime,
+        string triggerType, DateTime scheduledFireTime, DateTime actualFireTime,
         string status, string? errorMessage, System.Threading.CancellationToken cancellationToken)
     {
         var completedAt = DateTimeOffset.UtcNow;
@@ -215,7 +239,7 @@ public sealed class ScheduledPipelineJob : IJob
             Name = $"{scheduleId}_{completedAt:yyyyMMddHHmmss}",
             ScheduleName = scheduleId,
             PipelineName = processId,
-            TriggerType = "Scheduled",
+            TriggerType = triggerType,
             Status = status,
             TriggeredAt = scheduledFireTime,
             ScheduledFireTime = scheduledFireTime,

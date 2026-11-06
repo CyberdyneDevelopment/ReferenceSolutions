@@ -98,6 +98,12 @@ public static partial class HttpConnectionFactoryLogger
     public static partial IGenericMessage ConfiguringHttpClient(ILogger<HttpConnectionFactory> logger, string connectionName, string baseUrl, int timeout);
 
     /// <summary>
+    /// Logs when configuring an HTTP client for a connection that states no timeout, so the platform's own applies (FDW-3580).
+    /// </summary>
+    [MessageLogging(EventId = 11015, Level = LogLevel.Debug, Message = "Configuring HTTP client for '{connectionName}' with base URL: {baseUrl}; it states no timeout, so the platform's own applies")]
+    public static partial IGenericMessage ConfiguringHttpClientWithPlatformTimeout(ILogger<HttpConnectionFactory> logger, string connectionName, string baseUrl);
+
+    /// <summary>
     /// Logs when no translator is provided.
     /// </summary>
     [MessageLogging(EventId = 61002, Level = LogLevel.Error, Message = "No data command translator configured for HTTP connection '{connectionName}'")]

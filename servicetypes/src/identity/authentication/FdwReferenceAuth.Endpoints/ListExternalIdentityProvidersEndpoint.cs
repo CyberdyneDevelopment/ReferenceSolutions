@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceAuth.Endpoints.Logging;
+using Fdw.Results;
 
 namespace FdwReferenceAuth.Endpoints;
 
@@ -99,7 +100,7 @@ public sealed class ListExternalIdentityProvidersEndpoint : EndpointWithoutReque
         var flows = await _flows.Get(ct).ConfigureAwait(false);
         if (flows.IsFailure || flows.Value is null)
         {
-            AuthenticationLog.ExternalProviderFlowsUnreadable(_log, flows.CurrentMessage ?? "no flows returned");
+            AuthenticationLog.ExternalProviderFlowsUnreadable(_log, flows.NoValueReason().Message);
             await Send.ResponseAsync(
                 new ExternalIdentityProviderListResponse(), StatusCodes.Status500InternalServerError, ct)
                 .ConfigureAwait(false);
@@ -121,7 +122,7 @@ public sealed class ListExternalIdentityProvidersEndpoint : EndpointWithoutReque
                 if (authority.IsFailure || string.IsNullOrWhiteSpace(authority.Value))
                 {
                     AuthenticationLog.ExternalProviderAuthorityUnreadable(
-                        _log, flow.Name, stepName, authority.CurrentMessage ?? "no name returned");
+                        _log, flow.Name, stepName, authority.IsFailure ? authority.FailureReason().Message : "no name returned");
                     await Send.ResponseAsync(
                         new ExternalIdentityProviderListResponse(), StatusCodes.Status500InternalServerError, ct)
                         .ConfigureAwait(false);

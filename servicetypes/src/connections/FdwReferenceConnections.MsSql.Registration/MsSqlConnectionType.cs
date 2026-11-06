@@ -1,3 +1,4 @@
+using Fdw.ServiceTypes;
 using Fdw.Services.Settings;
 using Fdw.Services.Connections.MsSql.Authentication;
 using Fdw.Services.Connections.Logging;
@@ -47,6 +48,16 @@ public sealed class MsSqlConnectionType
 {
     private ILogger<MsSqlConnectionType>? _logger;
     private IMsSqlSchemaDiscoverer? _discoverer;
+
+    /// <summary>
+    /// Gets the tuning defaults this type carries (FDW-3823, Mike: "the thing you select carries it"), Port 1433, Encrypt true, EnableConnectionPooling true, MinPoolSize 0, MaxPoolSize 100, EnableMultipleActiveResultSets false, AutoDiscoverSchema false: a configuration that states its own
+    /// value uses it, and a host can change one at registration with ServiceTypeDefaults.Override. What the caller chooses (where it connects,
+    /// which schema, how it authenticates, whether it trusts a certificate) has no default.
+    /// </summary>
+    public override IReadOnlyDictionary<string, object> DeclaredDefaults
+        => _declaredDefaults ??= ServiceTypeDefaults.With(base.DeclaredDefaults, (nameof(MsSqlConnectionConfiguration.Port), 1433), (nameof(MsSqlConnectionConfiguration.Encrypt), true), (nameof(MsSqlConnectionConfiguration.EnableConnectionPooling), true), (nameof(MsSqlConnectionConfiguration.MinPoolSize), 0), (nameof(MsSqlConnectionConfiguration.MaxPoolSize), 100), (nameof(MsSqlConnectionConfiguration.EnableMultipleActiveResultSets), false), (nameof(MsSqlConnectionConfiguration.AutoDiscoverSchema), false));
+
+    private IReadOnlyDictionary<string, object>? _declaredDefaults;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MsSqlConnectionType"/> class.
@@ -320,7 +331,9 @@ public sealed class MsSqlConnectionType
             ExcludedSchemas = options.ExcludedSchemas,
             IncludeOnlySchemas = options.IncludeOnlySchemas,
             DiscoverViews = options.DiscoverViews,
-            DiscoverIndexes = options.DiscoverIndexes
+            DiscoverIndexes = options.DiscoverIndexes,
+            DiscoverForeignKeys = options.DiscoverForeignKeys,
+            DiscoverDescriptions = options.DiscoverDescriptions,
         };
 
         var discoverResult = await _discoverer.DiscoverSchema(connection, msSqlOptions, cancellationToken).ConfigureAwait(false);

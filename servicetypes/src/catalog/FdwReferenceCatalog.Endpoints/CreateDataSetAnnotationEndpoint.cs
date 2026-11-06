@@ -1,6 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Catalog.Endpoints;
 using Fdw.Services.Quality;
+using Fdw.Data.DataSets.Abstractions;
+using Fdw.Services.Tags;
+using Fdw.Services.Authentication.Abstractions.Security;
 
 namespace FdwReferenceCatalog.Endpoints;
 
@@ -11,8 +14,12 @@ namespace FdwReferenceCatalog.Endpoints;
 public sealed class CreateDataSetAnnotationEndpoint : CreateDataSetAnnotationEndpointBase
 {
     /// <inheritdoc />
-    public CreateDataSetAnnotationEndpoint(IDataSetAnnotationConfigurationProvider provider)
-        : base(provider)
+    public CreateDataSetAnnotationEndpoint(
+        IDataSetAnnotationConfigurationProvider provider,
+        IDataSetConfigurationProvider dataSets,
+        ITagService tags,
+        IAuthenticationContextAccessor authentication)
+        : base(provider, dataSets, tags, authentication)
     {
     }
 }

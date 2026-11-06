@@ -20,7 +20,6 @@ This package declares 1 interface(s), 1 service/provider type(s).
 
 | Type | Kind | Purpose |
 |---|---|---|
-| `ContainerRecordOptions` | class | Builds the format-specific / for a configured container DYNAMICALLY from its and field schema — the… |
 | `FileSystemConfigurationDeleteCommand` | class | The native FileSystem command that soft-deletes a configuration record (the version-on-write… |
 | `FileSystemConfigurationSaveCommand` | class | The native FileSystem command that persists a NEW logical version of a configuration record (the… |
 | `FileSystemConfigurationWriteLog` | class | MessageLogging for the FileSystem configuration write path — the version-on-write CREATE… |

@@ -10,6 +10,7 @@ using Fdw.Data;
 using Fdw.Results;
 using Fdw.Services.SecretManagers.Abstractions;
 using Fdw.Services.SecretManagers.Abstractions.Logging;
+using Fdw.Conventions;
 
 namespace FdwReferenceSecretManagers.MsSql.Configuration;
 
@@ -82,7 +83,8 @@ public sealed partial class MsSqlSecretManagerConfiguration : ISecretManagerImpl
     /// <summary>
     /// Gets or sets the SQL Server hostname or IP address.
     /// </summary>
-    public string Server { get; set; } = "localhost";
+    [CallerChoice]
+    public string Server { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the database name.
@@ -92,8 +94,7 @@ public sealed partial class MsSqlSecretManagerConfiguration : ISecretManagerImpl
     /// <summary>
     /// Gets or sets the SQL Server port.
     /// </summary>
-    /// <value>Default: 1433</value>
-    public int Port { get; set; } = 1433;
+    public int Port { get; set; }
 
     /// <summary>
     /// Gets or sets the authentication type (e.g., "SqlAuth", "WindowsAuth").
@@ -123,8 +124,7 @@ public sealed partial class MsSqlSecretManagerConfiguration : ISecretManagerImpl
     /// <summary>
     /// Gets or sets whether to encrypt the connection.
     /// </summary>
-    /// <value>Default: true</value>
-    public bool Encrypt { get; set; } = true;
+    public bool Encrypt { get; set; }
 
     #endregion
 
@@ -133,14 +133,14 @@ public sealed partial class MsSqlSecretManagerConfiguration : ISecretManagerImpl
     /// <summary>
     /// Gets or sets the SQL schema containing the secrets table.
     /// </summary>
-    /// <value>Default: "secrets"</value>
-    public string Schema { get; set; } = "secrets";
+    [CallerChoice]
+    public string Schema { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the name of the secrets table.
     /// </summary>
-    /// <value>Default: "Secret"</value>
-    public string TableName { get; set; } = "Secret";
+    [CallerChoice]
+    public string TableName { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the command timeout in seconds for SQL operations, or <see langword="null"/> when the secret manager states none (FDW-3284).

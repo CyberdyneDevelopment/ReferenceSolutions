@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Fdw.Services.Pipelines.Endpoints" />
     <PackageReference Include="Fdw.Services.Scheduling.Abstractions" />
     <PackageReference Include="Fdw.Services.Pipelines.Abstractions" />
     <PackageReference Include="Fdw.Services.Authentication.Abstractions" />

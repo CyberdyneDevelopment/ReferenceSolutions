@@ -5,6 +5,7 @@ using Fdw.Collections;
 using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Authorization;
 using Fdw.Services.Authorization.Abstractions;
+using Fdw.Services.Configuration;
 using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Multitenancy.Abstractions;
 using FdwReferenceMultitenancy.Sql.Logging;
@@ -176,8 +177,11 @@ public sealed class SqlMultitenancyType : MultitenancyTypeBase<ISqlMultitenancyF
                     sp.GetRequiredService<TenantOrgAccessConfigurationProvider>(),
                     sp.GetService<ILogger<DefaultOrgAccessProvider>>()));
 
+            // The placement of a new data set, data store, pipeline or calculation (FDW-3692) is not registered here: RegisterAlwaysOnContexts
+            // above registers it for every multitenancy option, because the ETL host and the scheduler run SingleTenant and make pipelines too.
+
             return GenericResult<IHostApplicationBuilder>.Success(builder);
-    
+
         });
 
     }

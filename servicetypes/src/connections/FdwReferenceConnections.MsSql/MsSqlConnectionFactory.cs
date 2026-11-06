@@ -186,11 +186,23 @@ public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnecti
         if (configuration.MaxSerialInsert <= 0)
             return GenericResult<IGenericConnection>.Failure(DatabaseCommandLog.MaxSerialInsertNotStated(_logger, name));
 
+        // Never defaulted (FDW-4109): a pooled connection states its pool sizes, and sizes SQL Server cannot use are refused, naming them,
+        // where SqlConnectionStringBuilder would otherwise throw on them.
+        if (!PoolSizesUsable(configuration))
+            return GenericResult<IGenericConnection>.Failure(
+                MsSqlConnectionFactoryLogger.PoolSizeNotUsable(_logger, name, configuration.MinPoolSize, configuration.MaxPoolSize));
+
         // Never defaulted (FDW-3284): the command timeout is the connection's own, else the instance's setting DefaultCommandTimeoutSeconds, and
         // a connection that has neither is refused, naming it and the setting.
         var commandTimeout = InstanceCommandTimeout.Resolve(configuration.CommandTimeoutSeconds, _settings, "connection", name, _logger);
         if (commandTimeout.IsFailure)
             return commandTimeout.ToNewResult<IGenericConnection>();
+
+        // Never defaulted (FDW-3580): the connect timeout is read as the command timeout is, the connection's own, else the
+        // instance's setting DefaultConnectionTimeoutSeconds, and a connection that has neither is refused.
+        var connectTimeout = InstanceConnectionTimeout.Resolve(configuration.ConnectionTimeoutSeconds, _settings, "connection", name, _logger);
+        if (connectTimeout.IsFailure)
+            return connectTimeout.ToNewResult<IGenericConnection>();
 
         // Why: ByName returns the NotFound sentinel for an unrecognized type -- never null. An
         // unknown authentication type is a configuration defect, not "no authentication".
@@ -217,7 +229,7 @@ public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnecti
             return GenericResult<IGenericConnection>.Failure(
                 MsSqlConnectionFactoryLogger.SecretManagerRequired(_logger, name, requirement.Value.KeyName));
 
-        var built = BuildConnectionString(configuration, auth, normalizedValues, resolvedSecret, name);
+        var built = BuildConnectionString(configuration, auth, normalizedValues, resolvedSecret, name, connectTimeout.Value);
         if (!built.IsSuccess)
             return built.ToNewResult<IGenericConnection>();
 
@@ -251,7 +263,8 @@ public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnecti
         MsSqlAuthenticationConfiguration auth,
         IReadOnlyDictionary<string, string?> authValues,
         string? resolvedPassword,
-        string connectionName)
+        string connectionName,
+        int connectTimeoutSeconds)
     {
         if (auth.IsEmpty)
         {
@@ -271,7 +284,7 @@ public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnecti
             return fragmentResult.ToNewResult<ConnectionStringResult>();
         }
 
-        var connectionString = BuildConnectionStringBuilder(configuration, fragmentResult.Value).ConnectionString;
+        var connectionString = BuildConnectionStringBuilder(configuration, fragmentResult.Value, connectTimeoutSeconds).ConnectionString;
         return GenericResult<ConnectionStringResult>.Success(new ConnectionStringResult(connectionString));
     }
 
@@ -283,19 +296,25 @@ public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnecti
     /// constructor — SqlConnectionStringBuilder recognizes those keys as strongly-typed properties
     /// (UserID/Password) — then every other option is set by name. No raw key=value string appends.
     /// </remarks>
-    private static SqlConnectionStringBuilder BuildConnectionStringBuilder(MsSqlConnectionConfiguration configuration, string authFragment)
+    private static SqlConnectionStringBuilder BuildConnectionStringBuilder(MsSqlConnectionConfiguration configuration, string authFragment, int connectTimeoutSeconds)
     {
         var builder = new SqlConnectionStringBuilder(authFragment)
         {
             DataSource = BuildServerPart(configuration),
-            ConnectTimeout = configuration.ConnectionTimeoutSeconds,
+            ConnectTimeout = connectTimeoutSeconds,
             Encrypt = configuration.Encrypt,
             TrustServerCertificate = configuration.TrustServerCertificate,
             Pooling = configuration.EnableConnectionPooling,
-            MinPoolSize = configuration.MinPoolSize,
-            MaxPoolSize = configuration.MaxPoolSize,
             MultipleActiveResultSets = configuration.EnableMultipleActiveResultSets,
         };
+
+        // Pool sizes apply to a pooled connection only: one that does not pool states none, and SqlConnectionStringBuilder refuses a
+        // MaxPoolSize of 0 even with pooling off.
+        if (configuration.EnableConnectionPooling)
+        {
+            builder.MinPoolSize = configuration.MinPoolSize;
+            builder.MaxPoolSize = configuration.MaxPoolSize;
+        }
 
         if (!string.IsNullOrEmpty(configuration.Database))
             builder.InitialCatalog = configuration.Database;
@@ -305,6 +324,12 @@ public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnecti
 
         return builder;
     }
+
+    // A pooled connection's sizes are usable when MaxPoolSize is at least 1 and MinPoolSize is from 0 to MaxPoolSize; a connection that does
+    // not pool uses neither.
+    private static bool PoolSizesUsable(MsSqlConnectionConfiguration configuration)
+        => !configuration.EnableConnectionPooling
+           || (configuration.MaxPoolSize >= 1 && configuration.MinPoolSize >= 0 && configuration.MinPoolSize <= configuration.MaxPoolSize);
 
     // Why: named instances and non-default ports are both expressed as part of the DataSource value
     // itself (SqlConnectionStringBuilder has no separate Port/InstanceName property).

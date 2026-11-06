@@ -1,3 +1,4 @@
+using Fdw.ServiceTypes;
 using Fdw.Services.Settings;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Fdw.Services.Connections.Sqlite;
+using Fdw.Services.Connections.Sqlite.Validation;
 using Fdw.Services.Connections.Abstractions.Authentication;
 using System.Linq;
 using System;
@@ -34,6 +36,16 @@ public sealed class SqliteConnectionType
 {
 
     /// <summary>
+    /// Gets the tuning defaults this type carries (FDW-3823, Mike: "the thing you select carries it"), Mode ReadWriteCreate, Cache Default, ForeignKeys false: a configuration that states its own
+    /// value uses it, and a host can change one at registration with ServiceTypeDefaults.Override. What the caller chooses (where it connects,
+    /// which schema, how it authenticates, whether it trusts a certificate) has no default.
+    /// </summary>
+    public override IReadOnlyDictionary<string, object> DeclaredDefaults
+        => _declaredDefaults ??= ServiceTypeDefaults.With(base.DeclaredDefaults, (nameof(SqliteConnectionConfiguration.Mode), "ReadWriteCreate"), (nameof(SqliteConnectionConfiguration.Cache), "Default"), (nameof(SqliteConnectionConfiguration.ForeignKeys), false));
+
+    private IReadOnlyDictionary<string, object>? _declaredDefaults;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="SqliteConnectionType"/> class.
     /// </summary>
     public SqliteConnectionType() : base(
@@ -44,6 +56,10 @@ public sealed class SqliteConnectionType
         category: "Database",
         defaultContainerName: "SqliteConnectionConfiguration")
     {
+        // What a SQLite connection must state (where its data is, its mode and cache, a positive timeout) is the configuration
+        // validator's; a create or update that fails it is refused before it is saved (FDW-3541).
+        EndpointValidation(new SqliteConnectionConfigurationValidator());
+
         // Why Initialize: this wiring needs a LIVE container, and Register runs while the
         // container is still being built.
         Initialization((host, loggerFactory) =>

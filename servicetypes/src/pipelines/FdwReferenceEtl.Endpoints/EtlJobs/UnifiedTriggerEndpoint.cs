@@ -83,6 +83,24 @@ public sealed class UnifiedTriggerRequest
     /// after this many rows, no destination is written and no step with an outside effect runs. When null, the run is a real run. Only a pipeline can be a test run.
     /// </summary>
     public int? TestRowsPerSource { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the schedule that triggered the run (FDW-3805). The scheduler relays it with every fire; it names the run's schedule in its records and in the message of a run that
+    /// timed out, and the waiting-run thresholds of that schedule apply to it. Null for a run no schedule started.
+    /// </summary>
+    public string? ScheduleName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Id of the schedule that triggered the run (FDW-3975). The scheduler relays it with every fire, beside the name: the thresholds attached to the schedule are found by it.
+    /// Null for a run no schedule started.
+    /// </summary>
+    public Guid? ScheduleId { get; set; }
+
+    /// <summary>
+    /// Gets or sets how long the run may take once it starts running, in seconds (FDW-3805): the triggering schedule's stated timeout. When the time has passed the run is cancelled and ends with
+    /// the result code TimedOut. Null states no time limit and the run has none. Positive when stated; only a pipeline run takes one.
+    /// </summary>
+    public int? TimeoutSeconds { get; set; }
 }
 
 /// <summary>
@@ -286,6 +304,10 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
         if (req.TestRowsPerSource is not null)
             return GenericResult<UnifiedTriggerResponse>.Failure(EtlServerLog.TestRunOnlyForPipeline(_logger, req.Name, req.Id));
 
+        // Why refused (FDW-3805): the time limit is applied to a pipeline run; a project that ignored it would run with none.
+        if (req.TimeoutSeconds is not null)
+            return GenericResult<UnifiedTriggerResponse>.Failure(EtlServerLog.TimeoutOnlyForPipeline(_logger, req.Name, req.Id));
+
         var triggerSource = req.TriggerSource;
 
         // Resolve the project configuration to check approval policy. A name identifies one member of
@@ -304,12 +326,20 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
         var project = projectResult.Value;
         var resolvedName = project.Name;
 
+        // Read before the run is recorded: the project's policy inherits from the server's defaults, read from their provider, and a
+        // read that fails must not leave a run behind that nothing will start (FDW-3580, FDW-4053).
+        var rootPolicy = await _policyResolver.ResolveForRootNode(project, ct).ConfigureAwait(false);
+        if (rootPolicy.IsFailure || rootPolicy.Value is not { } policy)
+        {
+            return GenericResult<UnifiedTriggerResponse>.Failure(rootPolicy.NoValueReason());
+        }
+
         // Why the same rule as a pipeline trigger: the caller's own tenant wins, and the body's is honoured
         // only for a caller whose token carries no tenant. The tracker refuses a run with neither.
         var createResult = await _executionTracker.CreateItem(
             ExecutionItemTypes.ByName("Project"),
             $"{resolvedName}_{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
-            new ClaimsPrincipalAuthenticationContext(HttpContext.User).ActiveTenantId ?? req.TenantId,
+            TriggerTenant.For(HttpContext.User, req.TenantId),
             parentId: null,
             correlationId: Guid.NewGuid().ToString(),
             triggerSource: triggerSource,
@@ -335,7 +365,7 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
         // told from any other new run, and only a decision by someone who holds pipelines:approve starts it. A hold that cannot be recorded is a
         // failure: answering AwaitingApproval for a run that is not marked as waiting would leave it waiting for nobody.
         // The project's own setting wins; a project that states none inherits the server default (a null column means inherit).
-        if (_policyResolver.ResolveForRootNode(project).RequireApprovalToRun)
+        if (policy.RequireApprovalToRun)
         {
             var held = await _executionTracker.TransitionState(
                 executionId, ExecutionStateTypes.AwaitingApproval, "Held for approval", "ApprovalGate", ct).ConfigureAwait(false);

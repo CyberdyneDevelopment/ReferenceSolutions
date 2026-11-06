@@ -7,6 +7,7 @@ using FdwReferenceHosts.EmptyBody.Configuration;
 using FdwReferenceHosts.EmptyBody.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Fdw.Conventions;
 
 namespace FdwReferenceHosts.EmptyBody;
 
@@ -51,10 +52,10 @@ public sealed class EmptyBodyHostService : IHostService
     /// <inheritdoc />
     public Task<IGenericResult> Execute(IGenericCommand command, CancellationToken cancellationToken = default)
         => Task.FromResult<IGenericResult>(
-            GenericResult.Failure(EmptyBodyHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? "(null)")));
+            GenericResult.Failure(EmptyBodyHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? LogPlaceholders.Null)));
 
     /// <inheritdoc />
     public Task<IGenericResult<T>> Execute<T>(IGenericCommand command, CancellationToken cancellationToken = default)
         => Task.FromResult(
-            GenericResult<T>.Failure(EmptyBodyHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? "(null)")));
+            GenericResult<T>.Failure(EmptyBodyHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? LogPlaceholders.Null)));
 }

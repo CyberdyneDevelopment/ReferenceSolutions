@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FastEndpoints;
+using Fdw.Results;
 using Fdw.Services.Etl.Projects.Abstractions.Configuration;
 using Fdw.Services.Etl.Projects.Writers;
 using Fdw.Services.Pipelines.Abstractions;
@@ -39,6 +40,9 @@ public sealed class CreateOrchestrationNodeRequest
 
     /// <summary>Gets or sets the display ordinal among siblings.</summary>
     public int Ordinal { get; set; }
+
+    /// <summary>Whether the node runs. Required: the caller's choice, never assumed (FDW-3931).</summary>
+    public bool? IsEnabled { get; set; }
 
     /// <summary>Gets or sets the pipelines the node holds, by pipeline name. Only a step can hold pipelines; leave it out for a node that holds none.</summary>
     public List<NodePipelineRequest>? Pipelines { get; set; }
@@ -101,6 +105,16 @@ public sealed class CreateOrchestrationNodeEndpoint : Endpoint<CreateOrchestrati
             return;
         }
 
+        // Whether the node runs is the caller's choice; a request that does not say is refused, never given an answer (FDW-3931).
+        if (req.IsEnabled is not { } isEnabled)
+        {
+            var unstated = GenericResult.Failure(NodeLog.NodeEnablementNotStated(_logger, req.Name));
+            NodeLog.NodeCreateFailed(_logger, req.Name, unstated.CurrentMessage);
+            var (unstatedStatus, unstatedProblem) = ResultHttpStatusMapper.Map(unstated, HttpContext);
+            await Send.ResultAsync(TypedResults.Json(unstatedProblem, statusCode: unstatedStatus)).ConfigureAwait(false);
+            return;
+        }
+
         var config = new OrchestrationNodeImplementationConfiguration
         {
             // Why: API contract — IDs are uuid v7 for time-orderable persistence.
@@ -115,7 +129,7 @@ public sealed class CreateOrchestrationNodeEndpoint : Endpoint<CreateOrchestrati
             Ordinal = req.Ordinal,
             // The parent node is cited by its durable Id; the table stores it as it is.
             ParentId = req.ParentId,
-            IsEnabled = true,
+            IsEnabled = isEnabled,
         };
 
         var bound = await NodePipelines.Apply(_pipelines, config, req.Pipelines, req.Prerequisites, _logger, ct).ConfigureAwait(false);

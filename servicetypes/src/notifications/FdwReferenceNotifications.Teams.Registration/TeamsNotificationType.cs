@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Fdw.Services.Settings;
 
 namespace FdwReferenceNotifications.Teams.Registration;
 
@@ -31,8 +32,8 @@ public sealed class TeamsNotificationType
             settings:
             [
                 new("DefaultWebhookUrl", NotificationSettingTypes.Text, true, false),
-                new("TimeoutSeconds", NotificationSettingTypes.Number, false, false),
-                new("UseAdaptiveCards", NotificationSettingTypes.Flag, false, false),
+                new("TimeoutSeconds", NotificationSettingTypes.Number, false, false) { DefaultSetting = DefaultValueSettings.DefaultTeamsTimeoutSeconds },
+                new("UseAdaptiveCards", NotificationSettingTypes.Flag, false, false) { DefaultSetting = DefaultValueSettings.DefaultTeamsUseAdaptiveCards },
             ],
             defaultContainerName: "TeamsNotificationConfiguration")
     {

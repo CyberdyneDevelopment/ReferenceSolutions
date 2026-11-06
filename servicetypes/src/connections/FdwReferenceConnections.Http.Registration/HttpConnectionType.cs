@@ -1,3 +1,4 @@
+using Fdw.ServiceTypes;
 using Fdw.Services.Connections.Logging;
 using System;
 using System.Collections.Generic;
@@ -45,6 +46,16 @@ public sealed class HttpConnectionType : ConnectionTypeBase<IGenericConnection, 
     ISupportsProtocols,
     ISupportsAuthenticationMethods
 {
+
+    /// <summary>
+    /// Gets the tuning defaults this type carries (FDW-3823, Mike: "the thing you select carries it"), Lifetime Scoped, Protocol Rest, UseMtls false: a configuration that states its own
+    /// value uses it, and a host can change one at registration with ServiceTypeDefaults.Override. What the caller chooses (where it connects,
+    /// which schema, how it authenticates, whether it trusts a certificate) has no default.
+    /// </summary>
+    public override IReadOnlyDictionary<string, object> DeclaredDefaults
+        => _declaredDefaults ??= ServiceTypeDefaults.With(base.DeclaredDefaults, (nameof(HttpConnectionConfiguration.Lifetime), "Scoped"), (nameof(HttpConnectionConfiguration.Protocol), "Rest"), (nameof(HttpConnectionConfiguration.UseMtls), false));
+
+    private IReadOnlyDictionary<string, object>? _declaredDefaults;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpConnectionType"/> class.

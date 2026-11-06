@@ -25,6 +25,8 @@ public sealed class HttpConnectionFactoryProtocolTests
             NullLoggerFactory.Instance);
         var config = new HttpConnectionConfiguration
         {
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             Name = "Orders",
             BaseUrl = "http://orders.example/api/",
             Protocol = protocol
@@ -52,6 +54,8 @@ public sealed class HttpConnectionFactoryProtocolTests
             NullLoggerFactory.Instance);
         var config = new HttpConnectionConfiguration
         {
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             Name = "Orders",
             BaseUrl = "http://orders.example/api/",
             Protocol = "Resst"

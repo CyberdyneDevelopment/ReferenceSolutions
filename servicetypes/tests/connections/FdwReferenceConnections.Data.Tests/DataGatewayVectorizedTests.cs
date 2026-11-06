@@ -32,7 +32,7 @@ public sealed class DataGatewayVectorizedTests
         _limits.Setup(r => r.Resolve(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(GenericResult<IReadOnlyList<ConnectionLimitConfiguration>>.Success((IReadOnlyList<ConnectionLimitConfiguration>)[]));
         _dataSets.Setup(p => p.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(GenericResult<SimpleDataSetConfiguration>.Failure());
+            .ReturnsAsync(GenericResult<SimpleDataSetConfiguration>.Failure(new Fdw.Messages.GenericMessage("the stand-in call failed")));
 
         _container.Setup(c => c.Name).Returns(Passages);
         _stores.Setup(p => p.Get(Store, It.IsAny<string>(), Passages, It.IsAny<CancellationToken>()))

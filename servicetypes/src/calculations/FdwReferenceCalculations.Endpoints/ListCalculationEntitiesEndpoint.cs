@@ -4,6 +4,7 @@ using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Authorization.Abstractions;
 using Fdw.Services.Calculations;
 using Fdw.Services.Multitenancy.Abstractions;
+using Fdw.Services.Tags;
 using Microsoft.Extensions.Logging;
 
 namespace FdwReferenceCalculations.Endpoints;
@@ -23,8 +24,9 @@ public class ListCalculationEntitiesEndpoint : ListCalculationEntitiesEndpointBa
         ICalculationVersionConfigurationProvider versions,
         IPlaceAncestry ancestry,
         IScopeAuthority authority,
-        IAuthenticationContextAccessor authContext)
-        : base(logger, provider, versions, ancestry, authority, authContext)
+        IAuthenticationContextAccessor authContext,
+        ITagService? tags = null)
+        : base(logger, provider, versions, ancestry, authority, authContext, tags)
     {
     }
 }

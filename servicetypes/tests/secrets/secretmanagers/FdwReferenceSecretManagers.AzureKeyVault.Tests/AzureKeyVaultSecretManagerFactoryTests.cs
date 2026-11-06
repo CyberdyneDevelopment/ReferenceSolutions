@@ -116,7 +116,8 @@ public class AzureKeyVaultSecretManagerFactoryTests
         // Arrange
         var config = new AzureKeyVaultConfiguration
         {
-            VaultUri = "https://myvault.vault.azure.net/"
+            VaultUri = "https://myvault.vault.azure.net/",
+            AuthenticationMethod = "ManagedIdentity"
         };
 
         // Act
@@ -149,7 +150,8 @@ public class AzureKeyVaultSecretManagerFactoryTests
         // Arrange
         IGenericConfiguration config = new AzureKeyVaultConfiguration
         {
-            VaultUri = "https://myvault.vault.azure.net/"
+            VaultUri = "https://myvault.vault.azure.net/",
+            AuthenticationMethod = "ManagedIdentity"
         };
 
         // Act
@@ -168,7 +170,8 @@ public class AzureKeyVaultSecretManagerFactoryTests
         // Arrange
         var config = new AzureKeyVaultConfiguration
         {
-            VaultUri = "https://myvault.vault.azure.net/"
+            VaultUri = "https://myvault.vault.azure.net/",
+            AuthenticationMethod = "ManagedIdentity"
         };
 
         // Act
@@ -199,7 +202,8 @@ public class AzureKeyVaultSecretManagerFactoryTests
         // Arrange
         IGenericConfiguration config = new AzureKeyVaultConfiguration
         {
-            VaultUri = "https://myvault.vault.azure.net/"
+            VaultUri = "https://myvault.vault.azure.net/",
+            AuthenticationMethod = "ManagedIdentity"
         };
 
         // Act
@@ -217,7 +221,8 @@ public class AzureKeyVaultSecretManagerFactoryTests
         // Arrange
         IGenericConfiguration config = new AzureKeyVaultConfiguration
         {
-            VaultUri = "https://myvault.vault.azure.net/"
+            VaultUri = "https://myvault.vault.azure.net/",
+            AuthenticationMethod = "ManagedIdentity"
         };
 
         // Act
@@ -248,7 +253,8 @@ public class AzureKeyVaultSecretManagerFactoryTests
         // Arrange
         IGenericConfiguration config = new AzureKeyVaultConfiguration
         {
-            VaultUri = "https://myvault.vault.azure.net/"
+            VaultUri = "https://myvault.vault.azure.net/",
+            AuthenticationMethod = "ManagedIdentity"
         };
 
         // Act
@@ -279,7 +285,8 @@ public class AzureKeyVaultSecretManagerFactoryTests
         // Arrange
         IGenericConfiguration config = new AzureKeyVaultConfiguration
         {
-            VaultUri = "https://myvault.vault.azure.net/"
+            VaultUri = "https://myvault.vault.azure.net/",
+            AuthenticationMethod = "ManagedIdentity"
         };
 
         // Act - Request IGenericConnection which AzureKeyVaultSecretManager does NOT implement

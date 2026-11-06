@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Connections;
 using Fdw.Services.Connections.Endpoints;
+using Fdw.Services.Tags;
 
 namespace FdwReferenceConnections.Endpoints;
 
@@ -12,8 +13,8 @@ namespace FdwReferenceConnections.Endpoints;
 public class ListConnectionsEndpoint : ListConnectionsEndpointBase
 {
     /// <inheritdoc />
-    public ListConnectionsEndpoint(ConnectionConfigurationProvider configProvider, ILogger<ListConnectionsEndpoint> logger)
-        : base(logger, configProvider) {
+    public ListConnectionsEndpoint(ConnectionConfigurationProvider configProvider, ILogger<ListConnectionsEndpoint> logger, ITagService? tags = null)
+        : base(logger, configProvider, tags) {
     }
 
     /// <inheritdoc />

@@ -10,6 +10,7 @@ using Fdw.Data;
 using Fdw.Results;
 using Fdw.Services.SecretManagers.Abstractions;
 using Fdw.Services.SecretManagers.Abstractions.Logging;
+using Fdw.Conventions;
 
 namespace FdwReferenceSecretManagers.UserSecrets.Configuration;
 
@@ -88,7 +89,8 @@ public sealed partial class UserSecretsConfiguration : ISecretManagerImplementat
     /// <summary>
     /// Gets or sets a value indicating whether this configuration is enabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    [CallerChoice]
+    public bool IsEnabled { get; set; }
 
     /// <summary>
     /// Gets or sets the User Secrets ID used to locate the secrets.json file.
@@ -126,7 +128,7 @@ public sealed partial class UserSecretsConfiguration : ISecretManagerImplementat
     /// <remarks>
     /// Defaults to true for development scenarios where secrets may be updated frequently.
     /// </remarks>
-    public bool ReloadOnChange { get; set; } = true;
+    public bool ReloadOnChange { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to fail silently if the secrets file doesn't exist.
@@ -136,7 +138,8 @@ public sealed partial class UserSecretsConfiguration : ISecretManagerImplementat
     /// Defaults to true for graceful handling in non-development environments where
     /// user secrets may not be configured.
     /// </remarks>
-    public bool Optional { get; set; } = true;
+    [CallerChoice]
+    public bool Optional { get; set; }
 
     #endregion
 

@@ -9,6 +9,8 @@ using Fdw.Services.Connections.PostgreSql.Authentication;
 using Fdw.Services.Connections.PostgreSql.Logging;
 using Fdw.Services.SecretManagers.Abstractions;
 using Fdw.Services.Settings;
+using FdwReferenceConnections.PostgreSql.Logging;
+using FdwReferenceConnections.PostgreSql.SslModes;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 
@@ -130,6 +132,23 @@ public sealed class PostgreSqlConnectionFactory : ServiceFactoryBase<IGenericCon
                 return commandTimeout.ToNewResult<IGenericConnection>();
             }
 
+            // Never defaulted (FDW-3580): the connect timeout is read as the command timeout is, the connection's own, else
+            // the instance's setting DefaultConnectionTimeoutSeconds, and a connection that has neither is refused.
+            var connectTimeout = InstanceConnectionTimeout.Resolve(configuration.ConnectionTimeout, _settings, "connection", connectionName, _logger);
+            if (connectTimeout.IsFailure)
+            {
+                return connectTimeout.ToNewResult<IGenericConnection>();
+            }
+
+            // FDW-4153: the stated SslMode is one of the PostgreSqlSslModes options; none, or a name that is none of them, is refused.
+            var sslMode = PostgreSqlSslModes.ByName(configuration.SslMode);
+            if (ReferenceEquals(sslMode, PostgreSqlSslModes.NotFound))
+            {
+                return GenericResult<IGenericConnection>.Failure(
+                    PostgreSqlSslModeLogger.SslModeUnknown(
+                        _logger, connectionName, configuration.SslMode, string.Join(", ", PostgreSqlSslModes.All().Select(mode => mode.Name))));
+            }
+
             var authValues = NormalizeAuthValues(configuration.AdditionalProperties);
             var auth = PostgreSqlAuthenticationTypes.ByName(authTypeName);
 
@@ -141,7 +160,7 @@ public sealed class PostgreSqlConnectionFactory : ServiceFactoryBase<IGenericCon
                 return fragmentResult.ToNewResult<IGenericConnection>();
             }
 
-            var connectionString = BuildConnectionStringBuilder(configuration, fragmentResult.Value, commandTimeout.Value).ConnectionString;
+            var connectionString = BuildConnectionStringBuilder(configuration, fragmentResult.Value, commandTimeout.Value, connectTimeout.Value, sslMode).ConnectionString;
 
             // Create NpgsqlConnection - connection string goes out of scope after this
             var npgsqlConnection = new NpgsqlConnection(connectionString);
@@ -178,14 +197,16 @@ public sealed class PostgreSqlConnectionFactory : ServiceFactoryBase<IGenericCon
     /// constructor — NpgsqlConnectionStringBuilder recognizes those keys as strongly-typed
     /// properties — then every other option is set by name. No raw key=value string appends.
     /// </remarks>
-    private static NpgsqlConnectionStringBuilder BuildConnectionStringBuilder(PostgreSqlConnectionConfiguration configuration, string authFragment, int commandTimeoutSeconds)
+    private static NpgsqlConnectionStringBuilder BuildConnectionStringBuilder(
+        PostgreSqlConnectionConfiguration configuration, string authFragment, int commandTimeoutSeconds, int connectTimeoutSeconds, IPostgreSqlSslMode sslMode)
     {
         var builder = new NpgsqlConnectionStringBuilder(authFragment)
         {
             Host = configuration.Host,
             Port = configuration.Port,
-            Timeout = configuration.ConnectionTimeout,
+            Timeout = connectTimeoutSeconds,
             CommandTimeout = commandTimeoutSeconds,
+            SslMode = sslMode.NpgsqlMode,
             MinPoolSize = configuration.MinPoolSize,
             MaxPoolSize = configuration.MaxPoolSize,
         };
@@ -198,12 +219,6 @@ public sealed class PostgreSqlConnectionFactory : ServiceFactoryBase<IGenericCon
 
         if (!string.Equals(configuration.DefaultSchema, "public", StringComparison.Ordinal))
             builder.SearchPath = configuration.DefaultSchema;
-
-        // Why: SslMode is a free-form string column (Disable/Allow/Prefer/Require/VerifyCA/VerifyFull)
-        // but a strongly-typed enum on the builder — Enum.Parse throws (caught by the caller as
-        // ArgumentException) rather than silently ignoring an invalid configured value.
-        if (!string.IsNullOrEmpty(configuration.SslMode))
-            builder.SslMode = Enum.Parse<SslMode>(configuration.SslMode, ignoreCase: true);
 
         return builder;
     }

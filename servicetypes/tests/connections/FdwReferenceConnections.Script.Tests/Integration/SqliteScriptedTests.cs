@@ -36,7 +36,7 @@ public sealed class SqliteScriptedTests : IAsyncLifetime
         }
 
         var factory = new SqliteConnectionFactory(NullLogger<SqliteConnectionFactory>.Instance, NullLogger<FdwReferenceConnections.Sqlite.SqliteConnection>.Instance);
-        var created = factory.Create(new SqliteConnectionConfiguration { DataSource = DbPath, Mode = "ReadWriteCreate", DefaultTimeout = 30 }, resolvedSecret: null);
+        var created = factory.Create(new SqliteConnectionConfiguration { Cache = "Default", AuthenticationType = "None", DataSource = DbPath, Mode = "ReadWriteCreate", DefaultTimeout = 30 }, resolvedSecret: null);
         created.IsSuccess.ShouldBeTrue(created.CurrentMessage);
         _connection = new SqliteScriptConnection(created.Value.ShouldBeOfType<FdwReferenceConnections.Sqlite.SqliteConnection>());
     }
@@ -88,9 +88,10 @@ public sealed class SqliteScriptedTests : IAsyncLifetime
             TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue(result.CurrentMessage);
-        result.Value.Select(row => row["Team"]).ShouldBe(["Bills", "Giants"]);
-        result.Value[0]["founded"].ShouldBe(1960L);
-        result.Value[1]["founded"].ShouldBeNull();
+        var rows = result.Value.ShouldNotBeNull();
+        rows.Select(row => row["Team"]).ShouldBe(["Bills", "Giants"]);
+        rows[0]["founded"].ShouldBe(1960L);
+        rows[1]["founded"].ShouldBeNull();
     }
 
     [Fact]
@@ -105,7 +106,7 @@ public sealed class SqliteScriptedTests : IAsyncLifetime
             new ScriptReadCommand("SELECT name FROM teams", [], null), TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue(result.CurrentMessage);
-        result.Value.Single()["name"].ShouldBe(hostile);
+        result.Value.ShouldNotBeNull().Single()["name"].ShouldBe(hostile);
     }
 
     [Fact]

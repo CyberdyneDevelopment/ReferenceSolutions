@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Etl.Execution;
+using Fdw.Services.Etl.Flow;
 using Fdw.Services.Multitenancy.Abstractions;
 using Fdw.Services.Pipelines.Endpoints;
 using FdwReferencePipelines.Endpoints.Logging;
@@ -18,8 +19,8 @@ public class ListPipelineRunQueueEndpoint : ListPipelineRunQueueEndpointBase
     private readonly ILogger<ListPipelineRunQueueEndpoint> _logger;
 
     /// <summary>Initializes a new instance of the <see cref="ListPipelineRunQueueEndpoint"/> class.</summary>
-    public ListPipelineRunQueueEndpoint(PipelineRunScheduler scheduler, ITenantContext tenant, ILogger<ListPipelineRunQueueEndpoint> logger)
-        : base(logger, scheduler, tenant)
+    public ListPipelineRunQueueEndpoint(PipelineRunScheduler scheduler, RunningFlows running, ITenantContext tenant, ILogger<ListPipelineRunQueueEndpoint> logger)
+        : base(logger, scheduler, running, tenant)
     {
         _logger = logger;
     }
@@ -33,6 +34,9 @@ public class ListPipelineRunQueueEndpoint : ListPipelineRunQueueEndpointBase
 
     /// <inheritdoc />
     protected override void OnNoTenant() => PipelineLog.RunQueueRequestedWithoutTenant(_logger);
+
+    /// <inheritdoc />
+    protected override void OnRefreshNotSet(Guid? tenantId, string setting) => PipelineLog.RunQueueRefreshNotSet(_logger, setting, tenantId);
 
     /// <inheritdoc />
     protected override void OnQueueListed(Guid? tenantId, bool reachesAll, int running, int waiting) =>

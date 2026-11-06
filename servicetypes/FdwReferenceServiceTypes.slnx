@@ -7,6 +7,8 @@
     <BuildType Name="Release" />
     <BuildType Name="Release-Local" />
   </Configurations>
+  <Folder Name="/src/" />
+  <Folder Name="/src/ai/" />
   <Folder Name="/src/ai/aegis/">
     <Project Path="src/ai/aegis/FdwReferenceAegis.McpServer/FdwReferenceAegis.McpServer.csproj" />
   </Folder>
@@ -23,6 +25,7 @@
     <Project Path="src/configuration/FdwReferenceConfiguration.Endpoints/FdwReferenceConfiguration.Endpoints.csproj" />
   </Folder>
   <Folder Name="/src/connections/">
+    <Project Path="src/connections/FdwReferenceConnections.DocumentRecords/FdwReferenceConnections.DocumentRecords.csproj" />
     <Project Path="src/connections/FdwReferenceConnections.FileSystem.Abstractions/FdwReferenceConnections.FileSystem.Abstractions.csproj" />
     <Project Path="src/connections/FdwReferenceConnections.FileSystem.Registration/FdwReferenceConnections.FileSystem.Registration.csproj" />
     <Project Path="src/connections/FdwReferenceConnections.FileSystem/FdwReferenceConnections.FileSystem.csproj" />
@@ -68,6 +71,7 @@
     <Project Path="src/hosts/FdwReferenceHosts.WebMcp.Registration/FdwReferenceHosts.WebMcp.Registration.csproj" />
     <Project Path="src/hosts/FdwReferenceHosts.WebMcp/FdwReferenceHosts.WebMcp.csproj" />
   </Folder>
+  <Folder Name="/src/identity/" />
   <Folder Name="/src/identity/authentication/">
     <Project Path="src/identity/authentication/FdwReferenceAuth.Endpoints/FdwReferenceAuth.Endpoints.csproj" />
     <Project Path="src/identity/authentication/FdwReferenceAuthentication.AssuranceLevels/FdwReferenceAuthentication.AssuranceLevels.csproj" />
@@ -107,6 +111,7 @@
     <Project Path="src/notifications/FdwReferenceNotifications.Webhook/FdwReferenceNotifications.Webhook.csproj" />
     <Project Path="src/notifications/FdwReferenceUiFeedback.Endpoints/FdwReferenceUiFeedback.Endpoints.csproj" />
   </Folder>
+  <Folder Name="/src/observability/" />
   <Folder Name="/src/observability/quality/">
     <Project Path="src/observability/quality/FdwReferenceQuality.Endpoints/FdwReferenceQuality.Endpoints.csproj" />
   </Folder>
@@ -132,6 +137,7 @@
     <Project Path="src/scheduling/FdwReferenceSchedulers.Quartz/FdwReferenceSchedulers.Quartz.csproj" />
     <Project Path="src/scheduling/FdwReferenceSchedules.Endpoints/FdwReferenceSchedules.Endpoints.csproj" />
   </Folder>
+  <Folder Name="/src/secrets/" />
   <Folder Name="/src/secrets/credentials/">
     <Project Path="src/secrets/credentials/FdwReferenceCredentials.Sql.Registration/FdwReferenceCredentials.Sql.Registration.csproj" />
     <Project Path="src/secrets/credentials/FdwReferenceCredentials.Sql/FdwReferenceCredentials.Sql.csproj" />
@@ -150,6 +156,9 @@
     <Project Path="src/secrets/secretmanagers/FdwReferenceSecretManagers.UserSecrets.Registration/FdwReferenceSecretManagers.UserSecrets.Registration.csproj" />
     <Project Path="src/secrets/secretmanagers/FdwReferenceSecretManagers.UserSecrets/FdwReferenceSecretManagers.UserSecrets.csproj" />
   </Folder>
+  <Folder Name="/src/tags/">
+    <Project Path="src/tags/FdwReferenceTags.Endpoints/FdwReferenceTags.Endpoints.csproj" />
+  </Folder>
   <Folder Name="/src/workspaces/">
     <Project Path="src/workspaces/FdwReferenceWorkspaces.Endpoints/FdwReferenceWorkspaces.Endpoints.csproj" />
   </Folder>
@@ -161,6 +170,8 @@
       <BuildType Solution="Release-Local|*" Project="Debug" />
     </Project>
   </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/ai/" />
   <Folder Name="/tests/ai/aegis/">
     <Project Path="tests/ai/aegis/FdwReferenceAegis.McpServer.Tests/FdwReferenceAegis.McpServer.Tests.csproj">
       <BuildType Solution="Debug-Local|*" Project="Debug" />
@@ -171,6 +182,12 @@
   </Folder>
   <Folder Name="/tests/connections/">
     <Project Path="tests/connections/FdwReferenceConnections.Data.Tests/FdwReferenceConnections.Data.Tests.csproj" />
+    <Project Path="tests/connections/FdwReferenceConnections.DocumentRecords.Tests/FdwReferenceConnections.DocumentRecords.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
     <Project Path="tests/connections/FdwReferenceConnections.FileSystem.Abstractions.Tests/FdwReferenceConnections.FileSystem.Abstractions.Tests.csproj">
       <BuildType Solution="Debug-Local|*" Project="Debug" />
       <BuildType Solution="Develop-Local|*" Project="Debug" />
@@ -185,6 +202,12 @@
     </Project>
     <Project Path="tests/connections/FdwReferenceConnections.Http.Tests/FdwReferenceConnections.Http.Tests.csproj" />
     <Project Path="tests/connections/FdwReferenceConnections.MsSql.Tests/FdwReferenceConnections.MsSql.Tests.csproj" />
+    <Project Path="tests/connections/FdwReferenceConnections.PostgreSql.Tests/FdwReferenceConnections.PostgreSql.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
     <Project Path="tests/connections/FdwReferenceConnections.Script.Tests/FdwReferenceConnections.Script.Tests.csproj">
       <BuildType Solution="Debug-Local|*" Project="Debug" />
       <BuildType Solution="Develop-Local|*" Project="Debug" />
@@ -216,6 +239,7 @@
       <BuildType Solution="Release-Local|*" Project="Debug" />
     </Project>
   </Folder>
+  <Folder Name="/tests/identity/" />
   <Folder Name="/tests/identity/authentication/">
     <Project Path="tests/identity/authentication/FdwReferenceAuth.Endpoints.Tests/FdwReferenceAuth.Endpoints.Tests.csproj">
       <BuildType Solution="Debug-Local|*" Project="Debug" />
@@ -260,6 +284,12 @@
       <BuildType Solution="Release-Local|*" Project="Debug" />
     </Project>
     <Project Path="tests/notifications/FdwReferenceNotifications.Console.Tests/FdwReferenceNotifications.Console.Tests.csproj" />
+    <Project Path="tests/notifications/FdwReferenceNotifications.System.Tests/FdwReferenceNotifications.System.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
     <Project Path="tests/notifications/FdwReferenceNotifications.Teams.Tests/FdwReferenceNotifications.Teams.Tests.csproj">
       <BuildType Solution="Debug-Local|*" Project="Debug" />
       <BuildType Solution="Develop-Local|*" Project="Debug" />
@@ -268,8 +298,23 @@
     </Project>
     <Project Path="tests/notifications/FdwReferenceNotifications.Webhook.Tests/FdwReferenceNotifications.Webhook.Tests.csproj" />
   </Folder>
+  <Folder Name="/tests/observability/" />
+  <Folder Name="/tests/observability/telemetry/">
+    <Project Path="tests/observability/telemetry/FdwReferenceLogging.Serilog.Tests/FdwReferenceLogging.Serilog.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+  </Folder>
   <Folder Name="/tests/pipelines/">
     <Project Path="tests/pipelines/FdwReferenceEtl.Endpoints.Tests/FdwReferenceEtl.Endpoints.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
+    <Project Path="tests/pipelines/FdwReferenceOperations.Endpoints.Tests/FdwReferenceOperations.Endpoints.Tests.csproj">
       <BuildType Solution="Debug-Local|*" Project="Debug" />
       <BuildType Solution="Develop-Local|*" Project="Debug" />
       <BuildType Solution="Develop|*" Project="Debug" />
@@ -290,6 +335,7 @@
       <BuildType Solution="Release-Local|*" Project="Debug" />
     </Project>
   </Folder>
+  <Folder Name="/tests/secrets/" />
   <Folder Name="/tests/secrets/credentials/">
     <Project Path="tests/secrets/credentials/FdwReferenceCredentials.Sql.Tests/FdwReferenceCredentials.Sql.Tests.csproj" />
   </Folder>

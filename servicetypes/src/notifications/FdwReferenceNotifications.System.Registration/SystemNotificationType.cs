@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Fdw.Services.Notifications.System;
 using Fdw.Results;
+using Fdw.Services.Settings;
 
 namespace FdwReferenceNotifications.System.Registration;
 
@@ -62,8 +63,9 @@ public sealed class SystemNotificationType
             description: "In-system message channel that delivers notifications as tracked messages with lifecycle support",
             settings:
             [
-                new("DefaultSeverity", NotificationSettingTypes.Text, false, false),
-                new("DefaultMessageType", NotificationSettingTypes.Text, false, false),
+                // Why a default setting (FDW-3580): the configuration assumes neither; a System notification that states none takes the setting.
+                new("DefaultSeverity", NotificationSettingTypes.Text, false, false) { DefaultSetting = DefaultValueSettings.DefaultSystemNotificationSeverity },
+                new("DefaultMessageType", NotificationSettingTypes.Text, false, false) { DefaultSetting = DefaultValueSettings.DefaultSystemNotificationMessageType },
             ],
             defaultContainerName: "SystemNotificationConfiguration")
     {
@@ -77,10 +79,14 @@ public sealed class SystemNotificationType
         Registration((builder, loggerFactory) =>
         {
 
+            // Why scoped: the factory takes the scoped IMessageService, which belongs to the request or scope that resolves it. A singleton factory
+            // would hold one IMessageService built from the root provider for the life of the process, and a host that validates scopes
+            // (the Development environment) refuses to build. The provider takes the factory, so it follows it. The only consumer is the scoped
+            // INotificationServiceProvider registered below, which resolves the provider from its own scope.
             builder.Services.TryAdd(new ServiceDescriptor(
-                typeof(ISystemNotificationFactory), typeof(SystemNotificationFactory), ServiceLifetime.Singleton));
+                typeof(ISystemNotificationFactory), typeof(SystemNotificationFactory), ServiceLifetime.Scoped));
             builder.Services.TryAdd(new ServiceDescriptor(
-                typeof(ISystemNotificationProvider), typeof(SystemNotificationProvider), ServiceLifetime.Singleton));
+                typeof(ISystemNotificationProvider), typeof(SystemNotificationProvider), ServiceLifetime.Scoped));
 
             // Why: the gateway is resolved per call, so cfg resolution is deferred to first runtime query, avoiding
             // circular dependency with the DataGateway that hasn't been built yet at registration time.

@@ -53,10 +53,10 @@ public sealed class UserSecretsSecretMetadata : ISecretMetadata
     public string? Version => null; // User Secrets don't support versioning
 
     /// <inheritdoc/>
-    public DateTimeOffset CreatedAt { get; }
+    public DateTimeOffset? CreatedAt { get; }
 
     /// <inheritdoc/>
-    public DateTimeOffset ModifiedAt { get; }
+    public DateTimeOffset? ModifiedAt { get; }
 
     /// <inheritdoc/>
     public DateTimeOffset? ExpiresAt => null; // User Secrets don't support expiration
@@ -71,7 +71,7 @@ public sealed class UserSecretsSecretMetadata : ISecretMetadata
     public bool IsExpired => false; // User Secrets don't support expiration
 
     /// <inheritdoc/>
-    public bool IsEnabled => true; // Always enabled
+    public bool? IsEnabled => true; // Always enabled
 
     /// <inheritdoc/>
     public bool IsBinary => false; // User Secrets are always text

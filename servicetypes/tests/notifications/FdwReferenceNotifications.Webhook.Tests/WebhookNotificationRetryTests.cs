@@ -25,7 +25,7 @@ public sealed class WebhookNotificationRetryTests
     };
 
     private static NotificationRequest Request() =>
-        new(channelName: "Webhook", recipients: new[] { "https://hooks.example.com" }, subject: "Subject", message: "Message");
+        new(channelName: "Webhook", recipients: new[] { "https://hooks.example.com" }, subject: "Subject", message: "Message", priority: NotificationPriorities.Normal);
 
     private static Func<HttpRequestMessage, HttpResponseMessage> Answers(HttpStatusCode status) => _ => new HttpResponseMessage(status);
 

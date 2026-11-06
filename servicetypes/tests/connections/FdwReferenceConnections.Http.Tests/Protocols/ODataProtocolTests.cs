@@ -30,6 +30,9 @@ public class ODataProtocolTests
     {
         var config = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            AuthenticationType = "None",
+            Lifetime = "Scoped",
             BaseUrl = "https://api.example.com/odata"
         };
         return new HttpProtocolContext(

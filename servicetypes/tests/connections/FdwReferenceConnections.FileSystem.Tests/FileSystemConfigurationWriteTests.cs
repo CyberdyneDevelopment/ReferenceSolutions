@@ -338,20 +338,36 @@ public sealed class FileSystemConfigurationWriteTests
         rows[0].GetProperty("Id").GetString().ShouldBe(kept.ToString());
     }
 
-    // A Delete with no filter has no condition, so it removes every row: the container is emptied, as on the SQL kinds.
+    // A Delete that asks for every row (AllRows) removes every row: the container is emptied, as on the SQL kinds (FDW-3660).
     [Fact]
     [Trait("Category", "Write")]
-    public async Task DeleteWithNoFilterRemovesEveryRow()
+    public async Task DeleteWithAllRowsRemovesEveryRow()
     {
         using var harness = new GatewayHarness();
         harness.Seed(SecretManagerFile, TwoRowsJson(Guid.Parse("aaaaaaaa-0000-0000-0000-000000000013"), Guid.Parse("aaaaaaaa-0000-0000-0000-000000000014")));
-        var call = Delete.From("SecretManager").DataStore("PlatformConfiguration").Path("sec").Build();
+        var call = Delete.From("SecretManager").DataStore("PlatformConfiguration").Path("sec").AllRows().Build();
 
         var result = await harness.Gateway.Execute<int>(call.Command, SecretManagerTarget, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue(result.CurrentMessage?.ToString());
         result.Value.ShouldBe(2);
         harness.ReadRows(SecretManagerFile).ShouldBeEmpty();
+    }
+
+    // A Delete that states no rows (no filter, no soft delete, no AllRows) is refused by the translator and the file is left
+    // alone (FDW-3660).
+    [Fact]
+    [Trait("Category", "Write")]
+    public async Task DeleteThatStatesNoRowsIsRefusedAndLeavesEveryRow()
+    {
+        using var harness = new GatewayHarness();
+        harness.Seed(SecretManagerFile, TwoRowsJson(Guid.Parse("aaaaaaaa-0000-0000-0000-000000000015"), Guid.Parse("aaaaaaaa-0000-0000-0000-000000000016")));
+
+        var result = await harness.Gateway.Execute<int>(new DeleteCommand(), SecretManagerTarget, TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.CurrentMessage.ShouldNotBeNull().ToString().ShouldContain("AllRows()");
+        harness.ReadRows(SecretManagerFile).Count.ShouldBe(2);
     }
 
     // Nothing matched: no row is removed and the file is not rewritten.

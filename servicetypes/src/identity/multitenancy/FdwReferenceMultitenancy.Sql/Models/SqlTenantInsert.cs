@@ -35,4 +35,43 @@ public sealed partial class SqlTenantInsert
 
     /// <summary>Gets or sets the connection name that isolates the tenant's data; null for none.</summary>
     public string? ConnectionName { get; set; }
+
+    /// <summary>Gets or sets the primary colour, copied from the default tenant's row.</summary>
+    public string PrimaryColor { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the secondary colour, copied from the default tenant's row.</summary>
+    public string SecondaryColor { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the accent colour, copied from the default tenant's row.</summary>
+    public string AccentColor { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the background colour, copied from the default tenant's row.</summary>
+    public string BackgroundColor { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the surface colour, copied from the default tenant's row.</summary>
+    public string SurfaceColor { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the overlay colour, copied from the default tenant's row.</summary>
+    public string OverlayColor { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the success colour, copied from the default tenant's row.</summary>
+    public string SuccessColor { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the warning colour, copied from the default tenant's row.</summary>
+    public string WarningColor { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the error colour, copied from the default tenant's row.</summary>
+    public string ErrorColor { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the info colour, copied from the default tenant's row.</summary>
+    public string InfoColor { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the textmain colour, copied from the default tenant's row.</summary>
+    public string TextMainColor { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the textmuted colour, copied from the default tenant's row.</summary>
+    public string TextMutedColor { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets whether dark mode is the default, copied from the default tenant's row.</summary>
+    public bool DarkModeDefault { get; set; }
 }

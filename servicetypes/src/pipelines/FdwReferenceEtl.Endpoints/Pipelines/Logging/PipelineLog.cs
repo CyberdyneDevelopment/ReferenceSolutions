@@ -126,4 +126,7 @@ public static partial class PipelineLog
 
     [MessageLogging(EventId = 8245, Level = LogLevel.Warning, Message = "The pipeline run queue was requested with no tenant by a caller who does not administer the platform")]
     public static partial IGenericMessage RunQueueRequestedWithoutTenant(ILogger logger);
+
+    [MessageLogging(EventId = 8246, Level = LogLevel.Warning, Message = "The setting {setting} is not set or is not positive for tenant {tenantId}, so the run queue answers no refresh interval and the console does not read it again by itself")]
+    public static partial IGenericMessage RunQueueRefreshNotSet(ILogger logger, string setting, Guid? tenantId);
 }

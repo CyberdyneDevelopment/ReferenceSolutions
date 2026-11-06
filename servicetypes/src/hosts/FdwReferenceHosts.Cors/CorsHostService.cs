@@ -7,6 +7,7 @@ using FdwReferenceHosts.Cors.Configuration;
 using FdwReferenceHosts.Cors.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Fdw.Conventions;
 
 namespace FdwReferenceHosts.Cors;
 
@@ -51,10 +52,10 @@ public sealed class CorsHostService : IHostService
     /// <inheritdoc />
     public Task<IGenericResult> Execute(IGenericCommand command, CancellationToken cancellationToken = default)
         => Task.FromResult<IGenericResult>(
-            GenericResult.Failure(CorsHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? "(null)")));
+            GenericResult.Failure(CorsHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? LogPlaceholders.Null)));
 
     /// <inheritdoc />
     public Task<IGenericResult<T>> Execute<T>(IGenericCommand command, CancellationToken cancellationToken = default)
         => Task.FromResult(
-            GenericResult<T>.Failure(CorsHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? "(null)")));
+            GenericResult<T>.Failure(CorsHostLog.ServiceExecutesNothing(_logger, command?.GetType().Name ?? LogPlaceholders.Null)));
 }

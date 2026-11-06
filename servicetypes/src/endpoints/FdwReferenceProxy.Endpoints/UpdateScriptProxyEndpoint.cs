@@ -18,7 +18,7 @@ public sealed class UpdateScriptProxyEndpoint : ScriptProxyEndpointBase
     protected override string RequiredPolicy => "scripts:write";
 
     /// <inheritdoc />
-    protected override System.Net.Http.HttpMethod Method => System.Net.Http.HttpMethod.Put;
+    protected override System.Net.Http.HttpMethod Method => System.Net.Http.HttpMethod.Patch;
 
     /// <inheritdoc />
     protected override string TargetPath() => $"scripts/{Route<string>("Name")}";
@@ -26,7 +26,7 @@ public sealed class UpdateScriptProxyEndpoint : ScriptProxyEndpointBase
     /// <inheritdoc />
     public override void Configure()
     {
-        Put("/scripts/{Name}");
+        Patch("/scripts/{Name}");
         ConfigureScripts("Replace a stored script (proxy)", "Forwards the replacement to the ETL server.");
     }
 }

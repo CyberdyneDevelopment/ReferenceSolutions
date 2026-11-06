@@ -27,7 +27,7 @@ public sealed class ResponseBufferingMiddleware
     public ResponseBufferingMiddleware(RequestDelegate next, ResponseBufferingOptions options)
     {
         _next = next;
-        _options = options ?? new ResponseBufferingOptions();
+        _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
     /// <summary>Buffers the response up to the cap, or streams it once it passes the cap.</summary>

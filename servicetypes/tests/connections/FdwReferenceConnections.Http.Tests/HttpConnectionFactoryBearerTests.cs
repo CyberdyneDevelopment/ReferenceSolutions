@@ -25,6 +25,8 @@ public sealed class HttpConnectionFactoryBearerTests
             NullLoggerFactory.Instance);
         var config = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            Lifetime = "Scoped",
             BaseUrl = "http://youtrack.example/api/",
             AuthenticationType = "Bearer",
             AdditionalProperties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
@@ -58,6 +60,8 @@ public sealed class HttpConnectionFactoryBearerTests
             NullLoggerFactory.Instance);
         var config = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            Lifetime = "Scoped",
             BaseUrl = "http://youtrack.example/api/",
             AuthenticationType = "Bearer",
             AdditionalProperties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
@@ -87,6 +91,8 @@ public sealed class HttpConnectionFactoryBearerTests
             NullLoggerFactory.Instance);
         var config = new HttpConnectionConfiguration
         {
+            Protocol = "Rest",
+            Lifetime = "Scoped",
             BaseUrl = "http://youtrack.example/api/",
             AuthenticationType = "Bearr",
             AdditionalProperties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)

@@ -80,9 +80,16 @@ public class UpdateUserEndpoint : UpdateUserEndpointBase<UpdateUserRequest>
         var userResult = Guid.TryParse(request.IdOrName, out var requestedId)
             ? await UserProvider.Get(requestedId, ct).ConfigureAwait(false)
             : await UserProvider.Get(request.IdOrName, ct).ConfigureAwait(false);
-        if (userResult.IsFailure || userResult.Value is null)
+        if (userResult.IsFailure)
         {
             return GenericResult.Failure(userResult.Messages.ToArray());
+        }
+
+        // Why its own message: a lookup that succeeds with no user carries no message to pass on, and a failure always
+        // needs one (FDW-3580).
+        if (userResult.Value is null)
+        {
+            return GenericResult.Failure(ApiLog.ResourceNotFound(_logger, $"user {request.IdOrName}"));
         }
 
         // Why each member is applied only when supplied: the request is a patch, so an absent Email or

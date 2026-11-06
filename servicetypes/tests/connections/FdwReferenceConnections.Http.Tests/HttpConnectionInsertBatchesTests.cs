@@ -43,7 +43,7 @@ public sealed class HttpConnectionInsertBatchesTests
             .Returns(() => Task.FromResult(_failOnRequest == _sent.Count ? GenericResult<object?>.Failure(HttpResultCodes.ByName("RequestFailed"), ResultDetails.Create().With("ErrorMessage", "the request was refused")) : GenericResult<object?>.Success(2)));
         var client = new HttpClient(new Handler());
         var context = new HttpProtocolContext(new Mock<IGenericConfiguration>().Object, NullLoggerFactory.Instance, null, null, null);
-        return new HttpConnection(NullLogger<HttpConnection>.Instance, new HttpConnectionConfiguration { BaseUrl = "http://example.test/" }, client, _protocol.Object, context);
+        return new HttpConnection(NullLogger<HttpConnection>.Instance, new HttpConnectionConfiguration { Protocol = "Rest", AuthenticationType = "None", Lifetime = "Scoped", BaseUrl = "http://example.test/" }, client, _protocol.Object, context);
     }
 
     private static IDataCommand Named(string name)

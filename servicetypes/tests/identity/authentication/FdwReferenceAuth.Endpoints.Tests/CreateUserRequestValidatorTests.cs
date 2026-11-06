@@ -11,7 +11,7 @@ namespace FdwReferenceAuth.Endpoints.Tests;
 /// </summary>
 public class CreateUserRequestValidatorTests
 {
-    private static readonly CreateUserRequestValidator Validator = new();
+    private static readonly ReferenceCreateUserRequestValidator Validator = new();
 
     [Theory]
     [InlineData("newuser")]

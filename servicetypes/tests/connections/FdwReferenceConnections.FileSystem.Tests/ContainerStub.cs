@@ -37,13 +37,44 @@ internal static class ContainerStub
 
         var container = new Mock<IDataContainer>();
         container.Setup(c => c.Name).Returns("TestContainer");
+        // IDataContainer redeclares Name (new string Name), so the IStorageContainer.Name the row formats read (RowFormatChoices owner) needs its own setup.
+        container.As<IStorageContainer>().Setup(c => c.Name).Returns("TestContainer");
         container.Setup(c => c.Format).Returns(formatType.Object);
-        container.Setup(c => c.Metadata).Returns(metadata);
+        container.Setup(c => c.Metadata).Returns(Stated(realFormat, metadata));
         container.Setup(c => c.Path).Returns(path.Object);
         container.Setup(c => c.Schema).Returns(schema.Object);
         container.Setup(c => c.Nodes).Returns(fields.Cast<IDataNode>().ToList());
         container.Setup(c => c.Keys).Returns(new List<IContainerKey>());
         return container.Object;
+    }
+
+    // Every choice the readers and writers read, as a configured container states them (FDW-3823: a format takes no choice by default),
+    // with the values the options carried before choices had to be stated. What a test states itself replaces the value here.
+    private static Dictionary<string, object> Stated(IFormatType format, IReadOnlyDictionary<string, object> metadata)
+    {
+        var stated = new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["ContinueOnError"] = true,
+            ["PropertyNameCaseInsensitive"] = true,
+            ["FlattenNestedObjects"] = false,
+            ["SkipValidation"] = false,
+            ["UseElementContent"] = true,
+            ["IncludeAttributes"] = true,
+            ["RootElementName"] = "Rows",
+            ["RowElementName"] = "Row",
+            ["OmitXmlDeclaration"] = true,
+            ["HasHeader"] = false,
+            ["Separator"] = string.IsNullOrEmpty(format.Separator) ? "," : format.Separator,
+            ["ContainsQuotedFields"] = true,
+            ["Trim"] = string.Equals(format.Family, "FixedWidth", StringComparison.Ordinal),
+            ["QuoteChar"] = "\"",
+            ["WriteByteOrderMark"] = false,
+            ["NeutralizeFormulas"] = false,
+            ["SheetName"] = "Data",
+        };
+        foreach (var pair in metadata)
+            stated[pair.Key] = pair.Value;
+        return stated;
     }
 
     // Why: each field is mocked as both IDataField (the container tree child the connector reads via

@@ -37,6 +37,8 @@ public sealed class OrganizationStoreRetainedDocumentsTests : IDisposable
     {
         public DocumentScope Scope { get; } = new(DocumentPath.Root);
 
+        public Guid StoredUnder { get; } = new("66666666-0000-0000-0000-000000000001");
+
         public IReadOnlyCollection<IDocumentCapability> Capabilities { get; } = [];
 
         public Task<IGenericResult<T>> Execute<T>(IDocumentCommand<T> command, CancellationToken cancellationToken = default)

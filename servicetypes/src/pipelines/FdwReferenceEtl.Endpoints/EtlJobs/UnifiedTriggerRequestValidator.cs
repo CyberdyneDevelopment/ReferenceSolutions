@@ -1,5 +1,6 @@
 using System.Linq;
 using FastEndpoints;
+using Fdw.Services.Etl.Abstractions.Execution;
 using Fdw.Services.Etl.JobTriggerSources;
 using FluentValidation;
 
@@ -26,5 +27,12 @@ public sealed class UnifiedTriggerRequestValidator : Validator<UnifiedTriggerReq
             .GreaterThan(0)
             .When(x => x.TestRowsPerSource.HasValue)
             .WithMessage("TestRowsPerSource must be a positive number of rows per source.");
+
+        // Why bounded (FDW-3805): the time limit is a timer, and a timer has a longest delay. A longer time is refused naming the limit and never cut short; zero or a
+        // negative number would stop the run before it began.
+        RuleFor(x => x.TimeoutSeconds)
+            .InclusiveBetween(1, PipelineExecutionRequest.MaxTimeoutSeconds)
+            .When(x => x.TimeoutSeconds.HasValue)
+            .WithMessage($"TimeoutSeconds must be between 1 and {PipelineExecutionRequest.MaxTimeoutSeconds} seconds, or left out when the run has no time limit.");
     }
 }

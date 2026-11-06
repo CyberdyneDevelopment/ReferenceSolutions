@@ -24,6 +24,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using Fdw.Conventions;
 
 namespace FdwReferenceAuthentication.OidcRedirect.Registration;
 
@@ -285,7 +286,7 @@ public sealed class OidcRedirectStepType
 
         if (!validated.IsValid)
             return GenericResult<StepOutcome>.Failure(OidcLog.TokenRejected(
-                _logger, configuration.Issuer, validated.Exception?.GetType().Name ?? "unknown"));
+                _logger, configuration.Issuer, validated.Exception?.GetType().Name ?? LogPlaceholders.NoExceptionType));
 
         var nonce = validated.ClaimsIdentity.FindFirst("nonce")?.Value;
         if (!string.Equals(nonce, request.Value!.Nonce, StringComparison.Ordinal))
