@@ -338,10 +338,6 @@ public partial class Endpoints : ServiceTypeCollectionBase<IEndpointTypeCollecti
     // - which is what NSwag's middleware did when it served the document itself. The operation
     // processor only stamps who may call each operation, from endpoint metadata that depends on the
     // build alone.
-    //
-    // AuthAndTagDocumentProcessor is deliberately NOT attached here: it requires a clientId and scope,
-    // which are per-application values this collection has no non-arbitrary source for. A host that
-    // wants it attaches it itself rather than having this invent a default.
     private static void RegisterOpenApiDocument(IHostApplicationBuilder builder, ILoggerFactory? loggerFactory)
     {
         var title = builder.Environment.ApplicationName;

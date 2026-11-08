@@ -118,6 +118,9 @@ public sealed class DataSetProviderAdditionalTests
         public Task<IGenericResult<IDataSetImplementationConfiguration>> Get(string name, int levels, CancellationToken ct = default)
             => Get(name, ct);
 
+        public Task<IGenericResult<IDataSetImplementationConfiguration>> Get(string name, int levels, ChildNarrowing narrowing, CancellationToken ct = default)
+            => Get(name, ct);
+
         public Task<IGenericResult<IDataSetImplementationConfiguration>> Get(Guid id, int levels, CancellationToken ct = default)
             => Get(id, ct);
 

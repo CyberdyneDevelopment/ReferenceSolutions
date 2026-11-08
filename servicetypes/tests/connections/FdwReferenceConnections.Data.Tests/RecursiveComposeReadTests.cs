@@ -17,7 +17,7 @@ namespace Fdw.Services.Data.Tests;
 /// <see cref="IConfigurationGateway.DataStores"/>.
 /// </summary>
 /// <remarks>
-/// Why: this is the exact runtime-store condition that 500'd in production (AuthDb → OpenIddictScope).
+/// Why: this is the exact runtime-store condition that 500'd in production (AuthDb → OpenIddictScope, a table FDW-4205 has since dropped).
 /// AuthDb lives in ConfigurationDb's <c>data.*</c> rows. The old read cascade composed the store with its
 /// path but ZERO containers ("1 path(s), 0 container(s)"). NOTHING tested this: every existing provider
 /// test mocked the gateway empty, so a 0-children compose was indistinguishable from a pass. This pins the
@@ -38,15 +38,19 @@ public sealed class RecursiveComposeReadTests
     public async Task GetComposesDataStoreAggregateFromMapperFkMetadata()
     {
         // Arrange — a store with one path holding one container, linked by physical RowId FKs, exactly
-        // as the seeded AuthDb → auth → OpenIddictScope rows are in ConfigurationDb's data.* tables.
+        // as the seeded AuthDb → auth → RevokedAccessToken rows are in ConfigurationDb's data.* tables.
         // RowId is never set: it is DB-managed and absent from every config POCO; only the durable Id is.
         var store = new DataStoreImplementationConfiguration { Id = Guid.NewGuid(), Name = "AuthDb" };
         var path = new DataPathConfiguration { Id = Guid.NewGuid(), Name = "auth" };
-        var container = new DataContainerConfiguration { Id = Guid.NewGuid(), Name = "OpenIddictScope" };
+        var container = new DataContainerConfiguration { Id = Guid.NewGuid(), Name = "RevokedAccessToken" };
 
         var gateway = new ComposingReadGateway(store);
-        gateway.Seed(typeof(DataPathConfiguration), path);
-        gateway.Seed(typeof(DataContainerConfiguration), container);
+        // FDW-4254: a read by durable id is the set read of one, so the store answers with rows as columns, a physical RowId on each, and a child
+        // row names the row it hangs from by that RowId: the domain row, the implementation row, the path and the container.
+        gateway.SeedRows("DataStore", Row(1, ("Id", store.Id), ("Name", "AuthDb")));
+        gateway.SeedRows("DataStoreConfiguration", Row(11, ("DataStoreRowId", 1), ("Id", Guid.NewGuid()), ("Name", "AuthDb")));
+        gateway.SeedRows("DataPath", Row(21, ("DataStoreConfigurationRowId", 11), ("Id", path.Id), ("Name", "auth")));
+        gateway.SeedRows("DataContainer", Row(31, ("DataPathRowId", 21), ("Id", container.Id), ("Name", "RevokedAccessToken")));
 
         // Why the named provider and not the base: the base is abstract now, and the cascade under test
         // lives in ImplementationProviderBase, which DataStoreImplementationConfigurationProvider closes.
@@ -68,13 +72,21 @@ public sealed class RecursiveComposeReadTests
         result.Value!.Paths.ShouldHaveSingleItem();
         result.Value.Paths[0].Name.ShouldBe("auth");
         result.Value.Paths[0].Containers.ShouldHaveSingleItem();
-        result.Value.Paths[0].Containers[0].Name.ShouldBe("OpenIddictScope");
+        result.Value.Paths[0].Containers[0].Name.ShouldBe("RevokedAccessToken");
 
-        // Assert — the cascade keyed children via the metadata-driven JOIN to each owner (RowId is invisible;
-        // the join filters by the owner's durable Id). At least one typed child read ran per owner level.
-        gateway.ChildReads.ShouldNotBeEmpty();
-        gateway.ChildReads.ShouldContain(typeof(DataPathConfiguration));
-        gateway.ChildReads.ShouldContain(typeof(DataContainerConfiguration));
+        // Assert — the cascade read each owner level's children by the physical keys of the rows above (one statement per table).
+        gateway.RowReads.ShouldContain("DataPath");
+        gateway.RowReads.ShouldContain("DataContainer");
+        gateway.RowReads.Count(read => read == "DataPath").ShouldBe(1);
+    }
+
+    private static Dictionary<string, object?> Row(int rowId, params (string Column, object? Value)[] columns)
+    {
+        var row = new Dictionary<string, object?>(StringComparer.Ordinal) { ["RowId"] = rowId };
+        foreach (var (column, value) in columns)
+            row[column] = value;
+
+        return row;
     }
 
     /// <summary>
@@ -106,6 +118,14 @@ public sealed class RecursiveComposeReadTests
         }
 
         public List<Type> ChildReads { get; } = [];
+
+        /// <summary>The containers read as rows, one entry per statement, in order.</summary>
+        public List<string> RowReads { get; } = [];
+
+        private readonly Dictionary<string, List<Dictionary<string, object?>>> _rows = new(StringComparer.Ordinal);
+
+        /// <summary>Holds the rows a container answers a read with, selected by the <c>In</c> conditions the read carries.</summary>
+        public void SeedRows(string container, params Dictionary<string, object?>[] rows) => _rows[container] = [.. rows];
 
         public IReadOnlyList<IDataStore> DataStores => _stores;
 
@@ -143,10 +163,48 @@ public sealed class RecursiveComposeReadTests
             if (typeof(T) == typeof(IEnumerable<DataStoreImplementationConfiguration>))
                 return Task.FromResult(GenericResult<T>.Success((T)(object)new List<DataStoreImplementationConfiguration> { _header }));
 
+            // A set read: rows as columns.
+            if (typeof(T) == typeof(IEnumerable<Dictionary<string, object?>>))
+            {
+                RowReads.Add(target.Container);
+                var held = _rows.GetValueOrDefault(target.Container) ?? [];
+                var selected = held.Where(row => Selected(command, row)).Select(row => new Dictionary<string, object?>(row, StringComparer.Ordinal)).ToList();
+                return Task.FromResult(GenericResult<T>.Success((T)(object)selected));
+            }
+
             if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(IEnumerable<>))
                 return Task.FromResult(GenericResult<T>.Success((T)(object)Array.CreateInstance(typeof(T).GetGenericArguments()[0], 0)));
 
             return Task.FromResult(GenericResult<T>.Success(default!));
+        }
+
+        // A row is selected when every In condition names a column it holds the value of, as a store compares them.
+        private static bool Selected(IDataCommand command, Dictionary<string, object?> row)
+        {
+            if (command is not IQueryCommand { Filter.Root: { } root })
+                return true;
+
+            return Conditions(root)
+                .Where(c => string.Equals(c.Operator.SqlOperator, "IN", StringComparison.Ordinal) && c.Value is System.Collections.IEnumerable and not string)
+                .All(c => row.TryGetValue(c.PropertyName, out var value)
+                          && ((System.Collections.IEnumerable)c.Value!).Cast<object?>().Any(wanted => string.Equals(Text(wanted), Text(value), StringComparison.Ordinal)));
+        }
+
+        private static string Text(object? value) => Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+
+        private static IEnumerable<global::Fdw.Data.Abstractions.FilterCondition> Conditions(global::Fdw.Data.Abstractions.IFilterNode node)
+        {
+            if (node is global::Fdw.Data.Abstractions.FilterCondition condition)
+            {
+                yield return condition;
+                yield break;
+            }
+
+            if (node is global::Fdw.Data.FilterGroup group)
+            {
+                foreach (var nested in group.Nodes.SelectMany(Conditions))
+                    yield return nested;
+            }
         }
 
         public Task<IGenericResult> Execute(IDataCommand command, DataStoreTarget target, CancellationToken cancellationToken = default)
@@ -323,6 +381,8 @@ public sealed class RecursiveComposeReadTests
     {
         private readonly IConfigurationGateway _gateway;
         public AnyConnectionGateways(IConfigurationGateway gateway) => _gateway = gateway;
+        public int KeyChunkSize => 1000;
+
         public IGenericResult<IConfigurationGateway> Get(string connectionName)
             => GenericResult<IConfigurationGateway>.Success(_gateway);
         public IGenericResult Register(IConfigurationGateway gateway) => GenericResult.Success();

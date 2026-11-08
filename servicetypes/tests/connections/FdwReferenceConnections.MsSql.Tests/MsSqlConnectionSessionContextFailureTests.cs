@@ -26,7 +26,7 @@ public sealed class MsSqlConnectionSessionContextFailureTests
 
     private const int TenantContextSetFailedId = 71018;
     private const int SqlObjectNotFoundId = 30000;
-    private const int UnhandledSqlErrorId = 71017;
+    private const int StatementFailedId = 22007;
 
     private static MsSqlConnection Connection()
         => new(
@@ -92,15 +92,16 @@ public sealed class MsSqlConnectionSessionContextFailureTests
         var messages = placement.FailureMessages(logger, exception, Select);
 
         // The context failure comes first and says what Apply says when it fails on its own, then the SQL
-        // error an unmapped number gets (which carries the number), then each exception in the chain.
+        // error through the handler for its severity class (FDW-4361: 15664 is severity 16, so a statement
+        // the server rejected, which carries the number), then each exception in the chain.
         messages.Count.ShouldBeGreaterThanOrEqualTo(2);
         messages[0].Code.ShouldBe("MSSQL-71018");
-        messages[1].Code.ShouldBe("MSSQL-71017");
+        messages[1].Code.ShouldBe("MSSQL-22007");
         messages[0].Message.ShouldContain("Failed to set tenant SESSION_CONTEXT");
         messages[0].Message.ShouldContain("Cannot set key read_only for this session.");
         messages[1].Message.ShouldContain(ReadOnlyKeyAlreadySet.ToString(System.Globalization.CultureInfo.InvariantCulture));
         logger.EventIds.ShouldContain(TenantContextSetFailedId);
-        logger.EventIds.ShouldContain(UnhandledSqlErrorId);
+        logger.EventIds.ShouldContain(StatementFailedId);
     }
 
     [Fact]

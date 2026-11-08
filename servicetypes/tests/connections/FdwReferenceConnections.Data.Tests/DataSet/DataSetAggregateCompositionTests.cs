@@ -73,6 +73,47 @@ public sealed class DataSetAggregateCompositionTests
         private readonly List<DataSetKeyFieldConfiguration> _keyFields;
         private readonly List<DataSetSourceConfiguration> _sources;
 
+        // The rows of the tree below, by container: the domain row, the implementation row hanging from it, and its children hanging from that.
+        private Dictionary<string, List<Dictionary<string, object?>>> Rows { get; } = new(StringComparer.Ordinal);
+
+        private static Dictionary<string, object?> Row(int rowId, params (string Column, object? Value)[] columns)
+        {
+            var row = new Dictionary<string, object?>(StringComparer.Ordinal) { ["RowId"] = rowId };
+            foreach (var (column, value) in columns)
+                row[column] = value;
+
+            return row;
+        }
+
+        // A row is selected when every In condition names a column it holds the value of, as a store compares them.
+        private static bool Selected(IDataCommand command, Dictionary<string, object?> row)
+        {
+            if (command is not IQueryCommand { Filter.Root: { } root })
+                return true;
+
+            return Conditions(root)
+                .Where(c => string.Equals(c.Operator.SqlOperator, "IN", StringComparison.Ordinal) && c.Value is System.Collections.IEnumerable and not string)
+                .All(c => row.TryGetValue(c.PropertyName, out var value)
+                          && ((System.Collections.IEnumerable)c.Value!).Cast<object?>().Any(wanted => string.Equals(Text(wanted), Text(value), StringComparison.Ordinal)));
+        }
+
+        private static string Text(object? value) => Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+
+        private static IEnumerable<global::Fdw.Data.Abstractions.FilterCondition> Conditions(global::Fdw.Data.Abstractions.IFilterNode node)
+        {
+            if (node is global::Fdw.Data.Abstractions.FilterCondition condition)
+            {
+                yield return condition;
+                yield break;
+            }
+
+            if (node is global::Fdw.Data.FilterGroup group)
+            {
+                foreach (var nested in group.Nodes.SelectMany(Conditions))
+                    yield return nested;
+            }
+        }
+
         public AggregateGateway()
         {
             _domainRows = [new DomainConfiguration { Id = DataSetId, Name = "DS1", Domain = "DataSet", Implementation = DataSetAggregateCompositionTests.Implementation }];
@@ -90,6 +131,12 @@ public sealed class DataSetAggregateCompositionTests
                 new DataSetSourceConfiguration { Id = Source2Id, SourceName = "Fallback" }
             ];
             _stores = [BuildTree()];
+
+            Rows["DataSet"] = [Row(1, ("Id", DataSetId), ("Name", "DS1"))];
+            Rows["SimpleDataSetConfiguration"] = [Row(11, ("DataSetRowId", 1), ("Id", DataSetId), ("Name", "DS1"))];
+            Rows["DataSetField"] = [.. _fields.Select((f, i) => Row(21 + i, ("SimpleDataSetConfigurationRowId", 11), ("Id", f.Id), ("Name", f.Name), ("Ordinal", f.Ordinal)))];
+            Rows["DataSetKeyField"] = [.. _keyFields.Select((k, i) => Row(31 + i, ("SimpleDataSetConfigurationRowId", 11), ("Id", k.Id), ("KeyName", k.KeyName), ("KeyType", k.KeyType)))];
+            Rows["DataSetSource"] = [.. _sources.Select((src, i) => Row(41 + i, ("SimpleDataSetConfigurationRowId", 11), ("Id", src.Id), ("SourceName", src.SourceName)))];
         }
 
         public IReadOnlyList<IDataStore> DataStores => _stores;
@@ -108,6 +155,16 @@ public sealed class DataSetAggregateCompositionTests
             // return a typed empty enumerable so the cast succeeds and FieldMappings remains empty.
             if (typeof(T) == typeof(IEnumerable<DataSetFieldMappingConfiguration>))
                 return Task.FromResult(GenericResult<T>.Success((T)(object)Enumerable.Empty<DataSetFieldMappingConfiguration>()));
+
+            // FDW-4254: a read by durable id is the set read of one, so the store answers with rows as columns, selected by the In conditions the
+            // read carries, with the physical RowId on each and the RowId of the row each child hangs from.
+            if (typeof(T) == typeof(IEnumerable<Dictionary<string, object?>>))
+            {
+                var held = Rows.GetValueOrDefault(target.Container) ?? [];
+                var selected = held.Where(row => Selected(command, row)).Select(row => new Dictionary<string, object?>(row, StringComparer.Ordinal)).ToList();
+                return Task.FromResult(GenericResult<T>.Success((T)(object)selected));
+            }
+
             return Task.FromResult(GenericResult<T>.Failure(new GenericMessage($"Unhandled type {typeof(T).Name} in AggregateGateway stub")));
         }
 
@@ -273,6 +330,8 @@ public sealed class DataSetAggregateCompositionTests
     {
         private readonly IConfigurationGateway _gateway;
         public AnyConnectionGateways(IConfigurationGateway gateway) => _gateway = gateway;
+        public int KeyChunkSize => 1000;
+
         public IGenericResult<IConfigurationGateway> Get(string connectionName)
             => GenericResult<IConfigurationGateway>.Success(_gateway);
         public IGenericResult Register(IConfigurationGateway gateway) => GenericResult.Success();

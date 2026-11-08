@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Fdw.Services.Pipelines.Clients.Abstractions;
 using System.Diagnostics.CodeAnalysis;
@@ -36,6 +37,15 @@ public sealed class ProxyTriggerEtlRequest
     /// tenant it acts in, and the roles must be able to reach everything the pipeline reads and writes.
     /// </summary>
     public IList<string>? RunRoles { get; set; }
+
+    /// <summary>
+    /// Gets or sets the key of one scheduled fire (FDW-4317), forwarded to the ETL host as it is: a source that requires a key must send it, and a source that takes none is
+    /// refused there when it sends one. The proxy judges nothing itself and drops nothing it was given.
+    /// </summary>
+    public string? TriggerKey { get; set; }
+
+    /// <summary>Gets or sets the time the fire was due (FDW-4317), sent with <see cref="TriggerKey"/>.</summary>
+    public DateTimeOffset? TriggerKeyFireTime { get; set; }
 
     /// <summary>
     /// Gets or sets how many rows each source may read in a test run (FDW-1676). When set, the run is a test run: each source stops

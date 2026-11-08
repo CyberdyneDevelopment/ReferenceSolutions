@@ -59,6 +59,15 @@ public sealed class UnifiedTriggerRequest
     public string? TriggerSource { get; set; }
 
     /// <summary>
+    /// Gets or sets the key of one scheduled fire (FDW-4317): the schedule's Id and the time the fire was due, the same on every retry of that fire. Required when the trigger source
+    /// requires it (Scheduled); a source that does not must send none. A repeat of a key answers the run the first call started.
+    /// </summary>
+    public string? TriggerKey { get; set; }
+
+    /// <summary>Gets or sets the time the fire was due (FDW-4317), sent with <see cref="TriggerKey"/>; a fire older than the host remembers keys for is refused as expired.</summary>
+    public DateTimeOffset? TriggerKeyFireTime { get; set; }
+
+    /// <summary>
     /// Gets or sets the tenant relayed by the triggering caller (e.g. the scheduler, forwarding
     /// <c>ScheduleConfiguration.TenantId</c>). Only trusted when the caller's OWN authenticated tenant
     /// claim is absent — see <see cref="UnifiedTriggerEndpoint.TriggerPipeline"/>.
@@ -164,6 +173,7 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
         IPipelineExecutionQueue pipelineQueue,
         IPipelineRunHolds holds,
         IPipelineRunRequestStore requests,
+        IPipelineTriggerKeys triggerKeys,
         ProjectExecutionQueue projectQueue,
         IPipelineStatusBroadcaster broadcaster,
         IOrchestrationNodeConfigurationProvider nodeProvider,
@@ -182,7 +192,7 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
         // if DI does not wire up logging.
         _logger = logger ?? NullLogger<UnifiedTriggerEndpoint>.Instance;
         _pipelineTrigger = new PipelineTrigger(
-            executionTracker, dataGateways, pipelineProvider, pipelineConfigurations, accessor, pipelineQueue, holds, requests, broadcaster,
+            executionTracker, dataGateways, pipelineProvider, pipelineConfigurations, accessor, pipelineQueue, holds, requests, triggerKeys, broadcaster,
             new PipelineRunAuthority(grants, dataSets, connections, dataStores), _logger);
     }
 

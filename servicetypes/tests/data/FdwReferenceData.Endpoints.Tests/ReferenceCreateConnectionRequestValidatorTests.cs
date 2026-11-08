@@ -11,7 +11,7 @@ public sealed class ReferenceCreateConnectionRequestValidatorTests
     {
         var result = new ReferenceCreateConnectionRequestValidator().Validate(new CreateConnectionRequest { Name = "1Orders", ServiceType = "MsSql" });
 
-        result.Errors.ShouldContain(error => error.PropertyName == "Name");
+        result.Errors.ShouldContain(error => string.Equals(error.PropertyName, "Name", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -27,6 +27,6 @@ public sealed class ReferenceCreateConnectionRequestValidatorTests
     {
         var result = new ReferenceCreateConnectionRequestValidator().Validate(new CreateConnectionRequest { Name = "Orders", ServiceType = string.Empty });
 
-        result.Errors.Count(error => error.PropertyName == "ServiceType").ShouldBe(1);
+        result.Errors.Count(error => string.Equals(error.PropertyName, "ServiceType", StringComparison.OrdinalIgnoreCase)).ShouldBe(1);
     }
 }

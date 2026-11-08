@@ -73,6 +73,8 @@ file sealed class TestOnlyDataStoreBuilder : IDataStoreBuilder
 
     public void DeclareByHost() => throw new System.NotSupportedException("TestOnly builder builds no store");
 
+    public void DeclareSlice(System.Collections.Generic.IReadOnlyCollection<string> containerNames) => throw new System.NotSupportedException("TestOnly builder builds no store");
+
     public IGenericResult Add(Fdw.Data.Abstractions.IDataNodePath path)
         => GenericResult.Failure(new GenericMessage("TestOnly builder has no Add(path) implementation"));
 

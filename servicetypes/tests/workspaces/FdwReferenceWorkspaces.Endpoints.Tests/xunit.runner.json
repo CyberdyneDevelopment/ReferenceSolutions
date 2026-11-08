@@ -6,6 +6,7 @@
   "methodDisplay": "classAndMethod",
   "methodDisplayOptions": "all",
   "parallelAlgorithm": "conservative",
+  "parallelizeTestCollections": false,
   "preEnumerateTheories": true,
   "shadowCopy": true,
   "stopOnFail": false

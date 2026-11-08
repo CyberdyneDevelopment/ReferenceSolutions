@@ -13,5 +13,5 @@ public sealed class ReferenceResetPasswordRequestValidatorTests
     [Fact]
     public void AShortPasswordIsRefused() =>
         new ReferenceResetPasswordRequestValidator().Validate(new ResetPasswordRequest { IdOrName = "analyst_one", NewPassword = "short" }).Errors
-            .ShouldContain(error => error.PropertyName == "NewPassword");
+            .ShouldContain(error => string.Equals(error.PropertyName, "NewPassword", StringComparison.OrdinalIgnoreCase));
 }

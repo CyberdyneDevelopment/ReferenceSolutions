@@ -45,7 +45,7 @@ public sealed class UpdateScheduleRequestValidatorTests
     {
         var request = new UpdateScheduleRequest { Name = "S", MissedFireRule = rule };
 
-        var errors = new ReferenceUpdateScheduleRequestValidator().Validate(request).Errors.Where(error => error.PropertyName == nameof(UpdateScheduleRequest.MissedFireRule)).ToList();
+        var errors = new ReferenceUpdateScheduleRequestValidator().Validate(request).Errors.Where(error => string.Equals(error.PropertyName, nameof(UpdateScheduleRequest.MissedFireRule), StringComparison.OrdinalIgnoreCase)).ToList();
 
         (errors.Count == 0).ShouldBe(accepted);
     }

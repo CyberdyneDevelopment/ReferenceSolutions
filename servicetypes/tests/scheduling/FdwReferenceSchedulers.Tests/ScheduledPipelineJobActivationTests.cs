@@ -2,6 +2,7 @@ using FdwReferenceSchedulers.Quartz.Services;
 using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Scheduling.Abstractions;
+using Fdw.Services.Scheduling.Abstractions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FdwReferenceSchedulers.Tests;
@@ -20,6 +21,7 @@ public sealed class ScheduledPipelineJobActivationTests
         services.AddSingleton(new Mock<IDataGatewayProvider>().Object);
         services.AddSingleton(new Mock<IGenericScheduledExecutionHandler>().Object);
         services.AddSingleton(new Mock<IAuthenticationContextAccessor>().Object);
+        services.AddSingleton(new Mock<IScheduleConfigurationProvider>().Object);
         services.AddTransient<ScheduledPipelineJob>();
         return services.BuildServiceProvider(validateScopes: true);
     }
@@ -64,9 +66,27 @@ public sealed class ScheduledPipelineJobActivationTests
         // Arrange
         var handler = new Mock<IGenericScheduledExecutionHandler>().Object;
         var accessor = new Mock<IAuthenticationContextAccessor>().Object;
+        var schedules = new Mock<IScheduleConfigurationProvider>().Object;
 
         // Act
-        var build = () => new ScheduledPipelineJob(handler, null!, accessor);
+        var build = () => new ScheduledPipelineJob(handler, null!, accessor, schedules);
+
+        // Assert
+        Should.Throw<ArgumentNullException>(build);
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "Api")]
+    public void JobRefusesANullScheduleProvider()
+    {
+        // Arrange
+        var handler = new Mock<IGenericScheduledExecutionHandler>().Object;
+        var gateways = new Mock<IDataGatewayProvider>().Object;
+        var accessor = new Mock<IAuthenticationContextAccessor>().Object;
+
+        // Act
+        var build = () => new ScheduledPipelineJob(handler, gateways, accessor, null!);
 
         // Assert
         Should.Throw<ArgumentNullException>(build);

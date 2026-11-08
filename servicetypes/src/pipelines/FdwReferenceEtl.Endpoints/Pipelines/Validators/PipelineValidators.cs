@@ -6,23 +6,6 @@ using Fdw.Services.Pipelines.Endpoints;
 namespace FdwReferencePipelines.Endpoints.Validators;
 
 /// <summary>
-/// Validator for <see cref="ExecutePipelineRequest"/>.
-/// </summary>
-[ExcludeFromCodeCoverage]
-public sealed class ExecutePipelineRequestValidator : Validator<ExecutePipelineRequest>
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ExecutePipelineRequestValidator"/> class.
-    /// </summary>
-    public ExecutePipelineRequestValidator()
-    {
-        RuleFor(x => x.Name)
-            .NotEmpty()
-            .WithMessage("Pipeline name is required");
-    }
-}
-
-/// <summary>
 /// Validator for <see cref="GetPipelineStatusRequest"/>.
 /// </summary>
 [ExcludeFromCodeCoverage]

@@ -72,6 +72,7 @@ public sealed class WebhookTriggerEndpoint : EndpointWithoutRequest
         IPipelineExecutionQueue pipelineQueue,
         IPipelineRunHolds holds,
         IPipelineRunRequestStore requests,
+        IPipelineTriggerKeys triggerKeys,
         IPipelineStatusBroadcaster broadcaster,
         IRoleGrants grants,
         IDataSetConfigurationProvider dataSets,
@@ -83,7 +84,7 @@ public sealed class WebhookTriggerEndpoint : EndpointWithoutRequest
         _accessor = accessor;
         _logger = logger;
         _pipelineTrigger = new PipelineTrigger(
-            executionTracker, dataGateways, pipelineProvider, pipelineConfigurations, accessor, pipelineQueue, holds, requests, broadcaster,
+            executionTracker, dataGateways, pipelineProvider, pipelineConfigurations, accessor, pipelineQueue, holds, requests, triggerKeys, broadcaster,
             new PipelineRunAuthority(grants, dataSets, connections, dataStores), logger);
     }
 

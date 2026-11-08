@@ -164,4 +164,30 @@ public sealed class EtlDispatchPipelineIdTests
         sent.ScheduleId.ShouldBe(ScheduleId);
         sent.TimeoutSeconds.ShouldBe(900);
     }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "Scheduling")]
+    public async Task EveryAttemptOfOneFireSendsTheSameKeyAndANewFireSendsAnother()
+    {
+        // Why: the ETL host answers a retry of a fire (after a 504) with the run the first call started only when the key is the same (FDW-4317).
+        Schedule(PipelineId);
+        var sent = new List<TriggerPipelineRequest>();
+        _client
+            .Setup(c => c.Trigger(It.IsAny<TriggerPipelineRequest>(), It.IsAny<CancellationToken>()))
+            .Callback((TriggerPipelineRequest r, CancellationToken _) => sent.Add(r))
+            .ReturnsAsync(GenericResult<TriggerPipelineResponse>.Success(new TriggerPipelineResponse { ExecutionId = Guid.NewGuid() }));
+        var due = new DateTime(2026, 11, 7, 2, 0, 0, DateTimeKind.Utc);
+
+        _ = await Build().ExecuteScheduledProcess(PipelineId.ToString("D"), "NightlyAt2", due, due.AddSeconds(1), cancellationToken: TestContext.Current.CancellationToken);
+        _ = await Build().ExecuteScheduledProcess(PipelineId.ToString("D"), "NightlyAt2", due, due.AddSeconds(31), cancellationToken: TestContext.Current.CancellationToken);
+        _ = await Build().ExecuteScheduledProcess(PipelineId.ToString("D"), "NightlyAt2", due.AddDays(1), due.AddDays(1), cancellationToken: TestContext.Current.CancellationToken);
+
+        sent.Count.ShouldBe(3);
+        sent[0].TriggerKey.ShouldNotBeNullOrWhiteSpace();
+        sent[0].TriggerKey.ShouldStartWith(ScheduleId.ToString("D"));
+        sent[1].TriggerKey.ShouldBe(sent[0].TriggerKey);
+        sent[2].TriggerKey.ShouldNotBe(sent[0].TriggerKey);
+        sent[0].TriggerKeyFireTime.ShouldBe(new DateTimeOffset(due));
+    }
 }

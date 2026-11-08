@@ -56,6 +56,8 @@ public sealed class TriggerPipelineProxyEndpoint : Endpoint<ProxyTriggerEtlReque
         {
             Name = req.PipelineName,
             TriggerSource = req.TriggerSource,
+            TriggerKey = req.TriggerKey,
+            TriggerKeyFireTime = req.TriggerKeyFireTime,
             Parameters = req.Parameters,
             RunRoles = req.RunRoles,
             TestRowsPerSource = req.TestRowsPerSource,
