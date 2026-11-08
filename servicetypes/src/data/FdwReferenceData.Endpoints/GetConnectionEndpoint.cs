@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Connections;
+using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Connections.Endpoints;
 using Microsoft.Extensions.Logging;
 
@@ -14,8 +15,8 @@ namespace FdwReferenceConnections.Endpoints;
 public class GetConnectionEndpoint : GetConnectionEndpointBase
 {
     /// <inheritdoc />
-    public GetConnectionEndpoint(ConnectionConfigurationProvider configProvider, ILogger<GetConnectionEndpoint> logger)
-        : base(logger, configProvider)
+    public GetConnectionEndpoint(ConnectionConfigurationProvider configProvider, IConnectionDisabledStates states, ILogger<GetConnectionEndpoint> logger)
+        : base(logger, configProvider, states)
     {
     }
 

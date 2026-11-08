@@ -22,7 +22,7 @@ public sealed class CreateScheduleMissedFireRuleTests
     };
 
     private static List<string> MissedFireRuleErrors(CreateScheduleRequest request) => new ReferenceCreateScheduleRequestValidator()
-        .Validate(request).Errors.Where(error => error.PropertyName == nameof(CreateScheduleRequest.MissedFireRule)).Select(error => error.ErrorMessage).ToList();
+        .Validate(request).Errors.Where(error => string.Equals(error.PropertyName, nameof(CreateScheduleRequest.MissedFireRule), StringComparison.OrdinalIgnoreCase)).Select(error => error.ErrorMessage).ToList();
 
     [Theory]
     [InlineData("Skip")]

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Fdw.Commands.Data;
 using Fdw.Commands.Data.Extensions;
@@ -6,6 +7,7 @@ using Fdw.Results;
 using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Execution.Abstractions;
 using Fdw.Services.Scheduling.Abstractions;
+using Fdw.Services.Scheduling.Abstractions.Configuration;
 using Fdw.Services.Scheduling.Data;
 using Fdw.Services.Scheduling.Execution;
 using Quartz;
@@ -50,6 +52,18 @@ public sealed class ScheduledPipelineJob : IJob
     /// <summary>The trigger type a run for the fire times missed while the scheduler was down is recorded with (FDW-3788).</summary>
     private const string CatchupTriggerType = "Catchup";
 
+    /// <summary>The job data key carrying the number of this attempt on a retry trigger (FDW-4293); absent from a fire that is not a retry, which is attempt 0.</summary>
+    public const string RetryAttemptKey = "RetryAttempt";
+
+    /// <summary>The job data key carrying the time the fire being retried was scheduled for (FDW-4293), written round-trip; present exactly when <see cref="RetryAttemptKey"/> is.</summary>
+    public const string RetriedFireKey = "RetriedFire";
+
+    /// <summary>The trigger group a retry's one-shot trigger lives in, apart from the schedule's own trigger group so listing and reconciling schedules never see it (FDW-4293).</summary>
+    public const string RetryTriggerGroup = "Retries";
+
+    /// <summary>The trigger type a retry of a failed dispatch is recorded with (FDW-4293).</summary>
+    private const string RetryTriggerType = "Retry";
+
     /// <summary>The job data key naming the connection to record execution history in.</summary>
     public const string DataStoreNameKey = "DataStoreName";
 
@@ -70,6 +84,7 @@ public sealed class ScheduledPipelineJob : IJob
     private readonly IGenericScheduledExecutionHandler _executionHandler;
     private readonly IDataGatewayProvider _dataGateways;
     private readonly IAuthenticationContextAccessor _authenticationContextAccessor;
+    private readonly IScheduleConfigurationProvider _schedules;
     private readonly ILogger<ScheduledPipelineJob> _logger;
 
     private IDataGateway Gateway => _dataGateways.ByName(MainDataGatewayName);
@@ -79,12 +94,67 @@ public sealed class ScheduledPipelineJob : IJob
         IGenericScheduledExecutionHandler executionHandler,
         IDataGatewayProvider dataGateways,
         IAuthenticationContextAccessor authenticationContextAccessor,
+        IScheduleConfigurationProvider schedules,
         ILogger<ScheduledPipelineJob>? logger = null)
     {
         _executionHandler = executionHandler ?? throw new ArgumentNullException(nameof(executionHandler));
         _dataGateways = dataGateways ?? throw new ArgumentNullException(nameof(dataGateways));
         _authenticationContextAccessor = authenticationContextAccessor ?? throw new ArgumentNullException(nameof(authenticationContextAccessor));
+        _schedules = schedules ?? throw new ArgumentNullException(nameof(schedules));
         _logger = logger ?? NullLogger<ScheduledPipelineJob>.Instance;
+    }
+
+    /// <summary>
+    /// Says which kind of fire a trigger's data describes (FDW-4387): an ordinary fire, a catch-up for a time that passed (FDW-3788) or a retry of a failed dispatch (FDW-4293).
+    /// </summary>
+    /// <remarks>
+    /// Why each key is read only where it is present: an ordinary fire carries none of <see cref="CatchupDueKey"/>, <see cref="RetryAttemptKey"/> and <see cref="RetriedFireKey"/>, and
+    /// Quartz's <c>GetString</c> throws <see cref="System.Collections.Generic.KeyNotFoundException"/> for an absent key, which failed every ordinary fire before its pipeline started.
+    /// A key that is present and empty, not readable as what it holds, or (a retry) without its partner key, is unreadable: the answer names it and the fire records nothing.
+    /// There is no default and no fallback.
+    /// </remarks>
+    /// <param name="data">The merged job data of the fire (the job's data and its trigger's).</param>
+    /// <returns>The kind of fire, the time it was scheduled for when that is not the time Quartz says, its retry attempt (0 when it is not a retry), or the key that could not be read.</returns>
+    public static ScheduledFireKind ReadFireKind(JobDataMap data)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+
+        var kind = new ScheduledFireKind(ScheduledTriggerType, null, 0, null);
+        if (data.ContainsKey(CatchupDueKey))
+        {
+            if (!TryReadTime(data.GetString(CatchupDueKey), out var due))
+            {
+                return kind with { UnreadableKey = CatchupDueKey };
+            }
+
+            kind = kind with { TriggerType = CatchupTriggerType, ScheduledFireTime = due };
+        }
+
+        if (!data.ContainsKey(RetryAttemptKey))
+        {
+            return kind;
+        }
+
+        // The retry replaces a catch-up: a retry of a fire is recorded against the time of that fire.
+        return int.TryParse(data.GetString(RetryAttemptKey), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var attempt)
+            && attempt >= 1
+            && data.ContainsKey(RetriedFireKey)
+            && TryReadTime(data.GetString(RetriedFireKey), out var retriedFire)
+                ? kind with { TriggerType = RetryTriggerType, ScheduledFireTime = retriedFire, RetryAttempt = attempt }
+                : kind with { UnreadableKey = RetryAttemptKey };
+    }
+
+    // A round-trip time as the translator writes it; empty or null text is not one.
+    private static bool TryReadTime(string? text, out DateTime utc)
+    {
+        if (DateTimeOffset.TryParse(text, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out var time))
+        {
+            utc = time.UtcDateTime;
+            return true;
+        }
+
+        utc = default;
+        return false;
     }
 
     /// <inheritdoc />
@@ -130,19 +200,20 @@ public sealed class ScheduledPipelineJob : IJob
         var scheduledFireTime = context.ScheduledFireTimeUtc?.UtcDateTime ?? context.FireTimeUtc.UtcDateTime;
         var actualFireTime = context.FireTimeUtc.UtcDateTime;
 
-        // Why the due time replaces the scheduled time (FDW-3788): a catch-up run is fired by hand for a time that passed, and it says which time. It is read from the data of its
-        // own trigger; a value that cannot be read fails the fire loudly and records nothing, never a Catchup due now.
-        var triggerType = ScheduledTriggerType;
-        if (context.MergedJobDataMap.GetString(CatchupDueKey) is { Length: > 0 } dueText)
+        // Why the trigger's data says which kind of fire this is (FDW-3788, FDW-4293, FDW-4387): an ordinary fire carries none of the catch-up and retry keys, so they are read only
+        // where they are present. A key that is present and cannot be read fails the fire loudly and records nothing, never a fire due now.
+        var fire = ReadFireKind(context.MergedJobDataMap);
+        if (fire.UnreadableKey is { } unreadableKey)
         {
-            if (!DateTimeOffset.TryParse(dueText, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out var due))
-            {
-                QuartzSchedulingLog.JobDataMissing(_logger, jobKey, CatchupDueKey);
-                return;
-            }
+            QuartzSchedulingLog.JobDataMissing(_logger, jobKey, unreadableKey);
+            return;
+        }
 
-            triggerType = CatchupTriggerType;
-            scheduledFireTime = due.UtcDateTime;
+        var triggerType = fire.TriggerType;
+        var retryAttempt = fire.RetryAttempt;
+        if (fire.ScheduledFireTime is { } kindScheduledFireTime)
+        {
+            scheduledFireTime = kindScheduledFireTime;
         }
 
         // Why elevated: a background fire has no ClaimsPrincipal, so without this the connection
@@ -179,13 +250,99 @@ public sealed class ScheduledPipelineJob : IJob
 
         await RecordExecution(
             scheduleId, processId, dataStoreName, pathName, scheduleContainerName,
-            triggerType, scheduledFireTime, actualFireTime, status, errorMessage, context.CancellationToken)
+            triggerType, retryAttempt, scheduledFireTime, actualFireTime, status, errorMessage, context.CancellationToken)
             .ConfigureAwait(false);
+
+        // Why a retry asks the schedule's own triggers for the next run (FDW-4293): a retry's trigger fires once and has no next fire time of its own,
+        // and writing that over the schedule's NextRunTime would say the schedule never runs again.
+        var nextFireTime = retryAttempt > 0
+            ? await NextScheduledFire(context).ConfigureAwait(false)
+            : context.NextFireTimeUtc;
 
         await RecordRunFields(
             scheduleId, dataStoreName, pathName, scheduleContainerName,
-            actualFireTime, context.NextFireTimeUtc, status, context.CancellationToken)
+            actualFireTime, nextFireTime, status, context.CancellationToken)
             .ConfigureAwait(false);
+
+        if (!result.IsSuccess)
+        {
+            await ScheduleRetry(context, scheduleId, retryAttempt, scheduledFireTime, result, context.CancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    // Why only a failure whose code says it can be retried (FDW-4293): the dispatch failed because the ETL did not accept the trigger, and a refusal that
+    // would be refused again (a 400, a 403, a schedule that no longer names the pipeline) is not made better by waiting. A run the ETL accepted and
+    // later fails is the ETL's to recover (FDW-3783); the scheduler never sees it, because the handler answers Pending the moment the run is queued.
+    // Why a one-shot trigger of its own and not a wait here: a wait would hold one of the engine's few threads for the whole delay, and Quartz's
+    // own refire has no delay. The retry trigger lives in its own group because it is not the schedule's trigger, and the schedule's own listing and reconciliation look only at that.
+    // Why the schedule is read now and not carried on the job: an edit to MaxRetries or RetryDelaySeconds applies to the next failure, as it does to the next fire.
+    private async Task ScheduleRetry(
+        IJobExecutionContext context, string scheduleId, int attempt, DateTime scheduledFireTime,
+        IGenericResult<IProcessResult> failure, System.Threading.CancellationToken cancellationToken)
+    {
+        if (failure.Code is not { IsRetryable: true })
+        {
+            QuartzSchedulingLog.RetryNotApplicable(_logger, scheduleId, attempt, failure.Code?.Name ?? string.Empty);
+            return;
+        }
+
+        var schedule = await _schedules.Get(scheduleId, cancellationToken).ConfigureAwait(false);
+        if (schedule.IsFailure || schedule.Value is null)
+        {
+            QuartzSchedulingLog.RetryNotScheduled(_logger, scheduleId, attempt + 1, schedule.CurrentMessage);
+            return;
+        }
+
+        if (attempt >= schedule.Value.MaxRetries)
+        {
+            QuartzSchedulingLog.RetriesExhausted(_logger, scheduleId, attempt, schedule.Value.MaxRetries);
+            return;
+        }
+
+        if (schedule.Value.RetryDelaySeconds < 0)
+        {
+            QuartzSchedulingLog.RetryNotScheduled(_logger, scheduleId, attempt + 1, $"its RetryDelaySeconds is {schedule.Value.RetryDelaySeconds}, which is below zero");
+            return;
+        }
+
+        var next = attempt + 1;
+        var due = DateTimeOffset.UtcNow.AddSeconds(schedule.Value.RetryDelaySeconds);
+        var data = new JobDataMap
+        {
+            [RetryAttemptKey] = next.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            [RetriedFireKey] = new DateTimeOffset(DateTime.SpecifyKind(scheduledFireTime, DateTimeKind.Utc)).ToString("o", System.Globalization.CultureInfo.InvariantCulture),
+        };
+
+        // Why the fire time in the name: one fire has at most one retry per attempt, and a name that repeats means two retries of one fire are being scheduled.
+        var trigger = TriggerBuilder.Create()
+            .WithIdentity($"{scheduleId}_{scheduledFireTime:yyyyMMddHHmmss}_{next}", RetryTriggerGroup)
+            .ForJob(context.JobDetail.Key)
+            .StartAt(due)
+            .UsingJobData(data)
+            .Build();
+
+        try
+        {
+            await context.Scheduler.ScheduleJob(trigger, cancellationToken).ConfigureAwait(false);
+        }
+        catch (SchedulerException ex)
+        {
+            QuartzSchedulingLog.RetryNotScheduled(_logger, scheduleId, next, ex.Message);
+            return;
+        }
+
+        QuartzSchedulingLog.RetryScheduled(_logger, scheduleId, next, schedule.Value.MaxRetries, due);
+    }
+
+    private static async Task<DateTimeOffset?> NextScheduledFire(IJobExecutionContext context)
+    {
+        var triggers = await context.Scheduler.GetTriggersOfJob(context.JobDetail.Key, context.CancellationToken).ConfigureAwait(false);
+        return triggers
+            .Where(t => !string.Equals(t.Key.Group, RetryTriggerGroup, StringComparison.Ordinal))
+            .Select(t => t.GetNextFireTimeUtc())
+            .Where(next => next.HasValue)
+            .OrderBy(next => next)
+            .FirstOrDefault();
     }
 
     // Why the handler's own state (FDW-902): a success means the handler did its part, not that the
@@ -230,7 +387,7 @@ public sealed class ScheduledPipelineJob : IJob
 
     private async Task RecordExecution(
         string scheduleId, string processId, string dataStoreName, string pathName, string scheduleContainerName,
-        string triggerType, DateTime scheduledFireTime, DateTime actualFireTime,
+        string triggerType, int retryAttempt, DateTime scheduledFireTime, DateTime actualFireTime,
         string status, string? errorMessage, System.Threading.CancellationToken cancellationToken)
     {
         var completedAt = DateTimeOffset.UtcNow;
@@ -240,6 +397,7 @@ public sealed class ScheduledPipelineJob : IJob
             ScheduleName = scheduleId,
             PipelineName = processId,
             TriggerType = triggerType,
+            RetryAttempt = retryAttempt,
             Status = status,
             TriggeredAt = scheduledFireTime,
             ScheduledFireTime = scheduledFireTime,

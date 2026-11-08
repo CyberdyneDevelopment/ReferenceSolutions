@@ -21,8 +21,9 @@ public class CreateAccessRequestEndpointRequestValidatorTests
     {
         var errors = Validator.Validate(new CreateAccessRequestEndpointRequest()).Errors;
 
-        errors.Select(e => e.PropertyName).ShouldBe(
-            [nameof(CreateAccessRequestEndpointRequest.RequestedResource), nameof(CreateAccessRequestEndpointRequest.RequestedPermission)],
+        // The case of a property name depends on which test classes ran first in the process: FastEndpoints sets a process-wide validator name resolver (camelCase) when a test host starts. Names compare ignoring case.
+        errors.Select(e => e.PropertyName.ToLowerInvariant()).ShouldBe(
+            [nameof(CreateAccessRequestEndpointRequest.RequestedResource).ToLowerInvariant(), nameof(CreateAccessRequestEndpointRequest.RequestedPermission).ToLowerInvariant()],
             ignoreOrder: true);
         errors.Select(e => e.ErrorMessage).ShouldContain("RequestedResource is required");
         errors.Select(e => e.ErrorMessage).ShouldContain("RequestedPermission is required");
@@ -39,7 +40,7 @@ public class CreateAccessRequestEndpointRequestValidatorTests
         var request = Request();
         request.RequestedResource = resource;
 
-        Validator.Validate(request).Errors.ShouldHaveSingleItem().PropertyName.ShouldBe(nameof(CreateAccessRequestEndpointRequest.RequestedResource));
+        Validator.Validate(request).Errors.ShouldHaveSingleItem().PropertyName.ToLowerInvariant().ShouldBe(nameof(CreateAccessRequestEndpointRequest.RequestedResource).ToLowerInvariant());
     }
 
     [Theory]
@@ -52,7 +53,7 @@ public class CreateAccessRequestEndpointRequestValidatorTests
         var request = Request();
         request.RequestedPermission = permission;
 
-        Validator.Validate(request).Errors.ShouldHaveSingleItem().PropertyName.ShouldBe(nameof(CreateAccessRequestEndpointRequest.RequestedPermission));
+        Validator.Validate(request).Errors.ShouldHaveSingleItem().PropertyName.ToLowerInvariant().ShouldBe(nameof(CreateAccessRequestEndpointRequest.RequestedPermission).ToLowerInvariant());
     }
 
     [Fact]

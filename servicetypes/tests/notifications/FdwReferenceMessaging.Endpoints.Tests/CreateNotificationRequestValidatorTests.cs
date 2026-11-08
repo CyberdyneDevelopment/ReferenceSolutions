@@ -17,13 +17,13 @@ public class CreateNotificationRequestValidatorTests
     [InlineData(false)]
     public void AStatedIsEnabledIsAccepted(bool isEnabled)
     {
-        Validator.Validate(Request(isEnabled)).Errors.ShouldNotContain(e => e.PropertyName == nameof(CreateNotificationRequest.IsEnabled));
+        Validator.Validate(Request(isEnabled)).Errors.ShouldNotContain(e => string.Equals(e.PropertyName, nameof(CreateNotificationRequest.IsEnabled), StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
     public void ALeftOutIsEnabledIsAcceptedForItsSettingToGive()
     {
-        Validator.Validate(Request(null)).Errors.ShouldNotContain(e => e.PropertyName == nameof(CreateNotificationRequest.IsEnabled));
+        Validator.Validate(Request(null)).Errors.ShouldNotContain(e => string.Equals(e.PropertyName, nameof(CreateNotificationRequest.IsEnabled), StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -32,7 +32,7 @@ public class CreateNotificationRequestValidatorTests
         var request = Request(true);
         request.Name = string.Empty;
 
-        Validator.Validate(request).Errors.ShouldContain(e => e.PropertyName == nameof(CreateNotificationRequest.Name));
+        Validator.Validate(request).Errors.ShouldContain(e => string.Equals(e.PropertyName, nameof(CreateNotificationRequest.Name), StringComparison.OrdinalIgnoreCase));
     }
 
     private static CreateNotificationRequest Request(bool? isEnabled) => new()

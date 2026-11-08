@@ -148,6 +148,8 @@ public sealed class ConfigurationGatewayDataStoreProviderDerivedTests
 
         public AnyConnectionGateways(IConfigurationGateway gateway) => _gateway = gateway;
 
+        public int KeyChunkSize => 1000;
+
         public IGenericResult<IConfigurationGateway> Get(string connectionName)
             => GenericResult<IConfigurationGateway>.Success(_gateway);
 

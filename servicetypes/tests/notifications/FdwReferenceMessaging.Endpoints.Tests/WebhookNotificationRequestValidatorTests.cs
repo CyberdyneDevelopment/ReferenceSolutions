@@ -24,8 +24,9 @@ public class WebhookNotificationRequestValidatorTests
         TimeoutSeconds = 30,
     };
 
+    // Property names compare ignoring case: FastEndpoints sets a process-wide validator name resolver (camelCase) when any test host in this process starts, so the case a name has depends on which classes ran first.
     private static string[] Refused(WebhookNotificationRequest request) =>
-        [.. Validator.Validate(request).Errors.Select(error => error.PropertyName).Distinct()];
+        [.. Validator.Validate(request).Errors.Select(error => error.PropertyName.ToLowerInvariant()).Distinct()];
 
     [Fact]
     public void AServiceStatedWholeIsAccepted()
@@ -49,7 +50,7 @@ public class WebhookNotificationRequestValidatorTests
         var request = Complete();
         request.Url = null;
 
-        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.Url)]);
+        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.Url).ToLowerInvariant()]);
     }
 
     [Theory]
@@ -61,7 +62,7 @@ public class WebhookNotificationRequestValidatorTests
         var request = Complete();
         request.Url = url;
 
-        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.Url)]);
+        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.Url).ToLowerInvariant()]);
     }
 
     [Theory]
@@ -84,7 +85,7 @@ public class WebhookNotificationRequestValidatorTests
         var request = Complete();
         request.Method = method;
 
-        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.Method)]);
+        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.Method).ToLowerInvariant()]);
     }
 
     [Theory]
@@ -105,7 +106,7 @@ public class WebhookNotificationRequestValidatorTests
         var request = Complete();
         request.ContentType = string.Empty;
 
-        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.ContentType)]);
+        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.ContentType).ToLowerInvariant()]);
     }
 
     [Fact]
@@ -114,7 +115,7 @@ public class WebhookNotificationRequestValidatorTests
         var request = Complete();
         request.IsEnabled = null;
 
-        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.IsEnabled)]);
+        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.IsEnabled).ToLowerInvariant()]);
     }
 
     [Fact]
@@ -125,8 +126,8 @@ public class WebhookNotificationRequestValidatorTests
         var negative = Complete();
         negative.RetryCount = -1;
 
-        Refused(left).ShouldBe([nameof(WebhookNotificationRequest.RetryCount)]);
-        Refused(negative).ShouldBe([nameof(WebhookNotificationRequest.RetryCount)]);
+        Refused(left).ShouldBe([nameof(WebhookNotificationRequest.RetryCount).ToLowerInvariant()]);
+        Refused(negative).ShouldBe([nameof(WebhookNotificationRequest.RetryCount).ToLowerInvariant()]);
     }
 
     [Fact]
@@ -147,7 +148,7 @@ public class WebhookNotificationRequestValidatorTests
         var request = Complete();
         request.TimeoutSeconds = seconds;
 
-        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.TimeoutSeconds)]);
+        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.TimeoutSeconds).ToLowerInvariant()]);
     }
 
     [Fact]
@@ -156,7 +157,7 @@ public class WebhookNotificationRequestValidatorTests
         var request = Complete();
         request.SecretManagerName = "Main";
 
-        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.SecretKeyName)]);
+        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.SecretKeyName).ToLowerInvariant()]);
     }
 
     [Fact]
@@ -165,7 +166,7 @@ public class WebhookNotificationRequestValidatorTests
         var request = Complete();
         request.SecretKeyName = "partner-hook";
 
-        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.SecretManagerName)]);
+        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.SecretManagerName).ToLowerInvariant()]);
     }
 
     [Fact]
@@ -174,6 +175,6 @@ public class WebhookNotificationRequestValidatorTests
         var request = Complete();
         request.Name = string.Empty;
 
-        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.Name)]);
+        Refused(request).ShouldBe([nameof(WebhookNotificationRequest.Name).ToLowerInvariant()]);
     }
 }

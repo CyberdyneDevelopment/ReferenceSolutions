@@ -21,7 +21,7 @@ public class CreateUserRequestValidatorTests
     [InlineData("a_b-c@x.io")]
     public void AnIdentifierOrAnEmailAddressIsAValidUsername(string username)
     {
-        Validator.Validate(Account(username)).Errors.ShouldNotContain(e => e.PropertyName == "Username");
+        Validator.Validate(Account(username)).Errors.ShouldNotContain(e => string.Equals(e.PropertyName, "Username", StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]
@@ -34,7 +34,7 @@ public class CreateUserRequestValidatorTests
     public void AUsernameThatIsNeitherFormIsRefusedWithTheRuleItBroke(string username, string reason)
     {
         Validator.Validate(Account(username)).Errors
-            .Where(e => e.PropertyName == "Username")
+            .Where(e => string.Equals(e.PropertyName, "Username", StringComparison.OrdinalIgnoreCase))
             .Select(e => e.ErrorMessage)
             .ShouldContain(message => message.Contains(reason, StringComparison.Ordinal));
     }
@@ -49,7 +49,7 @@ public class CreateUserRequestValidatorTests
     {
         // The name is a URL path segment, a VARCHAR key and half of the '{username}:{tenantId}' membership name.
         Validator.Validate(Account(username)).Errors
-            .Where(e => e.PropertyName == "Username")
+            .Where(e => string.Equals(e.PropertyName, "Username", StringComparison.OrdinalIgnoreCase))
             .Select(e => e.ErrorMessage)
             .ShouldContain(message => message.Contains("may contain only ASCII letters", StringComparison.Ordinal));
     }
@@ -61,9 +61,9 @@ public class CreateUserRequestValidatorTests
         var tooShort = "ab";
 
         Validator.Validate(Account(tooLong)).Errors.ShouldContain(
-            e => e.PropertyName == "Username" && e.ErrorMessage.Contains("cannot exceed 100", StringComparison.Ordinal));
+            e => string.Equals(e.PropertyName, "Username", StringComparison.OrdinalIgnoreCase) && e.ErrorMessage.Contains("cannot exceed 100", StringComparison.Ordinal));
         Validator.Validate(Account(tooShort)).Errors.ShouldContain(
-            e => e.PropertyName == "Username" && e.ErrorMessage.Contains("at least 3", StringComparison.Ordinal));
+            e => string.Equals(e.PropertyName, "Username", StringComparison.OrdinalIgnoreCase) && e.ErrorMessage.Contains("at least 3", StringComparison.Ordinal));
     }
 
     [Fact]

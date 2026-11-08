@@ -86,4 +86,32 @@ public static partial class QuartzSchedulingLog
     /// <summary>The catch-up run of a schedule could not be started (FDW-3788).</summary>
     [MessageLogging(EventId = 18, Level = LogLevel.Error, Message = "The catch-up run of schedule '{scheduleId}' could not be started: {reason}")]
     public static partial IGenericMessage CatchupNotStarted(ILogger logger, string scheduleId, string? reason);
+
+    /// <summary>The Quartz engine took its instance name and thread count from the scheduler row (FDW-4293).</summary>
+    [MessageLogging(EventId = 19, Level = LogLevel.Information, Message = "Quartz engine options read from scheduler '{schedulerName}': instance name '{instanceName}', {threadCount} thread(s)")]
+    public static partial IGenericMessage EngineOptionsRead(ILogger logger, string schedulerName, string instanceName, int threadCount);
+
+    /// <summary>The Quartz engine cannot start because the scheduler rows are not exactly one (FDW-4293).</summary>
+    [MessageLogging(EventId = 20, Level = LogLevel.Error, Message = "The Quartz engine cannot start: it takes its instance name and thread count from the one Quartz scheduler row, and {rowCount} were found ({reason})")]
+    public static partial IGenericMessage EngineSchedulerRowsNotOne(ILogger logger, int rowCount, string? reason);
+
+    /// <summary>The Quartz scheduler row states a value the engine refuses (FDW-4293).</summary>
+    [MessageLogging(EventId = 21, Level = LogLevel.Error, Message = "The Quartz engine cannot start: scheduler '{schedulerName}' is refused: {reason}")]
+    public static partial IGenericMessage EngineSchedulerRefused(ILogger logger, string schedulerName, string reason);
+
+    /// <summary>A failed dispatch was scheduled to be tried again (FDW-4293).</summary>
+    [MessageLogging(EventId = 22, Level = LogLevel.Information, Message = "Schedule '{scheduleId}' failed to dispatch; retry {attempt} of {maxRetries} is due {due}")]
+    public static partial IGenericMessage RetryScheduled(ILogger logger, string scheduleId, int attempt, int maxRetries, DateTimeOffset due);
+
+    /// <summary>A failed dispatch is not retried because its failure is not one a retry could mend (FDW-4293).</summary>
+    [MessageLogging(EventId = 23, Level = LogLevel.Information, Message = "Schedule '{scheduleId}' failed to dispatch on attempt {attempt}; the failure ({code}) is not one a retry could mend, so it is not retried")]
+    public static partial IGenericMessage RetryNotApplicable(ILogger logger, string scheduleId, int attempt, string code);
+
+    /// <summary>A failed dispatch has used all the retries its schedule states (FDW-4293).</summary>
+    [MessageLogging(EventId = 24, Level = LogLevel.Warning, Message = "Schedule '{scheduleId}' failed to dispatch on attempt {attempt}; it has used all {maxRetries} retries it states")]
+    public static partial IGenericMessage RetriesExhausted(ILogger logger, string scheduleId, int attempt, int maxRetries);
+
+    /// <summary>A retry could not be scheduled (FDW-4293).</summary>
+    [MessageLogging(EventId = 25, Level = LogLevel.Error, Message = "Schedule '{scheduleId}' failed to dispatch and retry {attempt} could not be scheduled: {reason}")]
+    public static partial IGenericMessage RetryNotScheduled(ILogger logger, string scheduleId, int attempt, string? reason);
 }

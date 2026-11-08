@@ -59,6 +59,10 @@ public sealed class HostDeclaredStoreGatewayTests
         store.SetupGet(s => s.DeclaredByHost).Returns(declaredByHost);
         _stores.Setup(p => p.Get(name, It.IsAny<CancellationToken>()))
             .ReturnsAsync(GenericResult<IDataStore>.Success(store.Object));
+
+        // The gateway asks whether a store is the host's with the store's row, not its tree (FDW-4253).
+        _stores.Setup(p => p.GetReference(name, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<DataStoreReference>.Success(new DataStoreReference(name, Guid.NewGuid(), declaredByHost)));
     }
 
     private static IAuthenticationContextAccessor Caller(bool system)

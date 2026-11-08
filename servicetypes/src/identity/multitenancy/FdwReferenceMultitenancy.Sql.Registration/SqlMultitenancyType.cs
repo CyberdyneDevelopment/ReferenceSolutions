@@ -75,7 +75,7 @@ public sealed class SqlMultitenancyType : MultitenancyTypeBase<ISqlMultitenancyF
             // resolution. Not resolved here (Phase 1b runs before Build(), IConfigurationGateway is not yet
             // available); Initialize forces resolution in the post-Build fail-fast phase so a missing row
             // surfaces at startup, matching the sanctioned sync-over-async seam used by
-            // ConfigurationGatewayDataStoreProvider.Initialize / OpenIddictSigningKeyConfigurator.
+            // ConfigurationGatewayDataStoreProvider.Initialize.
             builder.Services.TryAddSingleton(ResolveTenantConfiguration);
 
             builder.Services.AddScoped<ITenantProvider, SqlTenantProvider>();

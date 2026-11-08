@@ -26,6 +26,6 @@ public sealed class ReferenceCreateScheduleRequestValidatorTests
         var request = Cron();
         request.RunRoles = [];
 
-        new ReferenceCreateScheduleRequestValidator().Validate(request).Errors.ShouldContain(error => error.PropertyName == "RunRoles");
+        new ReferenceCreateScheduleRequestValidator().Validate(request).Errors.ShouldContain(error => string.Equals(error.PropertyName, "RunRoles", StringComparison.OrdinalIgnoreCase));
     }
 }

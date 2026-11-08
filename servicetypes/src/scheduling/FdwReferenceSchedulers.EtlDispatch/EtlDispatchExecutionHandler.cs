@@ -80,11 +80,16 @@ public sealed class EtlDispatchExecutionHandler : IGenericScheduledExecutionHand
             return GenericResult<IProcessResult>.Failure(
                 EtlDispatchLog.ProcessIdStale(_logger, processId, scheduleId, schedule.Value.PipelineId));
 
+        // The key of this fire (FDW-4317): the schedule's Id and the time the fire was due, the same on every retry of it, so the ETL host answers a retry (after a 504, for example)
+        // with the run the first call started. The due time, not the time of this attempt, is what names the fire.
+        var fireTime = new DateTimeOffset(scheduledTime.ToUniversalTime());
         var triggered = await _client.Trigger(
             new TriggerPipelineRequest
             {
                 Id = pipelineId,
                 TriggerSource = JobTriggerSourceTypes.Scheduled.Name,
+                TriggerKey = string.Concat(schedule.Value.Id.ToString("D", System.Globalization.CultureInfo.InvariantCulture), ":", fireTime.ToString("O", System.Globalization.CultureInfo.InvariantCulture)),
+                TriggerKeyFireTime = fireTime,
                 ScheduleName = scheduleId,
 
                 // The schedule's domain Id (FDW-3975): the thresholds attached to the schedule are found by it, and the schedule was read just now.
@@ -102,8 +107,11 @@ public sealed class EtlDispatchExecutionHandler : IGenericScheduledExecutionHand
 
         if (triggered.IsFailure || triggered.Value is null)
         {
-            return GenericResult<IProcessResult>.Failure(
-                EtlDispatchLog.TriggerFailed(_logger, processId, scheduleId, triggered.CurrentMessage));
+            // Why the upstream failure is kept, not wrapped (FDW-4293, as FDW-4211 did for connections): the failure's own code says whether a retry could
+            // mend it (a 503 or 504 can, a 400 or 403 cannot), and a new failure here carried one retryable code for every cause, so a refusal would have been
+            // retried. The line below says which pipeline and schedule it was; the result is the ETL client's, code chain and messages as they came.
+            EtlDispatchLog.TriggerFailed(_logger, processId, scheduleId, triggered.CurrentMessage);
+            return triggered.ToNewResult<IProcessResult>();
         }
 
         EtlDispatchLog.Queued(_logger, processId, scheduleId, triggered.Value.ExecutionId);

@@ -17,6 +17,7 @@ using Fdw.Services.Etl;
 using Fdw.Services.Etl.Abstractions;
 using Fdw.Services.Etl.Abstractions.Execution;
 using Fdw.Services.Etl.Execution;
+using Fdw.Services.Etl.JobTriggerSources;
 using Fdw.Services.Etl.Graphs;
 using Fdw.Services.Etl.Logging;
 using Fdw.Services.Etl.Pipelines.Loads;
@@ -51,6 +52,7 @@ internal sealed class PipelineTrigger
     private readonly IPipelineExecutionQueue _pipelineQueue;
     private readonly IPipelineRunHolds _holds;
     private readonly IPipelineRunRequestStore _requests;
+    private readonly IPipelineTriggerKeys _triggerKeys;
     private readonly IPipelineStatusBroadcaster _broadcaster;
     private readonly PipelineRunAuthority _runAuthority;
     private readonly ILogger _logger;
@@ -64,6 +66,7 @@ internal sealed class PipelineTrigger
     /// <param name="pipelineQueue">Queues the run.</param>
     /// <param name="holds">Keeps the request of a run that waits for approval.</param>
     /// <param name="requests">Writes the request of a run that waits for approval first, so a restart can put the run back where it waits (FDW-3216).</param>
+    /// <param name="triggerKeys">Remembers the key of each scheduled fire, so a retry of one fire starts no second run (FDW-4317).</param>
     /// <param name="broadcaster">Announces the run to subscribers.</param>
     /// <param name="runAuthority">Judges the run roles for what the pipeline reaches.</param>
     /// <param name="logger">The logger.</param>
@@ -76,6 +79,7 @@ internal sealed class PipelineTrigger
         IPipelineExecutionQueue pipelineQueue,
         IPipelineRunHolds holds,
         IPipelineRunRequestStore requests,
+        IPipelineTriggerKeys triggerKeys,
         IPipelineStatusBroadcaster broadcaster,
         PipelineRunAuthority runAuthority,
         ILogger logger)
@@ -88,6 +92,7 @@ internal sealed class PipelineTrigger
         _pipelineQueue = pipelineQueue;
         _holds = holds;
         _requests = requests;
+        _triggerKeys = triggerKeys;
         _broadcaster = broadcaster;
         _runAuthority = runAuthority;
         _logger = logger;
@@ -118,6 +123,14 @@ internal sealed class PipelineTrigger
         var callerTenant = new ClaimsPrincipalAuthenticationContext(caller).ActiveTenantId;
         var tenantId = TriggerTenant.For(caller, req.TenantId);
 
+        // A scheduled fire carries a key that tells a retry of it from a new fire (FDW-4317): a repeat answers the run the first call started, and a fire that needs a key and has none, or
+        // a source that takes none and sends one, is refused with a coded message, never read as new.
+        var keyed = await ClaimTriggerKey(req, tenantId, pipelineName, ct).ConfigureAwait(false);
+        if (keyed.IsFailure || keyed.Value is null)
+            return keyed.ToNewResult<UnifiedTriggerResponse>();
+        if (keyed.Value.Existing is { } earlier)
+            return GenericResult<UnifiedTriggerResponse>.Success(earlier);
+
         var relayedTenant = callerTenant is null ? tenantId : null;
         var resolution = await ResolvePipeline(byName ? req.Name : null, byName ? null : req.Id, relayedTenant, ct).ConfigureAwait(false);
 
@@ -139,6 +152,7 @@ internal sealed class PipelineTrigger
 
         if (!createResult.IsSuccess)
         {
+            await ReleaseTriggerKey(keyed.Value, tenantId, ct).ConfigureAwait(false);
             return GenericResult<UnifiedTriggerResponse>.Failure(
                 EtlServerLog.ExecutionRecordCreateFailed(_logger,
                     new InvalidOperationException(EtlServerLog.GetError(createResult, _logger)),
@@ -147,18 +161,63 @@ internal sealed class PipelineTrigger
         }
 
         var executionId = createResult.Value!.Id;
-        await InsertMetrics(executionId, pipelineName, createResult.Value!.State.Name, ct).ConfigureAwait(false);
+        var bound = await BindTriggerKey(keyed.Value, tenantId, executionId, ct).ConfigureAwait(false);
+        if (bound.IsFailure)
+            return await RefuseRun(executionId, pipelineName, "TriggerKeyNotBound", bound).ConfigureAwait(false);
+
+        await InsertMetrics(executionId, pipelineName, createResult.Value!.TenantId, createResult.Value!.State.Name, ct).ConfigureAwait(false);
         return await Queue(req, caller, resolution, pipelineName, callerTenant, tenantId, relayedTenant, executionId, ct).ConfigureAwait(false);
+    }
+
+    // The key of a scheduled fire, judged by what the trigger source requires: Existing is the answer for a repeat of a fire; Key is the key this call claimed and must bind to its run.
+    private sealed record KeyedTrigger(UnifiedTriggerResponse? Existing, string? Key);
+
+    private async Task<IGenericResult<KeyedTrigger>> ClaimTriggerKey(UnifiedTriggerRequest req, Guid? tenantId, string pipelineName, CancellationToken ct)
+    {
+        var source = JobTriggerSourceTypes.ByName(req.TriggerSource!);
+        var sent = !string.IsNullOrWhiteSpace(req.TriggerKey);
+        var requires = source != JobTriggerSourceTypes.NotFound && source.RequiresTriggerKey;
+        if (requires && !sent)
+            return GenericResult<KeyedTrigger>.Failure(PipelineTriggerKeyLog.KeyRequired(_logger, req.TriggerSource!, pipelineName));
+        if (!requires && sent)
+            return GenericResult<KeyedTrigger>.Failure(PipelineTriggerKeyLog.KeyNotAllowed(_logger, req.TriggerSource!, pipelineName));
+        if (!sent || tenantId is not { } tenant)
+            return GenericResult<KeyedTrigger>.Success(new KeyedTrigger(null, null));
+
+        if (req.TriggerKeyFireTime is not { } fireTime)
+            return GenericResult<KeyedTrigger>.Failure(PipelineTriggerKeyLog.FireTimeMissing(_logger, req.TriggerKey!, pipelineName));
+
+        var claim = await _triggerKeys.Claim(tenant, req.TriggerKey!, fireTime, ct).ConfigureAwait(false);
+        if (claim.IsFailure || claim.Value is null)
+            return claim.ToNewResult<KeyedTrigger>();
+
+        return claim.Value.IsNew
+            ? GenericResult<KeyedTrigger>.Success(new KeyedTrigger(null, req.TriggerKey))
+            : GenericResult<KeyedTrigger>.Success(new KeyedTrigger(
+                new UnifiedTriggerResponse { ExecutionId = claim.Value.ExecutionId!.Value, Status = "AlreadyTriggered", Reason = "A trigger with this key already started this run" }, null));
+    }
+
+    private async Task<IGenericResult> BindTriggerKey(KeyedTrigger keyed, Guid? tenantId, Guid executionId, CancellationToken ct) =>
+        keyed.Key is { } key && tenantId is { } tenant ? await _triggerKeys.Bind(tenant, key, executionId, ct).ConfigureAwait(false) : GenericResult.Success();
+
+    // A key whose run was never made is given back so the retry can claim it; a release that fails is logged by the store and the original failure is what the caller is told.
+    private async Task ReleaseTriggerKey(KeyedTrigger keyed, Guid? tenantId, CancellationToken ct)
+    {
+        if (keyed.Key is { } key && tenantId is { } tenant)
+        {
+            _ = await _triggerKeys.Release(tenant, key, ct).ConfigureAwait(false);
+        }
     }
 
     // Insert ETL-specific metrics record (non-fatal if it fails)
     // Why no StartedAt: a queued run has not started. The executor sets it when the run reaches Running.
-    private async Task InsertMetrics(Guid executionId, string pipelineName, string status, CancellationToken ct)
+    private async Task InsertMetrics(Guid executionId, string pipelineName, Guid runTenantId, string status, CancellationToken ct)
     {
         var etlRecord = new EtlPipelineExecutionRecord
         {
             Id = executionId,
             PipelineName = pipelineName,
+            TenantId = runTenantId,
             Status = status
         };
         var operationalStore = EtlPipelineTypes.OperationalConnection;
@@ -371,10 +430,12 @@ internal sealed class PipelineTrigger
     // caller is told the server is busy; a run a threshold stopped is closed as not executed with the threshold's reason.
     private async Task<IGenericResult<UnifiedTriggerResponse>> RefuseBusy(Guid executionId, string pipelineName, PipelineEnqueueResult refused)
     {
-        if (string.Equals(refused.Code, PipelineEnqueueResult.QueueFullCode, StringComparison.Ordinal))
+        // A run the queue did not take is closed in both cases (FDW-4277): left Scheduled, its record would be found at the next host start and the run begun although the
+        // caller was told it was refused. There is no rejected state, so it ends Failed with the refusal's code.
+        var queueFull = string.Equals(refused.Code, PipelineEnqueueResult.QueueFullCode, StringComparison.Ordinal);
+        if (queueFull)
         {
             EtlLog.ExecutionQueueFull(_logger, pipelineName);
-            return GenericResult<UnifiedTriggerResponse>.Success(new UnifiedTriggerResponse { ExecutionId = executionId, Status = "QueueFull", Reason = refused.Reason });
         }
 
         var closed = await _executionTracker.Complete(executionId, false, refused.Code, refused.Reason, CancellationToken.None).ConfigureAwait(false);
@@ -383,7 +444,8 @@ internal sealed class PipelineTrigger
             EtlServerLog.ExecutionCompleteFailed(_logger, executionId, pipelineName, closed.CurrentMessage);
         }
 
-        return GenericResult<UnifiedTriggerResponse>.Success(new UnifiedTriggerResponse { ExecutionId = executionId, Status = "ServerBusy", Reason = refused.Reason });
+        return GenericResult<UnifiedTriggerResponse>.Success(
+            new UnifiedTriggerResponse { ExecutionId = executionId, Status = queueFull ? "QueueFull" : "ServerBusy", Reason = refused.Reason });
     }
 
     private async Task<IGenericResult<UnifiedTriggerResponse>> RefuseRun(

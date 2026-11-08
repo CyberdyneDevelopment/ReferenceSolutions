@@ -79,7 +79,7 @@ public sealed class SqlTenantWriterTests
     {
         var (writer, gateway) = Writer();
 
-        var made = await writer.Create(new NewTenant("Beta", "beta", null, null, true, "Main", "main"), TestContext.Current.CancellationToken);
+        var made = await writer.Create(new NewTenant("Beta", "beta", null, null, true, "main"), TestContext.Current.CancellationToken);
 
         made.IsSuccess.ShouldBeTrue();
         made.Value.ShouldNotBe(Guid.Empty);
@@ -95,7 +95,7 @@ public sealed class SqlTenantWriterTests
     {
         var (writer, gateway) = Writer();
 
-        var made = await writer.Create(new NewTenant("Another", slug, null, null, true, "Main", "main"), TestContext.Current.CancellationToken);
+        var made = await writer.Create(new NewTenant("Another", slug, null, null, true, "main"), TestContext.Current.CancellationToken);
 
         made.IsFailure.ShouldBeTrue();
         NothingWritten(gateway);
@@ -111,7 +111,7 @@ public sealed class SqlTenantWriterTests
     {
         var (writer, gateway) = Writer();
 
-        var made = await writer.Create(new NewTenant(name, slug, null, null, true, "Main", "main"), TestContext.Current.CancellationToken);
+        var made = await writer.Create(new NewTenant(name, slug, null, null, true, "main"), TestContext.Current.CancellationToken);
 
         made.IsFailure.ShouldBeTrue();
         NothingWritten(gateway);
@@ -124,7 +124,7 @@ public sealed class SqlTenantWriterTests
     {
         var (writer, gateway) = Writer();
 
-        var made = await writer.Create(new NewTenant("Beta", "beta", null, null, true, "Main", "main"), TestContext.Current.CancellationToken);
+        var made = await writer.Create(new NewTenant("Beta", "beta", null, null, true, "main"), TestContext.Current.CancellationToken);
 
         // That the colours are the default tenant's is the insert's content; this pins that the write happens exactly once and only with a default tenant.
         made.IsSuccess.ShouldBeTrue();
@@ -143,7 +143,7 @@ public sealed class SqlTenantWriterTests
         var gateway = new Mock<IConfigurationGateway>();
         var writer = WriterOver(tenants, gateway);
 
-        var made = await writer.Create(new NewTenant("Beta", "beta", null, null, true, "Main", "main"), TestContext.Current.CancellationToken);
+        var made = await writer.Create(new NewTenant("Beta", "beta", null, null, true, "main"), TestContext.Current.CancellationToken);
 
         made.IsFailure.ShouldBeTrue();
         NothingWritten(gateway);

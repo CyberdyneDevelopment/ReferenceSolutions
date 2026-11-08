@@ -69,4 +69,11 @@
       <Compile Include="$(MSBuildThisFileDirectory)Shared/TestConnectionRoles.cs" Link="TestConnectionRoles.cs" />
     </ItemGroup>
   </Target>
+  <!-- Test projects show warnings but do not fail on them: public/Directory.Build.props sets
+       TreatWarningsAsErrors=true for Release, and these override it for everything under tests. -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <MSBuildTreatWarningsAsErrors>false</MSBuildTreatWarningsAsErrors>
+    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+  </PropertyGroup>
 </Project>

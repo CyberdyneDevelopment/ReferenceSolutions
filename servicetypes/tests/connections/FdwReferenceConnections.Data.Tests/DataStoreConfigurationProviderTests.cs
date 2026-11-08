@@ -364,6 +364,8 @@ public sealed class DataStoreConfigurationProviderTests
     {
         private readonly IConfigurationGateway _gateway;
         public AnyConnectionGateways(IConfigurationGateway gateway) => _gateway = gateway;
+        public int KeyChunkSize => 1000;
+
         public IGenericResult<IConfigurationGateway> Get(string connectionName)
             => GenericResult<IConfigurationGateway>.Success(_gateway);
         public IGenericResult Register(IConfigurationGateway gateway) => GenericResult.Success();

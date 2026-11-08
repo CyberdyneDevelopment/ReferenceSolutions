@@ -45,12 +45,12 @@ public sealed partial class QuartzSchedulerConfiguration : ISchedulerImplementat
     /// <inheritdoc/>
     public string PathName { get; set; } = string.Empty;
 
-    /// <summary>Gets or sets the Quartz instance name (identifies this scheduler cluster member).</summary>
+    /// <summary>Gets or sets the Quartz scheduler's name (FDW-4293: applied as the engine's <c>SchedulerName</c> when the host starts; it is not a cluster member id).</summary>
     public string InstanceName { get; set; } = string.Empty;
 
-    /// <summary>Gets or sets the size of Quartz's thread pool.</summary>
+    /// <summary>Gets or sets the size of Quartz's thread pool: how many fires run at once (FDW-4293: applied when the host starts).</summary>
     public int ThreadCount { get; set; }
 
-    /// <summary>Gets or sets whether misfired triggers should be handled clustered (multiple app instances sharing one job store).</summary>
+    /// <summary>Gets or sets whether Quartz clusters. It must be false (FDW-4293): the scheduler runs on Quartz's in-memory job store, which clustering cannot share, and the validator and the engine start refuse true.</summary>
     public bool EnableClustering { get; set; }
 }

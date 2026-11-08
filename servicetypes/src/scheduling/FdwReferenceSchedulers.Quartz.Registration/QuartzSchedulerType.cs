@@ -16,6 +16,7 @@ using Fdw.Services.Authentication.Abstractions.Security;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using FdwReferenceSchedulers.Quartz.Configuration;
 using FdwReferenceSchedulers.Quartz.Services;
 
@@ -63,6 +64,11 @@ public sealed class QuartzSchedulerType
             // the DI job factory is already the default, which is what lets ScheduledPipelineJob
             // take its dependencies through the constructor.
             builder.Services.AddQuartz();
+
+            // The engine's instance name and thread count come from the Quartz scheduler row, read once when Quartz builds its options
+            // (FDW-4293); AddQuartz() above states none, so nothing here chooses them. EnableClustering is refused, not applied: see QuartzEngineOptions.
+            builder.Services.AddSingleton<IConfigureOptions<QuartzOptions>>(
+                sp => new ConfigureOptions<QuartzOptions>(options => QuartzEngineOptions.Apply(options, sp)));
             builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
 
             // Why the provider and not IDataGateway directly: FDW never registers IDataGateway. The

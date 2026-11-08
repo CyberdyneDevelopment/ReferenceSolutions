@@ -43,6 +43,7 @@ public sealed class UnifiedTriggerTimeoutValidationTests
         var result = Validator.Validate(Request(timeoutSeconds));
 
         result.IsValid.ShouldBeFalse();
-        result.Errors.Select(error => error.PropertyName).ShouldContain(nameof(UnifiedTriggerRequest.TimeoutSeconds));
+        // Names compare ignoring case: FastEndpoints sets a process-wide validator name resolver (camelCase) once any test host in the process has started (FDW-4420).
+        result.Errors.Select(error => error.PropertyName.ToLowerInvariant()).ShouldContain(nameof(UnifiedTriggerRequest.TimeoutSeconds).ToLowerInvariant());
     }
 }

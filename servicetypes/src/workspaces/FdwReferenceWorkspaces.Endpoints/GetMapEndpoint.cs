@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Data.DataSets.Abstractions;
+using Fdw.Operations.Abstractions.Execution;
 using Fdw.Services.Data;
 using Fdw.Services.Workspaces;
 using Fdw.Services.Workspaces.Endpoints;
@@ -28,8 +29,9 @@ public sealed class GetMapEndpoint : GetMapEndpointBase
         ICategoryConfigurationProvider categories,
         IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access,
-        IFrameworkAuthorizationService authorization)
-        : base(logger, dataSets, dataStores, pipelines, variations, categories, workspaces, access, authorization)
+        IFrameworkAuthorizationService authorization,
+        IExecutionTracker runs)
+        : base(logger, dataSets, dataStores, pipelines, variations, categories, workspaces, access, authorization, runs)
     {
     }
 }
