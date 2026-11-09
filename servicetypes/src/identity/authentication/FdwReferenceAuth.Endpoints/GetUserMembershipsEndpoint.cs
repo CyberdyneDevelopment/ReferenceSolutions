@@ -16,6 +16,8 @@ using Fdw.Services.Users.Endpoints;
 using FdwReferenceAuth.Endpoints.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceAuth.Endpoints;
 
@@ -97,16 +99,22 @@ public sealed class GetUserMembershipsEndpoint : Endpoint<UserScopedRequest, Mem
 
         // Row-level security hides accounts outside the caller's tenant, so "not found" also covers
         // "not yours to see".
-        if (!account.IsSuccess || account.Value is null)
+        if (account.IsFailure)
         {
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(account, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (account.Value is null)
+        {
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(TenantLog.GetUserMembershipsUsermembershipsNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
         if (!AccountAuthority.Administers(User, account.Value, Resolve<ISystemRoleConfiguration>()))
         {
             TenantLog.UserMembershipsNotAdministered(_logger, req.IdOrName);
-            await Send.ForbiddenAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(TenantLog.GetUserMembershipsForbidden(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -116,7 +124,7 @@ public sealed class GetUserMembershipsEndpoint : Endpoint<UserScopedRequest, Mem
         if (response is null)
         {
             // A failed read is not an empty membership list: {items:[]} would say the account belongs nowhere.
-            await Send.StatusCodeAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceAuthAnswerLog.GetUserMembershipsHeldOrRolesReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

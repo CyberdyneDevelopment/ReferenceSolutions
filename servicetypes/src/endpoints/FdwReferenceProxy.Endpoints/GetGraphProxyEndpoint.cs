@@ -7,6 +7,7 @@ using Fdw.Web.RestEndpoints.ErrorMapping;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using FdwReferenceProxy.Endpoints.Logging;
+using Fdw.Results;
 
 namespace FdwReferenceProxy.Endpoints;
 
@@ -59,9 +60,7 @@ public sealed class GetGraphProxyEndpoint : EndpointWithoutRequest<GraphPayload>
 
         if (result.Value is null)
         {
-            ProxyLog.ProxyFailed(_logger, "Etl", "Proxy request succeeded but returned no value");
-            AddError("Failed to proxy request to EtlServer");
-            await Send.ErrorsAsync(502, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProxyLog.GetGraphProxyReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

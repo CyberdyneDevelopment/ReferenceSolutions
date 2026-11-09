@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Fdw.Commands.Data;
 using Fdw.Data.Abstractions;
 using Fdw.Results;
+using Fdw.Services.Connections.Sql;
 
 namespace FdwReferenceConnections.Sqlite.Tests.Translators;
 
@@ -15,6 +16,9 @@ namespace FdwReferenceConnections.Sqlite.Tests.Translators;
 public sealed class SqliteInsertTranslatorTests
 {
     private readonly SqliteInsertTranslator _translator = new();
+
+    // A translation always runs under the connection's setting (FDW-4267): these tests state the one a connection of this kind declares.
+    private static readonly TranslationSettings Settings = new(50);
 
     private sealed class ContactData
     {
@@ -63,7 +67,7 @@ public sealed class SqliteInsertTranslatorTests
         var container = CreateContainer("contacts");
         var command = new InsertCommand<ContactData>(new ContactData { name = "Alice", age = 30 });
 
-        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+        var result = await _translator.Translate(command, container.Object, Settings, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         result.Value!.CommandText.ShouldContain("\"name\"");
@@ -78,7 +82,7 @@ public sealed class SqliteInsertTranslatorTests
         var container = CreateContainer("contacts");
         var command = new InsertCommand<ContactData>(new ContactData { name = "Alice", age = 30 });
 
-        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+        var result = await _translator.Translate(command, container.Object, Settings, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         // SQLite is schemaless — table name must be bare "contacts", no dot-qualified prefix.
@@ -94,7 +98,7 @@ public sealed class SqliteInsertTranslatorTests
         var container = CreateContainer("contacts");
         var command = new InsertCommand<ContactData>(new ContactData { id = 99, name = "Alice", age = 30 });
 
-        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+        var result = await _translator.Translate(command, container.Object, Settings, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         // "id" is isIdentity=true — must NOT appear in the INSERT column list.
@@ -109,7 +113,7 @@ public sealed class SqliteInsertTranslatorTests
         var container = CreateContainer("contacts");
         var command = new InsertCommand<ContactData>(new ContactData { name = "Alice", age = 30 });
 
-        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+        var result = await _translator.Translate(command, container.Object, Settings, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         result.Value!.CommandText.ShouldContain("@p0");
@@ -124,7 +128,7 @@ public sealed class SqliteInsertTranslatorTests
         var container = CreateContainer("contacts");
         var command = new InsertCommand<ContactData?>((ContactData?)null);
 
-        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+        var result = await _translator.Translate(command, container.Object, Settings, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeFalse();
         result.CurrentMessage.ShouldNotBeNullOrEmpty();
@@ -146,7 +150,7 @@ public sealed class SqliteInsertTranslatorTests
 
         var command = new InsertCommand<ContactData>(new ContactData { name = "Alice", age = 30 });
 
-        var result = await _translator.Translate(command, container.Object, TestContext.Current.CancellationToken);
+        var result = await _translator.Translate(command, container.Object, Settings, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeFalse();
         result.CurrentMessage.ShouldNotBeNullOrEmpty();

@@ -1,6 +1,7 @@
 using Fdw.Services.Connections.Abstractions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Fdw.Services.Authentication.Abstractions.Security;
+using Fdw.Services.Connections.Sql;
 
 namespace FdwReferenceConnections.MsSql.Tests;
 
@@ -23,7 +24,10 @@ public sealed class MsSqlConnectionSessionContextTests
             new MsSqlConnectionConfiguration(),
             connectionString: "Server=unused;",
             commandTimeoutSeconds: 30,
-            authenticationContextAccessor: new StubAuthenticationContextAccessor(authContext));
+            authenticationContextAccessor: new StubAuthenticationContextAccessor(authContext))
+        {
+            TranslationSettings = new TranslationSettings(50),
+        };
 
     // Why a stub rather than the real AuthenticationContextAccessor: that type backs Current with a
     // STATIC AsyncLocal, so tests sharing a flow could observe each other's writes. The stub gives
@@ -163,7 +167,10 @@ public sealed class MsSqlConnectionSessionContextTests
             new MsSqlConnectionConfiguration(),
             connectionString: "Server=unused;",
             commandTimeoutSeconds: 30,
-            authenticationContextAccessor: null);
+            authenticationContextAccessor: null)
+        {
+            TranslationSettings = new TranslationSettings(50),
+        };
 
         // Act
         var plan = connection.BuildSessionContextPlan();
@@ -190,7 +197,10 @@ public sealed class MsSqlConnectionSessionContextTests
             new MsSqlConnectionConfiguration(),
             connectionString: "Server=unused;",
             commandTimeoutSeconds: 30,
-            authenticationContextAccessor: accessor);
+            authenticationContextAccessor: accessor)
+        {
+            TranslationSettings = new TranslationSettings(50),
+        };
 
         connection.BuildSessionContextPlan().UserId.ShouldBe(
             AuthConstants.NoAccessPrincipalId,
@@ -223,7 +233,10 @@ public sealed class MsSqlConnectionSessionContextTests
             new MsSqlConnectionConfiguration(),
             connectionString: "Server=unused;",
             commandTimeoutSeconds: 30,
-            authenticationContextAccessor: accessor);
+            authenticationContextAccessor: accessor)
+        {
+            TranslationSettings = new TranslationSettings(50),
+        };
 
         // Act + Assert: elevated inside the scope.
         using (new SystemAuthenticationContextScope(accessor))

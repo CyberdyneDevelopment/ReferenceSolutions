@@ -114,4 +114,40 @@ public static partial class ProjectLog
 
     [MessageLogging(EventId = 9229, Level = LogLevel.Error, Message = "ETL trigger failed for type '{type}': {message}")]
     public static partial IGenericMessage EtlTriggerFailed(ILogger logger, string type, string? message);
+
+    /// <summary>Logs that Project was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30001, Level = LogLevel.Warning, Message = "Project was not found, or is not visible to the caller", ClientMessage = "Project was not found")]
+    public static partial IGenericMessage GetProjectProjectNotFound(ILogger logger);
+
+    /// <summary>Logs that The result read answered a success and no value.</summary>
+    [MessageLogging(EventId = 90001, Level = LogLevel.Error, Message = "The result read answered a success and no value", ClientMessage = "The result could not be read")]
+    public static partial IGenericMessage ListProjectsResultReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that Project was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30002, Level = LogLevel.Warning, Message = "Project was not found, or is not visible to the caller", ClientMessage = "Project was not found")]
+    public static partial IGenericMessage UpdateProjectProjectNotFound(ILogger logger);
+
+    /// <summary>Logs that Project was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30003, Level = LogLevel.Warning, Message = "Project was not found, or is not visible to the caller", ClientMessage = "Project was not found")]
+    public static partial IGenericMessage DeleteProjectNotFound(ILogger logger);
+
+    /// <summary>Logs that Project projectId was read but could not be mapped for the response.</summary>
+    [MessageLogging(EventId = 90002, Level = LogLevel.Error, Message = "Project {projectId} was read but could not be mapped for the response", ClientMessage = "The project could not be mapped for the response")]
+    public static partial IGenericMessage GetProjectProjectNotMappable(ILogger logger, Guid projectId);
+
+    /// <summary>Logs that Project 'projectName' was created but could not be mapped for the response.</summary>
+    [MessageLogging(EventId = 90003, Level = LogLevel.Error, Message = "Project '{projectName}' was created but could not be mapped for the response", ClientMessage = "The project was created but could not be mapped for the response")]
+    public static partial IGenericMessage CreateProjectProjectNotMappable(ILogger logger, string projectName);
+
+    /// <summary>Logs that A project in the list could not be mapped for the response.</summary>
+    [MessageLogging(EventId = 90004, Level = LogLevel.Error, Message = "A project in the list could not be mapped for the response", ClientMessage = "A project could not be mapped for the response")]
+    public static partial IGenericMessage ListProjectsProjectNotMappable(ILogger logger);
+
+    /// <summary>Logs that Project projectId resolved to a configuration that is not an orchestration node.</summary>
+    [MessageLogging(EventId = 90005, Level = LogLevel.Error, Message = "Project {projectId} resolved to a configuration that is not an orchestration node", ClientMessage = "The project is not an orchestration node")]
+    public static partial IGenericMessage UpdateProjectResolvedToOtherType(ILogger logger, Guid projectId);
+
+    /// <summary>Logs that Project projectId was updated but could not be mapped for the response.</summary>
+    [MessageLogging(EventId = 90006, Level = LogLevel.Error, Message = "Project {projectId} was updated but could not be mapped for the response", ClientMessage = "The project was updated but could not be mapped for the response")]
+    public static partial IGenericMessage UpdateProjectProjectNotMappable(ILogger logger, Guid projectId);
 }

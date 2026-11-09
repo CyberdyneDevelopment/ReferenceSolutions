@@ -35,7 +35,7 @@ public sealed class SqliteScriptedTests : IAsyncLifetime
             await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
 
-        var factory = new SqliteConnectionFactory(NullLogger<SqliteConnectionFactory>.Instance, NullLogger<FdwReferenceConnections.Sqlite.SqliteConnection>.Instance);
+        var factory = new SqliteConnectionFactory(NullLogger<SqliteConnectionFactory>.Instance, NullLogger<FdwReferenceConnections.Sqlite.SqliteConnection>.Instance) { DefaultMaxParametersBeforeTempTable = 50 };
         var created = factory.Create(new SqliteConnectionConfiguration { Cache = "Default", AuthenticationType = "None", DataSource = DbPath, Mode = "ReadWriteCreate", DefaultTimeout = 30 }, resolvedSecret: null);
         created.IsSuccess.ShouldBeTrue(created.CurrentMessage);
         _connection = new SqliteScriptConnection(created.Value.ShouldBeOfType<FdwReferenceConnections.Sqlite.SqliteConnection>());

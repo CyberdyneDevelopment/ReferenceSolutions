@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using FastEndpoints;
 using Microsoft.Extensions.Logging;
 using FdwReferenceProxy.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceProxy.Endpoints;
 
@@ -66,8 +68,7 @@ public sealed class TriggerOrchestrationNodeProxyEndpoint : Endpoint<TriggerOrch
             // no typed client to catch a connection failure for it, so it surfaced as a raw 500
             // instead of the 502 every other proxy endpoint returns when unreachable.
             ProxyLog.ProxyFailed(_logger, "Etl", ex.Message);
-            AddError("Failed to proxy request to EtlServer");
-            await Send.ErrorsAsync(502, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProxyLog.TriggerOrchestrationNodeProxyFailedToProxyRequestTo(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

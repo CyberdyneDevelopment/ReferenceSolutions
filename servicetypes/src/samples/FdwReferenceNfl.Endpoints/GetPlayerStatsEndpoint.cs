@@ -10,6 +10,8 @@ using Fdw.Services.Data.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceNfl.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceNfl.Endpoints;
 
@@ -50,8 +52,7 @@ public sealed class GetPlayerStatsEndpoint : Endpoint<PlayerStatsRequest, List<P
         if (!dsResult.IsSuccess)
         {
             NflLog.GetPlayerStatsFailed(_logger, req.PlayerId, "Failed to resolve NflPlayerGameStats DataSet");
-            AddError("Failed to resolve NflPlayerGameStats DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(dsResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -59,8 +60,7 @@ public sealed class GetPlayerStatsEndpoint : Endpoint<PlayerStatsRequest, List<P
         if (src is null)
         {
             NflLog.GetPlayerStatsFailed(_logger, req.PlayerId, "No active source found for NflPlayerGameStats DataSet");
-            AddError("No active source found for NflPlayerGameStats DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NflLog.GetPlayerStatsReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -73,8 +73,7 @@ public sealed class GetPlayerStatsEndpoint : Endpoint<PlayerStatsRequest, List<P
         if (!result.IsSuccess)
         {
             NflLog.GetPlayerStatsFailed(_logger, req.PlayerId, result.CurrentMessage!);
-            AddError("Failed to get player stats");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
             return;
         }
 

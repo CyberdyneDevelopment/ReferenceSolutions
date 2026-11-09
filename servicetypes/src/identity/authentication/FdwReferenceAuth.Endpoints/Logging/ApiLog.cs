@@ -23,7 +23,7 @@ public static partial class ApiLog
     [MessageLogging(EventId = 5702, Level = LogLevel.Error, Message = "Failed to fetch {resourceType}: {message}")]
     public static partial IGenericMessage DataFetchFailed(ILogger logger, string resourceType, string message);
 
-    [MessageLogging(EventId = 5703, Level = LogLevel.Warning, Message = "{resourceType} not found")]
+    [MessageLogging(EventId = 30001, Level = LogLevel.Warning, Message = "{resourceType} not found", ClientMessage = "{resourceType} not found")]
     public static partial IGenericMessage ResourceNotFound(ILogger logger, string resourceType);
 
     // Generic create operations (5710-5719)

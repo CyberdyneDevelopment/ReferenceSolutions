@@ -31,7 +31,7 @@ public sealed class SqliteConnectionRoundTripTests : IAsyncLifetime
     {
         _factory = new SqliteConnectionFactory(
             NullLogger<SqliteConnectionFactory>.Instance,
-            NullLogger<SqliteConnection>.Instance);
+            NullLogger<SqliteConnection>.Instance) { DefaultMaxParametersBeforeTempTable = 50 };
 
         _config = new SqliteConnectionConfiguration
         {

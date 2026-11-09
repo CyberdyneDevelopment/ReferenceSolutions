@@ -32,4 +32,28 @@ public static partial class DdlLog
 
     [MessageLogging(EventId = 8556, Level = LogLevel.Warning, Message = "DDL on connection '{connectionName}' refused: column '{columnName}' names SQL type '{sqlType}', which is no known column type")]
     public static partial IGenericMessage ColumnTypeUnknown(ILogger logger, string connectionName, string columnName, string sqlType);
+
+    /// <summary>Logs that the request failed: DDL generation failed.</summary>
+    [MessageLogging(EventId = 90001, Level = LogLevel.Error, Message = "DDL generation failed", ClientMessage = "DDL generation failed")]
+    public static partial IGenericMessage GenerateDdlFaulted(ILogger logger);
+
+    /// <summary>Logs that the request failed: TableName is required.</summary>
+    [MessageLogging(EventId = 20001, Level = LogLevel.Warning, Message = "TableName is required", ClientMessage = "TableName is required")]
+    public static partial IGenericMessage ExecuteDdlTablenameIsRequired(ILogger logger);
+
+    /// <summary>Logs that the request failed: At least one column is required.</summary>
+    [MessageLogging(EventId = 20002, Level = LogLevel.Warning, Message = "At least one column is required", ClientMessage = "At least one column is required")]
+    public static partial IGenericMessage ExecuteDdlAtLeastOneColumnIs(ILogger logger);
+
+    /// <summary>Logs that Ddl was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30001, Level = LogLevel.Warning, Message = "Ddl was not found, or is not visible to the caller", ClientMessage = "Ddl was not found")]
+    public static partial IGenericMessage ExecuteDdlDdlNotFound(ILogger logger);
+
+    /// <summary>Logs that Ddl was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30002, Level = LogLevel.Warning, Message = "Ddl was not found, or is not visible to the caller", ClientMessage = "Ddl was not found")]
+    public static partial IGenericMessage GenerateDdlNotFound(ILogger logger);
+
+    /// <summary>Logs that Column 'columnName' names SQL type 'sqlType', which is no known column type.</summary>
+    [MessageLogging(EventId = 20003, Level = LogLevel.Warning, Message = "Column '{columnName}' names SQL type '{sqlType}', which is no known column type", ClientMessage = "Column '{columnName}' names SQL type '{sqlType}', which is no known column type")]
+    public static partial IGenericMessage ExecuteDdlColumnTypeUnknown(ILogger logger, string columnName, string sqlType);
 }

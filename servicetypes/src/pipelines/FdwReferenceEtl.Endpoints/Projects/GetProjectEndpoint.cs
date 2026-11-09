@@ -8,6 +8,8 @@ using Fdw.Services.Etl.Projects.Abstractions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceProjects.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceProjects.Endpoints;
 
@@ -70,21 +72,21 @@ public sealed class GetProjectEndpoint : Endpoint<GetProjectRequest, ProjectConf
         if (result.IsFailure)
         {
             ProjectLog.ProjectGetFailed(_logger, req.Id, result.CurrentMessage);
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
             return;
         }
 
         if (result.Value is null)
         {
             ProjectLog.ProjectNotFound(_logger, req.Id);
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProjectLog.GetProjectProjectNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
         var mapped = OrchestrationNodeMapper.ToProject(result.Value, _logger);
         if (mapped is null)
         {
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProjectLog.GetProjectProjectNotMappable(_logger, req.Id)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

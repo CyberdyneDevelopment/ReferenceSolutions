@@ -95,4 +95,28 @@ public static partial class NodeLog
 
     [MessageLogging(EventId = 9253, Level = LogLevel.Error, Message = "Failed to delete node '{nodeId}': {message}")]
     public static partial IGenericMessage NodeDeleteFailed(ILogger logger, Guid nodeId, string? message);
+
+    /// <summary>Logs that The result read answered a success and no value.</summary>
+    [MessageLogging(EventId = 90001, Level = LogLevel.Error, Message = "The result read answered a success and no value", ClientMessage = "The result could not be read")]
+    public static partial IGenericMessage ListRootOrchestrationNodesResultReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that Orchestration node was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30001, Level = LogLevel.Warning, Message = "Orchestration node was not found, or is not visible to the caller", ClientMessage = "Orchestration node was not found")]
+    public static partial IGenericMessage UpdateOrchestrationNodeOrchestrationnodeNotFound(ILogger logger);
+
+    /// <summary>Logs that Orchestration node was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30002, Level = LogLevel.Warning, Message = "Orchestration node was not found, or is not visible to the caller", ClientMessage = "Orchestration node was not found")]
+    public static partial IGenericMessage GetOrchestrationNodeOrchestrationnodeNotFound(ILogger logger);
+
+    /// <summary>Logs that Orchestration node was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30003, Level = LogLevel.Warning, Message = "Orchestration node was not found, or is not visible to the caller", ClientMessage = "Orchestration node was not found")]
+    public static partial IGenericMessage DeleteOrchestrationNodeNotFound(ILogger logger);
+
+    /// <summary>Logs that Node nodeId resolved to a configuration that is not an orchestration node.</summary>
+    [MessageLogging(EventId = 90002, Level = LogLevel.Error, Message = "Node {nodeId} resolved to a configuration that is not an orchestration node", ClientMessage = "The node is not an orchestration node")]
+    public static partial IGenericMessage GetNodeResolvedToOtherType(ILogger logger, Guid nodeId);
+
+    /// <summary>Logs that Node nodeId resolved to a configuration that is not an orchestration node.</summary>
+    [MessageLogging(EventId = 90003, Level = LogLevel.Error, Message = "Node {nodeId} resolved to a configuration that is not an orchestration node", ClientMessage = "The node is not an orchestration node")]
+    public static partial IGenericMessage UpdateNodeResolvedToOtherType(ILogger logger, Guid nodeId);
 }

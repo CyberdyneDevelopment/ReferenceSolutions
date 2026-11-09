@@ -59,7 +59,7 @@ public sealed class SetDefaultTenantEndpoint : Endpoint<SetDefaultTenantRequest,
         var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
         {
-            await Send.UnauthorizedAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(TenantLog.SetDefaultTenantNotSignedIn(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -68,10 +68,17 @@ public sealed class SetDefaultTenantEndpoint : Endpoint<SetDefaultTenantRequest,
         var memberships = await _userTenantProvider
             .Find<IUserTenantImplementationConfiguration>(t => t.UserId == userId, ct)
             .ConfigureAwait(false);
-        if (!memberships.IsSuccess || memberships.Value is null)
+        if (memberships.IsFailure)
         {
             TenantLog.SetDefaultTenantFailed(_logger, new InvalidOperationException(memberships.CurrentMessage), userIdStr, req.Id);
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(memberships, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (memberships.Value is null)
+        {
+            TenantLog.SetDefaultTenantFailed(_logger, new InvalidOperationException(memberships.CurrentMessage), userIdStr, req.Id);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(TenantLog.SetDefaultTenantMembershipsReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -85,7 +92,7 @@ public sealed class SetDefaultTenantEndpoint : Endpoint<SetDefaultTenantRequest,
         if (!tenantResult.IsSuccess)
         {
             TenantLog.SetDefaultTenantFailed(_logger, new InvalidOperationException(tenantResult.CurrentMessage), userIdStr, req.Id);
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(tenantResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -109,7 +116,7 @@ public sealed class SetDefaultTenantEndpoint : Endpoint<SetDefaultTenantRequest,
             if (!saved.IsSuccess)
             {
                 TenantLog.SetDefaultTenantFailed(_logger, new InvalidOperationException(saved.CurrentMessage), userIdStr, req.Id);
-                await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+                await Send.ResultAsync(ResultHttpStatusMapper.Answer(saved, HttpContext)).ConfigureAwait(false);
                 return;
             }
         }

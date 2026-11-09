@@ -20,8 +20,9 @@ public static partial class OpenTelemetryLog
     /// says so.
     /// </remarks>
     [MessageLogging(
-        EventId = 11032,
+        EventId = 60001,
         Level = LogLevel.Critical,
-        Message = "No Telemetry row named '{name}' is configured; what this host reports, and where, is configuration rather than a default")]
+        Message = "No Telemetry row named '{name}' is configured; what this host reports, and where, is configuration rather than a default",
+        ClientMessage = "No Telemetry row named '{name}' is configured; what this host reports, and where, is configuration rather than a default")]
     public static partial IGenericMessage TelemetryRowNotConfigured(ILogger logger, string name);
 }

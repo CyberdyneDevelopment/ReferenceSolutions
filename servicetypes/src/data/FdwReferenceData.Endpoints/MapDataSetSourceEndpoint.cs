@@ -7,6 +7,8 @@ using FastEndpoints;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Endpoints.Logging;
 using Microsoft.Extensions.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceDataSets.Endpoints;
 
@@ -57,23 +59,29 @@ public class MapDataSetSourceEndpoint : Endpoint<MapDataSetSourceRequest, DataSe
         if (!parentResult.IsSuccess)
         {
             DataSetEndpointLog.DataSetNotFound(_logger, req.ParentDataSetName);
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceDataAnswerLog.MapDataSetSourceNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
         // Validate source DataSet exists and its Id matches the request
         var sourceResult = await _dataSetProvider.Get(req.SourceDataSetName, ct).ConfigureAwait(false);
-        if (!sourceResult.IsSuccess || sourceResult.Value is null)
+        if (sourceResult.IsFailure)
+        {
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(sourceResult, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (sourceResult.Value is null)
         {
             DataSetEndpointLog.DataSetNotFound(_logger, req.SourceDataSetName);
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceDataAnswerLog.MapDataSetSourceMapdatasetsourceNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
         if (sourceResult.Value.Id != req.SourceDataSetId)
         {
             DataSetEndpointLog.DataSetNotFound(_logger, req.SourceDataSetName);
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceDataAnswerLog.MapDataSetSourceNotFound2(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -82,7 +90,7 @@ public class MapDataSetSourceEndpoint : Endpoint<MapDataSetSourceRequest, DataSe
         if (parentDataSet is null)
         {
             DataSetEndpointLog.DataSetNotFound(_logger, req.ParentDataSetName);
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceDataAnswerLog.MapDataSetSourceNotFound3(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -93,7 +101,7 @@ public class MapDataSetSourceEndpoint : Endpoint<MapDataSetSourceRequest, DataSe
         if (source is null)
         {
             DataSetEndpointLog.DataSetNotFound(_logger, req.SourceName);
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceDataAnswerLog.MapDataSetSourceNotFound4(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -107,7 +115,7 @@ public class MapDataSetSourceEndpoint : Endpoint<MapDataSetSourceRequest, DataSe
         if (!saveResult.IsSuccess)
         {
             DataSetEndpointLog.DataSetUpdateFailed(_logger, req.ParentDataSetName, "Save failed");
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(saveResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 

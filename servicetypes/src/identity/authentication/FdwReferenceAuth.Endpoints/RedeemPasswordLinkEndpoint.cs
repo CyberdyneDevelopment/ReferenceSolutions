@@ -9,6 +9,8 @@ using Fdw.Services.Users.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using FdwReferenceAuth.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceAuth.Endpoints;
 
@@ -71,11 +73,17 @@ public sealed class RedeemPasswordLinkEndpoint : Endpoint<RedeemPasswordLinkRequ
         var redeemed = await _linkService.Redeem(req.Token, ct).ConfigureAwait(false);
 
         // A service failure is the server's fault, not the link's: a new link would not help.
-        if (!redeemed.IsSuccess || redeemed.Value is null)
+        if (redeemed.IsFailure)
         {
             AuthenticationLog.PasswordLinkNotChecked(_logger);
-            AddError("The link could not be checked right now. Try again later.");
-            await Send.ErrorsAsync(StatusCodes.Status500InternalServerError, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(redeemed, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (redeemed.Value is null)
+        {
+            AuthenticationLog.PasswordLinkNotChecked(_logger);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(AuthenticationLog.RedeemPasswordLinkRedeemedReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -92,8 +100,7 @@ public sealed class RedeemPasswordLinkEndpoint : Endpoint<RedeemPasswordLinkRequ
         if (!stored.IsSuccess)
         {
             AuthenticationLog.PasswordLinkPasswordNotStored(_logger, link.UserId);
-            AddError("The password could not be set, and the link has been used. Ask your administrator for a new one.");
-            await Send.ErrorsAsync(StatusCodes.Status500InternalServerError, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(stored, HttpContext)).ConfigureAwait(false);
             return;
         }
 

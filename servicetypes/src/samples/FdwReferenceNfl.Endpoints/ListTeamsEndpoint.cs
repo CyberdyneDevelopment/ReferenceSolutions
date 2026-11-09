@@ -10,6 +10,8 @@ using Fdw.Services.Data.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceNfl.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceNfl.Endpoints;
 
@@ -50,8 +52,7 @@ public sealed class ListTeamsEndpoint : Endpoint<ListTeamsRequest, List<TeamReco
         if (!dsResult.IsSuccess)
         {
             NflLog.ListTeamsFailed(_logger, "Failed to resolve NflTeams DataSet");
-            AddError("Failed to resolve NflTeams DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(dsResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -59,8 +60,7 @@ public sealed class ListTeamsEndpoint : Endpoint<ListTeamsRequest, List<TeamReco
         if (src is null)
         {
             NflLog.ListTeamsFailed(_logger, "No active source found for NflTeams DataSet");
-            AddError("No active source found for NflTeams DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NflLog.ListTeamsReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -82,8 +82,7 @@ public sealed class ListTeamsEndpoint : Endpoint<ListTeamsRequest, List<TeamReco
         if (!result.IsSuccess)
         {
             NflLog.ListTeamsFailed(_logger, result.CurrentMessage!);
-            AddError("Failed to list teams");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
             return;
         }
 

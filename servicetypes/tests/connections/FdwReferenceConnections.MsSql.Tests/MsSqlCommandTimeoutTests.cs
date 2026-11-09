@@ -1,5 +1,6 @@
 using System;
 using Fdw.Messages;
+using Fdw.Services.Connections.Sql;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -19,7 +20,10 @@ public sealed class MsSqlCommandTimeoutTests
             new MsSqlConnectionConfiguration(),
             connectionString: "Server=unused;",
             commandTimeoutSeconds: commandTimeoutSeconds,
-            authenticationContextAccessor: null);
+            authenticationContextAccessor: null)
+        {
+            TranslationSettings = new TranslationSettings(50),
+        };
 
     [Theory]
     [InlineData(5)]

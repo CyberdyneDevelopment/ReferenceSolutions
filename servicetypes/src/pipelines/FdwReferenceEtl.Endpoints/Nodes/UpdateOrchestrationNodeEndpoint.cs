@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceEtl.Endpoints.Nodes.Logging;
+using Fdw.Results;
 
 namespace FdwReferenceEtl.Endpoints.Nodes;
 
@@ -96,14 +97,14 @@ public sealed class UpdateOrchestrationNodeEndpoint : Endpoint<UpdateOrchestrati
         if (getResult.IsFailure)
         {
             NodeLog.NodeGetFailed(_logger, req.Id, getResult.CurrentMessage);
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(getResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
         if (getResult.Value is null)
         {
             NodeLog.NodeNotFoundForUpdate(_logger, req.Id);
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NodeLog.UpdateOrchestrationNodeOrchestrationnodeNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -121,7 +122,7 @@ public sealed class UpdateOrchestrationNodeEndpoint : Endpoint<UpdateOrchestrati
         if (existing is not OrchestrationNodeImplementationConfiguration node)
         {
             NodeLog.NodeUpdateFailed(_logger, req.Id, $"resolved to '{existing.GetType().Name}'");
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NodeLog.UpdateNodeResolvedToOtherType(_logger, req.Id)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

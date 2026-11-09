@@ -21,7 +21,10 @@ public sealed class SqliteConnectionStringTests
             NullLogger<SqliteConnectionFactory>.Instance,
             NullLogger<SqliteConnection>.Instance,
             new Mock<ISecretManagerProvider>().Object,
-            settings);
+            settings)
+        {
+            DefaultMaxParametersBeforeTempTable = 50,
+        };
 
     private static Lazy<IEffectiveSettingsProvider> SettingHolds(int seconds)
     {

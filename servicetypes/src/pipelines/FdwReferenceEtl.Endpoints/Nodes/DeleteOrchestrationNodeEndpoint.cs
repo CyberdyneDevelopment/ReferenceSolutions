@@ -8,6 +8,7 @@ using Fdw.Services.Etl.Projects.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceEtl.Endpoints.Nodes.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
 
 namespace FdwReferenceEtl.Endpoints.Nodes;
 
@@ -69,12 +70,12 @@ public sealed class DeleteOrchestrationNodeEndpoint : Endpoint<DeleteOrchestrati
             if (FailureCategory.IsMissing(result))
             {
                 NodeLog.NodeNotFoundForDelete(_logger, req.Id);
-                await Send.NotFoundAsync(ct).ConfigureAwait(false);
+                await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NodeLog.DeleteOrchestrationNodeNotFound(_logger)), HttpContext)).ConfigureAwait(false);
                 return;
             }
 
             NodeLog.NodeDeleteFailed(_logger, req.Id, result.CurrentMessage);
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
             return;
         }
 

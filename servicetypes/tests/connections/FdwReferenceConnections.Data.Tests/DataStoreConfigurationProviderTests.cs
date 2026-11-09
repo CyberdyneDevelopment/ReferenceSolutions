@@ -225,7 +225,8 @@ public sealed class DataStoreConfigurationProviderTests
         var provider = new DataStoreConfigurationProvider(
             NullLogger<DataStoreConfigurationProvider>.Instance,
             GatewayProviderFor(mockGateway.Object),
-            "PlatformConfiguration", "data", "DataStore", new Fdw.Services.Configuration.UnavailablePlacement());
+            "PlatformConfiguration", "data", "DataStore", new Fdw.Services.Configuration.UnavailablePlacement(),
+            Moq.Mock.Of<Fdw.Services.Authentication.Abstractions.Security.IAuthenticationContextAccessor>(), Moq.Mock.Of<Fdw.Services.Multitenancy.Abstractions.ICrossTenantChangePolicy>());
         provider.Register(Implementation, implementationProvider);
 
         return (mockGateway, provider);

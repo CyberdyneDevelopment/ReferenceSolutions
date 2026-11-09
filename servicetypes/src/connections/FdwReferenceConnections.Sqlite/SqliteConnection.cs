@@ -13,6 +13,7 @@ using Fdw.Results;
 using Fdw.Services.Connections;
 using Fdw.Services.Connections.Abstractions;
 using Fdw.Data.Sqlite.Logging;
+using Fdw.Services.Connections.Sql;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -51,7 +52,13 @@ public sealed partial class SqliteConnection
 
     /// <inheritdoc/>
     protected override IDataCommandTranslator<SqliteCommand> GetTranslator(string commandType)
-        => SqliteDataCommandTranslators.ByName(commandType);
+        => SettingsBoundTranslator<SqliteCommand>.Bind(SqliteDataCommandTranslators.ByName(commandType), TranslationSettings);
+
+    /// <summary>
+    /// Gets the setting this connection tells its translators: the most values a key list carries as parameters before it goes to one JSON parameter the statement
+    /// reads through <c>json_each</c> (FDW-4267). The factory resolves it once, from the default of the connection type.
+    /// </summary>
+    public required TranslationSettings TranslationSettings { get; init; }
 
     /// <summary>
     /// Gets the connection type identifier.
@@ -204,7 +211,7 @@ public sealed partial class SqliteConnection
                 as Microsoft.Data.Sqlite.SqliteTransaction;
 
             return GenericResult<IDataConnectionTransaction>.Success(
-                new SqliteDataConnectionTransaction(adoConnection, transaction!, _logger, connectionName));
+                new SqliteDataConnectionTransaction(adoConnection, transaction!, _logger, connectionName) { TranslationSettings = TranslationSettings });
         }
         catch (Exception ex)
         {

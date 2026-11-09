@@ -10,6 +10,8 @@ using Fdw.Services.Data.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceNfl.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceNfl.Endpoints;
 
@@ -50,8 +52,7 @@ public sealed class GetTeamRosterEndpoint : Endpoint<ListRosterRequest, List<Pla
         if (!dsResult.IsSuccess)
         {
             NflLog.GetTeamRosterFailed(_logger, req.TeamId, "Failed to resolve NflPlayers DataSet");
-            AddError("Failed to resolve NflPlayers DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(dsResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -59,8 +60,7 @@ public sealed class GetTeamRosterEndpoint : Endpoint<ListRosterRequest, List<Pla
         if (src is null)
         {
             NflLog.GetTeamRosterFailed(_logger, req.TeamId, "No active source found for NflPlayers DataSet");
-            AddError("No active source found for NflPlayers DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NflLog.GetTeamRosterReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -83,8 +83,7 @@ public sealed class GetTeamRosterEndpoint : Endpoint<ListRosterRequest, List<Pla
         if (!result.IsSuccess)
         {
             NflLog.GetTeamRosterFailed(_logger, req.TeamId, result.CurrentMessage!);
-            AddError("Failed to get team roster");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
             return;
         }
 

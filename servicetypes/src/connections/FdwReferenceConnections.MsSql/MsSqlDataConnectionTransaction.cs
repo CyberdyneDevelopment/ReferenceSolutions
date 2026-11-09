@@ -11,6 +11,7 @@ using Fdw.Results;
 using Fdw.Services.Connections;
 using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Connections.MsSql.Logging;
+using Fdw.Services.Connections.Sql;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Fdw.Services.Connections.MsSql.ErrorHandlers;
@@ -38,6 +39,12 @@ internal sealed class MsSqlDataConnectionTransaction : IDataConnectionTransactio
     private readonly int _commandTimeoutSeconds;
     private readonly BulkCopyWriter _bulkCopy;
     private bool _disposed;
+
+    /// <summary>
+    /// Gets the setting the connection tells its translators, or null when it states none (FDW-4267). The unit of work translates through the same setting as the
+    /// connection does outside a unit of work.
+    /// </summary>
+    internal required TranslationSettings TranslationSettings { get; init; }
 
     /// <summary>Copies a planned bulk insert on the unit of work's connection and transaction; the default is <see cref="MsSqlBulkCopy.Write"/>.</summary>
     internal delegate Task<int> BulkCopyWriter(
@@ -87,10 +94,10 @@ internal sealed class MsSqlDataConnectionTransaction : IDataConnectionTransactio
             return GenericResult<T>.Failure(MsSqlConnectionLogger.ExecutionFailed(_logger));
 
         // A command that asks for the bulk route takes it inside this unit of work, on its connection and transaction (FDW-1152).
-        if (MsSqlBulkRoute.Takes(command, container, _maxSerialInsert))
+        if (MsSqlBulkRoute.Takes(command, container, _maxSerialInsert, TranslationSettings.MaxParametersBeforeTempTable))
             return await ExecuteBulk<T>(command, container, cancellationToken).ConfigureAwait(false);
 
-        var translator = MsSqlDataCommandTranslators.ByName(command.CommandType);
+        var translator = SettingsBoundTranslator<SqlCommand>.Bind(MsSqlDataCommandTranslators.ByName(command.CommandType), TranslationSettings);
         if (string.Equals(translator.Name, "NotFound", StringComparison.Ordinal) ||
             !string.Equals(translator.Name, command.CommandType, StringComparison.Ordinal))
         {
@@ -150,7 +157,7 @@ internal sealed class MsSqlDataConnectionTransaction : IDataConnectionTransactio
     // rollback undoes them with the rest. The session context was set once when the unit began.
     private async Task<IGenericResult<T>> ExecuteBulk<T>(IDataCommand command, IDataContainer container, CancellationToken cancellationToken)
     {
-        var plan = MsSqlBulkRoute.Plan(command, container, _logger, _connectionName, _maxSerialInsert, inTransaction: true);
+        var plan = MsSqlBulkRoute.Plan(command, container, _logger, _connectionName, _maxSerialInsert, TranslationSettings.MaxParametersBeforeTempTable, inTransaction: true);
         if (!plan.IsSuccess || plan.Value is null)
             return plan.ToNewResult<T>();
 

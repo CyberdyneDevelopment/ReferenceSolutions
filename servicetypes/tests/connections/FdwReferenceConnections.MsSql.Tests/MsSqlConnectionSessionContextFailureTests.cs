@@ -1,5 +1,6 @@
 using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Services.Connections.MsSql;
+using Fdw.Services.Connections.Sql;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
@@ -34,7 +35,10 @@ public sealed class MsSqlConnectionSessionContextFailureTests
             new MsSqlConnectionConfiguration(),
             connectionString: "Server=unused;",
             commandTimeoutSeconds: 30,
-            authenticationContextAccessor: new StubAuthenticationContextAccessor(new SystemAuthenticationContext()));
+            authenticationContextAccessor: new StubAuthenticationContextAccessor(new SystemAuthenticationContext()))
+        {
+            TranslationSettings = new TranslationSettings(50),
+        };
 
     private sealed class StubAuthenticationContextAccessor(IAuthenticationContext? current) : IAuthenticationContextAccessor
     {

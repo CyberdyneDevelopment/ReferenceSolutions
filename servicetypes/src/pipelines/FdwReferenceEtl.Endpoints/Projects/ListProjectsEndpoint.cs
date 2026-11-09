@@ -10,6 +10,8 @@ using Fdw.Services.Etl.Projects.Abstractions.TypeCollections;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceProjects.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceProjects.Endpoints;
 
@@ -56,10 +58,17 @@ public sealed class ListProjectsEndpoint : EndpointWithoutRequest<IReadOnlyList<
         ProjectLog.ListingProjects(_logger);
 
         var result = await _provider.Get(ct).ConfigureAwait(false);
-        if (result.IsFailure || result.Value is null)
+        if (result.IsFailure)
         {
             ProjectLog.ProjectsListFailed(_logger, result.CurrentMessage);
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (result.Value is null)
+        {
+            ProjectLog.ProjectsListFailed(_logger, result.CurrentMessage);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProjectLog.ListProjectsResultReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -70,7 +79,7 @@ public sealed class ListProjectsEndpoint : EndpointWithoutRequest<IReadOnlyList<
             var mapped = OrchestrationNodeMapper.ToProject(node, _logger);
             if (mapped is null)
             {
-                await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+                await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProjectLog.ListProjectsProjectNotMappable(_logger)), HttpContext)).ConfigureAwait(false);
                 return;
             }
             projects.Add(mapped);

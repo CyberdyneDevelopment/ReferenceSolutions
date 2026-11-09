@@ -9,6 +9,7 @@ using Fdw.Results;
 using Fdw.Services.Connections;
 using Fdw.Services.Connections.Abstractions;
 using Fdw.Data.Sqlite.Logging;
+using Fdw.Services.Connections.Sql;
 using Fdw.Data.Sqlite.Results;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
@@ -28,6 +29,9 @@ internal sealed class SqliteDataConnectionTransaction : IDataConnectionTransacti
     private readonly ILogger _logger;
     private readonly string _connectionName;
     private bool _disposed;
+
+    /// <summary>Gets the setting the connection tells its translators, or null when it states none (FDW-4267); the unit of work translates through the same setting.</summary>
+    internal required TranslationSettings TranslationSettings { get; init; }
 
     internal SqliteDataConnectionTransaction(
         SqliteAdoConnection connection,
@@ -56,7 +60,7 @@ internal sealed class SqliteDataConnectionTransaction : IDataConnectionTransacti
             return GenericResult<T>.Failure(
                 SqliteDataResultCodes.ByName("TransactionDisposed"));
 
-        var translator = SqliteDataCommandTranslators.ByName(command.CommandType);
+        var translator = SettingsBoundTranslator<SqliteCommand>.Bind(SqliteDataCommandTranslators.ByName(command.CommandType), TranslationSettings);
         if (string.Equals(translator.Name, "NotFound", StringComparison.Ordinal))
         {
             return await ExecuteWithoutTranslator<T>(command, container, cancellationToken).ConfigureAwait(false);

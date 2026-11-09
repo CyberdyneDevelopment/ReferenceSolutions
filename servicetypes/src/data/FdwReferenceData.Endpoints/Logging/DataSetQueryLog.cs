@@ -36,4 +36,8 @@ public static partial class DataSetQueryLog
 
     [MessageLogging(EventId = 5481, Level = LogLevel.Error, Message = "DataSet '{dataSetName}' stream failed while it was being written; the response is aborted so it cannot pass for a whole one")]
     public static partial IGenericMessage StreamAborted(ILogger logger, Exception ex, string dataSetName);
+
+    /// <summary>Logs that Query data set was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30001, Level = LogLevel.Warning, Message = "Query data set was not found, or is not visible to the caller", ClientMessage = "Query data set was not found")]
+    public static partial IGenericMessage QueryDataSetQuerydatasetNotFound(ILogger logger);
 }

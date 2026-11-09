@@ -152,9 +152,10 @@ public static partial class EtlServerLog
     public static partial IGenericMessage ExecutionRecordCreated(ILogger logger, Guid executionId, string pipelineName);
 
     [MessageLogging(
-        EventId = 10222,
+        EventId = 90003,
         Level = LogLevel.Error,
-        Message = "Failed to create execution record for pipeline '{pipelineName}': {error}")]
+        Message = "Failed to create execution record for pipeline '{pipelineName}': {error}",
+        ClientMessage = "The execution record could not be created")]
     public static partial IGenericMessage ExecutionRecordCreateFailed(ILogger logger, Exception ex, string pipelineName, string error);
 
     [MessageLogging(
@@ -252,9 +253,10 @@ public static partial class EtlServerLog
     public static partial IGenericMessage UnifiedTriggerQueueFull(ILogger logger, string type, string name);
 
     [MessageLogging(
-        EventId = 10265,
+        EventId = 30004,
         Level = LogLevel.Warning,
-        Message = "Project name='{projectName}' id='{projectId}' not found for trigger")]
+        Message = "Project name='{projectName}' id='{projectId}' not found for trigger",
+        ClientMessage = "Project name='{projectName}' id='{projectId}' was not found")]
     public static partial IGenericMessage ProjectNotFoundForTrigger(ILogger logger, string? projectName, Guid? projectId);
 
     [MessageLogging(
@@ -277,39 +279,45 @@ public static partial class EtlServerLog
             : PipelineNotFoundForTriggerWithReason(logger, pipelineName, reason);
 
     [MessageLogging(
-        EventId = 10267,
+        EventId = 30002,
         Level = LogLevel.Warning,
-        Message = "Pipeline '{pipelineName}' not found for trigger: {reason}")]
+        Message = "Pipeline '{pipelineName}' not found for trigger: {reason}",
+        ClientMessage = "Pipeline '{pipelineName}' was not found")]
     internal static partial IGenericMessage PipelineNotFoundForTriggerWithReason(ILogger logger, string pipelineName, string reason);
 
     [MessageLogging(
-        EventId = 10362,
+        EventId = 30003,
         Level = LogLevel.Warning,
-        Message = "Pipeline '{pipelineName}' not found for trigger")]
+        Message = "Pipeline '{pipelineName}' not found for trigger",
+        ClientMessage = "Pipeline '{pipelineName}' was not found")]
     internal static partial IGenericMessage PipelineNotFoundForTriggerWithoutReason(ILogger logger, string pipelineName);
 
     [MessageLogging(
-        EventId = 10268,
+        EventId = 20004,
         Level = LogLevel.Warning,
-        Message = "Trigger for name='{name}' id='{id}' states no TriggerSource; it must name a registered JobTriggerSourceTypes member")]
+        Message = "Trigger for name='{name}' id='{id}' states no TriggerSource; it must name a registered JobTriggerSourceTypes member",
+        ClientMessage = "The trigger states no trigger source; it must name a registered trigger source")]
     public static partial IGenericMessage TriggerSourceMissing(ILogger logger, string? name, Guid? id);
 
     [MessageLogging(
-        EventId = 10269,
+        EventId = 20003,
         Level = LogLevel.Warning,
-        Message = "A pipeline trigger must name the pipeline by exactly one of its id or its name")]
+        Message = "A pipeline trigger must name the pipeline by exactly one of its id or its name",
+        ClientMessage = "A pipeline trigger must name the pipeline by exactly one of its id or its name")]
     public static partial IGenericMessage PipelineNameRequiredForTrigger(ILogger logger);
 
     [MessageLogging(
-        EventId = 10276,
+        EventId = 20005,
         Level = LogLevel.Warning,
-        Message = "Trigger for name='{name}' id='{id}' states TestRowsPerSource, but only a pipeline can be a test run")]
+        Message = "Trigger for name='{name}' id='{id}' states TestRowsPerSource, but only a pipeline can be a test run",
+        ClientMessage = "TestRowsPerSource applies to a pipeline only; only a pipeline can be a test run")]
     public static partial IGenericMessage TestRunOnlyForPipeline(ILogger logger, string? name, Guid? id);
 
     [MessageLogging(
-        EventId = 10368,
+        EventId = 20006,
         Level = LogLevel.Warning,
-        Message = "Trigger for name='{name}' id='{id}' states TimeoutSeconds, but only a pipeline run takes a time limit")]
+        Message = "Trigger for name='{name}' id='{id}' states TimeoutSeconds, but only a pipeline run takes a time limit",
+        ClientMessage = "TimeoutSeconds applies to a pipeline run only; only a pipeline run takes a time limit")]
     public static partial IGenericMessage TimeoutOnlyForPipeline(ILogger logger, string? name, Guid? id);
 
     // Execution control endpoints (10270-10279)
@@ -605,15 +613,17 @@ public static partial class EtlServerLog
     public static partial IGenericMessage ExecutionCompleteFailed(ILogger logger, Guid executionId, string pipelineName, string? message);
 
     [MessageLogging(
-        EventId = 10364,
+        EventId = 90002,
         Level = LogLevel.Error,
-        Message = "Execution '{executionId}' of project '{projectName}' could not be held for approval: {message}")]
+        Message = "Execution '{executionId}' of project '{projectName}' could not be held for approval: {message}",
+        ClientMessage = "The project execution could not be held for approval")]
     public static partial IGenericMessage ApprovalHoldFailed(ILogger logger, Guid executionId, string projectName, string? message);
 
     [MessageLogging(
-        EventId = 10365,
+        EventId = 90001,
         Level = LogLevel.Error,
-        Message = "Execution '{executionId}' of pipeline '{pipelineName}' could not be held for approval: {message}")]
+        Message = "Execution '{executionId}' of pipeline '{pipelineName}' could not be held for approval: {message}",
+        ClientMessage = "The pipeline execution could not be held for approval")]
     public static partial IGenericMessage PipelineApprovalHoldFailed(ILogger logger, Guid executionId, string pipelineName, string? message);
 
     [MessageLogging(
@@ -623,9 +633,10 @@ public static partial class EtlServerLog
     public static partial IGenericMessage PipelineHeldForApproval(ILogger logger, Guid executionId, string pipelineName);
 
     [MessageLogging(
-        EventId = 10367,
+        EventId = 40001,
         Level = LogLevel.Error,
-        Message = "Execution '{executionId}' of pipeline '{pipelineName}' is already held for approval, so its request was not held again")]
+        Message = "Execution '{executionId}' of pipeline '{pipelineName}' is already held for approval, so its request was not held again",
+        ClientMessage = "The execution is already held for approval, so its request was not held again")]
     public static partial IGenericMessage PipelineHoldRefused(ILogger logger, Guid executionId, string pipelineName);
 
     [MessageLogging(
@@ -647,4 +658,16 @@ public static partial class EtlServerLog
         OperationFailedNoMessage(logger);
         return "Operation failed with no error message";
     }
+
+    /// <summary>Logs that the request failed: Either 'id' or 'name' must be provided.</summary>
+    [MessageLogging(EventId = 20001, Level = LogLevel.Warning, Message = "Either 'id' or 'name' must be provided.", ClientMessage = "Either 'id' or 'name' must be provided.")]
+    public static partial IGenericMessage UnifiedTriggerEitherIdOrNameMust(ILogger logger);
+
+    /// <summary>Logs that Job status was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30001, Level = LogLevel.Warning, Message = "Job status was not found, or is not visible to the caller", ClientMessage = "Job status was not found")]
+    public static partial IGenericMessage GetJobStatusJobstatusNotFound(ILogger logger);
+
+    /// <summary>Logs that Unknown trigger type 'type'; must be a registered ExecutionItemType name.</summary>
+    [MessageLogging(EventId = 20002, Level = LogLevel.Warning, Message = "Unknown trigger type '{type}'; must be a registered ExecutionItemType name", ClientMessage = "Unknown trigger type '{type}'; must be a registered ExecutionItemType name")]
+    public static partial IGenericMessage UnifiedTriggerUnknownTriggerType(ILogger logger, string type);
 }

@@ -28,7 +28,7 @@ public sealed class MsSqlConnectionFactoryTests
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
             _connectionLogger.Object,
-            null);
+            null) { DefaultMaxParametersBeforeTempTable = 50 };
 
         factory.ShouldNotBeNull();
     }
@@ -40,7 +40,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var result = factory.Create((MsSqlConnectionConfiguration)null!, resolvedSecret: null);
 
@@ -55,7 +55,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -86,7 +86,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -119,7 +119,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -149,7 +149,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -179,7 +179,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var result = factory.Create((IGenericConfiguration)null!, resolvedSecret: null);
 
@@ -194,7 +194,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var wrongConfig = Mock.Of<IGenericConfiguration>();
 
@@ -217,7 +217,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var result = factory.Create(null!, resolvedSecret: null);
 
@@ -232,7 +232,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -262,7 +262,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -296,7 +296,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -325,7 +325,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -355,7 +355,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -384,7 +384,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -414,7 +414,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -443,7 +443,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -473,7 +473,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -503,7 +503,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -533,7 +533,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -562,7 +562,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -596,7 +596,7 @@ public sealed class MsSqlConnectionFactoryTests
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
             _connectionLogger.Object,
-            null); // No secret manager provider
+            null) { DefaultMaxParametersBeforeTempTable = 50 }; // No secret manager provider
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -630,7 +630,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
@@ -664,7 +664,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
@@ -694,7 +694,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var result = ((IServiceFactory)factory).Create(null!);
 
@@ -708,7 +708,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         // Request a type that MsSqlConnection doesn't implement
         var result = ((IServiceFactory)factory).Create<ISecretManager>(
@@ -737,7 +737,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
@@ -767,7 +767,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         IGenericConfiguration config = new MsSqlConnectionConfiguration
         {
@@ -797,7 +797,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -827,7 +827,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -865,7 +865,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -894,7 +894,7 @@ public sealed class MsSqlConnectionFactoryTests
     {
         var factory = new MsSqlConnectionFactory(
             _factoryLogger.Object,
-            _connectionLogger.Object);
+            _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var config = new MsSqlConnectionConfiguration
         {
@@ -940,7 +940,7 @@ public sealed class MsSqlConnectionFactoryTests
     public void APooledConnectionWithUnusablePoolSizesIsRefusedNamingThem(int minPoolSize, int maxPoolSize)
     {
         // FDW-4109: SqlConnectionStringBuilder throws on these; the factory refuses them with a structured failure instead.
-        var factory = new MsSqlConnectionFactory(_factoryLogger.Object, _connectionLogger.Object);
+        var factory = new MsSqlConnectionFactory(_factoryLogger.Object, _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var result = factory.Create(PoolingConfiguration(true, minPoolSize, maxPoolSize), resolvedSecret: null);
 
@@ -953,7 +953,7 @@ public sealed class MsSqlConnectionFactoryTests
     [Trait("Category", "DataIntegrity")]
     public void AConnectionThatDoesNotPoolStatesNoPoolSizesAndIsBuilt()
     {
-        var factory = new MsSqlConnectionFactory(_factoryLogger.Object, _connectionLogger.Object);
+        var factory = new MsSqlConnectionFactory(_factoryLogger.Object, _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var result = factory.Create(PoolingConfiguration(false, 0, 0), resolvedSecret: null);
 

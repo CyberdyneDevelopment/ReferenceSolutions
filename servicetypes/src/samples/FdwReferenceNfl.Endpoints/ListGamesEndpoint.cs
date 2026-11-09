@@ -10,6 +10,8 @@ using Fdw.Services.Data.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceNfl.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceNfl.Endpoints;
 
@@ -50,8 +52,7 @@ public sealed class ListGamesEndpoint : Endpoint<ListGamesRequest, List<GameReco
         if (!dsResult.IsSuccess)
         {
             NflLog.ListGamesFailed(_logger, "Failed to resolve NflGames DataSet");
-            AddError("Failed to resolve NflGames DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(dsResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -59,8 +60,7 @@ public sealed class ListGamesEndpoint : Endpoint<ListGamesRequest, List<GameReco
         if (src is null)
         {
             NflLog.ListGamesFailed(_logger, "No active source found for NflGames DataSet");
-            AddError("No active source found for NflGames DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NflLog.ListGamesReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -90,8 +90,7 @@ public sealed class ListGamesEndpoint : Endpoint<ListGamesRequest, List<GameReco
         if (!result.IsSuccess)
         {
             NflLog.ListGamesFailed(_logger, result.CurrentMessage!);
-            AddError("Failed to list games");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
             return;
         }
 

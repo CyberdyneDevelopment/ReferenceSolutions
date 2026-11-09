@@ -53,7 +53,7 @@ public sealed class ClearDefaultOrganizationEndpoint : EndpointWithoutRequest
         if (!Guid.TryParse(userIdText, out var userId)
             || !Guid.TryParse(User.FindFirst(ClaimDefinitions.tenantId.Name)?.Value, out var tenantId))
         {
-            await Send.UnauthorizedAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(TenantLog.ClearDefaultOrganizationNotSignedIn(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

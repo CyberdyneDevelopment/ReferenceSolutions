@@ -11,7 +11,6 @@ using Fdw.Services.Connections.Http.Abstractions;
 using Fdw.Services.Connections.Http.Abstractions.OptionTypes.HttpProtocolOptions;
 using Fdw.Services.Connections.Http.Abstractions.Results;
 using Fdw.Services.Connections.Http.Security;
-using Fdw.Services.Connections.Http.Security.Types;
 using Fdw.Services.SecretManagers.Abstractions;
 using Fdw.Services.Connections.Http;
 using FdwReferenceConnections.Http.Logging;
@@ -167,8 +166,8 @@ public sealed class HttpConnectionFactory : ServiceFactoryBase<IGenericConnectio
     /// </summary>
     /// <remarks>
     /// Why: binding the security TypeOption instance is the only way to know — each concrete security
-    /// type (WsSecurity, UsernameToken, ApiKey, Basic) owns its own secret-name property via
-    /// <see cref="GetSecretNames"/>. The factory never inspects the raw
+    /// type (WsSecurity, UsernameToken, ApiKey, Bearer, Basic) states the secret names it reads in
+    /// <c>SecretNames</c>, and the factory keeps no list of types. The factory never inspects the raw
     /// <see cref="HttpConnectionConfigurationBase.AdditionalProperties"/> KVP dictionary directly. No bound
     /// security (empty dict or unresolved/None AuthenticationType) means no secret is required.
     /// </remarks>
@@ -209,25 +208,10 @@ public sealed class HttpConnectionFactory : ServiceFactoryBase<IGenericConnectio
         var securityInstance = securityType.CreateInstance();
         securityInstance.BindFromValues(values);
 
-        var (certificateSecretName, passwordSecretName, apiKeySecretName) = GetSecretNames(securityInstance);
+        var names = securityInstance.SecretNames;
         return GenericResult<(HttpAuthenticationConfiguration?, string?, string?, string?)>.Success(
-            (securityInstance, certificateSecretName, passwordSecretName, apiKeySecretName));
+            (securityInstance, names.CertificateSecretName, names.PasswordSecretName, names.ApiKeySecretName));
     }
-
-    /// <summary>Maps a bound security configuration to the secret names it demands.</summary>
-    private static (string? CertificateSecretName, string? PasswordSecretName, string? ApiKeySecretName) GetSecretNames(
-        HttpAuthenticationConfiguration security)
-        => security switch
-        {
-            WsSecurityConfiguration ws => (ws.CertificateSecretName, null, null),
-            UsernameTokenConfiguration ut => (null, ut.PasswordSecretName, null),
-            ApiKeySecurityConfiguration ak => (null, null, ak.ApiKeySecretName),
-            // A bearer token is a key credential: it travels in the API-key slot, and the protocol sends
-            // it as Authorization: Bearer because the connection's AuthenticationType is Bearer.
-            BearerSecurityConfiguration bearer => (null, null, bearer.TokenSecretName),
-            BasicSecurityConfiguration basic => (null, basic.PasswordSecretName, null),
-            _ => (null, null, null),
-        };
 
 
 

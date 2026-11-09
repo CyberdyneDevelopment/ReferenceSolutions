@@ -1,5 +1,6 @@
 using System.Data;
 using Fdw.Services.Authentication.Abstractions.Security;
+using Fdw.Services.Connections.Sql;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -23,7 +24,10 @@ public sealed class MsSqlConnectionSessionContextPlacementTests
             new MsSqlConnectionConfiguration(),
             connectionString: "Server=unused;",
             commandTimeoutSeconds: 30,
-            authenticationContextAccessor: new StubAuthenticationContextAccessor(context));
+            authenticationContextAccessor: new StubAuthenticationContextAccessor(context))
+        {
+            TranslationSettings = new TranslationSettings(50),
+        };
 
     private sealed class StubAuthenticationContextAccessor(IAuthenticationContext? current) : IAuthenticationContextAccessor
     {

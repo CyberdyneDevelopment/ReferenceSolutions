@@ -11,6 +11,7 @@ using Fdw.Commands.Data.Abstractions;
 using Fdw.Data.Abstractions;
 using Fdw.Data.Abstractions.Mappers.PocoMappers;
 using Fdw.Data.MsSql;
+using Fdw.Services.Connections.Sql;
 using Fdw.Data.RowSources.Abstractions;
 using Fdw.Data.RowSources.DataReader.Abstractions;
 using Fdw.Messages;
@@ -94,7 +95,13 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
     /// Gets the translator for a command type using TypeCollection lookup.
     /// </summary>
     protected override IDataCommandTranslator<SqlCommand> GetTranslator(string commandType)
-        => MsSqlDataCommandTranslators.ByName(commandType);
+        => SettingsBoundTranslator<SqlCommand>.Bind(MsSqlDataCommandTranslators.ByName(commandType), TranslationSettings);
+
+    /// <summary>
+    /// Gets the setting this connection tells its translators: the most values a key list carries as parameters before it goes to a temporary table the
+    /// statement joins on (FDW-4267). The factory resolves it once, from the connection's configuration or the default of the connection type.
+    /// </summary>
+    public required TranslationSettings TranslationSettings { get; init; }
 
     /// <summary>
     /// Gets the connection type identifier.
@@ -215,7 +222,7 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
     public override async Task<IGenericResult<T>> Execute<T>(
         IDataCommand command, IDataContainer container, CancellationToken cancellationToken = default)
     {
-        if (MsSqlBulkRoute.Takes(command, container, Configuration.MaxSerialInsert))
+        if (MsSqlBulkRoute.Takes(command, container, Configuration.MaxSerialInsert, TranslationSettings.MaxParametersBeforeTempTable))
             return await ExecuteBulk<T>(command, container, cancellationToken).ConfigureAwait(false);
 
         // Why a find is run here: its answer is each row with the fields that matched, which the generic row mapping cannot
@@ -230,7 +237,7 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
     // copied. A database error is a coded failure like any other command's; nothing is thrown for one.
     private async Task<IGenericResult<T>> ExecuteBulk<T>(IDataCommand command, IDataContainer container, CancellationToken cancellationToken)
     {
-        var plan = MsSqlBulkRoute.Plan(command, container, _logger, Configuration.Name, Configuration.MaxSerialInsert, inTransaction: false);
+        var plan = MsSqlBulkRoute.Plan(command, container, _logger, Configuration.Name, Configuration.MaxSerialInsert, TranslationSettings.MaxParametersBeforeTempTable, inTransaction: false);
         if (!plan.IsSuccess || plan.Value is null)
             return plan.ToNewResult<T>();
 
@@ -1006,7 +1013,7 @@ public sealed partial class MsSqlConnection : ConnectionBase<SqlCommand, MsSqlCo
             // Why: BeginTransactionAsync on SqlConnection always returns SqlTransaction;
             // the cast is safe and avoids an interface indirection in the hot path.
             return GenericResult<IDataConnectionTransaction>.Success(
-                new MsSqlDataConnectionTransaction(sqlConnection, transaction!, _logger, connectionName, Configuration.MaxSerialInsert, _commandTimeoutSeconds));
+                new MsSqlDataConnectionTransaction(sqlConnection, transaction!, _logger, connectionName, Configuration.MaxSerialInsert, _commandTimeoutSeconds) { TranslationSettings = TranslationSettings });
         }
         catch (Exception ex)
         {

@@ -25,13 +25,13 @@ public sealed class MsSqlConnectionFactoryAdditionalTests
     private readonly Mock<ILogger<MsSqlConnection>> _connectionLogger = new();
 
     private MsSqlConnectionFactory NewFactory()
-        => new(_factoryLogger.Object, _connectionLogger.Object);
+        => new(_factoryLogger.Object, _connectionLogger.Object) { DefaultMaxParametersBeforeTempTable = 50 };
 
     // Why: the secret-manager provider is now a CONSTRUCTOR dependency of the factory, not a Create
     // argument — the connection type registers it, exactly as HttpConnectionType registers its
     // IHttpClientFactory. These tests build the factory the way DI does.
     private MsSqlConnectionFactory NewFactory(ISecretManagerProvider secretManagerProvider)
-        => new(_factoryLogger.Object, _connectionLogger.Object, secretManagerProvider);
+        => new(_factoryLogger.Object, _connectionLogger.Object, secretManagerProvider) { DefaultMaxParametersBeforeTempTable = 50 };
 
     // Why: a secret-manager provider mock keyed by manager name. The factory reads the name from the
     // connection's auth config and calls Get(name).

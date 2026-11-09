@@ -20,9 +20,10 @@ public static partial class SerilogLoggingLog
     /// reports that.
     /// </remarks>
     [MessageLogging(
-        EventId = 11030,
+        EventId = 60001,
         Level = LogLevel.Critical,
-        Message = "No Logging row named '{name}' is configured; what this host writes, and where, is configuration rather than a default")]
+        Message = "No Logging row named '{name}' is configured; what this host writes, and where, is configuration rather than a default",
+        ClientMessage = "No Logging row named '{name}' is configured; what this host writes, and where, is configuration rather than a default")]
     public static partial IGenericMessage LoggingRowNotConfigured(ILogger logger, string name);
 
     /// <summary>The factory did not build a Serilog logger from the configured row.</summary>
@@ -31,8 +32,9 @@ public static partial class SerilogLoggingLog
     /// <param name="reason">What the factory reported.</param>
     /// <returns>The logged message.</returns>
     [MessageLogging(
-        EventId = 11031,
+        EventId = 90001,
         Level = LogLevel.Critical,
-        Message = "The Serilog factory did not build a logger from the '{name}' row: {reason}")]
+        Message = "The Serilog factory did not build a logger from the '{name}' row: {reason}",
+        ClientMessage = "The Serilog factory did not build a logger from the '{name}' row")]
     public static partial IGenericMessage LoggerNotBuiltFromRow(ILogger logger, string name, string reason);
 }
