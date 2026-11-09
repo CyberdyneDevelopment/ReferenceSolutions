@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Authorization.Abstractions;
-using Fdw.Services.Pipelines;
 using Fdw.Services.Pipelines.Endpoints;
 using Fdw.Services.Pipelines.Webhooks;
 using Microsoft.Extensions.Logging;
+using Fdw.Services.Pipelines.Abstractions;
 
 namespace FdwReferencePipelines.Endpoints;
 
@@ -15,7 +15,7 @@ namespace FdwReferencePipelines.Endpoints;
 public class CreateWebhookEndpoint : CreateWebhookEndpointBase
 {
     /// <inheritdoc />
-    public CreateWebhookEndpoint(WebhookTriggerConfigurationProvider provider, PipelineServiceConfigurationProvider pipelines, IRoleGrants grants, ILogger<CreateWebhookEndpoint> logger)
+    public CreateWebhookEndpoint(WebhookTriggerConfigurationProvider provider, IPipelineConfigurationProvider pipelines, IRoleGrants grants, ILogger<CreateWebhookEndpoint> logger)
         : base(logger, provider, pipelines, grants)
     {
     }

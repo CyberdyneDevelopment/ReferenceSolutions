@@ -34,7 +34,7 @@ public class QueryNotificationRulesEndpoint : QueryNotificationRulesEndpointBase
     ];
 
     /// <inheritdoc />
-    public QueryNotificationRulesEndpoint(NotificationRuleConfigurationProvider provider, ILogger<QueryNotificationRulesEndpoint> logger)
+    public QueryNotificationRulesEndpoint(INotificationRuleConfigurationProvider provider, ILogger<QueryNotificationRulesEndpoint> logger)
         : base(logger ?? NullLogger<QueryNotificationRulesEndpoint>.Instance, provider)
     {
     }

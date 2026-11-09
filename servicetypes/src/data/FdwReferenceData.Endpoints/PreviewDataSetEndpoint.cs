@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Fdw.Data.DataSets.Abstractions;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Abstractions;
 using Fdw.Services.Data.Endpoints;
@@ -18,7 +19,7 @@ public class PreviewDataSetEndpoint : PreviewDataSetEndpointBase
     /// Initializes a new instance of the <see cref="PreviewDataSetEndpoint"/> class.
     /// </summary>
     public PreviewDataSetEndpoint(
-        DataSetConfigurationProvider dataSetProvider,
+        IDataSetConfigurationProvider dataSetProvider,
         IDataGatewayProvider dataGateways,
         ILogger<PreviewDataSetEndpoint> logger)
         : base(dataSetProvider, dataGateways, logger ?? NullLogger<PreviewDataSetEndpoint>.Instance)

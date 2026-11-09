@@ -31,7 +31,7 @@ public sealed class SwitchOrganizationEndpoint : SwitchOrganizationEndpointBase
         IOrganizationProvider organizations,
         ITenantProvider tenants,
         IAdministrativeAudit audit,
-        AuthenticationRunner runner,
+        IAuthenticationRunner runner,
         IAuthenticationFlowProvider flows,
         ISessionCookieDelivery sessions,
         ILogger<SwitchOrganizationEndpoint> logger)

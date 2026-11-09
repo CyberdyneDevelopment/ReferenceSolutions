@@ -18,14 +18,14 @@ namespace FdwReferenceAuth.Endpoints;
 [ExcludeFromCodeCoverage]
 public sealed class RemoveOrganizationMemberEndpoint : RemoveOrganizationMemberEndpointBase
 {
-    private readonly UserTenantConfigurationProvider _userTenants;
+    private readonly IUserTenantConfigurationProvider _userTenants;
     private readonly IOrganizationProvider _organizations;
 
     /// <inheritdoc />
     public RemoveOrganizationMemberEndpoint(
         IOrganizationMembers members,
         IAdministrativeAudit audit,
-        UserTenantConfigurationProvider userTenants,
+        IUserTenantConfigurationProvider userTenants,
         IOrganizationProvider organizations,
         ILogger<RemoveOrganizationMemberEndpoint> logger)
         : base(logger, members, audit)

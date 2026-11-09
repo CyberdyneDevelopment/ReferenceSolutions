@@ -45,7 +45,7 @@ public abstract class OidcClientAuthenticationConfiguration
     }
 
     /// <summary>Gets every property key this type reads.</summary>
-    public IReadOnlyList<string> ExpectedProperties { get; } = [];
+    public override IReadOnlyList<string> ExpectedProperties { get; } = [];
 
     /// <summary>Gets the property keys that must carry a value.</summary>
     public IReadOnlyList<string> RequiredProperties { get; } = [];

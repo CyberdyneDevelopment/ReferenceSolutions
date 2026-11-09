@@ -109,7 +109,7 @@ internal static class ScalarDocumentation
     [ApprovedFallback("a value the default theme does not give takes the host's configured value")]
     private static string BuildHead(WebApplication app, ApiReferenceHostConfiguration configuration)
     {
-        var themesResult = app.Services.GetRequiredService<Fdw.UI.Themes.ThemeConfigurationProvider>().Get().GetAwaiter().GetResult();
+        var themesResult = app.Services.GetRequiredService<Fdw.UI.Themes.IThemeConfigurationProvider>().Get().GetAwaiter().GetResult();
         var themes = themesResult.IsSuccess ? themesResult.Value ?? [] : [];
         // The theme marked default; none means the host's configured values apply. No theme is picked by a hardcoded name or by order (FDW-3646).
         var defaultTheme = themes.FirstOrDefault(t => t.IsDefault);

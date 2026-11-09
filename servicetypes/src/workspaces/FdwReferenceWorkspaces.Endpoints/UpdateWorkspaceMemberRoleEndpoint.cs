@@ -18,7 +18,7 @@ public sealed class UpdateWorkspaceMemberRoleEndpoint : UpdateWorkspaceMemberRol
     /// <inheritdoc />
     public UpdateWorkspaceMemberRoleEndpoint(
         ILogger<UpdateWorkspaceMemberRoleEndpointBase> logger,
-        WorkspaceConfigurationProvider workspaces,
+        IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access)
         : base(logger, workspaces, access)
     {

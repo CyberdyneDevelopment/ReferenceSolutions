@@ -1,3 +1,4 @@
+using Fdw.Data.DataSets.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -18,14 +19,14 @@ public sealed class ComputeGroupedStatSetEndpoint : Endpoint<GroupedStatSetReque
 {
     private readonly IStatSetService _statSet;
     // Why: same dataSetName → container resolution as the non-grouped endpoint.
-    private readonly DataSetConfigurationProvider _dataSetProvider;
+    private readonly IDataSetConfigurationProvider _dataSetProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ComputeGroupedStatSetEndpoint"/> class.
     /// </summary>
     public ComputeGroupedStatSetEndpoint(
         IStatSetService statSet,
-        DataSetConfigurationProvider dataSetProvider)
+        IDataSetConfigurationProvider dataSetProvider)
     {
         _statSet = statSet;
         _dataSetProvider = dataSetProvider;

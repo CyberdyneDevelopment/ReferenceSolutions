@@ -1,3 +1,4 @@
+using Fdw.Data.DataSets.Abstractions;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -22,16 +23,16 @@ namespace FdwReferenceDataSets.Endpoints;
 [ExcludeFromCodeCoverage]
 public class SearchDataSetSourceEndpoint : Endpoint<SearchDataSetSourceRequest, List<DataSetSourceSearchResultDto>>
 {
-    private readonly DataSetConfigurationProvider _dataSetProvider;
-    private readonly CategoryConfigurationProvider _categories;
+    private readonly IDataSetConfigurationProvider _dataSetProvider;
+    private readonly ICategoryConfigurationProvider _categories;
     private readonly ILogger<SearchDataSetSourceEndpoint> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchDataSetSourceEndpoint"/> class.
     /// </summary>
     public SearchDataSetSourceEndpoint(
-        DataSetConfigurationProvider dataSetProvider,
-        CategoryConfigurationProvider categories,
+        IDataSetConfigurationProvider dataSetProvider,
+        ICategoryConfigurationProvider categories,
         ILogger<SearchDataSetSourceEndpoint> logger)
     {
         _dataSetProvider = dataSetProvider;

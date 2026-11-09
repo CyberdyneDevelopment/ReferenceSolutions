@@ -1,3 +1,4 @@
+using Fdw.Data.DataSets.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Endpoints;
@@ -14,7 +15,7 @@ public class ClassifyDataSetFieldsEndpoint : ClassifyDataSetFieldsEndpointBase
     /// <summary>
     /// Initializes a new instance of the <see cref="ClassifyDataSetFieldsEndpoint"/> class.
     /// </summary>
-    public ClassifyDataSetFieldsEndpoint(DataSetConfigurationProvider dataSetProvider, ILogger<ClassifyDataSetFieldsEndpoint> logger)
+    public ClassifyDataSetFieldsEndpoint(IDataSetConfigurationProvider dataSetProvider, ILogger<ClassifyDataSetFieldsEndpoint> logger)
         : base(logger, dataSetProvider)
     {
     }

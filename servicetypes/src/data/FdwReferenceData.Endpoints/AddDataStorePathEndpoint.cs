@@ -24,9 +24,9 @@ namespace FdwReferenceDataStores.Endpoints;
 [ExcludeFromCodeCoverage]
 public class AddDataStorePathEndpoint : Endpoint<AddDataStorePathRequest, DataStorePathResponse>
 {
-    // Why: DataStoreConfigurationProvider carries GetWithChildren which loads the full path list,
+    // Why: IDataStoreConfigurationProvider carries GetWithChildren which loads the full path list,
     // enabling the duplicate-path-name guard without a separate query.
-    private readonly DataStoreConfigurationProvider _dataStoreProvider;
+    private readonly IDataStoreConfigurationProvider _dataStoreProvider;
 
     private readonly ILogger<AddDataStorePathEndpoint> _logger;
 
@@ -34,7 +34,7 @@ public class AddDataStorePathEndpoint : Endpoint<AddDataStorePathRequest, DataSt
     /// Initializes a new instance of the <see cref="AddDataStorePathEndpoint"/> class.
     /// </summary>
     public AddDataStorePathEndpoint(
-        DataStoreConfigurationProvider dataStoreProvider,
+        IDataStoreConfigurationProvider dataStoreProvider,
         ILogger<AddDataStorePathEndpoint> logger)
     {
         _dataStoreProvider = dataStoreProvider;

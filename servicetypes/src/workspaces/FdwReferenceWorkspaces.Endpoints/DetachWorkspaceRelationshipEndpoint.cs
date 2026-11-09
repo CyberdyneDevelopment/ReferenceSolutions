@@ -17,7 +17,7 @@ public sealed class DetachWorkspaceRelationshipEndpoint : DetachWorkspaceRelatio
 {
     /// <inheritdoc />
     public DetachWorkspaceRelationshipEndpoint(
-        WorkspaceConfigurationProvider workspaces,
+        IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access,
         ILogger<DetachWorkspaceRelationshipEndpointBase>? logger = null)
         : base(workspaces, access, logger)

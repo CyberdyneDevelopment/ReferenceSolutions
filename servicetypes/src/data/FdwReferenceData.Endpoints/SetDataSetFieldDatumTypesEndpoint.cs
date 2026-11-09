@@ -1,3 +1,4 @@
+using Fdw.Data.DataSets.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Endpoints;
@@ -14,7 +15,7 @@ public class SetDataSetFieldDatumTypesEndpoint : SetDataSetFieldDatumTypesEndpoi
     /// <summary>
     /// Initializes a new instance of the <see cref="SetDataSetFieldDatumTypesEndpoint"/> class.
     /// </summary>
-    public SetDataSetFieldDatumTypesEndpoint(DataSetConfigurationProvider dataSetProvider, ILogger<SetDataSetFieldDatumTypesEndpoint> logger)
+    public SetDataSetFieldDatumTypesEndpoint(IDataSetConfigurationProvider dataSetProvider, ILogger<SetDataSetFieldDatumTypesEndpoint> logger)
         : base(logger, dataSetProvider)
     {
     }

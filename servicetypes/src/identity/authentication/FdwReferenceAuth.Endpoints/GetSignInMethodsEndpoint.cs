@@ -16,7 +16,7 @@ public class GetSignInMethodsEndpoint : GetSignInMethodsEndpointBase
 {
     /// <inheritdoc />
     public GetSignInMethodsEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IUserCredentialService credentialService,
         IExternalIdentityConfigurationProvider externalIdentities,
         IPersonalAccessTokenService tokenService,

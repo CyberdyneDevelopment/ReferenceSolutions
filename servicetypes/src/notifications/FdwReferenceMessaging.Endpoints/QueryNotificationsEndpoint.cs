@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Fdw.Services.Notifications;
+using Fdw.Services.Data.Abstractions;
+using Fdw.Services.Notifications.Configuration;
 using Fdw.Services.Notifications.Endpoints;
 using Fdw.Web.RestEndpoints.Query;
 using Microsoft.Extensions.Logging;
@@ -30,7 +31,7 @@ public class QueryNotificationsEndpoint : QueryNotificationsEndpointBase
     ];
 
     /// <inheritdoc />
-    public QueryNotificationsEndpoint(NotificationConfigurationProvider provider, ILogger<QueryNotificationsEndpoint> logger)
+    public QueryNotificationsEndpoint(IDomainRecordProvider<NotificationDomainConfiguration> provider, ILogger<QueryNotificationsEndpoint> logger)
         : base(logger ?? NullLogger<QueryNotificationsEndpoint>.Instance, provider)
     {
     }

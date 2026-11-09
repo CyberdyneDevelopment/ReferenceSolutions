@@ -20,16 +20,16 @@ namespace FdwReferenceConfiguration.Endpoints;
 public class ListThemesEndpoint : ListThemesEndpointBase<ThemeSummaryPayload>
 {
     private readonly ILogger<ListThemesEndpoint> _logger;
-    // Why: ThemeConfigurationProvider replaces IOptionsMonitor<List<T>> — provides dual-source
+    // Why: IThemeConfigurationProvider replaces IOptionsMonitor<List<T>> — provides dual-source
     // (ctrl + cfg) theme resolution through ImplementationConfigurationProviderBase pattern.
-    private readonly ThemeConfigurationProvider _provider;
+    private readonly IThemeConfigurationProvider _provider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ListThemesEndpoint"/> class.
     /// </summary>
     public ListThemesEndpoint(
         ILogger<ListThemesEndpoint> logger,
-        ThemeConfigurationProvider provider)
+        IThemeConfigurationProvider provider)
         : base(logger)
     {
         _logger = logger ?? NullLogger<ListThemesEndpoint>.Instance;

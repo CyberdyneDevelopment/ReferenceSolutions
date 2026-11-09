@@ -44,13 +44,14 @@ namespace FdwReferenceAuthentication.PasswordCredential.Registration;
 [Implementation(typeof(AuthenticationStepTypes), "PasswordCredential")]
 public sealed class PasswordCredentialStepType
     : AuthenticationStepTypeBase<IGenericService, IServiceFactory<IGenericService, IServiceConfiguration>>,
-      IAuthenticationStep
+      IAuthenticationStep,
+      IRequestBoundAuthenticationStep
 {
     // Captured when the host is built rather than taken through the constructor: an option is
     // created by its module initializer, which needs a parameterless constructor, so what it needs
     // arrives in Initialize where a live container exists.
     private IUserConfigurationProvider? _users;
-    private IUserCredentialService? _credentials;
+    private PasswordCredentialRequestServices? _request;
     private IPasswordCredentialAccessor? _presented;
     private ITenantResolver? _tenants;
     private IAuthenticationContextAccessor? _authContextAccessor;
@@ -69,8 +70,12 @@ public sealed class PasswordCredentialStepType
             // shared collection, so a host that never references this package never pulls it in.
             // One ambient accessor for every transport: an HTTP login and a SQL Server login each
             // present what they received through a PresentedPasswordCredentialScope around the flow.
-            builder.Services.TryAddSingleton<PresentedPasswordCredentialAccessor>();
-            builder.Services.TryAddSingleton<IPasswordCredentialAccessor>(sp => sp.GetRequiredService<PresentedPasswordCredentialAccessor>());
+            builder.Services.TryAddSingleton<IPresentedPasswordCredentialAccessor, PresentedPasswordCredentialAccessor>();
+            builder.Services.TryAddSingleton<IPasswordCredentialAccessor>(sp => sp.GetRequiredService<IPresentedPasswordCredentialAccessor>());
+
+            // The credential service has scoped dependencies, so the runner hands it to the step for each execution (FDW-4640).
+            builder.Services.TryAddScoped<PasswordCredentialRequestServices>(sp =>
+                new PasswordCredentialRequestServices(() => sp.GetRequiredService<IUserCredentialService>()));
 
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
@@ -81,7 +86,6 @@ public sealed class PasswordCredentialStepType
             var services = host.Services;
 
             _users = services.GetRequiredService<IUserConfigurationProvider>();
-            _credentials = services.GetRequiredService<IUserCredentialService>();
             _presented = services.GetRequiredService<IPasswordCredentialAccessor>();
             _tenants = services.GetRequiredService<ITenantResolver>();
             _logger = loggerFactory?.CreateLogger<PasswordCredentialStepType>()
@@ -89,6 +93,18 @@ public sealed class PasswordCredentialStepType
 
             return GenericResult<IHost>.Success(host);
         });
+    }
+
+    /// <inheritdoc />
+    public Type RequestServicesType => typeof(PasswordCredentialRequestServices);
+
+    /// <inheritdoc />
+    /// <remarks>A copy of this step that holds the request's services; this step, shared by every login, is not changed.</remarks>
+    public IAuthenticationStep BindToRequest(object services)
+    {
+        var bound = (PasswordCredentialStepType)MemberwiseClone();
+        bound._request = (PasswordCredentialRequestServices)services;
+        return bound;
     }
 
     /// <inheritdoc />
@@ -107,7 +123,7 @@ public sealed class PasswordCredentialStepType
     {
         // An option whose Initialize never ran has nothing to verify against, and admitting a caller
         // on that basis would be the worst possible reading of a missing dependency.
-        if (_users is null || _credentials is null || _presented is null || _tenants is null || _authContextAccessor is null)
+        if (_users is null || _request is null || _presented is null || _tenants is null || _authContextAccessor is null)
             return GenericResult<StepOutcome>.Failure(NotInitialized(_logger));
 
         var username = _presented.Username;
@@ -131,7 +147,7 @@ public sealed class PasswordCredentialStepType
 
         var user = found.Value;
 
-        var verified = await _credentials
+        var verified = await _request.Credentials
             .Verify(user.Id, "Password", password, cancellationToken)
             .ConfigureAwait(false);
 

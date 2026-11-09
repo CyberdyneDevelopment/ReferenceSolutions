@@ -15,7 +15,7 @@ public sealed class SearchLineageEndpoint : SearchLineageEndpointBase
     public SearchLineageEndpoint(
         ILogger<SearchLineageEndpointBase> logger,
         IDataSetConfigurationProvider dataSets,
-        DataStoreConfigurationProvider dataStores,
+        IDataStoreConfigurationProvider dataStores,
         IPipelineConfigurationProvider pipelines,
         IDataSetVariationConfigurationProvider variations,
         ICategoryConfigurationProvider categories,

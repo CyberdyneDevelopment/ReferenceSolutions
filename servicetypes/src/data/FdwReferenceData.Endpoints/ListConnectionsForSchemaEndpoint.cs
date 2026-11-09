@@ -19,15 +19,15 @@ namespace FdwReferenceSchema.Endpoints;
 [ExcludeFromCodeCoverage]
 public class ListConnectionsForSchemaEndpoint : ListSchemaCapableConnectionsEndpointBase
 {
-    // Why: ConnectionConfigurationProvider replaces IOptionsMonitor<List<T>> — provides dual-source
+    // Why: IConnectionConfigurationProvider replaces IOptionsMonitor<List<T>> — provides dual-source
     // (ctrl + cfg) connection resolution through ImplementationConfigurationProviderBase pattern.
-    private readonly ConnectionConfigurationProvider _provider;
+    private readonly IConnectionConfigurationProvider _provider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ListConnectionsForSchemaEndpoint"/> class.
     /// </summary>
     public ListConnectionsForSchemaEndpoint(
-        ConnectionConfigurationProvider provider,
+        IConnectionConfigurationProvider provider,
         ILogger<ListConnectionsForSchemaEndpoint>? logger = null)
         : base(logger ?? NullLogger<ListConnectionsForSchemaEndpoint>.Instance)
     {

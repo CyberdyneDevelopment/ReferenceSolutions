@@ -15,7 +15,7 @@ public class RequirePasswordChangeEndpoint : RequirePasswordChangeEndpointBase
     /// Initializes a new instance of the <see cref="RequirePasswordChangeEndpoint"/> class.
     /// </summary>
     public RequirePasswordChangeEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IUserCredentialService credentialService,
         ILogger<RequirePasswordChangeEndpoint> logger)
         : base(userProvider, credentialService, logger)

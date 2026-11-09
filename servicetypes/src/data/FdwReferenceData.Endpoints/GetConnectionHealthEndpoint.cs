@@ -15,7 +15,7 @@ public class GetConnectionHealthEndpoint : GetConnectionHealthEndpointBase
 {
     /// <inheritdoc />
     public GetConnectionHealthEndpoint(
-        ConnectionConfigurationProvider configProvider,
+        IConnectionConfigurationProvider configProvider,
         IConnectionHealthService healthService,
         ILogger<GetConnectionHealthEndpoint> logger)
         : base(configProvider, healthService, logger)

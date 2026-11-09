@@ -16,7 +16,7 @@ public class GetDataSetEndpoint : GetDataSetEndpointBase
     /// <summary>
     /// Initializes a new instance of the <see cref="GetDataSetEndpoint"/> class.
     /// </summary>
-    public GetDataSetEndpoint(IDataSetResolver resolver, CategoryConfigurationProvider categories, ILogger<GetDataSetEndpoint> logger)
+    public GetDataSetEndpoint(IDataSetResolver resolver, ICategoryConfigurationProvider categories, ILogger<GetDataSetEndpoint> logger)
         : base(logger, resolver, categories)
     {
     }

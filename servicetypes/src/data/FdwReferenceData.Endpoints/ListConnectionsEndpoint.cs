@@ -14,7 +14,7 @@ namespace FdwReferenceConnections.Endpoints;
 public class ListConnectionsEndpoint : ListConnectionsEndpointBase
 {
     /// <inheritdoc />
-    public ListConnectionsEndpoint(ConnectionConfigurationProvider configProvider, IConnectionDisabledStates states, ILogger<ListConnectionsEndpoint> logger, ITagService? tags = null)
+    public ListConnectionsEndpoint(IConnectionConfigurationProvider configProvider, IConnectionDisabledStates states, ILogger<ListConnectionsEndpoint> logger, ITagService? tags = null)
         : base(logger, configProvider, states, tags) {
     }
 

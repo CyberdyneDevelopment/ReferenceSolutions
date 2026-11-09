@@ -22,6 +22,7 @@ public sealed class ScheduledPipelineJobActivationTests
         services.AddSingleton(new Mock<IGenericScheduledExecutionHandler>().Object);
         services.AddSingleton(new Mock<IAuthenticationContextAccessor>().Object);
         services.AddSingleton(new Mock<IScheduleConfigurationProvider>().Object);
+        services.AddSingleton(new Mock<IScheduleRunRecorder>().Object);
         services.AddTransient<ScheduledPipelineJob>();
         return services.BuildServiceProvider(validateScopes: true);
     }
@@ -67,9 +68,10 @@ public sealed class ScheduledPipelineJobActivationTests
         var handler = new Mock<IGenericScheduledExecutionHandler>().Object;
         var accessor = new Mock<IAuthenticationContextAccessor>().Object;
         var schedules = new Mock<IScheduleConfigurationProvider>().Object;
+        var recorder = new Mock<IScheduleRunRecorder>().Object;
 
         // Act
-        var build = () => new ScheduledPipelineJob(handler, null!, accessor, schedules);
+        var build = () => new ScheduledPipelineJob(handler, null!, accessor, schedules, recorder);
 
         // Assert
         Should.Throw<ArgumentNullException>(build);
@@ -84,9 +86,28 @@ public sealed class ScheduledPipelineJobActivationTests
         var handler = new Mock<IGenericScheduledExecutionHandler>().Object;
         var gateways = new Mock<IDataGatewayProvider>().Object;
         var accessor = new Mock<IAuthenticationContextAccessor>().Object;
+        var recorder = new Mock<IScheduleRunRecorder>().Object;
 
         // Act
-        var build = () => new ScheduledPipelineJob(handler, gateways, accessor, null!);
+        var build = () => new ScheduledPipelineJob(handler, gateways, accessor, null!, recorder);
+
+        // Assert
+        Should.Throw<ArgumentNullException>(build);
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "Api")]
+    public void JobRefusesANullRunRecorder()
+    {
+        // Arrange
+        var handler = new Mock<IGenericScheduledExecutionHandler>().Object;
+        var gateways = new Mock<IDataGatewayProvider>().Object;
+        var accessor = new Mock<IAuthenticationContextAccessor>().Object;
+        var schedules = new Mock<IScheduleConfigurationProvider>().Object;
+
+        // Act
+        var build = () => new ScheduledPipelineJob(handler, gateways, accessor, schedules, null!);
 
         // Assert
         Should.Throw<ArgumentNullException>(build);

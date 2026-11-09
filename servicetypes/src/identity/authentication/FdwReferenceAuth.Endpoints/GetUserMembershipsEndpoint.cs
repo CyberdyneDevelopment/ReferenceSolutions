@@ -44,7 +44,7 @@ namespace FdwReferenceAuth.Endpoints;
 [ExcludeFromCodeCoverage]
 public sealed class GetUserMembershipsEndpoint : Endpoint<UserScopedRequest, MembershipsResponse>
 {
-    private readonly UserConfigurationProvider _users;
+    private readonly IUserConfigurationProvider _users;
     private readonly IUserTenantsHeld _memberships;
     private readonly IUserRolesHeld _userRoles;
     private readonly IRoleConfigurationProvider _roles;
@@ -61,7 +61,7 @@ public sealed class GetUserMembershipsEndpoint : Endpoint<UserScopedRequest, Mem
     /// <param name="authContextAccessor">Elevated while the account's rows in every tenant are read.</param>
     /// <param name="logger">The logger.</param>
     public GetUserMembershipsEndpoint(
-        UserConfigurationProvider users,
+        IUserConfigurationProvider users,
         IUserTenantsHeld memberships,
         IUserRolesHeld userRoles,
         IRoleConfigurationProvider roles,

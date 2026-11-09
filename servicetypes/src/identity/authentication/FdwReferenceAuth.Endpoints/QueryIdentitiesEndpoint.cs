@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Identity;
+using Fdw.Services.Identity.Abstractions;
 using Fdw.Services.Identity.Endpoints;
 using Fdw.Web.RestEndpoints.Query;
 using Microsoft.Extensions.Logging;
@@ -33,7 +34,7 @@ public sealed class QueryIdentitiesEndpoint : QueryIdentitiesEndpointBase
     /// <summary>Initializes a new instance of the <see cref="QueryIdentitiesEndpoint"/> class.</summary>
     /// <param name="logger">The logger for this endpoint.</param>
     /// <param name="identities">Reads the page from the identities domain table.</param>
-    public QueryIdentitiesEndpoint(ILogger<QueryIdentitiesEndpoint> logger, IdentityServiceConfigurationProvider identities)
+    public QueryIdentitiesEndpoint(ILogger<QueryIdentitiesEndpoint> logger, IIdentityServiceConfigurationProvider identities)
         : base(logger ?? NullLogger<QueryIdentitiesEndpoint>.Instance, identities)
     {
     }

@@ -16,14 +16,14 @@ namespace FdwReferenceAuth.Endpoints;
 /// </summary>
 public class ChangePasswordEndpoint : ChangePasswordEndpointBase
 {
-    private readonly UserConfigurationProvider _userProvider;
+    private readonly IUserConfigurationProvider _userProvider;
     private readonly IUserCredentialService _credentialService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChangePasswordEndpoint"/> class.
     /// </summary>
     public ChangePasswordEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IUserCredentialService credentialService,
         ILogger<ChangePasswordEndpoint> logger)
         : base(logger)

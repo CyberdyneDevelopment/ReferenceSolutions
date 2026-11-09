@@ -19,7 +19,7 @@ public sealed class UpdateWorkspaceRelationshipEndpoint : UpdateWorkspaceRelatio
     /// <inheritdoc />
     public UpdateWorkspaceRelationshipEndpoint(
         ILogger<UpdateWorkspaceRelationshipEndpointBase> logger,
-        WorkspaceConfigurationProvider workspaces,
+        IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access,
         IDataSetConfigurationProvider dataSets)
         : base(logger, workspaces, access, dataSets)

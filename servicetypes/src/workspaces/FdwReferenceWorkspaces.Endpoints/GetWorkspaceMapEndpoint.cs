@@ -18,7 +18,7 @@ public sealed class GetWorkspaceMapEndpoint : GetWorkspaceMapEndpointBase
     /// <inheritdoc />
     public GetWorkspaceMapEndpoint(
         ILogger<GetWorkspaceMapEndpointBase> logger,
-        WorkspaceConfigurationProvider provider,
+        IWorkspaceConfigurationProvider provider,
         IWorkspaceAccessPolicy access,
         IDataSetVariationConfigurationProvider variations)
         : base(logger, provider, access, variations)

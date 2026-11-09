@@ -106,11 +106,50 @@ public sealed class ResolvePrincipalInvitationTests
         builder.Services.AddSingleton<IAuthenticationContextAccessor>(new AuthenticationContextAccessor());
         builder.Services.AddSingleton(bindings.Object);
         builder.Services.AddSingleton(Mock.Of<IExternalIdentityProvisionerBindingConfigurationProvider>());
-        builder.Services.AddSingleton(Mock.Of<IExternalIdentityProvisionerServiceProvider>());
         builder.Services.AddSingleton(Mock.Of<ITenantResolver>());
         var host = builder.Build();
         var step = new ResolvePrincipalStepType();
         step.Initialize(host, null);
-        return (step, bindings);
+
+        // The provisioner provider is scoped, so the runner hands it to the step for the execution (FDW-4640).
+        var bound = (ResolvePrincipalStepType)step.BindToRequest(
+            new ResolvePrincipalRequestServices(() => Mock.Of<IExternalIdentityProvisionerServiceProvider>()));
+        return (bound, bindings);
+    }
+
+    [Fact]
+    public void TwoLoginsInTwoScopesProvisionThroughTheirOwnProvider()
+    {
+        var services = new ServiceCollection();
+        services.AddScoped(_ => Mock.Of<IExternalIdentityProvisionerServiceProvider>());
+        services.AddScoped(sp => new ResolvePrincipalRequestServices(() => sp.GetRequiredService<IExternalIdentityProvisionerServiceProvider>()));
+        using var container = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
+        using var first = container.CreateScope();
+        using var second = container.CreateScope();
+        var step = new ResolvePrincipalStepType();
+
+        var forFirst = Held(step.BindToRequest(first.ServiceProvider.GetRequiredService<ResolvePrincipalRequestServices>()));
+        var forSecond = Held(step.BindToRequest(second.ServiceProvider.GetRequiredService<ResolvePrincipalRequestServices>()));
+
+        forFirst.ShouldBeSameAs(first.ServiceProvider.GetRequiredService<IExternalIdentityProvisionerServiceProvider>());
+        forSecond.ShouldBeSameAs(second.ServiceProvider.GetRequiredService<IExternalIdentityProvisionerServiceProvider>());
+        forFirst.ShouldNotBeSameAs(forSecond);
+        Held(step).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task AResolveStepNobodyBoundToARequestRefusesInsteadOfProvisioning()
+    {
+        var step = new ResolvePrincipalStepType();
+
+        var outcome = await step.Execute(Context(), configuration: null, Tenants(), TestContext.Current.CancellationToken);
+
+        outcome.IsFailure.ShouldBeTrue();
+    }
+
+    private static IExternalIdentityProvisionerServiceProvider? Held(IAuthenticationStep step)
+    {
+        var request = typeof(ResolvePrincipalStepType).GetField("_request", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(step);
+        return (request as ResolvePrincipalRequestServices)?.Provisioners;
     }
 }

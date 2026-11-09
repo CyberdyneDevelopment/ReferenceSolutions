@@ -29,7 +29,7 @@ namespace FdwReferenceAuth.Endpoints;
 [ExcludeFromCodeCoverage]
 public sealed class SetDefaultOrganizationEndpoint : Endpoint<SetDefaultOrganizationRequest, SetDefaultOrganizationResponse>
 {
-    private readonly UserTenantConfigurationProvider _userTenantProvider;
+    private readonly IUserTenantConfigurationProvider _userTenantProvider;
     private readonly IOrganizationProvider _organizations;
     private readonly ITenantProvider _tenants;
     private readonly IAdministrativeAudit _audit;
@@ -37,7 +37,7 @@ public sealed class SetDefaultOrganizationEndpoint : Endpoint<SetDefaultOrganiza
 
     /// <inheritdoc />
     public SetDefaultOrganizationEndpoint(
-        UserTenantConfigurationProvider userTenantProvider,
+        IUserTenantConfigurationProvider userTenantProvider,
         IOrganizationProvider organizations,
         ITenantProvider tenants,
         IAdministrativeAudit audit,

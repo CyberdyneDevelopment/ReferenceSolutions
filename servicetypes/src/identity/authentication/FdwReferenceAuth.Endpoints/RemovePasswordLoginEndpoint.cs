@@ -14,7 +14,7 @@ public class RemovePasswordLoginEndpoint : RemovePasswordLoginEndpointBase
 {
     /// <inheritdoc />
     public RemovePasswordLoginEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IUserCredentialService credentialService,
         ILogger<RemovePasswordLoginEndpoint> logger)
         : base(logger, userProvider, credentialService)

@@ -32,7 +32,7 @@ public class QueryUsersEndpoint : QueryUsersEndpointBase
     ];
 
     /// <inheritdoc />
-    public QueryUsersEndpoint(UserConfigurationProvider userProvider, ILogger<QueryUsersEndpoint> logger)
+    public QueryUsersEndpoint(IUserConfigurationProvider userProvider, ILogger<QueryUsersEndpoint> logger)
         : base(logger ?? NullLogger<QueryUsersEndpoint>.Instance, userProvider)
     {
     }

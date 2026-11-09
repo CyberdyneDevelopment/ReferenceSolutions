@@ -178,6 +178,10 @@ public sealed class SqliteConnectionType
     public IReadOnlyList<string> SupportedWriteModes => ["Append", "TruncateInsert"];
 
     /// <inheritdoc/>
+    protected override ConnectionAuthentication<SqliteConnectionConfiguration> EndpointAuthenticationDeclaration
+        => ConnectionAuthentication<SqliteConnectionConfiguration>.Of(nameof(SqliteConnectionConfiguration.AdditionalProperties), configuration => SqliteAuthenticationTypes.ByName(configuration.AuthenticationType));
+
+    /// <inheritdoc/>
     /// <remarks>
     /// Asked of the authentication method the connection names, which states its own answer
     /// (<c>ConnectionAuthenticationTypeBase.UsesHostIdentity</c>). A method this kind does not know cannot be

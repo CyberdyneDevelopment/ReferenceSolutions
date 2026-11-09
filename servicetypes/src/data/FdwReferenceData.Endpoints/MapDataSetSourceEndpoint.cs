@@ -1,3 +1,4 @@
+using Fdw.Data.DataSets.Abstractions;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -20,14 +21,14 @@ namespace FdwReferenceDataSets.Endpoints;
 [ExcludeFromCodeCoverage]
 public class MapDataSetSourceEndpoint : Endpoint<MapDataSetSourceRequest, DataSetSourceMappingResultDto>
 {
-    private readonly DataSetConfigurationProvider _dataSetProvider;
+    private readonly IDataSetConfigurationProvider _dataSetProvider;
     private readonly ILogger<MapDataSetSourceEndpoint> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MapDataSetSourceEndpoint"/> class.
     /// </summary>
     public MapDataSetSourceEndpoint(
-        DataSetConfigurationProvider dataSetProvider,
+        IDataSetConfigurationProvider dataSetProvider,
         ILogger<MapDataSetSourceEndpoint> logger)
     {
         _dataSetProvider = dataSetProvider;

@@ -84,8 +84,6 @@ public sealed class PostgreSqlConnectionType
         // and the values its authentication type requires are checked by CheckConfiguration.
         EndpointAlias("server", nameof(PostgreSqlConnectionConfiguration.Host));
         EndpointAlias("authentication", nameof(PostgreSqlConnectionConfiguration.AdditionalProperties));
-        EndpointMask(nameof(PostgreSqlConnectionConfiguration.AdditionalProperties), (configuration, entries) =>
-            PostgreSqlAuthenticationTypes.ByName(configuration.AuthenticationType).MaskSecrets(entries, ConnectionSecretMask.Value));
         EndpointValidation(new PostgreSqlConnectionConfigurationValidator());
         EndpointValidation(CheckConfiguration);
 
@@ -348,6 +346,10 @@ public sealed class PostgreSqlConnectionType
             ? GenericResult.Success()
             : GenericResult.Failure(ConnectionEndpointBehaviorLog.ConfigurationRejected(logger, "PostgreSql", string.Join("; ", problems)));
     }
+
+    /// <inheritdoc/>
+    protected override ConnectionAuthentication<PostgreSqlConnectionConfiguration> EndpointAuthenticationDeclaration
+        => ConnectionAuthentication<PostgreSqlConnectionConfiguration>.Of(nameof(PostgreSqlConnectionConfiguration.AdditionalProperties), configuration => PostgreSqlAuthenticationTypes.ByName(configuration.AuthenticationType));
 
     /// <inheritdoc/>
     /// <remarks>

@@ -47,7 +47,8 @@ namespace FdwReferenceAuthentication.ForeignToken.Registration;
 [Implementation(typeof(AuthenticationStepTypes), "ForeignToken")]
 public sealed class ForeignTokenStepType
     : AuthenticationStepTypeBase<IGenericService, IServiceFactory<IGenericService, IServiceConfiguration>>,
-      IAuthenticationStep
+      IAuthenticationStep,
+      IAuthorityAssertingAuthenticationStep
 {
     // Captured when the host is built: an option is created by its module initializer, which needs
     // a parameterless constructor, so what it needs arrives where a live container exists.
@@ -55,10 +56,6 @@ public sealed class ForeignTokenStepType
     private ISigningKeyProvider? _keys;
     private IForeignTokenAccessor? _presented;
     private ILogger _logger = NullLogger<ForeignTokenStepType>.Instance;
-
-    // Set from the authority when the step runs. The runner reads AuthenticationMethods only after
-    // Execute has returned, so this is populated by the time anything consults it.
-    private IReadOnlyList<string> _asserted = [];
 
     /// <summary>Initializes a new instance of the <see cref="ForeignTokenStepType"/> class.</summary>
     public ForeignTokenStepType()
@@ -89,7 +86,7 @@ public sealed class ForeignTokenStepType
 
             // What the step reads its authority through. Not a provider -- it states what a usable
             // authority row is, and that judgement is this package's business.
-            builder.Services.TryAddScoped<ForeignAuthorityReader>();
+            builder.Services.TryAddSingleton<ForeignAuthorityReader>(); // stateless over a singleton provider; a step captures it at Initialize (FDW-4640)
 
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
@@ -114,12 +111,28 @@ public sealed class ForeignTokenStepType
 
     /// <inheritdoc />
     /// <remarks>
-    /// What the authority read during <see cref="Execute"/> permits, which is why this is read from
-    /// a field rather than a provider: the runner consults it after the step has run, to keep only
-    /// what the step both observed and was permitted to assert. Before the step runs it is empty,
-    /// and a step declaring nothing proves nothing - so the failure direction is closed.
+    /// Fixed methods: none. The methods this step may assert are the ones the authority row it reads permits, which differ per execution, and the step is one instance for the process:
+    /// they travel with the contribution (<see cref="ContextContribution.AssertableMethods"/>) and the step keeps no per-login state in a field (FDW-4697). A step declaring nothing
+    /// proves nothing, so a contribution that states no methods records none.
     /// </remarks>
-    public IReadOnlyList<string> AuthenticationMethods => _asserted;
+    public IReadOnlyList<string> AuthenticationMethods => [];
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Reads the authority when asked and keeps nothing (FDW-4697): sign-in admission and flow administration decide from this before any login has run. An authority that
+    /// cannot be read is a failure carrying the reader's own coded message (which authority, why); empty means the authority was read and permits nothing.
+    /// </remarks>
+    public async Task<IGenericResult<IReadOnlyList<string>>> ProvableMethods(CancellationToken cancellationToken = default)
+    {
+        if (_authorities is not { } authorities)
+            return GenericResult<IReadOnlyList<string>>.Failure(ForeignTokenLog.NotInitialized(_logger, Name));
+
+        var authority = await authorities.Get(cancellationToken).ConfigureAwait(false);
+        if (!authority.IsSuccess || authority.Value is not { } configuration)
+            return authority.ToNewResult<IReadOnlyList<string>>();
+
+        return GenericResult<IReadOnlyList<string>>.Success(configuration.AssertableMethods);
+    }
 
     /// <inheritdoc />
     public async Task<IGenericResult<StepOutcome>> Execute(
@@ -137,7 +150,6 @@ public sealed class ForeignTokenStepType
             return authority.ToNewResult<StepOutcome>();
 
         var configuration = authority.Value;
-        _asserted = configuration.AssertableMethods;
 
         var token = _presented.Token;
         if (string.IsNullOrWhiteSpace(token))
@@ -179,6 +191,7 @@ public sealed class ForeignTokenStepType
 
         return GenericResult<StepOutcome>.Success(new StepOutcome.Contributed(new ContextContribution
         {
+            AssertableMethods = configuration.AssertableMethods,
             ObservedMethods = [.. validated.ClaimsIdentity.FindAll("amr").Select(c => c.Value)],
 
             Subject = new Subject

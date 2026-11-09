@@ -20,9 +20,9 @@ public sealed class CreateWorkspaceNoteEndpoint : CreateWorkspaceNoteEndpointBas
     /// <inheritdoc />
     public CreateWorkspaceNoteEndpoint(
         ILogger<CreateWorkspaceNoteEndpointBase> logger,
-        WorkspaceConfigurationProvider workspaces,
-        NoteConfigurationProvider notes,
-        UserConfigurationProvider users,
+        IWorkspaceConfigurationProvider workspaces,
+        INoteConfigurationProvider notes,
+        IUserConfigurationProvider users,
         IAuthenticationContextAccessor authContext,
         IDataSetConfigurationProvider dataSets,
         IWorkspaceAccessPolicy access)

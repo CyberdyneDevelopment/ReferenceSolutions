@@ -1,3 +1,4 @@
+using Fdw.Data.DataSets.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Endpoints;
@@ -14,7 +15,7 @@ public class SetDataSetFieldsFilterableEndpoint : SetDataSetFieldsFilterableEndp
     /// <summary>
     /// Initializes a new instance of the <see cref="SetDataSetFieldsFilterableEndpoint"/> class.
     /// </summary>
-    public SetDataSetFieldsFilterableEndpoint(DataSetConfigurationProvider dataSetProvider, ILogger<SetDataSetFieldsFilterableEndpoint> logger)
+    public SetDataSetFieldsFilterableEndpoint(IDataSetConfigurationProvider dataSetProvider, ILogger<SetDataSetFieldsFilterableEndpoint> logger)
         : base(logger, dataSetProvider)
     {
     }

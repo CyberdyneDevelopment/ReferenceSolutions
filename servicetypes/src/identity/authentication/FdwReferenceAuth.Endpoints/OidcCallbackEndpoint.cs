@@ -40,7 +40,7 @@ namespace FdwReferenceAuth.Endpoints;
 [ExcludeFromCodeCoverage]
 public sealed class OidcCallbackEndpoint : EndpointWithoutRequest<PasswordLoginResponse>
 {
-    private readonly AuthenticationRunner _runner;
+    private readonly IAuthenticationRunner _runner;
     private readonly IAuthenticationFlowProvider _flows;
     private readonly IAuthorizationCodeStore _codes;
     private readonly ILogger<OidcCallbackEndpoint> _logger;
@@ -51,7 +51,7 @@ public sealed class OidcCallbackEndpoint : EndpointWithoutRequest<PasswordLoginR
     /// <param name="codes">Holds the issued token behind a one-time code.</param>
     /// <param name="logger">The logger.</param>
     public OidcCallbackEndpoint(
-        AuthenticationRunner runner,
+        IAuthenticationRunner runner,
         IAuthenticationFlowProvider flows,
         IAuthorizationCodeStore codes,
         ILogger<OidcCallbackEndpoint>? logger = null)

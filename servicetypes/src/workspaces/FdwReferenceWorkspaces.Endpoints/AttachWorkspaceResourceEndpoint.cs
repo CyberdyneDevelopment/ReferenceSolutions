@@ -20,7 +20,7 @@ public sealed class AttachWorkspaceResourceEndpoint : AttachWorkspaceResourceEnd
     /// <inheritdoc />
     public AttachWorkspaceResourceEndpoint(
         ILogger<AttachWorkspaceResourceEndpointBase> logger,
-        WorkspaceConfigurationProvider workspaces,
+        IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access,
         IDataSetConfigurationProvider dataSets,
         IDataSetVariationConfigurationProvider variations,

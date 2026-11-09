@@ -13,7 +13,7 @@ public class DeleteDataSetEndpoint : DeleteDataSetEndpointBase
 {
     /// <inheritdoc />
     public DeleteDataSetEndpoint(
-        DataSetConfigurationProvider dataSetProvider,
+        IDataSetConfigurationProvider dataSetProvider,
         IDataSetVariationConfigurationProvider variations,
         ILogger<DeleteDataSetEndpoint> logger)
         : base(logger, dataSetProvider, variations) {

@@ -22,13 +22,13 @@ namespace FdwReferenceAuth.Endpoints;
 [ExcludeFromCodeCoverage]
 public sealed class ClearDefaultOrganizationEndpoint : EndpointWithoutRequest
 {
-    private readonly UserTenantConfigurationProvider _userTenantProvider;
+    private readonly IUserTenantConfigurationProvider _userTenantProvider;
     private readonly IAdministrativeAudit _audit;
     private readonly ILogger<ClearDefaultOrganizationEndpoint> _logger;
 
     /// <inheritdoc />
     public ClearDefaultOrganizationEndpoint(
-        UserTenantConfigurationProvider userTenantProvider,
+        IUserTenantConfigurationProvider userTenantProvider,
         IAdministrativeAudit audit,
         ILogger<ClearDefaultOrganizationEndpoint>? logger)
     {

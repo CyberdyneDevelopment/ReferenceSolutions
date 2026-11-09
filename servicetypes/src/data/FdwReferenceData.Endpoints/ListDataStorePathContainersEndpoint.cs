@@ -12,7 +12,7 @@ namespace FdwReferenceDataStores.Endpoints;
 public class ListDataStorePathContainersEndpoint : ListDataStorePathContainersEndpointBase
 {
     /// <summary>Initializes a new instance of the <see cref="ListDataStorePathContainersEndpoint"/> class.</summary>
-    public ListDataStorePathContainersEndpoint(DataStoreConfigurationProvider dataStoreProvider, ILogger<ListDataStorePathContainersEndpoint> logger)
+    public ListDataStorePathContainersEndpoint(IDataStoreConfigurationProvider dataStoreProvider, ILogger<ListDataStorePathContainersEndpoint> logger)
         : base(logger, dataStoreProvider)
     {
     }

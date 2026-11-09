@@ -14,7 +14,7 @@ public class SetPasswordLoginEndpoint : SetPasswordLoginEndpointBase
 {
     /// <inheritdoc />
     public SetPasswordLoginEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IUserCredentialService credentialService,
         ILogger<SetPasswordLoginEndpoint> logger)
         : base(logger, userProvider, credentialService)

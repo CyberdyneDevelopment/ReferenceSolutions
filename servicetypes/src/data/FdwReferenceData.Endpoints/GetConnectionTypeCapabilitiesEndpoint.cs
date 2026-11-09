@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Connections;
 using Fdw.Services.Connections.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -18,7 +19,7 @@ public class GetConnectionTypeCapabilitiesEndpoint : GetConnectionTypeCapabiliti
 
     /// <inheritdoc />
     public GetConnectionTypeCapabilitiesEndpoint(
-        ConnectionConfigurationProvider configProvider,
+        IConnectionConfigurationProvider configProvider,
         ILogger<GetConnectionTypeCapabilitiesEndpointBase> logger)
         : base(configProvider, logger)
     {

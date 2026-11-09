@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using Fdw.Services.Pipelines;
 using Microsoft.Extensions.Logging;
 using Fdw.Operations.Endpoints;
+using Fdw.Services.Pipelines.Abstractions;
 
 namespace FdwReferenceData.Endpoints;
 
@@ -14,7 +14,7 @@ public sealed class GetDataflowSourcesEndpoint : GetDataflowSourcesEndpointBase
     /// <inheritdoc />
     public GetDataflowSourcesEndpoint(
         Fdw.Operations.Endpoints.DataflowGraphConfigurationProvider provider,
-        PipelineServiceConfigurationProvider pipelineProvider,
+        IPipelineConfigurationProvider pipelineProvider,
         ILogger<Fdw.Operations.Endpoints.GetDataflowSourcesEndpointBase> logger)
         : base(provider, pipelineProvider, logger)
     {

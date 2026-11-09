@@ -13,7 +13,7 @@ public class DeleteThemeEndpoint : DeleteThemeEndpointBase
     /// <summary>
     /// Initializes a new instance of the <see cref="DeleteThemeEndpoint"/> class.
     /// </summary>
-    public DeleteThemeEndpoint(ThemeConfigurationProvider provider)
+    public DeleteThemeEndpoint(IThemeConfigurationProvider provider)
         : base(provider)
     {
     }

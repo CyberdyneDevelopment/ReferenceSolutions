@@ -18,7 +18,7 @@ public sealed class ListDataSetWorkspacesEndpoint : ListDataSetWorkspacesEndpoin
     /// <inheritdoc />
     public ListDataSetWorkspacesEndpoint(
         ILogger<ListDataSetWorkspacesEndpointBase> logger,
-        WorkspaceConfigurationProvider workspaces,
+        IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access,
         IDataSetConfigurationProvider dataSets,
         IDataSetVariationConfigurationProvider variations)

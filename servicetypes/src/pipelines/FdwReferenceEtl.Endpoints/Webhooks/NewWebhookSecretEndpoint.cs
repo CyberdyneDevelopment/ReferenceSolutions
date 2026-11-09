@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Authorization.Abstractions;
-using Fdw.Services.Pipelines;
 using Fdw.Services.Pipelines.Endpoints;
 using Fdw.Services.Pipelines.Webhooks;
 using Microsoft.Extensions.Logging;
+using Fdw.Services.Pipelines.Abstractions;
 
 namespace FdwReferencePipelines.Endpoints;
 
@@ -15,7 +15,7 @@ namespace FdwReferencePipelines.Endpoints;
 public class NewWebhookSecretEndpoint : NewWebhookSecretEndpointBase
 {
     /// <inheritdoc />
-    public NewWebhookSecretEndpoint(WebhookTriggerConfigurationProvider provider, PipelineServiceConfigurationProvider pipelines, IRoleGrants grants, ILogger<NewWebhookSecretEndpoint> logger)
+    public NewWebhookSecretEndpoint(WebhookTriggerConfigurationProvider provider, IPipelineConfigurationProvider pipelines, IRoleGrants grants, ILogger<NewWebhookSecretEndpoint> logger)
         : base(logger, provider, pipelines, grants)
     {
     }

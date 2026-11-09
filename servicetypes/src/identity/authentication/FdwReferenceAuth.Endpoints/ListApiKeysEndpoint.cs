@@ -14,7 +14,7 @@ public class ListApiKeysEndpoint : ListApiKeysEndpointBase
 {
     /// <inheritdoc />
     public ListApiKeysEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IPersonalAccessTokenService tokenService,
         IAgentKeyService agentKeyService,
         ILogger<ListApiKeysEndpoint> logger)

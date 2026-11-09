@@ -24,12 +24,12 @@ internal sealed class SwitchFlowRunner
     // the session-delivered twin, so no bearer token is ever handed to the browser app.
     private const string SessionFlowName = "TenantSwitchSession";
 
-    private readonly AuthenticationRunner _runner;
+    private readonly IAuthenticationRunner _runner;
     private readonly IAuthenticationFlowProvider _flows;
     private readonly ISessionCookieDelivery _sessions;
     private readonly ILogger _logger;
 
-    internal SwitchFlowRunner(AuthenticationRunner runner, IAuthenticationFlowProvider flows, ISessionCookieDelivery sessions, ILogger logger)
+    internal SwitchFlowRunner(IAuthenticationRunner runner, IAuthenticationFlowProvider flows, ISessionCookieDelivery sessions, ILogger logger)
     {
         _runner = runner ?? throw new ArgumentNullException(nameof(runner));
         _flows = flows ?? throw new ArgumentNullException(nameof(flows));

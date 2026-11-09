@@ -1,3 +1,4 @@
+using Fdw.Data.DataSets.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -20,14 +21,14 @@ public sealed class ComputeStatSetEndpoint : Endpoint<StatSetRequest, StatSetRes
     // Why: clients may supply a DataSetName instead of ContainerName. The DataSet provider
     // already assembles the Sources hierarchy on Get(name), so we look up the dataset and
     // promote its first source's container info into the request before the service runs.
-    private readonly DataSetConfigurationProvider _dataSetProvider;
+    private readonly IDataSetConfigurationProvider _dataSetProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ComputeStatSetEndpoint"/> class.
     /// </summary>
     public ComputeStatSetEndpoint(
         IStatSetService statSet,
-        DataSetConfigurationProvider dataSetProvider)
+        IDataSetConfigurationProvider dataSetProvider)
     {
         _statSet = statSet;
         _dataSetProvider = dataSetProvider;

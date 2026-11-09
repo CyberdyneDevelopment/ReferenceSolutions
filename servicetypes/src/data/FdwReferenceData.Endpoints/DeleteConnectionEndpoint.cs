@@ -20,7 +20,7 @@ public class DeleteConnectionEndpoint : DeleteConnectionEndpointBase
 {
     /// <inheritdoc />
     public DeleteConnectionEndpoint(
-        ConnectionConfigurationProvider connectionProvider,
+        IConnectionConfigurationProvider connectionProvider,
         IConnectionProvider connectionLookupProvider,
         ILogger<DeleteConnectionEndpoint> logger)
         : base(connectionProvider, connectionLookupProvider, logger)

@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using Fdw.Services.Pipelines;
 using Fdw.Services.Pipelines.Endpoints;
 using Microsoft.Extensions.Logging;
+using Fdw.Services.Pipelines.Abstractions;
 
 namespace FdwReferencePipelines.Endpoints;
 
@@ -13,7 +13,7 @@ namespace FdwReferencePipelines.Endpoints;
 public class GetGraphEndpoint : GetGraphEndpointBase
 {
     /// <inheritdoc />
-    public GetGraphEndpoint(PipelineServiceConfigurationProvider provider, ILogger<GetGraphEndpoint> logger)
+    public GetGraphEndpoint(IPipelineConfigurationProvider provider, ILogger<GetGraphEndpoint> logger)
         : base(logger, provider)
     {
     }

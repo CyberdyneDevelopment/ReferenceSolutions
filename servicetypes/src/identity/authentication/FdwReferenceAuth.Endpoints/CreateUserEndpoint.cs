@@ -23,10 +23,10 @@ public class CreateUserEndpoint : CreateUserEndpointBase<CreateUserRequest>
 
     /// <inheritdoc />
     public CreateUserEndpoint(
-        UserConfigurationProvider userProvider,
-        UserTenantConfigurationProvider tenantProvider,
-        UserRoleConfigurationProvider userRoleProvider,
-        RoleConfigurationProvider roleProvider,
+        IUserConfigurationProvider userProvider,
+        IUserTenantConfigurationProvider tenantProvider,
+        IUserRoleConfigurationProvider userRoleProvider,
+        IRoleConfigurationProvider roleProvider,
         IUserCredentialService credentialService,
         IPersonalAccessTokenService tokenService,
         IAgentKeyService agentKeyService,

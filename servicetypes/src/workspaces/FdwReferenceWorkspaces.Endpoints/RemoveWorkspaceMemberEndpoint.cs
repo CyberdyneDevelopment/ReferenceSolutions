@@ -17,7 +17,7 @@ public sealed class RemoveWorkspaceMemberEndpoint : RemoveWorkspaceMemberEndpoin
 {
     /// <inheritdoc />
     public RemoveWorkspaceMemberEndpoint(
-        WorkspaceConfigurationProvider workspaces,
+        IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access,
         ILogger<RemoveWorkspaceMemberEndpointBase>? logger = null)
         : base(workspaces, access, logger)

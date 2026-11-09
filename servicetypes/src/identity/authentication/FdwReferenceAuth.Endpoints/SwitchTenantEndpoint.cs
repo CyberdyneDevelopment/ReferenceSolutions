@@ -37,7 +37,7 @@ public sealed class SwitchTenantEndpoint : SwitchTenantEndpointBase
     /// <summary>Initializes a new instance of the <see cref="SwitchTenantEndpoint"/> class.</summary>
     public SwitchTenantEndpoint(
         ITenantProvider tenantProvider,
-        AuthenticationRunner runner,
+        IAuthenticationRunner runner,
         IAuthenticationFlowProvider flows,
         ISessionCookieDelivery sessions,
         ILogger<SwitchTenantEndpoint> logger)

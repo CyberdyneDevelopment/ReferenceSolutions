@@ -27,8 +27,8 @@ public class CreateDataStoreEndpoint : CreateDataStoreEndpointBase<IDataStoreImp
     /// Initializes a new instance of the <see cref="CreateDataStoreEndpoint"/> class.
     /// </summary>
     public CreateDataStoreEndpoint(
-        DataStoreConfigurationProvider dataStoreProvider,
-        ConnectionConfigurationProvider connectionProvider,
+        IDataStoreConfigurationProvider dataStoreProvider,
+        IConnectionConfigurationProvider connectionProvider,
         ISchemaInformationService schema,
         ILogger<CreateDataStoreEndpoint> logger)
         : base(logger, dataStoreProvider, connectionProvider, schema) {

@@ -18,7 +18,7 @@ public sealed class GetWorkspaceReadinessEndpoint : GetWorkspaceReadinessEndpoin
     /// <inheritdoc />
     public GetWorkspaceReadinessEndpoint(
         ILogger<GetWorkspaceReadinessEndpointBase> logger,
-        WorkspaceConfigurationProvider workspaces,
+        IWorkspaceConfigurationProvider workspaces,
         IDataSetConfigurationProvider dataSets,
         IWorkspaceAccessPolicy access)
         : base(logger, workspaces, dataSets, access)

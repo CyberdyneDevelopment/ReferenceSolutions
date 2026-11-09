@@ -17,7 +17,7 @@ public sealed class UpdateWorkspaceEndpoint : UpdateWorkspaceEndpointBase
     /// <inheritdoc />
     public UpdateWorkspaceEndpoint(
         ILogger<UpdateWorkspaceEndpointBase> logger,
-        WorkspaceConfigurationProvider provider,
+        IWorkspaceConfigurationProvider provider,
         IWorkspaceAccessPolicy access)
         : base(logger, provider, access)
     {

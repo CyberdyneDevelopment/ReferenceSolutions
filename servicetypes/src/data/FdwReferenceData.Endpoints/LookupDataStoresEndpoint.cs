@@ -14,7 +14,7 @@ public class LookupDataStoresEndpoint : LookupDataStoresEndpointBase
 {
     /// <summary>Initializes a new instance of the <see cref="LookupDataStoresEndpoint"/> class.</summary>
     public LookupDataStoresEndpoint(
-        DataStoreConfigurationProvider dataStoreProvider,
+        IDataStoreConfigurationProvider dataStoreProvider,
         IConfigurationGatewayProvider configurationGateways,
         ILogger<LookupDataStoresEndpoint> logger)
         : base(logger, dataStoreProvider, configurationGateways)

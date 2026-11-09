@@ -18,7 +18,7 @@ public sealed class ApproveWorkspaceMembershipRequestEndpoint : ApproveWorkspace
 {
     /// <inheritdoc />
     public ApproveWorkspaceMembershipRequestEndpoint(
-        WorkspaceConfigurationProvider workspaces,
+        IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access,
         IAuthenticationContextAccessor authContext,
         ILogger<ApproveWorkspaceMembershipRequestEndpointBase>? logger = null)

@@ -30,13 +30,13 @@ namespace FdwReferenceAuth.Endpoints;
 [ExcludeFromCodeCoverage]
 public sealed class TokenExchangeEndpoint : Endpoint<TokenExchangeRequest, PasswordLoginResponse>
 {
-    private readonly AuthenticationRunner _runner;
+    private readonly IAuthenticationRunner _runner;
     private readonly IAuthenticationFlowProvider _flows;
 
     /// <summary>Initializes a new instance of the <see cref="TokenExchangeEndpoint"/> class.</summary>
     /// <param name="runner">Runs the flow.</param>
     /// <param name="flows">Supplies the flow to run.</param>
-    public TokenExchangeEndpoint(AuthenticationRunner runner, IAuthenticationFlowProvider flows)
+    public TokenExchangeEndpoint(IAuthenticationRunner runner, IAuthenticationFlowProvider flows)
     {
         _runner = runner ?? throw new ArgumentNullException(nameof(runner));
         _flows = flows ?? throw new ArgumentNullException(nameof(flows));

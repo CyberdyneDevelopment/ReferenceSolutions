@@ -14,7 +14,7 @@ public class SetDataStoreFieldDatumTypesEndpoint : SetDataStoreFieldDatumTypesEn
     /// <summary>
     /// Initializes a new instance of the <see cref="SetDataStoreFieldDatumTypesEndpoint"/> class.
     /// </summary>
-    public SetDataStoreFieldDatumTypesEndpoint(DataStoreConfigurationProvider dataStoreProvider, ILogger<SetDataStoreFieldDatumTypesEndpoint> logger)
+    public SetDataStoreFieldDatumTypesEndpoint(IDataStoreConfigurationProvider dataStoreProvider, ILogger<SetDataStoreFieldDatumTypesEndpoint> logger)
         : base(logger, dataStoreProvider)
     {
     }

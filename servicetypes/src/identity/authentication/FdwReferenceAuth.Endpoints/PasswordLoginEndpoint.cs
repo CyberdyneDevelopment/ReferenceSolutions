@@ -35,10 +35,10 @@ namespace FdwReferenceAuth.Endpoints;
 [ExcludeFromCodeCoverage]
 public sealed class PasswordLoginEndpoint : Endpoint<PasswordLoginRequest, PasswordLoginResponse>
 {
-    private readonly AuthenticationRunner _runner;
+    private readonly IAuthenticationRunner _runner;
     private readonly IAuthenticationFlowProvider _flows;
     private readonly ISessionCookieDelivery _sessions;
-    private readonly PresentedPasswordCredentialAccessor _presented;
+    private readonly IPresentedPasswordCredentialAccessor _presented;
 
     /// <summary>Initializes a new instance of the <see cref="PasswordLoginEndpoint"/> class.</summary>
     /// <param name="runner">Runs the flow.</param>
@@ -46,10 +46,10 @@ public sealed class PasswordLoginEndpoint : Endpoint<PasswordLoginRequest, Passw
     /// <param name="sessions">Sets the session cookie when the flow delivers a session (FDW-903).</param>
     /// <param name="presented">Presents the request's credential to the flow's credential step.</param>
     public PasswordLoginEndpoint(
-        AuthenticationRunner runner,
+        IAuthenticationRunner runner,
         IAuthenticationFlowProvider flows,
         ISessionCookieDelivery sessions,
-        PresentedPasswordCredentialAccessor presented)
+        IPresentedPasswordCredentialAccessor presented)
     {
         _runner = runner ?? throw new ArgumentNullException(nameof(runner));
         _flows = flows ?? throw new ArgumentNullException(nameof(flows));

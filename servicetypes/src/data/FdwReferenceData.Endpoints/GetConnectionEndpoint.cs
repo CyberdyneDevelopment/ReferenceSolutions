@@ -15,7 +15,7 @@ namespace FdwReferenceConnections.Endpoints;
 public class GetConnectionEndpoint : GetConnectionEndpointBase
 {
     /// <inheritdoc />
-    public GetConnectionEndpoint(ConnectionConfigurationProvider configProvider, IConnectionDisabledStates states, ILogger<GetConnectionEndpoint> logger)
+    public GetConnectionEndpoint(IConnectionConfigurationProvider configProvider, IConnectionDisabledStates states, ILogger<GetConnectionEndpoint> logger)
         : base(logger, configProvider, states)
     {
     }

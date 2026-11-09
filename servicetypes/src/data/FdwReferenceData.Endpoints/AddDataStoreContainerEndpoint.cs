@@ -18,7 +18,7 @@ public class AddDataStoreContainerEndpoint : AddDataStoreContainerEndpointBase
     /// <summary>
     /// Initializes a new instance of the <see cref="AddDataStoreContainerEndpoint"/> class.
     /// </summary>
-    public AddDataStoreContainerEndpoint(DataStoreConfigurationProvider dataStoreProvider, ILogger<AddDataStoreContainerEndpoint> logger)
+    public AddDataStoreContainerEndpoint(IDataStoreConfigurationProvider dataStoreProvider, ILogger<AddDataStoreContainerEndpoint> logger)
         : base(logger, dataStoreProvider) {
         _logger = logger ?? NullLogger<AddDataStoreContainerEndpoint>.Instance;
     }

@@ -16,7 +16,7 @@ public sealed class GetLineageGroupsEndpoint : GetLineageGroupsEndpointBase
     public GetLineageGroupsEndpoint(
         ILogger<GetLineageGroupsEndpointBase> logger,
         IDataSetConfigurationProvider dataSets,
-        DataStoreConfigurationProvider dataStores,
+        IDataStoreConfigurationProvider dataStores,
         IPipelineConfigurationProvider pipelines,
         IDataSetVariationConfigurationProvider variations,
         ICategoryConfigurationProvider categories,

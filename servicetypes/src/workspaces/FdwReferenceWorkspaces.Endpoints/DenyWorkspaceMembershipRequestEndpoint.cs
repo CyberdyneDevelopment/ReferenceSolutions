@@ -18,7 +18,7 @@ public sealed class DenyWorkspaceMembershipRequestEndpoint : DenyWorkspaceMember
 {
     /// <inheritdoc />
     public DenyWorkspaceMembershipRequestEndpoint(
-        WorkspaceConfigurationProvider workspaces,
+        IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access,
         IAuthenticationContextAccessor authContext,
         ILogger<DenyWorkspaceMembershipRequestEndpointBase>? logger = null)

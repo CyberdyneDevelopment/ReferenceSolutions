@@ -13,7 +13,7 @@ namespace FdwReferenceAuth.Endpoints;
 public class GetUserRolesEndpoint : GetUserRolesEndpointBase
 {
     /// <inheritdoc />
-    public GetUserRolesEndpoint(IRoleConfigurationProvider roleProvider, UserRoleConfigurationProvider userRoleProvider, UserConfigurationProvider userProvider, ILogger<GetUserRolesEndpoint> logger)
+    public GetUserRolesEndpoint(IRoleConfigurationProvider roleProvider, IUserRoleConfigurationProvider userRoleProvider, IUserConfigurationProvider userProvider, ILogger<GetUserRolesEndpoint> logger)
         : base(logger, roleProvider, userRoleProvider, userProvider) {
     }
 

@@ -19,9 +19,9 @@ public sealed class ListWorkspaceNotesEndpoint : ListWorkspaceNotesEndpointBase
     /// <inheritdoc />
     public ListWorkspaceNotesEndpoint(
         ILogger<ListWorkspaceNotesEndpointBase> logger,
-        WorkspaceConfigurationProvider workspaces,
-        NoteConfigurationProvider notes,
-        UserConfigurationProvider users,
+        IWorkspaceConfigurationProvider workspaces,
+        INoteConfigurationProvider notes,
+        IUserConfigurationProvider users,
         IDataSetConfigurationProvider dataSets,
         IWorkspaceAccessPolicy access)
         : base(logger, workspaces, notes, users, dataSets, access)

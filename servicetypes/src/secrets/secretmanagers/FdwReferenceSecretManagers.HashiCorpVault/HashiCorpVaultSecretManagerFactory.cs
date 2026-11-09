@@ -32,28 +32,32 @@ namespace FdwReferenceSecretManagers.HashiCorpVault;
 /// re-enter a lambda whose cache entry is not published yet, which hangs the host silently rather
 /// than throwing (FDW-615).
 /// </para>
+/// <para>
+/// The factory is a singleton, so it takes <see cref="IHttpClientFactory"/> and creates the client for each manager it builds: a <see cref="HttpClient"/> is registered transient,
+/// and a singleton that held one would keep a single instance, and its handler, for the life of the process (FDW-4640).
+/// </para>
 /// </remarks>
 public sealed class HashiCorpVaultSecretManagerFactory
     : ServiceFactoryBase<ISecretManager, HashiCorpVaultConfiguration>, IHashiCorpVaultSecretManagerFactory
 {
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<HashiCorpVaultSecretManagerFactory> _logger;
-    private readonly HttpClient _http;
+    private readonly IHttpClientFactory _httpClients;
     private readonly Lazy<IDomainServiceProvider<ISecretManager, ISecretManagerImplementationConfiguration>> _secretManagers;
 
     /// <summary>Initializes a new instance of the <see cref="HashiCorpVaultSecretManagerFactory"/> class.</summary>
     /// <param name="loggerFactory">The logger factory for created services.</param>
-    /// <param name="http">The HTTP client used to reach Vault.</param>
+    /// <param name="httpClients">The factory the HTTP client used to reach Vault is created from, once for each manager built.</param>
     /// <param name="secretManagers">Provider resolving the secret manager holding this Vault login's own secret.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="http"/> or <paramref name="secretManagers"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="httpClients"/> or <paramref name="secretManagers"/> is null.</exception>
     public HashiCorpVaultSecretManagerFactory(
         ILoggerFactory? loggerFactory,
-        HttpClient http,
+        IHttpClientFactory httpClients,
         Lazy<IDomainServiceProvider<ISecretManager, ISecretManagerImplementationConfiguration>> secretManagers)
     {
         _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         _logger = _loggerFactory.CreateLogger<HashiCorpVaultSecretManagerFactory>();
-        _http = http ?? throw new ArgumentNullException(nameof(http));
+        _httpClients = httpClients ?? throw new ArgumentNullException(nameof(httpClients));
         _secretManagers = secretManagers ?? throw new ArgumentNullException(nameof(secretManagers));
     }
 
@@ -86,7 +90,7 @@ public sealed class HashiCorpVaultSecretManagerFactory
             new HashiCorpVaultSecretManager(
                 _loggerFactory.CreateLogger<HashiCorpVaultSecretManager>(),
                 configuration,
-                new VaultApiClient(_http, _loggerFactory.CreateLogger<VaultApiClient>()),
+                new VaultApiClient(_httpClients.CreateClient(VaultHttpClient.Name), _loggerFactory.CreateLogger<VaultApiClient>()),
                 new VaultReadContext(
                     configuration.Name,
                     address,

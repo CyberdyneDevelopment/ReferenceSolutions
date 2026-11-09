@@ -26,7 +26,7 @@ namespace FdwReferenceSchema.Endpoints;
 public class SyncSchemaEndpoint : SyncSchemaEndpointBase
 {
     private readonly ISchemaInformationService _schema;
-    private readonly DataStoreConfigurationProvider _dataStoreProvider;
+    private readonly IDataStoreConfigurationProvider _dataStoreProvider;
     private readonly ILogger<SyncSchemaEndpoint> _logger;
 
     /// <summary>
@@ -34,7 +34,7 @@ public class SyncSchemaEndpoint : SyncSchemaEndpointBase
     /// </summary>
     public SyncSchemaEndpoint(
         ISchemaInformationService schema,
-        DataStoreConfigurationProvider dataStoreProvider,
+        IDataStoreConfigurationProvider dataStoreProvider,
         ILogger<SyncSchemaEndpoint>? logger = null)
         : base(logger ?? NullLogger<SyncSchemaEndpoint>.Instance)
     {
@@ -44,7 +44,7 @@ public class SyncSchemaEndpoint : SyncSchemaEndpointBase
     }
 
     /// <inheritdoc/>
-    protected override string PolicyName => "fdw:datastores:write";
+    protected override string PolicyName => "datastores:write";
 
     /// <inheritdoc/>
     protected override void OnBeforeConfiguring()

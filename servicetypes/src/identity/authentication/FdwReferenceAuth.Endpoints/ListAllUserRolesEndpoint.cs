@@ -14,7 +14,7 @@ public class ListAllUserRolesEndpoint : ListAllUserRolesEndpointBase
     /// <inheritdoc />
     public ListAllUserRolesEndpoint(
         IRoleConfigurationProvider roleProvider,
-        UserRoleConfigurationProvider userRoleProvider,
+        IUserRoleConfigurationProvider userRoleProvider,
         ILogger<ListAllUserRolesEndpoint> logger)
         : base(logger, roleProvider, userRoleProvider)
     {

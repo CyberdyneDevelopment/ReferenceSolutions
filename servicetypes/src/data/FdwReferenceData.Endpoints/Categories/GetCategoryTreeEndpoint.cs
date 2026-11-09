@@ -1,3 +1,4 @@
+using Fdw.Data.DataSets.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Endpoints;
@@ -13,7 +14,7 @@ namespace FdwReferenceDataSets.Endpoints;
 public class GetCategoryTreeEndpoint : GetCategoryTreeEndpointBase
 {
     /// <inheritdoc />
-    public GetCategoryTreeEndpoint(CategoryConfigurationProvider categories, ILogger<GetCategoryTreeEndpoint> logger)
+    public GetCategoryTreeEndpoint(ICategoryConfigurationProvider categories, ILogger<GetCategoryTreeEndpoint> logger)
         : base(logger, categories)
     {
     }

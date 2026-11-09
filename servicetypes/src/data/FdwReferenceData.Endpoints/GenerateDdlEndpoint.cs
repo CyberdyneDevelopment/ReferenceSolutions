@@ -74,7 +74,7 @@ public sealed class GenerateDdlResponse
 public sealed class GenerateDdlEndpoint : Endpoint<GenerateDdlRequest, GenerateDdlResponse>
 {
     private readonly ISchemaInformationService _schema;
-    private readonly ConnectionConfigurationProvider _configProvider;
+    private readonly IConnectionConfigurationProvider _configProvider;
     private readonly ILogger<GenerateDdlEndpoint> _logger;
 
     /// <summary>
@@ -82,7 +82,7 @@ public sealed class GenerateDdlEndpoint : Endpoint<GenerateDdlRequest, GenerateD
     /// </summary>
     public GenerateDdlEndpoint(
         ISchemaInformationService schema,
-        ConnectionConfigurationProvider configProvider,
+        IConnectionConfigurationProvider configProvider,
         ILogger<GenerateDdlEndpoint>? logger = null)
     {
         _schema = schema;

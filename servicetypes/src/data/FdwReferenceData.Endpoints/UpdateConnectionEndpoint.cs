@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Fdw.Services.Connections.Abstractions;
 
 using Fdw.Services.Connections;
 using Fdw.Services.Connections.Endpoints;
@@ -15,7 +16,7 @@ namespace FdwReferenceConnections.Endpoints;
 public class UpdateConnectionEndpoint : UpdateConnectionEndpointBase
 {
     /// <inheritdoc />
-    public UpdateConnectionEndpoint(ConnectionConfigurationProvider connectionProvider, ILogger<UpdateConnectionEndpoint> logger)
+    public UpdateConnectionEndpoint(IConnectionConfigurationProvider connectionProvider, ILogger<UpdateConnectionEndpoint> logger)
         : base(logger, connectionProvider)
     {
     }

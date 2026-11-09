@@ -1,3 +1,4 @@
+using Fdw.Data.DataSets.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Endpoints;
@@ -13,7 +14,7 @@ namespace FdwReferenceDataSets.Endpoints;
 public class UpdateCategoryEndpoint : UpdateCategoryEndpointBase
 {
     /// <inheritdoc />
-    public UpdateCategoryEndpoint(CategoryConfigurationProvider categories, ILogger<UpdateCategoryEndpoint> logger)
+    public UpdateCategoryEndpoint(ICategoryConfigurationProvider categories, ILogger<UpdateCategoryEndpoint> logger)
         : base(logger, categories)
     {
     }

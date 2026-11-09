@@ -20,7 +20,7 @@ public class ListUsersEndpoint : ListUsersEndpointBase
     private readonly ILogger<ListUsersEndpoint> _logger;
 
     /// <inheritdoc />
-    public ListUsersEndpoint(UserConfigurationProvider userProvider, ISignInLog signIns, ILogger<ListUsersEndpoint> logger)
+    public ListUsersEndpoint(IUserConfigurationProvider userProvider, ISignInLog signIns, ILogger<ListUsersEndpoint> logger)
         : base(logger, userProvider, signIns) {
         _logger = logger ?? NullLogger<ListUsersEndpoint>.Instance;
     }

@@ -84,8 +84,6 @@ public sealed class MsSqlConnectionType
         // timeouts, MaxSerialInsert, its pool) is the configuration validator's, and the values its authentication type
         // requires are checked by CheckConfiguration.
         EndpointAlias("authentication", nameof(MsSqlConnectionConfiguration.AdditionalProperties));
-        EndpointMask(nameof(MsSqlConnectionConfiguration.AdditionalProperties), (configuration, entries) =>
-            MsSqlAuthenticationTypes.ByName(configuration.AuthenticationType).MaskSecrets(entries, ConnectionSecretMask.Value));
         EndpointValidation(new MsSqlConnectionConfigurationValidator());
         EndpointValidation(CheckConfiguration);
 
@@ -427,6 +425,10 @@ public sealed class MsSqlConnectionType
             ? GenericResult.Success()
             : GenericResult.Failure(ConnectionEndpointBehaviorLog.ConfigurationRejected(logger, "MsSql", string.Join("; ", problems)));
     }
+
+    /// <inheritdoc/>
+    protected override ConnectionAuthentication<MsSqlConnectionConfiguration> EndpointAuthenticationDeclaration
+        => ConnectionAuthentication<MsSqlConnectionConfiguration>.Of(nameof(MsSqlConnectionConfiguration.AdditionalProperties), configuration => MsSqlAuthenticationTypes.ByName(configuration.AuthenticationType));
 
     /// <inheritdoc/>
     /// <remarks>

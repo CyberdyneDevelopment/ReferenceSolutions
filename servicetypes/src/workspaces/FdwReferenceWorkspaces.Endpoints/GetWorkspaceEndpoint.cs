@@ -17,7 +17,7 @@ public sealed class GetWorkspaceEndpoint : GetWorkspaceEndpointBase
     /// <inheritdoc />
     public GetWorkspaceEndpoint(
         ILogger<GetWorkspaceEndpointBase> logger,
-        WorkspaceConfigurationProvider provider,
+        IWorkspaceConfigurationProvider provider,
         IWorkspaceAccessPolicy access)
         : base(logger, provider, access)
     {

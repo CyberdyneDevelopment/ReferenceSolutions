@@ -20,7 +20,7 @@ public class ListDataStoresEndpoint : ListDataStoresEndpointBase
     /// Initializes a new instance of the <see cref="ListDataStoresEndpoint"/> class.
     /// </summary>
     public ListDataStoresEndpoint(
-        DataStoreConfigurationProvider dataStoreProvider,
+        IDataStoreConfigurationProvider dataStoreProvider,
         ConnectionConfigurationProvider connectionProvider,
         IAuthorizationService authorization,
         IConfigurationGatewayProvider configurationGateways,

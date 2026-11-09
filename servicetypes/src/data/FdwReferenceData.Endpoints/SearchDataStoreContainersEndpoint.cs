@@ -12,7 +12,7 @@ namespace FdwReferenceDataStores.Endpoints;
 public class SearchDataStoreContainersEndpoint : SearchDataStoreContainersEndpointBase
 {
     /// <summary>Initializes a new instance of the <see cref="SearchDataStoreContainersEndpoint"/> class.</summary>
-    public SearchDataStoreContainersEndpoint(DataStoreConfigurationProvider dataStoreProvider, ILogger<SearchDataStoreContainersEndpoint> logger)
+    public SearchDataStoreContainersEndpoint(IDataStoreConfigurationProvider dataStoreProvider, ILogger<SearchDataStoreContainersEndpoint> logger)
         : base(logger, dataStoreProvider)
     {
     }

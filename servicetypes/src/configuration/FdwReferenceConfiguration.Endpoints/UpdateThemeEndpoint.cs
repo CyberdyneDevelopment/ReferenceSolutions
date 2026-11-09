@@ -18,14 +18,14 @@ namespace FdwReferenceConfiguration.Endpoints;
 public class UpdateThemeEndpoint : UpdateThemeEndpointBase<UpdateThemeByNameRequest, ThemeConfiguration>
 {
     private readonly ILogger<UpdateThemeEndpoint> _logger;
-    private readonly ThemeConfigurationProvider _provider;
+    private readonly IThemeConfigurationProvider _provider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UpdateThemeEndpoint"/> class.
     /// </summary>
     public UpdateThemeEndpoint(
         ILogger<UpdateThemeEndpoint> logger,
-        ThemeConfigurationProvider provider)
+        IThemeConfigurationProvider provider)
         : base(logger)
     {
         _logger = logger ?? NullLogger<UpdateThemeEndpoint>.Instance;

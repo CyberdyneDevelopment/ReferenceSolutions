@@ -24,7 +24,7 @@ public sealed class GetMapEndpoint : GetMapEndpointBase
     public GetMapEndpoint(
         ILogger<GetMapEndpointBase> logger,
         IDataSetConfigurationProvider dataSets,
-        DataStoreConfigurationProvider dataStores,
+        IDataStoreConfigurationProvider dataStores,
         IPipelineConfigurationProvider pipelines,
         IDataSetVariationConfigurationProvider variations,
         ICategoryConfigurationProvider categories,

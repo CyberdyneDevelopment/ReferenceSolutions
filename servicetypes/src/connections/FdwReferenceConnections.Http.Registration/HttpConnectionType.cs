@@ -74,8 +74,6 @@ public sealed class HttpConnectionType : ConnectionTypeBase<IGenericConnection, 
         // (FDW-1336); headers are shown masked (the default for a dictionary: the flat detail never showed them at
         // all). The configuration's own Validate() decides what is acceptable.
         EndpointAlias("authentication", nameof(HttpConnectionConfiguration.AdditionalProperties));
-        EndpointMask(nameof(HttpConnectionConfiguration.AdditionalProperties), (configuration, entries) =>
-            HttpAuthenticationTypes.ByName(configuration.AuthenticationType).MaskSecrets(entries, ConnectionSecretMask.Value));
         EndpointValidation(CheckConfiguration);
 
         // Why Initialize: this wiring needs a LIVE container, and Register runs while the
@@ -215,6 +213,10 @@ public sealed class HttpConnectionType : ConnectionTypeBase<IGenericConnection, 
             ? GenericResult.Success()
             : GenericResult.Failure(ConnectionEndpointBehaviorLog.ConfigurationRejected(logger, "Http", string.Join("; ", problems)));
     }
+
+    /// <inheritdoc/>
+    protected override ConnectionAuthentication<HttpConnectionConfiguration> EndpointAuthenticationDeclaration
+        => ConnectionAuthentication<HttpConnectionConfiguration>.Of(nameof(HttpConnectionConfiguration.AdditionalProperties), configuration => HttpAuthenticationTypes.ByName(configuration.AuthenticationType));
 
     /// <inheritdoc/>
     /// <remarks>

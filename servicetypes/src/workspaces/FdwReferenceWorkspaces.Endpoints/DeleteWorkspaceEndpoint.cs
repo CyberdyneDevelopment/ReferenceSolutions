@@ -18,7 +18,7 @@ public sealed class DeleteWorkspaceEndpoint : DeleteWorkspaceEndpointBase
     /// <inheritdoc />
     public DeleteWorkspaceEndpoint(
         ILogger<DeleteWorkspaceEndpointBase> logger,
-        WorkspaceConfigurationProvider provider,
+        IWorkspaceConfigurationProvider provider,
         IWorkspaceAccessPolicy access,
         IDataSetVariationConfigurationProvider variations)
         : base(logger, provider, access, variations)

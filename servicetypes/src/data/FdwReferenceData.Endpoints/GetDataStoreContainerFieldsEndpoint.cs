@@ -14,7 +14,7 @@ public class GetDataStoreContainerFieldsEndpoint : GetDataStoreContainerFieldsEn
     /// <summary>
     /// Initializes a new instance of the <see cref="GetDataStoreContainerFieldsEndpoint"/> class.
     /// </summary>
-    public GetDataStoreContainerFieldsEndpoint(DataStoreConfigurationProvider dataStoreProvider, ILogger<GetDataStoreContainerFieldsEndpoint> logger)
+    public GetDataStoreContainerFieldsEndpoint(IDataStoreConfigurationProvider dataStoreProvider, ILogger<GetDataStoreContainerFieldsEndpoint> logger)
         : base(logger, dataStoreProvider)
     {
     }

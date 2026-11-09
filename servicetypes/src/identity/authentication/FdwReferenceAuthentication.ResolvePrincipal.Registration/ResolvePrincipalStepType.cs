@@ -13,6 +13,7 @@ using Fdw.Services.ExternalIdentityProviders.Abstractions;
 using Fdw.Services.ExternalIdentityProviders.Binding;
 using Fdw.Services.Multitenancy.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -48,13 +49,14 @@ namespace FdwReferenceAuthentication.ResolvePrincipal.Registration;
 [Implementation(typeof(AuthenticationStepTypes), "ResolvePrincipal")]
 public sealed class ResolvePrincipalStepType
     : AuthenticationStepTypeBase<IGenericService, IServiceFactory<IGenericService, IServiceConfiguration>>,
-      IConfiguredAuthenticationStep
+      IConfiguredAuthenticationStep,
+      IRequestBoundAuthenticationStep
 {
     // Captured when the host is built: an option is created by its module initializer, which needs
     // a parameterless constructor, so what it needs arrives where a live container exists.
     private IPrincipalBinding? _bindings;
     private IExternalIdentityProvisionerBindingConfigurationProvider? _provisionerBindings;
-    private IExternalIdentityProvisionerServiceProvider? _provisioners;
+    private ResolvePrincipalRequestServices? _request;
     private ITenantResolver? _tenants;
     private IAuthenticationContextAccessor? _authContextAccessor;
     private ILogger _logger = NullLogger<ResolvePrincipalStepType>.Instance;
@@ -66,18 +68,38 @@ public sealed class ResolvePrincipalStepType
                "Resolve Principal",
                "Binds a subject an authority proved to a principal this platform knows")
     {
+        Registration((builder, loggerFactory) =>
+        {
+            // The provisioner provider is scoped, so the runner hands it to the step for each execution (FDW-4640).
+            builder.Services.TryAddScoped<ResolvePrincipalRequestServices>(sp =>
+                new ResolvePrincipalRequestServices(() => sp.GetRequiredService<IExternalIdentityProvisionerServiceProvider>()));
+
+            return GenericResult<IHostApplicationBuilder>.Success(builder);
+        });
+
         Initialization((host, loggerFactory) =>
         {
             _authContextAccessor = host.Services.GetRequiredService<IAuthenticationContextAccessor>();
             _bindings = host.Services.GetRequiredService<IPrincipalBinding>();
             _provisionerBindings = host.Services.GetRequiredService<IExternalIdentityProvisionerBindingConfigurationProvider>();
-            _provisioners = host.Services.GetRequiredService<IExternalIdentityProvisionerServiceProvider>();
             _tenants = host.Services.GetRequiredService<ITenantResolver>();
             _logger = loggerFactory?.CreateLogger<ResolvePrincipalStepType>()
                 ?? NullLogger<ResolvePrincipalStepType>.Instance;
 
             return GenericResult<IHost>.Success(host);
         });
+    }
+
+    /// <inheritdoc />
+    public Type RequestServicesType => typeof(ResolvePrincipalRequestServices);
+
+    /// <inheritdoc />
+    /// <remarks>A copy of this step that holds the request's services; this step, shared by every login, is not changed.</remarks>
+    public IAuthenticationStep BindToRequest(object services)
+    {
+        var bound = (ResolvePrincipalStepType)MemberwiseClone();
+        bound._request = (ResolvePrincipalRequestServices)services;
+        return bound;
     }
 
     /// <inheritdoc />
@@ -117,7 +139,7 @@ public sealed class ResolvePrincipalStepType
             invitations = settings.Value!.Invitations;
         }
 
-        if (_bindings is null || _provisionerBindings is null || _provisioners is null || _tenants is null || _authContextAccessor is null)
+        if (_bindings is null || _provisionerBindings is null || _request is null || _tenants is null || _authContextAccessor is null)
             return GenericResult<StepOutcome>.Failure(NotInitialized(_logger));
 
         // Only this trusted built-in authentication operation runs under system context.
@@ -249,7 +271,7 @@ public sealed class ResolvePrincipalStepType
         if (bindings.Value is not [var binding] || binding.ProvisionerName is not { Length: > 0 } name)
             return GenericResult<StepOutcome>.Failure(ResolvePrincipalLog.NoBinding(_logger, subject.Issuer));
 
-        var provisioner = await _provisioners!.Get(name, cancellationToken).ConfigureAwait(false);
+        var provisioner = await _request!.Provisioners.Get(name, cancellationToken).ConfigureAwait(false);
         if (provisioner.IsFailure)
             return provisioner.ToNewResult<StepOutcome>();
 

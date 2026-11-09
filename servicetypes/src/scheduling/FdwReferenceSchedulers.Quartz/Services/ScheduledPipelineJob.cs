@@ -85,6 +85,7 @@ public sealed class ScheduledPipelineJob : IJob
     private readonly IDataGatewayProvider _dataGateways;
     private readonly IAuthenticationContextAccessor _authenticationContextAccessor;
     private readonly IScheduleConfigurationProvider _schedules;
+    private readonly IScheduleRunRecorder _runRecorder;
     private readonly ILogger<ScheduledPipelineJob> _logger;
 
     private IDataGateway Gateway => _dataGateways.ByName(MainDataGatewayName);
@@ -95,12 +96,14 @@ public sealed class ScheduledPipelineJob : IJob
         IDataGatewayProvider dataGateways,
         IAuthenticationContextAccessor authenticationContextAccessor,
         IScheduleConfigurationProvider schedules,
+        IScheduleRunRecorder runRecorder,
         ILogger<ScheduledPipelineJob>? logger = null)
     {
         _executionHandler = executionHandler ?? throw new ArgumentNullException(nameof(executionHandler));
         _dataGateways = dataGateways ?? throw new ArgumentNullException(nameof(dataGateways));
         _authenticationContextAccessor = authenticationContextAccessor ?? throw new ArgumentNullException(nameof(authenticationContextAccessor));
         _schedules = schedules ?? throw new ArgumentNullException(nameof(schedules));
+        _runRecorder = runRecorder ?? throw new ArgumentNullException(nameof(runRecorder));
         _logger = logger ?? NullLogger<ScheduledPipelineJob>.Instance;
     }
 
@@ -259,10 +262,7 @@ public sealed class ScheduledPipelineJob : IJob
             ? await NextScheduledFire(context).ConfigureAwait(false)
             : context.NextFireTimeUtc;
 
-        await RecordRunFields(
-            scheduleId, dataStoreName, pathName, scheduleContainerName,
-            actualFireTime, nextFireTime, status, context.CancellationToken)
-            .ConfigureAwait(false);
+        await RecordRunFields(scheduleId, actualFireTime, nextFireTime, status, context.CancellationToken).ConfigureAwait(false);
 
         if (!result.IsSuccess)
         {
@@ -359,26 +359,24 @@ public sealed class ScheduledPipelineJob : IJob
     // deleted when Quartz took over, and nothing else did. NextRunTime is Quartz's own next fire
     // time -- the engine that fires the trigger is the one that knows it. A targeted update, not a
     // versioned save: these are run fields, not a configuration change.
+    // Why through the recorder and not an update of the container named in the job data (FDW-4598): the three fields are columns of the schedule's implementation row, which the
+    // domain container the job data names does not have, so that update found nothing to set on every fire. The recorder is the provider that owns the columns and takes the
+    // schedule's durable Id, which this reads from the schedule provider by the name the job carries.
     private async Task RecordRunFields(
-        string scheduleId, string dataStoreName, string pathName, string scheduleContainerName,
-        DateTime actualFireTime, DateTimeOffset? nextFireTime, string status,
-        System.Threading.CancellationToken cancellationToken)
+        string scheduleId, DateTime actualFireTime, DateTimeOffset? nextFireTime, string status, System.Threading.CancellationToken cancellationToken)
     {
-        var command = Update.In<ScheduleUpdateRecord>(scheduleContainerName)
-            .DataStore(dataStoreName)
-            .Path(pathName)
-            .Where("Name", scheduleId)
-            .Value(new ScheduleUpdateRecord
-            {
-                LastRunTime = new DateTimeOffset(DateTime.SpecifyKind(actualFireTime, DateTimeKind.Utc)),
-                NextRunTime = nextFireTime,
-                LastRunStatus = status,
-            });
-
-        var updated = await Gateway.Execute<int>(command, cancellationToken).ConfigureAwait(false);
-        if (updated.IsFailure)
+        var schedule = await _schedules.Get(scheduleId, cancellationToken).ConfigureAwait(false);
+        if (schedule.IsFailure || schedule.Value is not { } found)
         {
-            QuartzSchedulingLog.RunFieldsWriteFailed(_logger, scheduleId, updated.CurrentMessage);
+            QuartzSchedulingLog.RunFieldsWriteFailed(_logger, scheduleId, schedule.CurrentMessage);
+            return;
+        }
+
+        var recorded = await _runRecorder.RecordRun(
+            found.Id, new DateTimeOffset(DateTime.SpecifyKind(actualFireTime, DateTimeKind.Utc)), nextFireTime, status, cancellationToken).ConfigureAwait(false);
+        if (recorded.IsFailure)
+        {
+            QuartzSchedulingLog.RunFieldsWriteFailed(_logger, scheduleId, recorded.CurrentMessage);
             return;
         }
 

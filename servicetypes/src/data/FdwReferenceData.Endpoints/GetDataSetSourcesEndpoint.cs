@@ -1,4 +1,5 @@
 ﻿using Fdw.Services.Data.Clients.Models;
+using Fdw.Data.DataSets.Abstractions;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -12,7 +13,7 @@ namespace FdwReferenceDataSets.Endpoints;
 
 /// <summary>
 /// Endpoint to get sources for a DataSet.
-/// Delegates fully to the base class which resolves sources via DataSetConfigurationProvider.
+/// Delegates fully to the base class which resolves sources via IDataSetConfigurationProvider.
 /// </summary>
 [ExcludeFromCodeCoverage]
 public class GetDataSetSourcesEndpoint : GetDataSetSourcesEndpointBase
@@ -20,7 +21,7 @@ public class GetDataSetSourcesEndpoint : GetDataSetSourcesEndpointBase
     /// <summary>
     /// Initializes a new instance of the <see cref="GetDataSetSourcesEndpoint"/> class.
     /// </summary>
-    public GetDataSetSourcesEndpoint(DataSetConfigurationProvider dataSetProvider, ILogger<GetDataSetSourcesEndpoint> logger)
+    public GetDataSetSourcesEndpoint(IDataSetConfigurationProvider dataSetProvider, ILogger<GetDataSetSourcesEndpoint> logger)
         : base(logger, dataSetProvider) {
     }
 

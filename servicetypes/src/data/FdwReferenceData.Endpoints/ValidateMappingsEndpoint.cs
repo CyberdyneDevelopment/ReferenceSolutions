@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Fdw.Data.DataSets.Abstractions;
 using Fdw.Services.Data;
 using Microsoft.Extensions.Logging;
 using Fdw.Schema.Endpoints;
@@ -13,7 +14,7 @@ public sealed class ValidateMappingsEndpoint : ValidateMappingsEndpointBase
 {
     /// <inheritdoc />
     public ValidateMappingsEndpoint(
-        DataSetConfigurationProvider dataSetProvider,
+        IDataSetConfigurationProvider dataSetProvider,
         ILogger<Fdw.Schema.Endpoints.ValidateMappingsEndpointBase> logger)
         : base(dataSetProvider, logger)
     {

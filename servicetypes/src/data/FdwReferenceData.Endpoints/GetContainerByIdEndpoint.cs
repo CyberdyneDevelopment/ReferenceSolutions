@@ -15,7 +15,7 @@ public class GetContainerByIdEndpoint : GetContainerByIdEndpointBase
     /// <summary>
     /// Initializes a new instance of the <see cref="GetContainerByIdEndpoint"/> class.
     /// </summary>
-    public GetContainerByIdEndpoint(DataStoreConfigurationProvider dataStoreProvider, ILogger<GetContainerByIdEndpoint> logger)
+    public GetContainerByIdEndpoint(IDataStoreConfigurationProvider dataStoreProvider, ILogger<GetContainerByIdEndpoint> logger)
         : base(logger, dataStoreProvider) {
     }
 

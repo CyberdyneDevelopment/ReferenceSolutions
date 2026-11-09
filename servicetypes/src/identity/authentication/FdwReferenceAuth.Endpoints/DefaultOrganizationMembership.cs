@@ -47,7 +47,7 @@ internal static class DefaultOrganizationMembership
 
     // Clears the person's default only when it is this organization; a person with no membership row or another default is left as they are.
     internal static async Task<IGenericResult> ClearIfDefault(
-        UserTenantConfigurationProvider provider, Guid userId, Guid tenantId, Guid organizationId, ILogger logger, CancellationToken cancellationToken)
+        IUserTenantConfigurationProvider provider, Guid userId, Guid tenantId, Guid organizationId, ILogger logger, CancellationToken cancellationToken)
     {
         var memberships = await provider
             .Find<IUserTenantImplementationConfiguration>(t => t.UserId == userId && t.TenantId == tenantId, cancellationToken)
@@ -74,7 +74,7 @@ internal static class DefaultOrganizationMembership
     /// <param name="cancellationToken">A token to cancel the write.</param>
     /// <returns>Success, or the reason it could not be kept.</returns>
     internal static async Task<IGenericResult> Keep(
-        UserTenantConfigurationProvider provider, Guid userId, Guid tenantId, Guid? organizationId, ILogger logger, CancellationToken cancellationToken)
+        IUserTenantConfigurationProvider provider, Guid userId, Guid tenantId, Guid? organizationId, ILogger logger, CancellationToken cancellationToken)
     {
         var memberships = await provider
             .Find<IUserTenantImplementationConfiguration>(t => t.UserId == userId && t.TenantId == tenantId, cancellationToken)

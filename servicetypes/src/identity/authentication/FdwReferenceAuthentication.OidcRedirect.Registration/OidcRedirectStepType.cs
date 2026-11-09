@@ -65,6 +65,7 @@ namespace FdwReferenceAuthentication.OidcRedirect.Registration;
 public sealed class OidcRedirectStepType
     : AuthenticationStepTypeBase<IGenericService, IServiceFactory<IGenericService, IServiceConfiguration>>,
       IAuthenticationStep,
+      IAuthorityAssertingAuthenticationStep,
       IFederatingAuthenticationStep
 {
     // Captured when the host is built: an option is created by its module initializer, which needs
@@ -76,10 +77,6 @@ public sealed class OidcRedirectStepType
     private ISecretManagerProvider? _secretManagers;
     private HttpClient? _http;
     private ILogger _logger = NullLogger<OidcRedirectStepType>.Instance;
-
-    // Set from the authority when the step runs, mirroring ForeignTokenStepType - the runner reads
-    // AuthenticationMethods only after Execute has returned.
-    private IReadOnlyList<string> _asserted = [];
 
     /// <summary>Initializes a new instance of the <see cref="OidcRedirectStepType"/> class.</summary>
     public OidcRedirectStepType()
@@ -110,7 +107,7 @@ public sealed class OidcRedirectStepType
 
             // What the step reads its authority through. Not a provider -- it states what a usable
             // authority row is, and that judgement is this package's business.
-            builder.Services.TryAddScoped<OidcAuthorityReader>();
+            builder.Services.TryAddSingleton<OidcAuthorityReader>(); // stateless over a singleton provider; a step captures it at Initialize (FDW-4640)
 
             // Calls the provider's token endpoint. Named so multiple HttpClient consumers in the
             // host don't collide on the default client's configuration.
@@ -142,10 +139,10 @@ public sealed class OidcRedirectStepType
 
     /// <inheritdoc />
     /// <remarks>
-    /// What the authority read during <see cref="Execute"/> permits, mirroring ForeignTokenStepType:
-    /// empty until the step has run, so a step declaring nothing proves nothing.
+    /// Fixed methods: none. The methods this step may assert are the ones the authority row it reads permits, which differ per execution, and the step is one instance for the process:
+    /// they travel with the contribution (<see cref="ContextContribution.AssertableMethods"/>) and the step keeps no per-login state in a field (FDW-4697).
     /// </remarks>
-    public IReadOnlyList<string> AuthenticationMethods => _asserted;
+    public IReadOnlyList<string> AuthenticationMethods => [];
 
     /// <inheritdoc />
     /// <remarks>
@@ -181,6 +178,23 @@ public sealed class OidcRedirectStepType
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Reads the authority when asked and keeps nothing (FDW-4697): sign-in admission and flow administration decide from this before any login has run. An authority that
+    /// cannot be read is a failure carrying the reader's own coded message (which authority, why); empty means the authority was read and permits nothing.
+    /// </remarks>
+    public async Task<IGenericResult<IReadOnlyList<string>>> ProvableMethods(CancellationToken cancellationToken = default)
+    {
+        if (_authorities is not { } authorities)
+            return GenericResult<IReadOnlyList<string>>.Failure(OidcLog.NotInitialized(_logger, Name));
+
+        var authority = await authorities.Get(cancellationToken).ConfigureAwait(false);
+        if (!authority.IsSuccess || authority.Value is not { } configuration)
+            return authority.ToNewResult<IReadOnlyList<string>>();
+
+        return GenericResult<IReadOnlyList<string>>.Success(configuration.AssertableMethods);
+    }
+
+    /// <inheritdoc />
     public async Task<IGenericResult<StepOutcome>> Execute(
         AuthenticationContext context, ITenantProvider tenants, CancellationToken cancellationToken = default)
     {
@@ -193,7 +207,6 @@ public sealed class OidcRedirectStepType
             return authority.ToNewResult<StepOutcome>();
 
         var configuration = authority.Value;
-        _asserted = configuration.AssertableMethods;
 
         return callback.Code is { Length: > 0 } code
             ? await Complete(configuration, keys, callback, requests, secretManagers, http, code, cancellationToken)
@@ -301,6 +314,7 @@ public sealed class OidcRedirectStepType
 
         return GenericResult<StepOutcome>.Success(new StepOutcome.Contributed(new ContextContribution
         {
+            AssertableMethods = configuration.AssertableMethods,
             ObservedMethods = [.. validated.ClaimsIdentity.FindAll("amr").Select(c => c.Value)],
 
             Subject = new Subject

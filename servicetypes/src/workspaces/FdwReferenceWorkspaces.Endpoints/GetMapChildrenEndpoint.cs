@@ -21,7 +21,7 @@ public sealed class GetMapChildrenEndpoint : GetMapChildrenEndpointBase
     public GetMapChildrenEndpoint(
         ILogger<GetMapChildrenEndpointBase> logger,
         IDataSetConfigurationProvider dataSets,
-        DataStoreConfigurationProvider dataStores,
+        IDataStoreConfigurationProvider dataStores,
         IPipelineConfigurationProvider pipelines,
         IDataSetVariationConfigurationProvider variations,
         ICategoryConfigurationProvider categories,

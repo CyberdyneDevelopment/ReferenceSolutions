@@ -20,7 +20,7 @@ public class GetUserEndpoint : GetUserEndpointBase
     private readonly ILogger<GetUserEndpoint> _logger;
 
     /// <inheritdoc />
-    public GetUserEndpoint(UserConfigurationProvider userProvider, ISignInLog signIns, ILogger<GetUserEndpoint> logger)
+    public GetUserEndpoint(IUserConfigurationProvider userProvider, ISignInLog signIns, ILogger<GetUserEndpoint> logger)
         : base(logger, userProvider, signIns) {
         _logger = logger ?? NullLogger<GetUserEndpoint>.Instance;
     }

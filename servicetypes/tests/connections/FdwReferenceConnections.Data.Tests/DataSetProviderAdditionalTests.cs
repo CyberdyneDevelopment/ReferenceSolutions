@@ -1,4 +1,5 @@
 using Fdw.Services.Abstractions;
+using Fdw.Services.Data.Abstractions;
 using Fdw.Data.DataSets.Abstractions;
 using Fdw.Configuration;
 using Fdw.Results;
@@ -127,6 +128,9 @@ public sealed class DataSetProviderAdditionalTests
         public Task<IGenericResult<IReadOnlyList<IDataSetImplementationConfiguration>>> Get(int levels, CancellationToken ct = default)
             => Get(ct);
 
+        public Task<IGenericResult<IReadOnlyList<IDataSetImplementationConfiguration>>> GetFlat(int levels, CancellationToken ct = default)
+            => Get(ct);
+
         public Task<IGenericResult<ConfigurationPage<IDataSetImplementationConfiguration>>> Get(int skip, int take, int levels, CancellationToken ct = default)
             => Task.FromResult(GenericResult<ConfigurationPage<IDataSetImplementationConfiguration>>.Failure(
                 new GenericMessage("This stub answers no paged read")));
@@ -158,6 +162,15 @@ public sealed class DataSetProviderAdditionalTests
         public Task<IGenericResult> Create<T>(T implementationConfiguration, string domain, string implementationName, string name, CancellationToken ct = default)
             where T : IDataSetImplementationConfiguration
             => Task.FromResult(GenericResult.Success());
+
+        // The domain-record reads (IDomainRecordProvider<DomainConfiguration>, FDW-4636): this stub answers none, as it answers no paged read.
+        public Task<IGenericResult<ConfigurationPage<DomainConfiguration>>> Get(DomainQuery query, CancellationToken ct = default)
+            => Task.FromResult(GenericResult<ConfigurationPage<DomainConfiguration>>.Failure(
+                new GenericMessage("This stub answers no domain-record page")));
+
+        public Task<IGenericResult<IReadOnlyList<DomainConfiguration>>> Get(IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
+            => Task.FromResult(GenericResult<IReadOnlyList<DomainConfiguration>>.Failure(
+                new GenericMessage("This stub answers no domain-record read by ids")));
 
         public Task<IGenericResult> Delete(Guid id, CancellationToken ct = default)
             => Task.FromResult(GenericResult.Success());
@@ -216,9 +229,10 @@ public sealed class DataSetProviderAdditionalTests
         // Arrange & Act
         var provider = new DataSetProvider(null);
 
-        // Assert - should not throw and work normally
+        // Assert - a null logger does not throw; a provider with no configuration source cannot list the data sets, and says so with its own code (FDW-3630)
         var result = await provider.Get(TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess.ShouldBeFalse();
+        result.Messages.First().Code.ShouldBe("DATA-60360");
     }
 
     // ================================================================

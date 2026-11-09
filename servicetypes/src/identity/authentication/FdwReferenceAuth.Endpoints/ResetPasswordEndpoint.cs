@@ -14,7 +14,7 @@ public class ResetPasswordEndpoint : ResetPasswordEndpointBase
     /// Initializes a new instance of the <see cref="ResetPasswordEndpoint"/> class.
     /// </summary>
     public ResetPasswordEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IUserCredentialService credentialService,
         ILogger<ResetPasswordEndpoint> logger)
         : base(userProvider, credentialService, logger)

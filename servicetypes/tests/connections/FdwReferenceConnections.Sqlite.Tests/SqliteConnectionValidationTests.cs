@@ -52,4 +52,32 @@ public class SqliteConnectionValidationTests
         bound.IsFailure.ShouldBeTrue();
         bound.Messages.OfType<IClientMessage>().ShouldHaveSingleItem().ClientText.ShouldContain("DefaultTimeout must be greater than 0");
     }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "Api")]
+    public void AnAuthenticationKeyTheMethodDoesNotDeclareIsRefusedNamingTheKeyAndNotItsValue()
+    {
+        // FDW-4607: the key was never validated, so it is not known to be a name; its value must not reach the refusal.
+        var bound = new SqliteConnectionType().EndpointBehavior.Bind(
+            Json("""{ "dataSource": "/data/app.db", "mode": "ReadWriteCreate", "cache": "Default", "authenticationType": "None", "additionalProperties": { "Password": "not-a-real-password" } }"""),
+            NullLogger.Instance);
+
+        bound.IsFailure.ShouldBeTrue();
+        var text = bound.Messages.OfType<IClientMessage>().ShouldHaveSingleItem().ClientText;
+        text.ShouldContain("Password");
+        text.ShouldNotContain("not-a-real-password");
+    }
+
+    [Fact]
+    [Trait("Priority", "P1")]
+    [Trait("Category", "Api")]
+    public void TheAuthenticationKeysTheMethodDeclaresAreAccepted()
+    {
+        var bound = new SqliteConnectionType().EndpointBehavior.Bind(
+            Json("""{ "dataSource": "/data/app.db", "mode": "ReadWriteCreate", "cache": "Default", "authenticationType": "EncryptionKey", "additionalProperties": { "SecretKeyName": "app-db-key", "SecretManagerName": "CompanyVault" } }"""),
+            NullLogger.Instance);
+
+        bound.IsSuccess.ShouldBeTrue();
+    }
 }

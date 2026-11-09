@@ -14,7 +14,7 @@ public class BindExternalIdentityEndpoint : BindExternalIdentityEndpointBase
 {
     /// <inheritdoc />
     public BindExternalIdentityEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IExternalIdentityConfigurationProvider externalIdentities,
         ILogger<BindExternalIdentityEndpoint> logger)
         : base(logger, userProvider, externalIdentities)

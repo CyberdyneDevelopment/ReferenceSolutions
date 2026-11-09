@@ -37,7 +37,7 @@ public class QueryDataStoresEndpoint : QueryDataStoresEndpointBase
     ];
 
     /// <inheritdoc />
-    public QueryDataStoresEndpoint(DataStoreConfigurationProvider dataStoreProvider, ILogger<QueryDataStoresEndpoint> logger)
+    public QueryDataStoresEndpoint(IDataStoreConfigurationProvider dataStoreProvider, ILogger<QueryDataStoresEndpoint> logger)
         : base(logger ?? NullLogger<QueryDataStoresEndpoint>.Instance, dataStoreProvider)
     {
     }

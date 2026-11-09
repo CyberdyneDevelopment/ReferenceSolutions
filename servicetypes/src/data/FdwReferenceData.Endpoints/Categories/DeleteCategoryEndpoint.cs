@@ -1,3 +1,4 @@
+using Fdw.Data.DataSets.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Endpoints;
@@ -15,8 +16,8 @@ public class DeleteCategoryEndpoint : DeleteCategoryEndpointBase
 {
     /// <inheritdoc />
     public DeleteCategoryEndpoint(
-        CategoryConfigurationProvider categories,
-        DataSetConfigurationProvider dataSets,
+        ICategoryConfigurationProvider categories,
+        IDataSetConfigurationProvider dataSets,
         IGlossaryTermConfigurationProvider terms,
         ILogger<DeleteCategoryEndpoint> logger)
         : base(logger, categories, dataSets, terms)

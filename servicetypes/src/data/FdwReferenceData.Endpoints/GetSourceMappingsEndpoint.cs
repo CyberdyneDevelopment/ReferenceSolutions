@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Fdw.Data.DataSets.Abstractions;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Abstractions;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ public sealed class GetSourceMappingsEndpoint : GetSourceMappingsEndpointBase
 {
     /// <inheritdoc />
     public GetSourceMappingsEndpoint(
-        DataSetConfigurationProvider dataSetProvider,
+        IDataSetConfigurationProvider dataSetProvider,
         ILogger<Fdw.Schema.Endpoints.GetSourceMappingsEndpointBase> logger)
         : base(dataSetProvider, logger)
     {

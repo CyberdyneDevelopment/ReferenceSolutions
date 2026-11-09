@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Fdw.Data.DataSets.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 
 using Fdw.Services.Data;
@@ -11,7 +12,7 @@ namespace FdwReferenceDataSets.Endpoints;
 public class UpdateDataSetEndpoint : UpdateDataSetEndpointBase
 {
     /// <inheritdoc />
-    public UpdateDataSetEndpoint(DataSetConfigurationProvider dataSetProvider, CategoryConfigurationProvider categories, ILogger<UpdateDataSetEndpoint> logger)
+    public UpdateDataSetEndpoint(IDataSetConfigurationProvider dataSetProvider, ICategoryConfigurationProvider categories, ILogger<UpdateDataSetEndpoint> logger)
         : base(logger, dataSetProvider, categories) {
     }
 

@@ -15,7 +15,7 @@ public sealed class GetLineageNeighbourhoodEndpoint : GetLineageNeighbourhoodEnd
     public GetLineageNeighbourhoodEndpoint(
         ILogger<GetLineageNeighbourhoodEndpointBase> logger,
         IDataSetConfigurationProvider dataSets,
-        DataStoreConfigurationProvider dataStores,
+        IDataStoreConfigurationProvider dataStores,
         IPipelineConfigurationProvider pipelines,
         IDataSetVariationConfigurationProvider variations,
         ICategoryConfigurationProvider categories,

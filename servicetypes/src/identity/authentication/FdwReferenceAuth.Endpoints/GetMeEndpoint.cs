@@ -28,7 +28,7 @@ namespace FdwReferenceAuth.Endpoints;
 [ExcludeFromCodeCoverage]
 public class GetMeEndpoint : EndpointWithoutRequest<GetMeResponse>
 {
-    private readonly UserConfigurationProvider _userProvider;
+    private readonly IUserConfigurationProvider _userProvider;
     private readonly IUserRolesHeld _userRolesHeld;
     private readonly IRoleConfigurationProvider _roleProvider;
     private readonly IUserTenantsHeld _userTenantsHeld;
@@ -37,7 +37,7 @@ public class GetMeEndpoint : EndpointWithoutRequest<GetMeResponse>
 
     /// <inheritdoc />
     public GetMeEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IUserRolesHeld userRolesHeld,
         IRoleConfigurationProvider roleProvider,
         IUserTenantsHeld userTenantsHeld,

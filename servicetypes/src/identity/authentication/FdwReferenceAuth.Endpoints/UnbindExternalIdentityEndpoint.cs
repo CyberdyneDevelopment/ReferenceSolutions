@@ -14,7 +14,7 @@ public class UnbindExternalIdentityEndpoint : UnbindExternalIdentityEndpointBase
 {
     /// <inheritdoc />
     public UnbindExternalIdentityEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IExternalIdentityConfigurationProvider externalIdentities,
         ILogger<UnbindExternalIdentityEndpoint> logger)
         : base(logger, userProvider, externalIdentities)

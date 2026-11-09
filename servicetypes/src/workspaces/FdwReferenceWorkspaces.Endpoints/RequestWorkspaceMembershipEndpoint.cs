@@ -19,7 +19,7 @@ public sealed class RequestWorkspaceMembershipEndpoint : RequestWorkspaceMembers
     /// <inheritdoc />
     public RequestWorkspaceMembershipEndpoint(
         ILogger<RequestWorkspaceMembershipEndpointBase> logger,
-        WorkspaceConfigurationProvider workspaces,
+        IWorkspaceConfigurationProvider workspaces,
         IAuthenticationContextAccessor authContext,
         IWorkspaceAccessPolicy access)
         : base(logger, workspaces, authContext, access)

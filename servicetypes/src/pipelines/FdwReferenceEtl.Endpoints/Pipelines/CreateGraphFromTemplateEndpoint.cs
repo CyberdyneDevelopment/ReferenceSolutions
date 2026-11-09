@@ -4,6 +4,7 @@ using Fdw.Data.Transformations.Configuration;
 using Fdw.Services.Pipelines;
 using Fdw.Services.Pipelines.Endpoints;
 using Microsoft.Extensions.Logging;
+using Fdw.Services.Pipelines.Abstractions;
 
 namespace FdwReferencePipelines.Endpoints;
 
@@ -16,9 +17,9 @@ public class CreateGraphFromTemplateEndpoint : CreateGraphFromTemplateEndpointBa
 {
     /// <inheritdoc />
     public CreateGraphFromTemplateEndpoint(
-        PipelineServiceConfigurationProvider provider, ITransformationConfigurationProvider transformations,
-        IDataSetConfigurationProvider dataSets, ILogger<CreateGraphFromTemplateEndpoint> logger)
-        : base(logger, provider, transformations, dataSets)
+        IPipelineConfigurationProvider provider, ITransformationConfigurationProvider transformations,
+        IDataSetConfigurationProvider dataSets, PipelineOwner owner, ILogger<CreateGraphFromTemplateEndpoint> logger)
+        : base(logger, provider, transformations, dataSets, owner)
     {
     }
 

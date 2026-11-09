@@ -14,7 +14,7 @@ public class ClassifyDataStoreItemsEndpoint : ClassifyDataStoreItemsEndpointBase
     /// <summary>
     /// Initializes a new instance of the <see cref="ClassifyDataStoreItemsEndpoint"/> class.
     /// </summary>
-    public ClassifyDataStoreItemsEndpoint(DataStoreConfigurationProvider dataStoreProvider, ILogger<ClassifyDataStoreItemsEndpoint> logger)
+    public ClassifyDataStoreItemsEndpoint(IDataStoreConfigurationProvider dataStoreProvider, ILogger<ClassifyDataStoreItemsEndpoint> logger)
         : base(logger, dataStoreProvider)
     {
     }

@@ -22,7 +22,7 @@ public class UpdateUserEndpoint : UpdateUserEndpointBase<UpdateUserRequest>
     private readonly ILogger<UpdateUserEndpoint> _logger;
 
     /// <inheritdoc />
-    public UpdateUserEndpoint(UserConfigurationProvider userProvider, ILogger<UpdateUserEndpoint> logger)
+    public UpdateUserEndpoint(IUserConfigurationProvider userProvider, ILogger<UpdateUserEndpoint> logger)
         : base(logger, userProvider) {
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<UpdateUserEndpoint>.Instance;
     }

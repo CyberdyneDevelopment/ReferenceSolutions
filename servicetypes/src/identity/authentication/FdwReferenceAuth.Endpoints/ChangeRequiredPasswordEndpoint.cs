@@ -32,14 +32,14 @@ namespace FdwReferenceAuth.Endpoints;
 [ExcludeFromCodeCoverage]
 public sealed class ChangeRequiredPasswordEndpoint : Endpoint<ChangeRequiredPasswordRequest>
 {
-    private readonly UserConfigurationProvider _userProvider;
+    private readonly IUserConfigurationProvider _userProvider;
     private readonly IUserCredentialService _credentialService;
     private readonly IAuthenticationContextAccessor _authContextAccessor;
     private readonly ILogger<ChangeRequiredPasswordEndpoint> _logger;
 
     /// <summary>Initializes a new instance of the <see cref="ChangeRequiredPasswordEndpoint"/> class.</summary>
     public ChangeRequiredPasswordEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IUserCredentialService credentialService,
         IAuthenticationContextAccessor authContextAccessor,
         ILogger<ChangeRequiredPasswordEndpoint> logger)

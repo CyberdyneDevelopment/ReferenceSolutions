@@ -14,7 +14,7 @@ public class CreateApiKeyEndpoint : CreateApiKeyEndpointBase
 {
     /// <inheritdoc />
     public CreateApiKeyEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IPersonalAccessTokenService tokenService,
         IAgentKeyService agentKeyService,
         ILogger<CreateApiKeyEndpoint> logger)

@@ -18,7 +18,7 @@ public sealed class ListWorkspaceMembershipRequestsEndpoint : ListWorkspaceMembe
     /// <inheritdoc />
     public ListWorkspaceMembershipRequestsEndpoint(
         ILogger<ListWorkspaceMembershipRequestsEndpointBase> logger,
-        WorkspaceConfigurationProvider workspaces,
+        IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access)
         : base(logger, workspaces, access)
     {

@@ -14,7 +14,7 @@ public class EnableConnectionEndpoint : EnableConnectionEndpointBase
 {
     /// <inheritdoc />
     public EnableConnectionEndpoint(
-        ConnectionConfigurationProvider connections,
+        IConnectionConfigurationProvider connections,
         IConnectionDisabledStates states,
         ILogger<EnableConnectionEndpointBase> logger)
         : base(connections, states, logger)

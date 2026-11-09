@@ -1,3 +1,4 @@
+using Fdw.Data.DataSets.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Endpoints;
@@ -13,7 +14,7 @@ namespace FdwReferenceDataSets.Endpoints;
 public class LookupDataSetsEndpoint : LookupDataSetsEndpointBase
 {
     /// <summary>Initializes a new instance of the <see cref="LookupDataSetsEndpoint"/> class.</summary>
-    public LookupDataSetsEndpoint(DataSetConfigurationProvider dataSetProvider, ILogger<LookupDataSetsEndpoint> logger)
+    public LookupDataSetsEndpoint(IDataSetConfigurationProvider dataSetProvider, ILogger<LookupDataSetsEndpoint> logger)
         : base(logger, dataSetProvider)
     {
     }

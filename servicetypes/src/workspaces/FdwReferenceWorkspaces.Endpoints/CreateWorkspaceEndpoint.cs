@@ -18,7 +18,7 @@ public sealed class CreateWorkspaceEndpoint : CreateWorkspaceEndpointBase
     /// <inheritdoc />
     public CreateWorkspaceEndpoint(
         ILogger<CreateWorkspaceEndpointBase> logger,
-        WorkspaceConfigurationProvider provider,
+        IWorkspaceConfigurationProvider provider,
         IAuthenticationContextAccessor authContext)
         : base(logger, provider, authContext)
     {

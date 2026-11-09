@@ -118,6 +118,10 @@ public sealed class FileSystemConnectionType
     ];
 
     /// <inheritdoc/>
+    protected override Fdw.Services.Connections.Abstractions.Authentication.ConnectionAuthentication<FileSystemConnectionConfiguration> EndpointAuthenticationDeclaration
+        => Fdw.Services.Connections.Abstractions.Authentication.ConnectionAuthentication<FileSystemConnectionConfiguration>.None;
+
+    /// <inheritdoc/>
     /// <remarks>A file-system connection reads and writes under its root with the host process's own file-system access -- it carries no credential of its own -- so every such connection acts as the host.</remarks>
     protected override IGenericResult<bool> DecideHostIdentity(FileSystemConnectionConfiguration configuration)
         => GenericResult<bool>.Success(true);

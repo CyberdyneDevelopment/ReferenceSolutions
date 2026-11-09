@@ -14,7 +14,7 @@ public class RevokeApiKeyEndpoint : RevokeApiKeyEndpointBase
 {
     /// <inheritdoc />
     public RevokeApiKeyEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IPersonalAccessTokenService tokenService,
         IAgentKeyService agentKeyService,
         ILogger<RevokeApiKeyEndpoint> logger)

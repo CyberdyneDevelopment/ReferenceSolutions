@@ -6,6 +6,7 @@ using FastEndpoints;
 using Fdw.Results;
 using Fdw.Services.Authentication.Abstractions.Security;
 using Fdw.Web.RestEndpoints.ApiReference;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace SampleGroup.Endpoints;

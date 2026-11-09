@@ -14,7 +14,7 @@ public class CreatePasswordLinkEndpoint : CreatePasswordLinkEndpointBase
     /// Initializes a new instance of the <see cref="CreatePasswordLinkEndpoint"/> class.
     /// </summary>
     public CreatePasswordLinkEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         IPasswordLinkService linkService,
         ILogger<CreatePasswordLinkEndpoint> logger)
         : base(userProvider, linkService, logger)

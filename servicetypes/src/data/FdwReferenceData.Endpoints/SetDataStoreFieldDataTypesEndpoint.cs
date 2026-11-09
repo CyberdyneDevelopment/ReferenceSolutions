@@ -14,7 +14,7 @@ public class SetDataStoreFieldDataTypesEndpoint : SetDataStoreFieldDataTypesEndp
     /// <summary>
     /// Initializes a new instance of the <see cref="SetDataStoreFieldDataTypesEndpoint"/> class.
     /// </summary>
-    public SetDataStoreFieldDataTypesEndpoint(DataStoreConfigurationProvider dataStoreProvider, ILogger<SetDataStoreFieldDataTypesEndpoint> logger)
+    public SetDataStoreFieldDataTypesEndpoint(IDataStoreConfigurationProvider dataStoreProvider, ILogger<SetDataStoreFieldDataTypesEndpoint> logger)
         : base(logger, dataStoreProvider)
     {
     }

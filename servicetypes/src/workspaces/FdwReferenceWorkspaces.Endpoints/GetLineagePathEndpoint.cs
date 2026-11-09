@@ -15,7 +15,7 @@ public sealed class GetLineagePathEndpoint : GetLineagePathEndpointBase
     public GetLineagePathEndpoint(
         ILogger<GetLineagePathEndpointBase> logger,
         IDataSetConfigurationProvider dataSets,
-        DataStoreConfigurationProvider dataStores,
+        IDataStoreConfigurationProvider dataStores,
         IPipelineConfigurationProvider pipelines,
         IDataSetVariationConfigurationProvider variations,
         ICategoryConfigurationProvider categories,

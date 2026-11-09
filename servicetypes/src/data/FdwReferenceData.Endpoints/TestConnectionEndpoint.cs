@@ -18,7 +18,7 @@ public class TestConnectionEndpoint : TestConnectionEndpointBase
     /// <inheritdoc />
     public TestConnectionEndpoint(
         IConnectionProvider connectionProvider,
-        ConnectionConfigurationProvider provider,
+        IConnectionConfigurationProvider provider,
         IConnectionHealthService healthService,
         ILogger<TestConnectionEndpoint> logger)
         : base(connectionProvider, provider, healthService, logger)

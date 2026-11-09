@@ -17,14 +17,14 @@ namespace FdwReferenceConfiguration.Endpoints;
 public class SetDefaultThemeEndpoint : SetDefaultThemeEndpointBase
 {
     private readonly ILogger<SetDefaultThemeEndpoint> _logger;
-    private readonly ThemeConfigurationProvider _provider;
+    private readonly IThemeConfigurationProvider _provider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SetDefaultThemeEndpoint"/> class.
     /// </summary>
     public SetDefaultThemeEndpoint(
         ILogger<SetDefaultThemeEndpoint> logger,
-        ThemeConfigurationProvider provider)
+        IThemeConfigurationProvider provider)
         : base(logger)
     {
         _logger = logger ?? NullLogger<SetDefaultThemeEndpoint>.Instance;

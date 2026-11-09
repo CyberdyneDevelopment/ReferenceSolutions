@@ -15,7 +15,7 @@ public class DeleteDataStoreEndpoint : DeleteDataStoreEndpointBase<IDataStoreImp
     private readonly ILogger<DeleteDataStoreEndpoint> _logger;
 
     /// <inheritdoc />
-    public DeleteDataStoreEndpoint(DataStoreConfigurationProvider dataStoreProvider, ILogger<DeleteDataStoreEndpoint> logger)
+    public DeleteDataStoreEndpoint(IDataStoreConfigurationProvider dataStoreProvider, ILogger<DeleteDataStoreEndpoint> logger)
         : base(logger, dataStoreProvider) {
         _logger = logger ?? NullLogger<DeleteDataStoreEndpoint>.Instance;
     }

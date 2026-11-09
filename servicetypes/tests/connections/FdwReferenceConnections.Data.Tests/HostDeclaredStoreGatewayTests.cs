@@ -120,6 +120,23 @@ public sealed class HostDeclaredStoreGatewayTests
     [Fact]
     [Trait("Priority", "P0")]
     [Trait("Category", "Security")]
+    public async Task AStoreLookupThatBrokeRefusesTheCommandAndIsNotReadAsNotTheHosts()
+    {
+        _stores.Setup(p => p.GetReference("Unreadable", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GenericResult<DataStoreReference>.Failure(new GenericMessage("the lookup of the store broke")));
+
+        var result = await Gateway(system: false).Execute<IEnumerable<Dictionary<string, object?>>>(
+            Query(), new DataStoreTarget("Unreadable", "sec", "Secret"), TestContext.Current.CancellationToken);
+
+        result.IsFailure.ShouldBeTrue();
+        result.Messages.ShouldContain(message => message.Message == "the lookup of the store broke");
+        _stores.Verify(p => p.Get("Unreadable", "sec", "Secret", It.IsAny<CancellationToken>()), Times.Never);
+        _connections.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "Security")]
     public async Task OpeningARecordSourceOverAHostStoreIsRefusedToAUser()
     {
         var result = await Gateway(system: false).OpenRecordSource(

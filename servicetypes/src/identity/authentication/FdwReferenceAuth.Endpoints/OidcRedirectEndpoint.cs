@@ -69,7 +69,7 @@ public sealed class OidcRedirectEndpoint : Endpoint<OidcRedirectRequest, OidcRed
     /// <summary>The cookie carrying the flow name, whose key encrypts the one-time code's token.</summary>
     internal const string FlowCookieName = "fdw_oidc_flow";
 
-    private readonly AuthenticationRunner _runner;
+    private readonly IAuthenticationRunner _runner;
     private readonly IAuthenticationFlowProvider _flows;
     private readonly ILogger<OidcRedirectEndpoint> _logger;
 
@@ -78,7 +78,7 @@ public sealed class OidcRedirectEndpoint : Endpoint<OidcRedirectRequest, OidcRed
     /// <param name="flows">Supplies the flow to run.</param>
     /// <param name="logger">The logger.</param>
     public OidcRedirectEndpoint(
-        AuthenticationRunner runner, IAuthenticationFlowProvider flows, ILogger<OidcRedirectEndpoint>? logger = null)
+        IAuthenticationRunner runner, IAuthenticationFlowProvider flows, ILogger<OidcRedirectEndpoint>? logger = null)
     {
         _logger = logger ?? NullLogger<OidcRedirectEndpoint>.Instance;
         _runner = runner ?? throw new ArgumentNullException(nameof(runner));

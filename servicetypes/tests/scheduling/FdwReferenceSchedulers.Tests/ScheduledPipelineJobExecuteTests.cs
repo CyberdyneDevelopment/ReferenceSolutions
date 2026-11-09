@@ -29,6 +29,10 @@ public sealed class ScheduledPipelineJobExecuteTests
     {
         public Mock<IGenericScheduledExecutionHandler> Handler { get; } = new();
 
+        public Mock<IScheduleRunRecorder> Recorder { get; } = new();
+
+        public Guid ScheduleDurableId { get; } = Guid.Parse("01a1be2a-1344-7419-866c-a8bd65bf4a7b");
+
         public ScheduledPipelineJob Job { get; }
 
         public Harness()
@@ -45,11 +49,23 @@ public sealed class ScheduledPipelineJobExecuteTests
             var gateways = new Mock<IDataGatewayProvider>();
             gateways.Setup(g => g.ByName(It.IsAny<string>())).Returns(new Mock<IDataGateway> { DefaultValue = DefaultValue.Mock }.Object);
 
+            // The job reads the schedule's durable Id by the name its job data carries, then records the fire through the recorder (FDW-4598).
+            var schedule = new Mock<IScheduleImplementationConfiguration>();
+            schedule.SetupGet(s => s.Id).Returns(ScheduleDurableId);
+            var schedules = new Mock<IScheduleConfigurationProvider>();
+            schedules
+                .Setup(s => s.Get(ScheduleId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(GenericResult<IScheduleImplementationConfiguration>.Success(schedule.Object));
+            Recorder
+                .Setup(r => r.RecordRun(It.IsAny<Guid>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset?>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(GenericResult.Success());
+
             Job = new ScheduledPipelineJob(
                 Handler.Object,
                 gateways.Object,
                 new Mock<IAuthenticationContextAccessor>().Object,
-                new Mock<IScheduleConfigurationProvider>().Object);
+                schedules.Object,
+                Recorder.Object);
         }
 
         public Task Fire(JobDataMap triggerData)
@@ -112,6 +128,20 @@ public sealed class ScheduledPipelineJobExecuteTests
         await harness.Fire(new JobDataMap());
 
         harness.VerifyStartedFor(ScheduledFor);
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "Scheduling")]
+    public async Task AFireRecordsItsLastRunAndNextRunOnTheScheduleThroughTheRecorder()
+    {
+        var harness = new Harness();
+
+        await harness.Fire(new JobDataMap());
+
+        // FDW-4598: the schedule is found by the name the job carries and its durable Id is what the recorder is given; the time Quartz fired and its next fire time are what is recorded.
+        harness.Recorder.Verify(r => r.RecordRun(
+            harness.ScheduleDurableId, Fired, ScheduledFor.AddDays(1), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

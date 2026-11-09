@@ -14,7 +14,7 @@ public class ListUserSignInsEndpoint : ListUserSignInsEndpointBase
 {
     /// <inheritdoc />
     public ListUserSignInsEndpoint(
-        UserConfigurationProvider userProvider,
+        IUserConfigurationProvider userProvider,
         ISignInLog signIns,
         ILogger<ListUserSignInsEndpoint> logger)
         : base(logger, userProvider, signIns)

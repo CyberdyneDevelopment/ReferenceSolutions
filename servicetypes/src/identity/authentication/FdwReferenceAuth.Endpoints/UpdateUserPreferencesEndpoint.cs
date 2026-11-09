@@ -13,7 +13,7 @@ public class UpdateUserPreferencesEndpoint : UpdateUserPreferencesEndpointBase
     /// Initializes a new instance of the <see cref="UpdateUserPreferencesEndpoint"/> class.
     /// </summary>
     public UpdateUserPreferencesEndpoint(
-        UserPreferenceConfigurationProvider preferenceProvider,
+        IUserPreferenceConfigurationProvider preferenceProvider,
         ILogger<UpdateUserPreferencesEndpoint> logger)
         : base(preferenceProvider, logger)
     {

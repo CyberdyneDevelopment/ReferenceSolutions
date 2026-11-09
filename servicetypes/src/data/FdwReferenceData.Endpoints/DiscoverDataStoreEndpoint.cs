@@ -23,7 +23,7 @@ public class DiscoverDataStoreEndpoint : DiscoverDataStoreEndpointBase
     /// <param name="schema">Discovers through the store's connection and adds what the store lacks.</param>
     /// <param name="logger">The logger.</param>
     public DiscoverDataStoreEndpoint(
-        DataStoreConfigurationProvider dataStores,
+        IDataStoreConfigurationProvider dataStores,
         ISchemaInformationService schema,
         ILogger<DiscoverDataStoreEndpoint> logger)
         : base(dataStores, schema, logger)

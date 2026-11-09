@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Connections;
 using Fdw.Services.Connections.Endpoints;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ namespace FdwReferenceConnections.Endpoints;
 public class CreateConnectionEndpoint : CreateConnectionEndpointBase
 {
     /// <inheritdoc />
-    public CreateConnectionEndpoint(ConnectionConfigurationProvider connectionProvider, ILogger<CreateConnectionEndpoint> logger)
+    public CreateConnectionEndpoint(IConnectionConfigurationProvider connectionProvider, ILogger<CreateConnectionEndpoint> logger)
         : base(logger, connectionProvider)
     {
     }

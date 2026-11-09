@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Fdw.Data.DataSets.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 
 using Fdw.Services.Authentication.Abstractions.Security;
@@ -13,7 +14,7 @@ public class CreateDataSetEndpoint : CreateDataSetEndpointBase
 {
     /// <inheritdoc />
     public CreateDataSetEndpoint(
-        DataSetConfigurationProvider dataSetProvider, CategoryConfigurationProvider categories, IAuthenticationContextAccessor authContext, ILogger<CreateDataSetEndpoint> logger)
+        IDataSetConfigurationProvider dataSetProvider, ICategoryConfigurationProvider categories, IAuthenticationContextAccessor authContext, ILogger<CreateDataSetEndpoint> logger)
         : base(logger, dataSetProvider, categories, authContext) {
     }
 

@@ -17,7 +17,7 @@ public class DeleteUserEndpoint : DeleteUserEndpointBase
     private readonly ILogger<DeleteUserEndpoint> _logger;
 
     /// <inheritdoc />
-    public DeleteUserEndpoint(UserConfigurationProvider userProvider, ILogger<DeleteUserEndpoint> logger)
+    public DeleteUserEndpoint(IUserConfigurationProvider userProvider, ILogger<DeleteUserEndpoint> logger)
         : base(logger, userProvider) {
         _logger = logger ?? NullLogger<DeleteUserEndpoint>.Instance;
     }

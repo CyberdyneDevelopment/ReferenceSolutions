@@ -15,7 +15,7 @@ public class GetDataStorePathsEndpoint : GetDataStorePathsEndpointBase
     /// <summary>
     /// Initializes a new instance of the <see cref="GetDataStorePathsEndpoint"/> class.
     /// </summary>
-    public GetDataStorePathsEndpoint(DataStoreConfigurationProvider dataStoreProvider, ILogger<GetDataStorePathsEndpoint> logger)
+    public GetDataStorePathsEndpoint(IDataStoreConfigurationProvider dataStoreProvider, ILogger<GetDataStorePathsEndpoint> logger)
         : base(logger, dataStoreProvider) {
     }
 

@@ -19,7 +19,7 @@ public sealed class CreateWorkspaceRelationshipEndpoint : CreateWorkspaceRelatio
     /// <inheritdoc />
     public CreateWorkspaceRelationshipEndpoint(
         ILogger<CreateWorkspaceRelationshipEndpointBase> logger,
-        WorkspaceConfigurationProvider workspaces,
+        IWorkspaceConfigurationProvider workspaces,
         IWorkspaceAccessPolicy access,
         IDataSetConfigurationProvider dataSets)
         : base(logger, workspaces, access, dataSets)

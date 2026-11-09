@@ -14,7 +14,7 @@ namespace FdwReferenceAuth.Endpoints;
 public class RevokeUserRoleEndpoint : RevokeUserRoleEndpointBase
 {
     /// <inheritdoc />
-    public RevokeUserRoleEndpoint(IRoleConfigurationProvider roleProvider, UserRoleConfigurationProvider userRoleProvider, UserConfigurationProvider userProvider, ITokenRevocationStore revocations, ILogger<RevokeUserRoleEndpoint> logger)
+    public RevokeUserRoleEndpoint(IRoleConfigurationProvider roleProvider, IUserRoleConfigurationProvider userRoleProvider, IUserConfigurationProvider userProvider, ITokenRevocationStore revocations, ILogger<RevokeUserRoleEndpoint> logger)
         : base(logger, roleProvider, userRoleProvider, userProvider, revocations) {
     }
 

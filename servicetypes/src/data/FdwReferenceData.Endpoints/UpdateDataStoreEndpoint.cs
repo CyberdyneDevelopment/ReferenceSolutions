@@ -1,4 +1,5 @@
 ﻿using System;
+using Fdw.Services.Connections.Abstractions;
 using Fdw.Services.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -22,7 +23,7 @@ public class UpdateDataStoreEndpoint : UpdateDataStoreEndpointBase<IDataStoreImp
     /// <summary>
     /// Initializes a new instance of the <see cref="UpdateDataStoreEndpoint"/> class.
     /// </summary>
-    public UpdateDataStoreEndpoint(DataStoreConfigurationProvider dataStoreProvider, ConnectionConfigurationProvider connectionProvider, ILogger<UpdateDataStoreEndpoint> logger)
+    public UpdateDataStoreEndpoint(IDataStoreConfigurationProvider dataStoreProvider, IConnectionConfigurationProvider connectionProvider, ILogger<UpdateDataStoreEndpoint> logger)
         : base(logger, dataStoreProvider, connectionProvider) {
         _logger = logger ?? NullLogger<UpdateDataStoreEndpoint>.Instance;
     }

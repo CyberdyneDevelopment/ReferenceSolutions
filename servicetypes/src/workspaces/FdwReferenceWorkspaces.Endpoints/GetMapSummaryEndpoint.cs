@@ -24,7 +24,7 @@ public sealed class GetMapSummaryEndpoint : GetMapSummaryEndpointBase
     public GetMapSummaryEndpoint(
         ILogger<GetMapSummaryEndpointBase> logger,
         IDataSetConfigurationProvider dataSets,
-        DataStoreConfigurationProvider dataStores,
+        IDataStoreConfigurationProvider dataStores,
         IPipelineConfigurationProvider pipelines,
         IDataSetVariationConfigurationProvider variations,
         ICategoryConfigurationProvider categories,

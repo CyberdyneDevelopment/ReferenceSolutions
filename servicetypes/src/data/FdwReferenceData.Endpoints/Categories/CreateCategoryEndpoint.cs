@@ -1,3 +1,4 @@
+using Fdw.Data.DataSets.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Endpoints;
@@ -14,7 +15,7 @@ namespace FdwReferenceDataSets.Endpoints;
 public class CreateCategoryEndpoint : CreateCategoryEndpointBase
 {
     /// <inheritdoc />
-    public CreateCategoryEndpoint(CategoryConfigurationProvider categories, ITenantContext tenant, ILogger<CreateCategoryEndpoint> logger)
+    public CreateCategoryEndpoint(ICategoryConfigurationProvider categories, ITenantContext tenant, ILogger<CreateCategoryEndpoint> logger)
         : base(logger, categories, tenant)
     {
     }

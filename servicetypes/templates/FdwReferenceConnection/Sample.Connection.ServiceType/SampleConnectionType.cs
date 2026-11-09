@@ -41,6 +41,10 @@ public sealed class SampleConnectionType
     }
 
     /// <inheritdoc/>
+    protected override Fdw.Services.Connections.Abstractions.Authentication.ConnectionAuthentication<SampleConnectionConfiguration> EndpointAuthenticationDeclaration
+        => Fdw.Services.Connections.Abstractions.Authentication.ConnectionAuthentication<SampleConnectionConfiguration>.None;
+
+    /// <inheritdoc/>
     /// <remarks>
     /// State the fact for this kind. A connection that signs in as the host (Windows or Kerberos, a managed
     /// identity, the host's file system) answers true, and only a platform administrator may then create or change

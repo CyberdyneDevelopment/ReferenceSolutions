@@ -21,7 +21,7 @@ public class GetDataStoreEndpoint : GetDataStoreEndpointBase
     /// Initializes a new instance of the <see cref="GetDataStoreEndpoint"/> class.
     /// </summary>
     public GetDataStoreEndpoint(
-        DataStoreConfigurationProvider dataStoreProvider,
+        IDataStoreConfigurationProvider dataStoreProvider,
         // Why: connections monitor required to resolve ConnectionId → ConnectionName in the detail DTO.
         ConnectionConfigurationProvider connectionProvider,
         IAuthorizationService authorization,

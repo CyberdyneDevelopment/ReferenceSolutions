@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Fdw.Data.Transformations.Configuration;
 using System.Diagnostics.CodeAnalysis;
 using Fdw.Services.Data.Endpoints;
 using Fdw.Services.Data.Transformations;
@@ -16,7 +17,7 @@ public sealed class UpdateTransformationEndpoint : UpdateTransformationEndpointB
     /// Initializes a new instance of <see cref="UpdateTransformationEndpoint"/>.
     /// </summary>
     public UpdateTransformationEndpoint(
-        TransformationConfigurationProvider transformations,
+        ITransformationConfigurationProvider transformations,
         IEffectiveSettingsProvider settings,
         ILogger<UpdateTransformationEndpoint> logger)
         : base(logger, transformations, settings) {

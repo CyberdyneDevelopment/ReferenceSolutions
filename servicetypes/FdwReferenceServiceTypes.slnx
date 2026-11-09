@@ -266,6 +266,12 @@
       <BuildType Solution="Develop|*" Project="Debug" />
       <BuildType Solution="Release-Local|*" Project="Debug" />
     </Project>
+    <Project Path="tests/identity/authentication/FdwReferenceAuthentication.StepLifetimes.Tests/FdwReferenceAuthentication.StepLifetimes.Tests.csproj">
+      <BuildType Solution="Debug-Local|*" Project="Debug" />
+      <BuildType Solution="Develop-Local|*" Project="Debug" />
+      <BuildType Solution="Develop|*" Project="Debug" />
+      <BuildType Solution="Release-Local|*" Project="Debug" />
+    </Project>
     <Project Path="tests/identity/authentication/FdwReferenceAuthentication.TokenProviders.Tests/FdwReferenceAuthentication.TokenProviders.Tests.csproj">
       <BuildType Solution="Debug-Local|*" Project="Debug" />
       <BuildType Solution="Develop-Local|*" Project="Debug" />

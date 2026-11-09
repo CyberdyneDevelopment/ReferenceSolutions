@@ -29,13 +29,13 @@ public sealed class SetDefaultTenantEndpoint : Endpoint<SetDefaultTenantRequest,
     /// <summary>The UserTenants domain, and its one implementation, as the domain row records them.</summary>
     private const string UserTenantsDomain = "UserTenants";
 
-    private readonly UserTenantConfigurationProvider _userTenantProvider;
+    private readonly IUserTenantConfigurationProvider _userTenantProvider;
     private readonly ITenantProvider _tenantProvider;
     private readonly ILogger<SetDefaultTenantEndpoint> _logger;
 
     /// <inheritdoc />
     public SetDefaultTenantEndpoint(
-        UserTenantConfigurationProvider userTenantProvider,
+        IUserTenantConfigurationProvider userTenantProvider,
         ITenantProvider tenantProvider,
         ILogger<SetDefaultTenantEndpoint>? logger)
     {
