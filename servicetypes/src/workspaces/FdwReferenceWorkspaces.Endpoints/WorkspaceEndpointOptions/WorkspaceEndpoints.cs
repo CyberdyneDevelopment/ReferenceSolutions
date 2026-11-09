@@ -36,7 +36,7 @@ public partial class WorkspaceEndpoints : EndpointTypeCollectionBase<WorkspaceEn
     /// </summary>
     /// <remarks>
     /// Without this the routes load and every one of them fails to construct: the endpoints take
-    /// WorkspaceConfigurationProvider, and nothing else in the host registers it. That failure is a
+    /// the note providers and the access policy, and nothing else in the host registers them. That failure is a
     /// 500 at call time rather than a 404, so it looks like a broken endpoint rather than an
     /// unregistered service — the group that declares the routes is therefore the right place to
     /// register what they depend on, which is what DataLineageEndpoints does for its own provider.
@@ -44,21 +44,8 @@ public partial class WorkspaceEndpoints : EndpointTypeCollectionBase<WorkspaceEn
     public WorkspaceEndpoints()
         => Registration((builder, loggerFactory) =>
         {
-            builder.Services.AddSingleton<IWorkspaceImplementationConfigurationProvider, WorkspaceImplementationConfigurationProvider>(sp => new WorkspaceImplementationConfigurationProvider(
-                sp.GetRequiredService<ILoggerFactory>().CreateLogger<WorkspaceImplementationConfigurationProvider>(),
-                sp.GetRequiredService<IConfigurationGatewayProvider>(),
-                ConfigurationGatewayTypes.ConfigurationConnection, "workspace", "WorkspaceConfiguration"));
-
-            builder.Services.TryAddSingleton<WorkspaceConfigurationProvider>(sp =>
-            {
-                var domain = new WorkspaceConfigurationProvider(
-                    sp.GetRequiredService<ILogger<WorkspaceConfigurationProvider>>(),
-                    sp.GetRequiredService<IConfigurationGatewayProvider>(),
-                    ConfigurationGatewayTypes.ConfigurationConnection, "workspace", "Workspace");
-                domain.Register("Workspace", sp.GetRequiredService<IWorkspaceImplementationConfigurationProvider>());
-                return domain;
-            });
-            builder.Services.TryAddSingleton<IWorkspaceConfigurationProvider>(sp => sp.GetRequiredService<WorkspaceConfigurationProvider>());
+            // The workspace providers, the workspace permissions and the default workspace maker are registered by Fdw.Services.Workspaces' own service type
+            // (DefaultWorkspaceServiceType, FDW-4556), so a host that founds tenants has them without serving these endpoints.
 
             builder.Services.AddSingleton<INoteImplementationConfigurationProvider, NoteImplementationConfigurationProvider>(sp => new NoteImplementationConfigurationProvider(
                 sp.GetRequiredService<ILoggerFactory>().CreateLogger<NoteImplementationConfigurationProvider>(),
@@ -95,25 +82,6 @@ public partial class WorkspaceEndpoints : EndpointTypeCollectionBase<WorkspaceEn
                     sp.GetRequiredService<IDataSetConfigurationProvider>(),
                     sp.GetRequiredService<IDataSetVariationConfigurationProvider>(),
                     sp.GetService<ILogger<WorkspaceReadService>>()));
-
-            // A workspace's own permissions (workspaces/{id}:view/query), created with it and removed
-            // with it (FDW-937). Scoped like the policy: the providers are singletons, the work is per request.
-            builder.Services.TryAddScoped<IWorkspacePermissions>(sp =>
-                new WorkspacePermissions(
-                    sp.GetRequiredService<IPermissionConfigurationProvider>(),
-                    sp.GetRequiredService<IRolePermissionConfigurationProvider>(),
-                    sp.GetService<ILogger<WorkspacePermissions>>()));
-
-            // Makes and removes an organization's default workspace for the founding of a tenant or an organization (FDW-3668). Scoped like
-            // the permissions it uses; it reads the ambient authentication context, because a new tenant's workspace is written as that tenant.
-            // AddScoped, not TryAdd: Fdw.Services.Users registers a refusing IDefaultWorkspaceFounding for a host without this group (FDW-4178), and
-            // the last registration wins, so this one replaces it whichever of the two registers first.
-            builder.Services.AddScoped<IDefaultWorkspaceFounding>(sp =>
-                new DefaultWorkspaceFounding(
-                    sp.GetRequiredService<IWorkspaceConfigurationProvider>(),
-                    sp.GetRequiredService<IWorkspacePermissions>(),
-                    sp.GetRequiredService<IAuthenticationContextAccessor>(),
-                    sp.GetService<ILogger<DefaultWorkspaceFounding>>()));
 
             return GenericResult<IHostApplicationBuilder>.Success(builder);
         });
