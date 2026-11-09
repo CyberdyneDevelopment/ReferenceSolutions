@@ -23,7 +23,7 @@ public sealed class DocumentRecordsTestFixture
             NullLogger<MsSqlConnection>.Instance,
             new Moq.Mock<ISecretManagerProvider>().Object,
             authenticationContextAccessor: null,
-            settings: null);
+            settings: null) { DefaultMaxParametersBeforeTempTable = 50 };
         var created = factory.Create(
             new MsSqlConnectionConfiguration
             {

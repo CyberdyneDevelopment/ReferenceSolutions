@@ -1,3 +1,4 @@
+using Fdw.Services.Connections.Sql;
 using Fdw.Services;
 using System;
 using System.Globalization;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using Fdw.Services.Connections.Sqlite;
+using Fdw.Commands.Data.Abstractions.Logging;
 
 namespace FdwReferenceConnections.Sqlite;
 
@@ -21,6 +23,13 @@ namespace FdwReferenceConnections.Sqlite;
 public sealed class SqliteConnectionFactory : ServiceFactoryBase<IGenericConnection, SqliteConnectionConfiguration>, ISqliteConnectionFactory
 {
     private readonly ILogger<SqliteConnectionFactory> _logger;
+
+    /// <summary>
+    /// Gets the default for the number of parameters a key list carries before it goes to a table the statement joins on, declared on the connection type's
+    /// service type option and handed to the factory when the type registers it (FDW-4267). A connection whose configuration states its own number takes that one.
+    /// Null when the factory was built without a connection type: the connections it builds then keep every value a parameter.
+    /// </summary>
+    public int? DefaultMaxParametersBeforeTempTable { get; init; }
     private readonly ILogger<SqliteConnection> _connectionLogger;
     // Why: the factory owns secret resolution, exactly as HttpConnectionFactory owns its
     // IHttpClientFactory — SqliteConnectionType registers what this factory needs. Null only on the
@@ -94,6 +103,11 @@ public sealed class SqliteConnectionFactory : ServiceFactoryBase<IGenericConnect
         if (configuration is null)
             return GenericResult<IGenericConnection>.Failure(SqliteConnectionLog.ConfigurationNull(_logger));
 
+        // Never defaulted (FDW-4267): the connection type hands its factory the default of MaxParametersBeforeTempTable when it registers, and every connection
+        // translates under that setting; a factory built without one is refused, naming the kind.
+        if (DefaultMaxParametersBeforeTempTable is not { } declaredDefault)
+            return GenericResult<IGenericConnection>.Failure(DatabaseCommandLog.MaxParametersBeforeTempTableNotDeclared(_logger, "Sqlite"));
+
         if (AuthMethodNeedsSecret(configuration) && string.IsNullOrEmpty(resolvedSecret))
             return GenericResult<IGenericConnection>.Failure(
                 SqliteConnectionLog.SecretManagerNotFound(
@@ -101,7 +115,7 @@ public sealed class SqliteConnectionFactory : ServiceFactoryBase<IGenericConnect
                     EffectiveName(configuration, configuration.Name),
                     configuration.AuthenticationType));
 
-        return Build(configuration, configuration.Name, resolvedSecret);
+        return Build(configuration, configuration.Name, resolvedSecret, declaredDefault);
     }
 
     private static (SqliteConnectionConfiguration? Typed, string Name) Unwrap(IGenericConfiguration? configuration)
@@ -120,7 +134,7 @@ public sealed class SqliteConnectionFactory : ServiceFactoryBase<IGenericConnect
            && !string.Equals(configuration.AuthenticationType, "None", StringComparison.OrdinalIgnoreCase);
 
 
-    private IGenericResult<IGenericConnection> Build(SqliteConnectionConfiguration configuration, string connectionName, string? password)
+    private IGenericResult<IGenericConnection> Build(SqliteConnectionConfiguration configuration, string connectionName, string? password, int declaredDefault)
     {
         var effectiveName = EffectiveName(configuration, connectionName);
         if (string.IsNullOrWhiteSpace(configuration.DataSource))
@@ -138,7 +152,10 @@ public sealed class SqliteConnectionFactory : ServiceFactoryBase<IGenericConnect
 
             var connectionString = BuildConnectionString(configuration, commandTimeout.Value, password);
             return GenericResult<IGenericConnection>.Success(
-                new SqliteConnection(_connectionLogger, configuration, connectionString));
+                new SqliteConnection(_connectionLogger, configuration, connectionString)
+                {
+                    TranslationSettings = TranslationSettings.Resolve(null, declaredDefault),
+                });
         }
         catch (Exception ex)
         {

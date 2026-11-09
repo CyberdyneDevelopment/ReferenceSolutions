@@ -11,5 +11,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\connections\FdwReferenceConnections.PostgreSql\FdwReferenceConnections.PostgreSql.csproj" />
+    <ProjectReference Include="..\..\..\src\connections\FdwReferenceConnections.PostgreSql.Registration\FdwReferenceConnections.PostgreSql.Registration.csproj" />
   </ItemGroup>
 </Project>

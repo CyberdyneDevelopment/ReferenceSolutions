@@ -28,6 +28,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
 using Fdw.Data.DataSets.Abstractions;
+using Fdw.Web.RestEndpoints.ErrorMapping;
 
 namespace FdwReferenceEtlJobs.Endpoints;
 
@@ -111,24 +112,22 @@ public sealed class WebhookTriggerEndpoint : EndpointWithoutRequest
         var proven = await Authenticate(name, sent, ct).ConfigureAwait(false);
         if (proven is null)
         {
-            await Send.UnauthorizedAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(WebhookCallLog.WebhookTriggerNotSignedIn(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
         var body = await ReadBody(ct).ConfigureAwait(false);
         if (body is null)
         {
-            await Send.ResponseAsync(new { error = "The body is larger than 1 MB." }, StatusCodes.Status413PayloadTooLarge, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(WebhookCallLog.WebhookTriggerBodyTooLarge(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
         var values = WebhookBodyMapper.Map(body, proven.Trigger.ParameterMaps);
         if (values.IsFailure || values.Value is not { } supplied)
         {
-            var reason = string.Concat(values.CurrentMessage);
-            WebhookCallLog.BodyRefused(_logger, name, reason);
-            AddError(reason);
-            await Send.ErrorsAsync(400, ct).ConfigureAwait(false);
+            WebhookCallLog.BodyRefused(_logger, name, string.Concat(values.CurrentMessage));
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(values, HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -217,8 +216,7 @@ public sealed class WebhookTriggerEndpoint : EndpointWithoutRequest
 
         if (result.IsFailure || result.Value is not { } started)
         {
-            AddError(EtlServerLog.GetError(result, _logger));
-            await Send.ErrorsAsync(400, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
             return;
         }
 

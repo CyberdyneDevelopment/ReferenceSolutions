@@ -12,6 +12,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceEtlJobs.Endpoints.Logging;
 using Fdw.Services.Etl;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceEtlJobs.Endpoints;
 
@@ -68,9 +70,15 @@ public sealed class GetJobStatusEndpoint : Endpoint<JobStatusRequest, JobStatusR
         EtlServerLog.JobStatusRequestReceived(_logger, req.ExecutionId);
 
         var itemResult = await _executionTracker.GetItem(req.ExecutionId, ct).ConfigureAwait(false);
-        if (!itemResult.IsSuccess || itemResult.Value is null)
+        if (itemResult.IsFailure)
         {
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(itemResult, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (itemResult.Value is null)
+        {
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(EtlServerLog.GetJobStatusJobstatusNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

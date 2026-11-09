@@ -14,6 +14,7 @@ using Fdw.Commands.Data.Abstractions.Logging;
 using Fdw.Data.Abstractions;
 using Fdw.Data.Abstractions.Mappers.PocoMappers;
 using Fdw.Data.PostgreSql;
+using Fdw.Services.Connections.Sql;
 using Fdw.Messages;
 using Fdw.Results;
 using Fdw.Services.Connections;
@@ -79,7 +80,14 @@ public sealed partial class PostgreSqlConnection : ConnectionBase<NpgsqlCommand,
     /// Gets the translator for a command type using TypeCollection lookup.
     /// </summary>
     protected override IDataCommandTranslator<NpgsqlCommand> GetTranslator(string commandType)
-        => PostgreSqlDataCommandTranslators.ByName(commandType);
+        => SettingsBoundTranslator<NpgsqlCommand>.Bind(PostgreSqlDataCommandTranslators.ByName(commandType), TranslationSettings);
+
+    /// <summary>
+    /// Gets the setting this connection tells its translators: the most values a key list carries as parameters before it goes to one JSON parameter the statement
+    /// reads through <c>json_populate_recordset</c> (FDW-4267). The factory resolves it once, from the connection's configuration or the default of the connection
+    /// type.
+    /// </summary>
+    public required TranslationSettings TranslationSettings { get; init; }
 
     /// <summary>
     /// Gets the connection type identifier.
@@ -246,7 +254,7 @@ public sealed partial class PostgreSqlConnection : ConnectionBase<NpgsqlCommand,
     // The connection's configured MaxSerialInsert, or fewer where one command cannot carry that many rows of the container's
     // columns (the parameter limit). Rows beyond it go to the COPY, which has no such limit.
     private int SerialLimit(IStorageContainer container)
-        => Math.Min(Configuration.MaxSerialInsert, PostgreSqlInsertTranslator.RowsPerRequest(container));
+        => Math.Min(Configuration.MaxSerialInsert, PostgreSqlInsertTranslator.RowsPerRequest(container, TranslationSettings.MaxParametersBeforeTempTable));
 
     // The bulk route: a binary COPY of the planned rows. On any failure it returns a coded failure; it never reports Success
     // without actually writing the rows.
@@ -524,7 +532,7 @@ public sealed partial class PostgreSqlConnection : ConnectionBase<NpgsqlCommand,
             PostgreSqlConnectionLog.UnitOfWorkBegan(_logger, _connectionName);
             return GenericResult<IDataConnectionTransaction>.Success(
                 new PostgreSqlDataConnectionTransaction(
-                    new PostgreSqlConnection(_logger, Configuration, unitConnection, _connectionName, _commandTimeoutSeconds, inUnitOfWork: true),
+                    new PostgreSqlConnection(_logger, Configuration, unitConnection, _connectionName, _commandTimeoutSeconds, inUnitOfWork: true) { TranslationSettings = TranslationSettings },
                     transaction,
                     _logger,
                     _connectionName));

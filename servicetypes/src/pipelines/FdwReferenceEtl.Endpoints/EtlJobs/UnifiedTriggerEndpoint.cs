@@ -31,6 +31,7 @@ using Fdw.Services.Pipelines.Notifications;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceEtlJobs.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
 
 namespace FdwReferenceEtlJobs.Endpoints;
 
@@ -240,17 +241,14 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
         if (itemType == ExecutionItemTypes.NotFound)
         {
             EtlServerLog.UnknownTriggerType(_logger, type);
-            AddError(EtlServerLog.GetError(GenericResult.Failure(
-                EtlServerLog.UnknownTriggerType(_logger, type)), _logger));
-            await Send.ErrorsAsync(400, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(EtlServerLog.UnifiedTriggerUnknownTriggerType(_logger, type)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
         // Why: validate that id OR name is present
         if (req.Id is null && string.IsNullOrWhiteSpace(req.Name))
         {
-            AddError("Either 'id' or 'name' must be provided.");
-            await Send.ErrorsAsync(400, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(EtlServerLog.UnifiedTriggerEitherIdOrNameMust(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -261,8 +259,7 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
             var result = await TriggerPipeline(req, ct).ConfigureAwait(false);
             if (!result.IsSuccess)
             {
-                AddError(EtlServerLog.GetError(result, _logger));
-                await Send.ErrorsAsync(400, ct).ConfigureAwait(false);
+                await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
                 return;
             }
 
@@ -276,8 +273,7 @@ public sealed class UnifiedTriggerEndpoint : Endpoint<UnifiedTriggerRequest, Uni
             var result = await TriggerProject(req, ct).ConfigureAwait(false);
             if (!result.IsSuccess)
             {
-                AddError(EtlServerLog.GetError(result, _logger));
-                await Send.ErrorsAsync(400, ct).ConfigureAwait(false);
+                await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
                 return;
             }
 

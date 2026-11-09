@@ -13,6 +13,8 @@ using Fdw.Services.Users;
 using Fdw.Services.Users.Abstractions;
 using Fdw.Services.Users.Configuration;
 using Fdw.Claims.Abstractions;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceAuth.Endpoints;
 
@@ -78,7 +80,7 @@ public class GetMyMembershipsEndpoint : EndpointWithoutRequest<MembershipsRespon
         // The caller's id is its sub claim, read in one place (CallerClaims, FDW-3580).
         if (!CallerClaims.TryGetUserId(User, out var userId))
         {
-            await Send.UnauthorizedAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceAuthAnswerLog.GetMyMembershipsNotSignedIn(Logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -91,9 +93,15 @@ public class GetMyMembershipsEndpoint : EndpointWithoutRequest<MembershipsRespon
         var memberships = await _memberships.Get(userId, ct).ConfigureAwait(false);
         // A failed read is not an empty membership list. Answering 200 with {items:[]} would tell
         // the caller they belong nowhere, which is a different fact from "we could not look".
-        if (!memberships.IsSuccess || memberships.Value is null)
+        if (memberships.IsFailure)
         {
-            await Send.StatusCodeAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(memberships, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (memberships.Value is null)
+        {
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceAuthAnswerLog.GetMyMembershipsMembershipsReturnedNothing(Logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -102,18 +110,30 @@ public class GetMyMembershipsEndpoint : EndpointWithoutRequest<MembershipsRespon
         // Roles are part of the membership, not decoration: a membership listed with no roles when
         // the roles could not be read would say "a member holding nothing", which is a real and
         // different state.
-        if (!held.IsSuccess || held.Value is null || !roles.IsSuccess || roles.Value is null)
+        if (held.IsFailure)
         {
-            await Send.StatusCodeAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(held, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (held.Value is null || !roles.IsSuccess || roles.Value is null)
+        {
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceAuthAnswerLog.GetMyMembershipsHeldOrRolesReturnedNothing(Logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
         var tenants = await _tenants.GetAllTenants(ct).ConfigureAwait(false);
         // Selectable is part of the membership the console acts on -- which tenants its picker offers
         // -- so unlike the names it cannot be decoration: a failed tenant read fails the answer.
-        if (!tenants.IsSuccess || tenants.Value is null)
+        if (tenants.IsFailure)
         {
-            await Send.StatusCodeAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(tenants, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (tenants.Value is null)
+        {
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceAuthAnswerLog.GetMyMembershipsTenantsReturnedNothing(Logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

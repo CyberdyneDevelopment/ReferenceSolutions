@@ -14,6 +14,7 @@ using FdwReferenceAuth.Endpoints.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Fdw.Web.RestEndpoints.ErrorMapping;
 
 namespace FdwReferenceAuth.Endpoints;
 
@@ -92,7 +93,14 @@ public sealed class ListSignInFlowsEndpoint : Endpoint<ListSignInFlowsRequest, S
         }
 
         var flows = await _flows.Get(ct).ConfigureAwait(false);
-        if (flows.IsFailure || flows.Value is not { } configured)
+        if (flows.IsFailure)
+        {
+            AuthenticationLog.SignInFlowsUnreadable(_log);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(flows, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (flows.Value is not { } configured)
         {
             AuthenticationLog.SignInFlowsUnreadable(_log);
             await Send.ResponseAsync(new SignInFlowListResponse(), StatusCodes.Status500InternalServerError, ct).ConfigureAwait(false);
@@ -106,7 +114,7 @@ public sealed class ListSignInFlowsEndpoint : Endpoint<ListSignInFlowsRequest, S
             var offered = await Offer(flow, req.ReturnUrl, origin, ct).ConfigureAwait(false);
             if (offered.IsFailure)
             {
-                await Send.ResponseAsync(new SignInFlowListResponse(), StatusCodes.Status500InternalServerError, ct).ConfigureAwait(false);
+                await Send.ResultAsync(ResultHttpStatusMapper.Answer(offered, HttpContext)).ConfigureAwait(false);
                 return;
             }
 

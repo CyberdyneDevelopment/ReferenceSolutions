@@ -123,7 +123,7 @@ public sealed class CreateProjectEndpoint : Endpoint<CreateProjectRequest, Proje
         var mapped = OrchestrationNodeMapper.ToProject(config, _logger);
         if (mapped is null)
         {
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProjectLog.CreateProjectProjectNotMappable(_logger, req.Name)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

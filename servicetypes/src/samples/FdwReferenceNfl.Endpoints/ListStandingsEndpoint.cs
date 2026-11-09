@@ -10,6 +10,8 @@ using Fdw.Services.Data.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceNfl.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceNfl.Endpoints;
 
@@ -50,8 +52,7 @@ public sealed class ListStandingsEndpoint : Endpoint<ListStandingsRequest, List<
         if (!dsResult.IsSuccess)
         {
             NflLog.ListStandingsFailed(_logger, "Failed to resolve NflSeasonStandings DataSet");
-            AddError("Failed to resolve NflSeasonStandings DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(dsResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -59,8 +60,7 @@ public sealed class ListStandingsEndpoint : Endpoint<ListStandingsRequest, List<
         if (src is null)
         {
             NflLog.ListStandingsFailed(_logger, "No active source found for NflSeasonStandings DataSet");
-            AddError("No active source found for NflSeasonStandings DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NflLog.ListStandingsReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -82,8 +82,7 @@ public sealed class ListStandingsEndpoint : Endpoint<ListStandingsRequest, List<
         if (!result.IsSuccess)
         {
             NflLog.ListStandingsFailed(_logger, result.CurrentMessage!);
-            AddError("Failed to list standings");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
             return;
         }
 

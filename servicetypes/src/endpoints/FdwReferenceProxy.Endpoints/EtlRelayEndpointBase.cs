@@ -3,6 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using FastEndpoints;
 using Microsoft.Extensions.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceProxy.Endpoints;
 
@@ -55,7 +57,6 @@ public abstract class EtlRelayEndpointBase : EndpointWithoutRequest
             return;
         }
 
-        AddError("Failed to proxy request to EtlServer");
-        await Send.ErrorsAsync(502, ct).ConfigureAwait(false);
+        await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceProxyAnswerLog.EtlRelayFailedToProxyRequestTo(_logger)), HttpContext)).ConfigureAwait(false);
     }
 }

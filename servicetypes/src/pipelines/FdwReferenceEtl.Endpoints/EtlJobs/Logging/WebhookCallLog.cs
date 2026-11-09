@@ -28,4 +28,12 @@ public static partial class WebhookCallLog
     /// <summary>Logs a webhook trigger that could not be read.</summary>
     [MessageLogging(EventId = 10373, Level = LogLevel.Error, Message = "Webhook '{webhook}' could not be read: {reason}")]
     public static partial IGenericMessage Unreadable(ILogger logger, string webhook, string reason);
+
+    /// <summary>Logs that The request to webhook trigger was refused: the caller is not signed in.</summary>
+    [MessageLogging(EventId = 50001, Level = LogLevel.Warning, Message = "The request to webhook trigger was refused: the caller is not signed in", ClientMessage = "You must be signed in to webhook trigger")]
+    public static partial IGenericMessage WebhookTriggerNotSignedIn(ILogger logger);
+
+    /// <summary>Logs that A call to a webhook sent a body larger than 1 MB; it was not read.</summary>
+    [MessageLogging(EventId = 130001, Level = LogLevel.Warning, Message = "A call to a webhook sent a body larger than 1 MB; it was not read", ClientMessage = "The body is larger than 1 MB")]
+    public static partial IGenericMessage WebhookTriggerBodyTooLarge(ILogger logger);
 }

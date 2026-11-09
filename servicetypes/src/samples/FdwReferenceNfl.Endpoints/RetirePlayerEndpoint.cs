@@ -12,6 +12,8 @@ using Fdw.Services.Data.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceNfl.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceNfl.Endpoints;
 
@@ -52,8 +54,7 @@ public sealed class RetirePlayerEndpoint : Endpoint<PlayerIdRequest, PlayerRecor
         if (!dsResult.IsSuccess)
         {
             NflLog.RetirePlayerFailed(_logger, req.PlayerId, "Failed to resolve NflPlayers DataSet");
-            AddError("Failed to resolve NflPlayers DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(dsResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -61,8 +62,7 @@ public sealed class RetirePlayerEndpoint : Endpoint<PlayerIdRequest, PlayerRecor
         if (src is null)
         {
             NflLog.RetirePlayerFailed(_logger, req.PlayerId, "No active source found for NflPlayers DataSet");
-            AddError("No active source found for NflPlayers DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NflLog.RetirePlayerReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -76,8 +76,7 @@ public sealed class RetirePlayerEndpoint : Endpoint<PlayerIdRequest, PlayerRecor
         if (!getResult.IsSuccess)
         {
             NflLog.RetirePlayerFailed(_logger, req.PlayerId, getResult.CurrentMessage!);
-            AddError("Failed to query player for retirement");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(getResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -85,7 +84,7 @@ public sealed class RetirePlayerEndpoint : Endpoint<PlayerIdRequest, PlayerRecor
         if (player == null)
         {
             NflLog.RetirePlayerNotFound(_logger, req.PlayerId);
-            await Send.NotFoundAsync(ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NflLog.RetirePlayerNotFound2(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -126,8 +125,7 @@ public sealed class RetirePlayerEndpoint : Endpoint<PlayerIdRequest, PlayerRecor
         if (!updateResult.IsSuccess)
         {
             NflLog.RetirePlayerFailed(_logger, req.PlayerId, updateResult.CurrentMessage!);
-            AddError("Failed to retire player");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(updateResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 

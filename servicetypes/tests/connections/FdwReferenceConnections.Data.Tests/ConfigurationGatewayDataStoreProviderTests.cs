@@ -62,7 +62,7 @@ public sealed class ConfigurationGatewayDataStoreProviderTests
         // Why: the real gateway always exposes a non-null DataStores tree (used by FK parent-join
         // resolution during Get(id)); mirror that so the by-id path does not NRE on a null list.
         mockGateway.Setup(g => g.DataStores).Returns([]);
-        _dataStoreConfigProvider = new DataStoreConfigurationProvider(NullLogger<DataStoreConfigurationProvider>.Instance, GatewayProviderFor(mockGateway.Object), "PlatformConfiguration", "data", "DataStore", new Fdw.Services.Configuration.UnavailablePlacement());
+        _dataStoreConfigProvider = new DataStoreConfigurationProvider(NullLogger<DataStoreConfigurationProvider>.Instance, GatewayProviderFor(mockGateway.Object), "PlatformConfiguration", "data", "DataStore", new Fdw.Services.Configuration.UnavailablePlacement(), Moq.Mock.Of<Fdw.Services.Authentication.Abstractions.Security.IAuthenticationContextAccessor>(), Moq.Mock.Of<Fdw.Services.Multitenancy.Abstractions.ICrossTenantChangePolicy>());
 
         // Why: no top-level gateway wired — matches the gateway-less host configuration (reference-ui)
         // the core-extraction commit called out; Get(name)/Load fall through to _coreProvider entirely.

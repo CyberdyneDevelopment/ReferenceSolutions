@@ -10,6 +10,8 @@ using Fdw.Services.Data.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceNfl.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceNfl.Endpoints;
 
@@ -50,8 +52,7 @@ public sealed class GetGameBoxscoreEndpoint : Endpoint<GameIdRequest, List<Playe
         if (!dsResult.IsSuccess)
         {
             NflLog.GetGameBoxscoreFailed(_logger, req.GameId, "Failed to resolve NflPlayerGameStats DataSet");
-            AddError("Failed to resolve NflPlayerGameStats DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(dsResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -59,8 +60,7 @@ public sealed class GetGameBoxscoreEndpoint : Endpoint<GameIdRequest, List<Playe
         if (src is null)
         {
             NflLog.GetGameBoxscoreFailed(_logger, req.GameId, "No active source found for NflPlayerGameStats DataSet");
-            AddError("No active source found for NflPlayerGameStats DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NflLog.GetGameBoxscoreReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -73,8 +73,7 @@ public sealed class GetGameBoxscoreEndpoint : Endpoint<GameIdRequest, List<Playe
         if (!result.IsSuccess)
         {
             NflLog.GetGameBoxscoreFailed(_logger, req.GameId, result.CurrentMessage!);
-            AddError("Failed to get game boxscore");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
             return;
         }
 

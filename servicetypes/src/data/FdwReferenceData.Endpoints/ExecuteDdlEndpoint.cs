@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceDdl.Endpoints.ColumnTypes;
 using FdwReferenceDdl.Endpoints.Logging;
 using Fdw.Results;
+using Fdw.Web.RestEndpoints.ErrorMapping;
 
 namespace FdwReferenceDdl.Endpoints;
 
@@ -116,22 +117,26 @@ public sealed class ExecuteDdlEndpoint : Endpoint<ExecuteDdlRequest, ExecuteDdlR
 
         if (string.IsNullOrWhiteSpace(req.TableName))
         {
-            AddError("TableName is required");
-            await Send.ErrorsAsync(400, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(DdlLog.ExecuteDdlTablenameIsRequired(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
         if (req.Columns.Count == 0)
         {
-            AddError("At least one column is required");
-            await Send.ErrorsAsync(400, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(DdlLog.ExecuteDdlAtLeastOneColumnIs(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
         var connectionResult = await _connectionProvider.Get<IDataConnection>(req.Name, ct);
-        if (!connectionResult.IsSuccess || connectionResult.Value == null)
+        if (connectionResult.IsFailure)
         {
-            await Send.NotFoundAsync(ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(connectionResult, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (connectionResult.Value is null)
+        {
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(DdlLog.ExecuteDdlDdlNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -151,8 +156,7 @@ public sealed class ExecuteDdlEndpoint : Endpoint<ExecuteDdlRequest, ExecuteDdlR
                 if (ReferenceEquals(columnType, SqlColumnTypes.NotFound))
                 {
                     DdlLog.ColumnTypeUnknown(_logger, req.Name, col.Name, col.SqlType);
-                    AddError($"Column '{col.Name}' names SQL type '{col.SqlType}', which is no known column type");
-                    await Send.ErrorsAsync(400, ct);
+                    await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(DdlLog.ExecuteDdlColumnTypeUnknown(_logger, col.Name, col.SqlType)), HttpContext)).ConfigureAwait(false);
                     return;
                 }
 

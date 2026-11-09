@@ -22,7 +22,7 @@ public static partial class QuartzSchedulingLog
     public static partial IGenericMessage JobExecutionFailed(ILogger logger, string scheduleId, string processId, string? error);
 
     /// <summary>Logs a Quartz native call throwing.</summary>
-    [MessageLogging(EventId = 3, Level = LogLevel.Error, Message = "Quartz call for schedule '{scheduleId}' failed")]
+    [MessageLogging(EventId = 90001, Level = LogLevel.Error, Message = "Quartz call for schedule '{scheduleId}' failed", ClientMessage = "Quartz call for schedule '{scheduleId}' failed")]
     public static partial IGenericMessage NativeCallFailed(ILogger logger, Exception ex, string scheduleId);
 
     /// <summary>Traces a Quartz trigger built from a schedule's trigger kind.</summary>
@@ -30,13 +30,13 @@ public static partial class QuartzSchedulingLog
     public static partial IGenericMessage TriggerBuilt(ILogger logger, string scheduleId, string triggerType);
 
     /// <summary>A schedule's trigger kind is missing the value it needs to be scheduled.</summary>
-    [MessageLogging(EventId = 5, Level = LogLevel.Error, Message = "Schedule '{scheduleId}' is a {triggerType} schedule but has no usable {field}, so it cannot be scheduled")]
+    [MessageLogging(EventId = 60001, Level = LogLevel.Error, Message = "Schedule '{scheduleId}' is a {triggerType} schedule but has no usable {field}, so it cannot be scheduled", ClientMessage = "Schedule '{scheduleId}' is a {triggerType} schedule but has no usable {field}, so it cannot be scheduled")]
     public static partial IGenericMessage TriggerDataMissing(ILogger logger, string scheduleId, string triggerType, string field);
 
     /// <summary>A schedule does not fire on a clock, so Quartz does not register it.</summary>
     // Why Debug: reconciliation meets the same row every pass (once a minute), so a louder level would
     // repeat the same line all day; the row is skipped by design, not by failure.
-    [MessageLogging(EventId = 6, Level = LogLevel.Debug, Message = "Schedule '{scheduleId}' is a {triggerType} schedule, which does not fire on a clock; Quartz does not register it")]
+    [MessageLogging(EventId = 60002, Level = LogLevel.Debug, Message = "Schedule '{scheduleId}' is a {triggerType} schedule, which does not fire on a clock; Quartz does not register it", ClientMessage = "Schedule '{scheduleId}' is a {triggerType} schedule, which does not fire on a clock; Quartz does not register it")]
     public static partial IGenericMessage ScheduleNotClockDriven(ILogger logger, string scheduleId, string triggerType);
 
     /// <summary>Traces a fire's run fields written back to the schedule row.</summary>
@@ -48,7 +48,7 @@ public static partial class QuartzSchedulingLog
     public static partial IGenericMessage RunFieldsWriteFailed(ILogger logger, string scheduleId, string? reason);
 
     /// <summary>A fired job carries no value for a key its translator always writes.</summary>
-    [MessageLogging(EventId = 9, Level = LogLevel.Error, Message = "Fired Quartz job '{jobKey}' has no '{dataKey}' in its job data")]
+    [MessageLogging(EventId = 60003, Level = LogLevel.Error, Message = "Fired Quartz job '{jobKey}' has no '{dataKey}' in its job data", ClientMessage = "Fired Quartz job '{jobKey}' has no '{dataKey}' in its job data")]
     public static partial IGenericMessage JobDataMissing(ILogger logger, string jobKey, string dataKey);
 
     /// <summary>Writing a fire's execution history row failed.</summary>
@@ -56,7 +56,7 @@ public static partial class QuartzSchedulingLog
     public static partial IGenericMessage HistoryWriteFailed(ILogger logger, string scheduleId, string? reason);
 
     /// <summary>A live Quartz trigger is of a kind no schedule translates to.</summary>
-    [MessageLogging(EventId = 11, Level = LogLevel.Error, Message = "Live Quartz trigger for schedule '{scheduleId}' is a {triggerClass}, which no schedule kind maps to")]
+    [MessageLogging(EventId = 60004, Level = LogLevel.Error, Message = "Live Quartz trigger for schedule '{scheduleId}' is a {triggerClass}, which no schedule kind maps to", ClientMessage = "Live Quartz trigger for schedule '{scheduleId}' is a {triggerClass}, which no schedule kind maps to")]
     public static partial IGenericMessage UnrecognisedTrigger(ILogger logger, string scheduleId, string triggerClass);
 
     /// <summary>The handler reported success but returned no process result, so the run is recorded as Failed.</summary>
@@ -80,7 +80,7 @@ public static partial class QuartzSchedulingLog
     public static partial IGenericMessage MissedFireRuleUnknown(ILogger logger, string scheduleId, string rule);
 
     /// <summary>The fire times a cron schedule missed could not be worked out (FDW-3788).</summary>
-    [MessageLogging(EventId = 17, Level = LogLevel.Error, Message = "The cron fire times that schedule '{scheduleId}' missed could not be worked out: {reason}")]
+    [MessageLogging(EventId = 90002, Level = LogLevel.Error, Message = "The cron fire times that schedule '{scheduleId}' missed could not be worked out: {reason}", ClientMessage = "The cron fire times that schedule '{scheduleId}' missed could not be worked out")]
     public static partial IGenericMessage MissedFiresNotWorkedOut(ILogger logger, string scheduleId, string reason);
 
     /// <summary>The catch-up run of a schedule could not be started (FDW-3788).</summary>

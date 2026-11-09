@@ -9,6 +9,8 @@ using Fdw.Services.Data.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceNfl.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceNfl.Endpoints;
 
@@ -49,8 +51,7 @@ public sealed class DeleteStatEndpoint : Endpoint<StatIdRequest>
         if (!dsResult.IsSuccess)
         {
             NflLog.NflOperationFailed(_logger, "DeleteStat", "Failed to resolve NflPlayerGameStats DataSet");
-            AddError("Failed to resolve NflPlayerGameStats DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(dsResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -58,8 +59,7 @@ public sealed class DeleteStatEndpoint : Endpoint<StatIdRequest>
         if (src is null)
         {
             NflLog.NflOperationFailed(_logger, "DeleteStat", "No active source found for NflPlayerGameStats DataSet");
-            AddError("No active source found for NflPlayerGameStats DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NflLog.DeleteStatReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -74,8 +74,7 @@ public sealed class DeleteStatEndpoint : Endpoint<StatIdRequest>
         if (!result.IsSuccess)
         {
             NflLog.NflOperationFailed(_logger, "DeleteStat", result.CurrentMessage!);
-            AddError("Failed to delete stat");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
             return;
         }
 

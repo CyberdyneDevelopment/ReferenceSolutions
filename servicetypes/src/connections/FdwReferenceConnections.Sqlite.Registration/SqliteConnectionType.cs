@@ -19,6 +19,8 @@ using Fdw.Services.Connections.Sqlite.Validation;
 using Fdw.Services.Connections.Abstractions.Authentication;
 using System.Linq;
 using System;
+using Fdw.Commands.Data.Abstractions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace FdwReferenceConnections.Sqlite;
 
@@ -41,9 +43,17 @@ public sealed class SqliteConnectionType
     /// which schema, how it authenticates, whether it trusts a certificate) has no default.
     /// </summary>
     public override IReadOnlyDictionary<string, object> DeclaredDefaults
-        => _declaredDefaults ??= ServiceTypeDefaults.With(base.DeclaredDefaults, (nameof(SqliteConnectionConfiguration.Mode), "ReadWriteCreate"), (nameof(SqliteConnectionConfiguration.Cache), "Default"), (nameof(SqliteConnectionConfiguration.ForeignKeys), false));
+        => _declaredDefaults ??= ServiceTypeDefaults.With(base.DeclaredDefaults, (nameof(SqliteConnectionConfiguration.Mode), "ReadWriteCreate"), (nameof(SqliteConnectionConfiguration.Cache), "Default"), (nameof(SqliteConnectionConfiguration.ForeignKeys), false), (nameof(IDatabaseConnectionConfiguration.MaxParametersBeforeTempTable), 50));
 
     private IReadOnlyDictionary<string, object>? _declaredDefaults;
+
+    // The default of MaxParametersBeforeTempTable is declared in DeclaredDefaults (FDW-4267, FDW-3823) and read here through ServiceTypeDefaults, so a host changes it with
+    // ServiceTypeDefaults.Override at registration and a connection that states its own number takes that instead. A kind that declares none returns a coded failure from
+    // its Register phase, so the host stops with a named reason.
+    private IGenericResult<int> ResolveMaxParametersBeforeTempTable(ILoggerFactory loggerFactory)
+        => ServiceTypeDefaults.TryResolve(this, nameof(IDatabaseConnectionConfiguration.MaxParametersBeforeTempTable), out var value) && value is int number
+            ? GenericResult<int>.Success(number)
+            : GenericResult<int>.Failure(DatabaseCommandLog.MaxParametersBeforeTempTableNotDeclared(loggerFactory.CreateLogger<SqliteConnectionType>(), Name));
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteConnectionType"/> class.
@@ -87,6 +97,8 @@ public sealed class SqliteConnectionType
         // working and logging success. Appending composes onto what the base put there.
         Registration((builder, loggerFactory) =>
         {
+            var maxParameters = ResolveMaxParametersBeforeTempTable(loggerFactory ?? NullLoggerFactory.Instance);
+            if (maxParameters.IsFailure) return maxParameters.ToNewResult<IHostApplicationBuilder>();
 
             // Why: this option registers its factory WITH WHAT THAT FACTORY NEEDS, exactly as
             // HttpConnectionType registers AddHttpClient() for its own factory. SQLite supports
@@ -97,7 +109,8 @@ public sealed class SqliteConnectionType
                 sp.GetRequiredService<ILogger<SqliteConnectionFactory>>(),
                 sp.GetRequiredService<ILogger<SqliteConnection>>(),
                 sp.GetRequiredService<ISecretManagerProvider>(),
-                sp.GetService<Lazy<IEffectiveSettingsProvider>>()),
+                sp.GetService<Lazy<IEffectiveSettingsProvider>>())
+                { DefaultMaxParametersBeforeTempTable = maxParameters.Value },
                 ServiceLifetime.Singleton));
             builder.Services.TryAdd(new ServiceDescriptor(
                 typeof(ISqliteConnectionProvider),

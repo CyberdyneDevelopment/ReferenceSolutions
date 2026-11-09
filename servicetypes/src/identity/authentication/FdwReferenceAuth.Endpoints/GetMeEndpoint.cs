@@ -17,6 +17,8 @@ using Fdw.Services.Users.Configuration;
 using Fdw.Services.Users.Endpoints;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceAuth.Endpoints;
 
@@ -74,20 +76,20 @@ public class GetMeEndpoint : EndpointWithoutRequest<GetMeResponse>
         // FDW-3580), and the user is looked up by that Id.
         if (!CallerClaims.TryGetUserId(User, out var userId))
         {
-            await Send.UnauthorizedAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceAuthAnswerLog.GetMeNotSignedIn(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
         var userResult = await _userProvider.Get(userId, ct).ConfigureAwait(false);
         if (!userResult.IsSuccess)
         {
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(userResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
         if (userResult.Value is null)
         {
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceAuthAnswerLog.GetMeUserNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -96,9 +98,15 @@ public class GetMeEndpoint : EndpointWithoutRequest<GetMeResponse>
         // Which assignments are this user's is IUserRolesHeld's to say: it reads only this user's rows, so the cost
         // does not grow with the number of users (FDW-2676).
         var assignments = await _userRolesHeld.Get(userId, ct).ConfigureAwait(false);
-        if (!assignments.IsSuccess || assignments.Value is null)
+        if (assignments.IsFailure)
         {
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(assignments, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (assignments.Value is null)
+        {
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceAuthAnswerLog.GetMeAssignmentsReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -110,9 +118,15 @@ public class GetMeEndpoint : EndpointWithoutRequest<GetMeResponse>
             // A missing or unreadable role is a broken assignment, not an empty answer, so both a
             // failed read and a genuinely absent row are reported rather than skipped.
             var roleResult = await _roleProvider.Get(assignment.RoleId, ct).ConfigureAwait(false);
-            if (!roleResult.IsSuccess || roleResult.Value is null)
+            if (roleResult.IsFailure)
             {
-                await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+                await Send.ResultAsync(ResultHttpStatusMapper.Answer(roleResult, HttpContext)).ConfigureAwait(false);
+                return;
+            }
+
+            if (roleResult.Value is null)
+            {
+                await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceAuthAnswerLog.GetMeRoleReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
                 return;
             }
 
@@ -124,9 +138,15 @@ public class GetMeEndpoint : EndpointWithoutRequest<GetMeResponse>
         var authContext = _authContextAccessor.Current;
 
         var membershipsResult = await _userTenantsHeld.Get(userId, ct).ConfigureAwait(false);
-        if (!membershipsResult.IsSuccess || membershipsResult.Value is null)
+        if (membershipsResult.IsFailure)
         {
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(membershipsResult, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (membershipsResult.Value is null)
+        {
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceAuthAnswerLog.GetMeMembershipsReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

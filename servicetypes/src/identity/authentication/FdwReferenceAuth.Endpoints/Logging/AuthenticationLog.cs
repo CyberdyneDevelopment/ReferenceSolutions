@@ -24,9 +24,10 @@ public static partial class AuthenticationLog
     public static partial IGenericMessage TokenGenerated(ILogger logger, string username);
 
     [MessageLogging(
-        EventId = 7002,
+        EventId = 50001,
         Level = LogLevel.Warning,
-        Message = "Authentication failed for user '{username}'")]
+        Message = "Authentication failed for user '{username}'",
+        ClientMessage = "Authentication failed for user '{username}'")]
     public static partial IGenericMessage AuthenticationFailed(ILogger logger, string username);
 
     // Why: Debug, not Information — this fires on every authenticated request to a protected
@@ -200,9 +201,10 @@ public static partial class AuthenticationLog
     // ========================================================================
 
     [MessageLogging(
-        EventId = 7180,
+        EventId = 50002,
         Level = LogLevel.Warning,
-        Message = "Invalid credentials supplied for user '{username}'")]
+        Message = "Invalid credentials supplied for user '{username}'",
+        ClientMessage = "Invalid credentials supplied for user '{username}'")]
     public static partial IGenericMessage InvalidCredentials(ILogger logger, string username);
 
     // ========================================================================
@@ -269,16 +271,18 @@ public static partial class AuthenticationLog
     public static partial IGenericMessage SignInFlowsUnreadable(ILogger logger);
 
     [MessageLogging(
-        EventId = 7235,
+        EventId = 90003,
         Level = LogLevel.Error,
-        Message = "Sign-in flow '{flowName}' delivers into session service '{serviceName}', which cannot be read as a Session service: {reason}")]
+        Message = "Sign-in flow '{flowName}' delivers into session service '{serviceName}', which cannot be read as a Session service: {reason}",
+        ClientMessage = "Sign-in flow '{flowName}' delivers into session service '{serviceName}', which cannot be read as a Session service")]
     public static partial IGenericMessage SignInFlowSessionServiceUnreadable(
         ILogger logger, string flowName, string serviceName, string reason);
 
     [MessageLogging(
-        EventId = 7236,
+        EventId = 90002,
         Level = LogLevel.Error,
-        Message = "Sign-in flow '{flowName}' federates through step '{stepName}' whose authority cannot be read: {reason}")]
+        Message = "Sign-in flow '{flowName}' federates through step '{stepName}' whose authority cannot be read: {reason}",
+        ClientMessage = "Sign-in flow '{flowName}' federates through step '{stepName}' whose authority cannot be read")]
     public static partial IGenericMessage SignInFlowAuthorityUnreadable(
         ILogger logger, string flowName, string stepName, string reason);
 
@@ -390,4 +394,8 @@ public static partial class AuthenticationLog
         Level = LogLevel.Error,
         Message = "A password link could not be checked: the password link service failed (FDW-941)")]
     public static partial IGenericMessage PasswordLinkNotChecked(ILogger logger);
+
+    /// <summary>Logs that The redeemed read answered a success and no value.</summary>
+    [MessageLogging(EventId = 90001, Level = LogLevel.Error, Message = "The redeemed read answered a success and no value", ClientMessage = "The redeemed could not be read")]
+    public static partial IGenericMessage RedeemPasswordLinkRedeemedReturnedNothing(ILogger logger);
 }

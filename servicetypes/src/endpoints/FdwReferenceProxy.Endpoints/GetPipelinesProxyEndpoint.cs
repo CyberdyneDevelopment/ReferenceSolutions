@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using FastEndpoints;
 using Microsoft.Extensions.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceProxy.Endpoints;
 
@@ -61,7 +63,6 @@ public sealed class GetPipelinesProxyEndpoint : EndpointWithoutRequest
         if (relayed)
             return;
 
-        AddError("Failed to proxy request to EtlServer");
-        await Send.ErrorsAsync(502, ct).ConfigureAwait(false);
+        await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceProxyAnswerLog.GetPipelinesProxyFailedToProxyRequestTo(_logger)), HttpContext)).ConfigureAwait(false);
     }
 }

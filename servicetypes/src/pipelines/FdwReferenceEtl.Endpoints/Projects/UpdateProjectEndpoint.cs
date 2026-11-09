@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceProjects.Endpoints.Logging;
+using Fdw.Results;
 
 namespace FdwReferenceProjects.Endpoints;
 
@@ -91,14 +92,14 @@ public sealed class UpdateProjectEndpoint : Endpoint<UpdateProjectRequest, Proje
         if (getResult.IsFailure)
         {
             ProjectLog.ProjectGetFailed(_logger, req.Id, getResult.CurrentMessage);
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(getResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
         if (getResult.Value is null)
         {
             ProjectLog.ProjectNotFoundForUpdate(_logger, req.Id);
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProjectLog.UpdateProjectProjectNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -118,7 +119,7 @@ public sealed class UpdateProjectEndpoint : Endpoint<UpdateProjectRequest, Proje
         if (existing is not OrchestrationNodeImplementationConfiguration node)
         {
             ProjectLog.ProjectUpdateFailed(_logger, req.Id, $"resolved to '{existing.GetType().Name}'");
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProjectLog.UpdateProjectResolvedToOtherType(_logger, req.Id)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -137,7 +138,7 @@ public sealed class UpdateProjectEndpoint : Endpoint<UpdateProjectRequest, Proje
         var mapped = OrchestrationNodeMapper.ToProject(existing, _logger);
         if (mapped is null)
         {
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProjectLog.UpdateProjectProjectNotMappable(_logger, req.Id)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

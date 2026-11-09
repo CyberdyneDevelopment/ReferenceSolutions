@@ -8,6 +8,7 @@ using Fdw.Web.RestEndpoints.ErrorMapping;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using FdwReferenceProxy.Endpoints.Logging;
+using Fdw.Results;
 
 namespace FdwReferenceProxy.Endpoints;
 
@@ -66,9 +67,7 @@ public sealed class ListPipelineTemplatesProxyEndpoint : EndpointWithoutRequest<
             // A success with no value here is not expected on this path (see the client's own
             // non-success handling) -- kept as the prior fixed 502 rather than mapped, since
             // there is no real downstream status to relay for a call that itself succeeded.
-            ProxyLog.ProxyFailed(_logger, "Etl", "Proxy request succeeded but returned no value");
-            AddError("Failed to proxy request to EtlServer");
-            await Send.ErrorsAsync(502, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProxyLog.ListPipelineTemplatesProxyReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

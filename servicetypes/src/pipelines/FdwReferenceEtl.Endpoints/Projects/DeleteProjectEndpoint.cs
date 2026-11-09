@@ -8,6 +8,7 @@ using Fdw.Services.Etl.Projects.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceProjects.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
 
 namespace FdwReferenceProjects.Endpoints;
 
@@ -69,12 +70,12 @@ public sealed class DeleteProjectEndpoint : Endpoint<DeleteProjectRequest>
             if (FailureCategory.IsMissing(result))
             {
                 ProjectLog.ProjectNotFoundForDelete(_logger, req.Id);
-                await Send.NotFoundAsync(ct).ConfigureAwait(false);
+                await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProjectLog.DeleteProjectNotFound(_logger)), HttpContext)).ConfigureAwait(false);
                 return;
             }
 
             ProjectLog.ProjectDeleteFailed(_logger, req.Id, result.CurrentMessage);
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
             return;
         }
 

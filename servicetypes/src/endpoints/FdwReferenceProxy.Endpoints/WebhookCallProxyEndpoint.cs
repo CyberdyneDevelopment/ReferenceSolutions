@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceProxy.Endpoints;
 
@@ -58,7 +60,7 @@ public sealed class WebhookCallProxyEndpoint : EndpointWithoutRequest
     {
         if (HttpContext.Request.ContentLength > LargestBody)
         {
-            await Send.ResponseAsync(new { error = "The body is larger than 1 MB." }, StatusCodes.Status413PayloadTooLarge, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceProxyAnswerLog.WebhookCallProxyBodyTooLarge(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -73,7 +75,6 @@ public sealed class WebhookCallProxyEndpoint : EndpointWithoutRequest
             return;
         }
 
-        AddError("Failed to proxy request to EtlServer");
-        await Send.ErrorsAsync(502, ct).ConfigureAwait(false);
+        await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceProxyAnswerLog.WebhookCallProxyFailedToProxyRequestTo(_logger)), HttpContext)).ConfigureAwait(false);
     }
 }

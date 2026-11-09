@@ -154,4 +154,60 @@ public static partial class NflLog
     // General (9050-9052)
     [MessageLogging(EventId = 9050, Level = LogLevel.Error, Message = "NFL operation '{operation}' failed: {details}")]
     public static partial IGenericMessage NflOperationFailed(ILogger logger, string operation, string details);
+
+    /// <summary>Logs that the request failed: No active source found for NflSeasonStandings DataSet.</summary>
+    [MessageLogging(EventId = 90001, Level = LogLevel.Error, Message = "No active source found for NflSeasonStandings DataSet", ClientMessage = "No active source found for NflSeasonStandings DataSet")]
+    public static partial IGenericMessage ListStandingsReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that the request failed: No active source found for NflPlayerGameStats DataSet.</summary>
+    [MessageLogging(EventId = 90002, Level = LogLevel.Error, Message = "No active source found for NflPlayerGameStats DataSet", ClientMessage = "No active source found for NflPlayerGameStats DataSet")]
+    public static partial IGenericMessage DeleteStatReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that the request failed: No active source found for NflPlayers DataSet.</summary>
+    [MessageLogging(EventId = 90003, Level = LogLevel.Error, Message = "No active source found for NflPlayers DataSet", ClientMessage = "No active source found for NflPlayers DataSet")]
+    public static partial IGenericMessage RetirePlayerReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that the request failed: No active source found for NflPlayers DataSet.</summary>
+    [MessageLogging(EventId = 90004, Level = LogLevel.Error, Message = "No active source found for NflPlayers DataSet", ClientMessage = "No active source found for NflPlayers DataSet")]
+    public static partial IGenericMessage GetTeamRosterReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that the request failed: No active source found for NflPlayers DataSet.</summary>
+    [MessageLogging(EventId = 90005, Level = LogLevel.Error, Message = "No active source found for NflPlayers DataSet", ClientMessage = "No active source found for NflPlayers DataSet")]
+    public static partial IGenericMessage DeletePlayerReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that the request failed: No active source found for NflPlayers DataSet.</summary>
+    [MessageLogging(EventId = 90006, Level = LogLevel.Error, Message = "No active source found for NflPlayers DataSet", ClientMessage = "No active source found for NflPlayers DataSet")]
+    public static partial IGenericMessage CreatePlayerReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that the request failed: No active source found for NflTeams DataSet.</summary>
+    [MessageLogging(EventId = 90007, Level = LogLevel.Error, Message = "No active source found for NflTeams DataSet", ClientMessage = "No active source found for NflTeams DataSet")]
+    public static partial IGenericMessage ListTeamsReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that the request failed: No active source found for NflPlayerGameStats DataSet.</summary>
+    [MessageLogging(EventId = 90008, Level = LogLevel.Error, Message = "No active source found for NflPlayerGameStats DataSet", ClientMessage = "No active source found for NflPlayerGameStats DataSet")]
+    public static partial IGenericMessage GetPlayerStatsReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that the request failed: No active source found for NflPlayerGameStats DataSet.</summary>
+    [MessageLogging(EventId = 90009, Level = LogLevel.Error, Message = "No active source found for NflPlayerGameStats DataSet", ClientMessage = "No active source found for NflPlayerGameStats DataSet")]
+    public static partial IGenericMessage GetGameBoxscoreReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that the request failed: No active source found for NflPlayers DataSet.</summary>
+    [MessageLogging(EventId = 90010, Level = LogLevel.Error, Message = "No active source found for NflPlayers DataSet", ClientMessage = "No active source found for NflPlayers DataSet")]
+    public static partial IGenericMessage TransferPlayerReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that the request failed: No active source found for NflPlayerGameStats DataSet.</summary>
+    [MessageLogging(EventId = 90011, Level = LogLevel.Error, Message = "No active source found for NflPlayerGameStats DataSet", ClientMessage = "No active source found for NflPlayerGameStats DataSet")]
+    public static partial IGenericMessage CreatePlayerGameStatReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that the request failed: No active source found for NflGames DataSet.</summary>
+    [MessageLogging(EventId = 90012, Level = LogLevel.Error, Message = "No active source found for NflGames DataSet", ClientMessage = "No active source found for NflGames DataSet")]
+    public static partial IGenericMessage ListGamesReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that Retire player was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30001, Level = LogLevel.Warning, Message = "Retire player was not found, or is not visible to the caller", ClientMessage = "Retire player was not found")]
+    public static partial IGenericMessage RetirePlayerNotFound2(ILogger logger);
+
+    /// <summary>Logs that Transfer player was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30002, Level = LogLevel.Warning, Message = "Transfer player was not found, or is not visible to the caller", ClientMessage = "Transfer player was not found")]
+    public static partial IGenericMessage TransferPlayerNotFound2(ILogger logger);
 }

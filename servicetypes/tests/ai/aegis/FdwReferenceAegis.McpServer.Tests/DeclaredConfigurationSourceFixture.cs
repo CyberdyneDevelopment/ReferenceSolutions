@@ -1,6 +1,8 @@
 using Fdw.Aegis;
 using Fdw.Aegis.McpServer;
+using Fdw.Results;
 using Fdw.Services.Data;
+using Fdw.Services.Multitenancy.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -23,6 +25,11 @@ public sealed class DeclaredConfigurationSourceFixture : IDisposable
 
         var builder = Host.CreateApplicationBuilder();
 
+        // Why stated here: the connection registration builds the disabled-state service for every host, and that service takes the policy
+        // that decides whether one tenant may change another's object (FDW-4459). Only the settings service type registers the real one, and
+        // this host has no tenants and never enables a connection, so the policy is never asked.
+        builder.Services.AddSingleton<ICrossTenantChangePolicy, UnaskedCrossTenantChangePolicy>();
+
         AegisHostRegistration.RegisterConfigurationSource(builder, SchemaFileName)
             .IsSuccess.ShouldBeTrue();
         AegisHostRegistration.Configure(builder).IsSuccess.ShouldBeTrue();
@@ -37,4 +44,9 @@ public sealed class DeclaredConfigurationSourceFixture : IDisposable
     public IAegisCommandConfigurationProvider Commands => _host.Services.GetRequiredService<IAegisCommandConfigurationProvider>();
 
     public void Dispose() => _host.Dispose();
+
+    private sealed class UnaskedCrossTenantChangePolicy : ICrossTenantChangePolicy
+    {
+        public IGenericResult Permit(string changeName, Guid ownerTenantId, Guid? actorTenantId) => GenericResult.Success();
+    }
 }

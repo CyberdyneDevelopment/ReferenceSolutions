@@ -7,6 +7,7 @@ using Fdw.Web.RestEndpoints.ErrorMapping;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using FdwReferenceProxy.Endpoints.Logging;
+using Fdw.Results;
 
 namespace FdwReferenceProxy.Endpoints;
 
@@ -58,7 +59,7 @@ public sealed class GetScheduleProxyEndpoint : Endpoint<ScheduleNameProxyRequest
 
         if (result.Value is null)
         {
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProxyLog.GetScheduleProxyScheduleproxyNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

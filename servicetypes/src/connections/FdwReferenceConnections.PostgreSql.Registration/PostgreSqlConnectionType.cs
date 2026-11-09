@@ -27,6 +27,7 @@ using Fdw.Services.Connections.PostgreSql;
 using Fdw.Services.Connections.PostgreSql.Validation;
 using FdwReferenceConnections.PostgreSql.Discovery;
 using Fdw.Services.Connections.Abstractions.Authentication;
+using Fdw.Commands.Data.Abstractions.Logging;
 
 namespace FdwReferenceConnections.PostgreSql;
 
@@ -54,9 +55,17 @@ public sealed class PostgreSqlConnectionType
     /// which schema, how it authenticates, whether it trusts a certificate) has no default.
     /// </summary>
     public override IReadOnlyDictionary<string, object> DeclaredDefaults
-        => _declaredDefaults ??= ServiceTypeDefaults.With(base.DeclaredDefaults, (nameof(PostgreSqlConnectionConfiguration.Port), 5432), (nameof(PostgreSqlConnectionConfiguration.SslMode), "Prefer"), (nameof(PostgreSqlConnectionConfiguration.MinPoolSize), 0), (nameof(PostgreSqlConnectionConfiguration.MaxPoolSize), 100));
+        => _declaredDefaults ??= ServiceTypeDefaults.With(base.DeclaredDefaults, (nameof(PostgreSqlConnectionConfiguration.Port), 5432), (nameof(PostgreSqlConnectionConfiguration.SslMode), "Prefer"), (nameof(PostgreSqlConnectionConfiguration.MinPoolSize), 0), (nameof(PostgreSqlConnectionConfiguration.MaxPoolSize), 100), (nameof(IDatabaseConnectionConfiguration.MaxParametersBeforeTempTable), 50));
 
     private IReadOnlyDictionary<string, object>? _declaredDefaults;
+
+    // The default of MaxParametersBeforeTempTable is declared in DeclaredDefaults (FDW-4267, FDW-3823) and read here through ServiceTypeDefaults, so a host changes it with
+    // ServiceTypeDefaults.Override at registration and a connection that states its own number takes that instead. A kind that declares none returns a coded failure from
+    // its Register phase, so the host stops with a named reason.
+    private IGenericResult<int> ResolveMaxParametersBeforeTempTable(ILoggerFactory loggerFactory)
+        => ServiceTypeDefaults.TryResolve(this, nameof(IDatabaseConnectionConfiguration.MaxParametersBeforeTempTable), out var value) && value is int number
+            ? GenericResult<int>.Success(number)
+            : GenericResult<int>.Failure(DatabaseCommandLog.MaxParametersBeforeTempTableNotDeclared(loggerFactory.CreateLogger<PostgreSqlConnectionType>(), Name));
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgreSqlConnectionType"/> class.
@@ -125,6 +134,8 @@ public sealed class PostgreSqlConnectionType
         // working and logging success. Appending composes onto what the base put there.
         Registration((builder, loggerFactory) =>
         {
+            var maxParameters = ResolveMaxParametersBeforeTempTable(loggerFactory ?? NullLoggerFactory.Instance);
+            if (maxParameters.IsFailure) return maxParameters.ToNewResult<IHostApplicationBuilder>();
 
             // Why: this option registers its factory WITH WHAT THAT FACTORY NEEDS, exactly as
             // HttpConnectionType registers AddHttpClient() for its own factory. PostgreSQL supports
@@ -135,7 +146,8 @@ public sealed class PostgreSqlConnectionType
                 sp.GetRequiredService<ILogger<PostgreSqlConnectionFactory>>(),
                 sp.GetRequiredService<ILogger<PostgreSqlConnection>>(),
                 sp.GetRequiredService<ISecretManagerProvider>(),
-                sp.GetService<Lazy<IEffectiveSettingsProvider>>()),
+                sp.GetService<Lazy<IEffectiveSettingsProvider>>())
+                { DefaultMaxParametersBeforeTempTable = maxParameters.Value },
                 ServiceLifetime.Singleton));
             builder.Services.TryAdd(new ServiceDescriptor(
                 typeof(IPostgreSqlConnectionProvider),

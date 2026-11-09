@@ -117,9 +117,21 @@ public static partial class DataStoreLog
     [MessageLogging(EventId = 5372, Level = LogLevel.Information, Message = "DataStore '{name}' deleted successfully")]
     public static partial IGenericMessage DataStoreDeleted(ILogger logger, string name);
 
-    [MessageLogging(EventId = 5364, Level = LogLevel.Error, Message = "Cannot create DataStore '{name}': ConnectionName is required (the store's transport is inherited from its connection)")]
+    [MessageLogging(EventId = 20001, Level = LogLevel.Error, Message = "Cannot create DataStore '{name}': ConnectionName is required (the store's transport is inherited from its connection)", ClientMessage = "Cannot create DataStore '{name}': ConnectionName is required (the store's transport is inherited from its connection)")]
     public static partial IGenericMessage ConnectionNameRequired(ILogger logger, string name);
 
     [MessageLogging(EventId = 5383, Level = LogLevel.Error, Message = "DataStore '{name}' has no Implementation configured")]
     public static partial IGenericMessage ImplementationMissing(ILogger logger, string name);
+
+    /// <summary>Logs that Data store path was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30001, Level = LogLevel.Warning, Message = "Data store path was not found, or is not visible to the caller", ClientMessage = "Data store path was not found")]
+    public static partial IGenericMessage AddDataStorePathDatastorepathNotFound(ILogger logger);
+
+    /// <summary>Logs that The data set read for a source search answered a success and no value.</summary>
+    [MessageLogging(EventId = 90001, Level = LogLevel.Error, Message = "The data set read for a source search answered a success and no value", ClientMessage = "The data sets could not be read")]
+    public static partial IGenericMessage SearchDataSetSourceDataSetsReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that Path 'pathName' already exists in DataStore 'storeName'; the path was not added.</summary>
+    [MessageLogging(EventId = 40001, Level = LogLevel.Warning, Message = "Path '{pathName}' already exists in DataStore '{storeName}'; the path was not added", ClientMessage = "A path named '{pathName}' already exists in DataStore '{storeName}'")]
+    public static partial IGenericMessage AddDataStorePathPathAlreadyExists(ILogger logger, string pathName, string storeName);
 }

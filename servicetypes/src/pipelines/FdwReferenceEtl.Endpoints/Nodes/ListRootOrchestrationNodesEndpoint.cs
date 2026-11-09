@@ -8,6 +8,8 @@ using Fdw.Services.Etl.Projects.Abstractions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceEtl.Endpoints.Nodes.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceEtl.Endpoints.Nodes;
 
@@ -56,10 +58,17 @@ public sealed class ListRootOrchestrationNodesEndpoint : EndpointWithoutRequest<
         var result = await _provider
             .Find<IOrchestrationNodeImplementationConfiguration>(n => n.ParentId is null, ct)
             .ConfigureAwait(false);
-        if (result.IsFailure || result.Value is null)
+        if (result.IsFailure)
         {
             NodeLog.RootNodesListFailed(_logger, result.CurrentMessage);
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (result.Value is null)
+        {
+            NodeLog.RootNodesListFailed(_logger, result.CurrentMessage);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NodeLog.ListRootOrchestrationNodesResultReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

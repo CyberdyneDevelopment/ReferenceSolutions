@@ -46,7 +46,7 @@ public sealed class PostgreSqlSslModesTests
     public void TheFactoryRefusesAnSslModeThatIsNoModeAndNamesIt()
     {
         var factory = new PostgreSqlConnectionFactory(
-            NullLogger<PostgreSqlConnectionFactory>.Instance, NullLogger<PostgreSqlConnection>.Instance);
+            NullLogger<PostgreSqlConnectionFactory>.Instance, NullLogger<PostgreSqlConnection>.Instance) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var result = factory.Create(
             new PostgreSqlConnectionConfiguration

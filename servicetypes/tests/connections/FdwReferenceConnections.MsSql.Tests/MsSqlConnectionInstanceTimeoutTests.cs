@@ -32,7 +32,10 @@ public sealed class MsSqlConnectionInstanceTimeoutTests
             NullLogger<MsSqlConnection>.Instance,
             new Mock<ISecretManagerProvider>().Object,
             authenticationContextAccessor: null,
-            settings);
+            settings)
+        {
+            DefaultMaxParametersBeforeTempTable = 50,
+        };
 
     private static Lazy<IEffectiveSettingsProvider> SettingHolds(int seconds)
     {
@@ -128,7 +131,7 @@ public sealed class MsSqlConnectionInstanceTimeoutTests
     [Trait("Category", "DataIntegrity")]
     public void TheConnectionThatReachesPlatformConfigurationStatesItsOwnTimeoutBecauseTheSettingsAreReadThroughIt()
     {
-        var factory = new MsSqlConnectionFactory(NullLogger<MsSqlConnectionFactory>.Instance, NullLogger<MsSqlConnection>.Instance);
+        var factory = new MsSqlConnectionFactory(NullLogger<MsSqlConnectionFactory>.Instance, NullLogger<MsSqlConnection>.Instance) { DefaultMaxParametersBeforeTempTable = 50 };
 
         var withoutOne = factory.Create(Configuration(null), resolvedSecret: null);
         var withOne = factory.Create(Configuration(30), resolvedSecret: null);

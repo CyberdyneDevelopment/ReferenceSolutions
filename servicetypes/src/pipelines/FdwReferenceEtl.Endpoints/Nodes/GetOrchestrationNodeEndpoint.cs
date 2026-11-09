@@ -8,6 +8,8 @@ using Fdw.Services.Etl.Projects.Abstractions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceEtl.Endpoints.Nodes.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceEtl.Endpoints.Nodes;
 
@@ -76,21 +78,21 @@ public sealed class GetOrchestrationNodeEndpoint : Endpoint<GetOrchestrationNode
         if (result.IsFailure)
         {
             NodeLog.NodeGetFailed(_logger, req.Id, result.CurrentMessage);
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
             return;
         }
 
         if (result.Value is null)
         {
             NodeLog.NodeNotFound(_logger, req.Id);
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NodeLog.GetOrchestrationNodeOrchestrationnodeNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
         if (result.Value is not OrchestrationNodeImplementationConfiguration node)
         {
             NodeLog.NodeGetFailed(_logger, req.Id, $"resolved to '{result.Value.GetType().Name}'");
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NodeLog.GetNodeResolvedToOtherType(_logger, req.Id)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

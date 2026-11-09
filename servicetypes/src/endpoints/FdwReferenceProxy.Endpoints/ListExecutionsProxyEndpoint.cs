@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using FdwReferenceProxy.Endpoints.Logging;
+using Fdw.Results;
 
 namespace FdwReferenceProxy.Endpoints;
 
@@ -82,8 +83,7 @@ public sealed class ListExecutionsProxyEndpoint : Endpoint<ListExecutionsProxyRe
         catch (HttpRequestException ex)
         {
             ProxyLog.ProxyFailed(_logger, "Etl", ex.Message);
-            AddError("Failed to proxy request to EtlServer");
-            await Send.ErrorsAsync(502, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(ProxyLog.ListExecutionsProxyFailedToProxyRequestTo(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

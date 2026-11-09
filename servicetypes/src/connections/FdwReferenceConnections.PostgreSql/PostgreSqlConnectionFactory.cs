@@ -1,3 +1,4 @@
+using Fdw.Services.Connections.Sql;
 using Fdw.Services;
 using System;
 using Fdw.Commands.Data.Abstractions.Logging;
@@ -25,6 +26,13 @@ namespace FdwReferenceConnections.PostgreSql;
 public sealed class PostgreSqlConnectionFactory : ServiceFactoryBase<IGenericConnection, PostgreSqlConnectionConfiguration>, IPostgreSqlConnectionFactory
 {
     private readonly ILogger<PostgreSqlConnectionFactory> _logger;
+
+    /// <summary>
+    /// Gets the default for the number of parameters a key list carries before it goes to a table the statement joins on, declared on the connection type's
+    /// service type option and handed to the factory when the type registers it (FDW-4267). A connection whose configuration states its own number takes that one.
+    /// Null when the factory was built without a connection type: the connections it builds then keep every value a parameter.
+    /// </summary>
+    public int? DefaultMaxParametersBeforeTempTable { get; init; }
     private readonly ILogger<PostgreSqlConnection> _connectionLogger;
     // Why: the factory owns secret resolution, exactly as HttpConnectionFactory owns its
     // IHttpClientFactory — PostgreSqlConnectionType registers what this factory needs. Null only on the
@@ -124,6 +132,14 @@ public sealed class PostgreSqlConnectionFactory : ServiceFactoryBase<IGenericCon
                 return GenericResult<IGenericConnection>.Failure(DatabaseCommandLog.MaxSerialInsertNotStated(_logger, connectionName));
             }
 
+            // Never defaulted (FDW-4267): the connection type hands its factory the default of MaxParametersBeforeTempTable when it registers, and every connection
+            // translates under that setting; a factory built without one is refused, naming the kind.
+            if (DefaultMaxParametersBeforeTempTable is not { } declaredDefault)
+            {
+                return GenericResult<IGenericConnection>.Failure(
+                    DatabaseCommandLog.MaxParametersBeforeTempTableNotDeclared(_logger, "PostgreSql"));
+            }
+
             // Never defaulted (FDW-3284): the command timeout is the connection's own, else the instance's setting
             // DefaultCommandTimeoutSeconds, and a connection that has neither is refused, naming it and the setting.
             var commandTimeout = InstanceCommandTimeout.Resolve(configuration.CommandTimeout, _settings, "connection", connectionName, _logger);
@@ -165,7 +181,10 @@ public sealed class PostgreSqlConnectionFactory : ServiceFactoryBase<IGenericCon
             // Create NpgsqlConnection - connection string goes out of scope after this
             var npgsqlConnection = new NpgsqlConnection(connectionString);
 
-            var connection = new PostgreSqlConnection(_connectionLogger, configuration, npgsqlConnection, connectionName, commandTimeout.Value);
+            var connection = new PostgreSqlConnection(_connectionLogger, configuration, npgsqlConnection, connectionName, commandTimeout.Value)
+            {
+                TranslationSettings = TranslationSettings.Resolve(configuration.MaxParametersBeforeTempTable, declaredDefault),
+            };
 
             PostgreSqlConnectionLog.ConnectionCreated(_logger, connectionName, configuration.Host, configuration.Port, configuration.Database);
 

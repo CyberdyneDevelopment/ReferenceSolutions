@@ -10,6 +10,8 @@ using Fdw.Services.Data.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceNfl.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
 
 namespace FdwReferenceNfl.Endpoints;
 
@@ -50,8 +52,7 @@ public sealed class CreatePlayerEndpoint : Endpoint<CreatePlayerRequest, PlayerR
         if (!dsResult.IsSuccess)
         {
             NflLog.CreatePlayerFailed(_logger, req.FirstName, req.LastName, "Failed to resolve NflPlayers DataSet");
-            AddError("Failed to resolve NflPlayers DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(dsResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -59,8 +60,7 @@ public sealed class CreatePlayerEndpoint : Endpoint<CreatePlayerRequest, PlayerR
         if (src is null)
         {
             NflLog.CreatePlayerFailed(_logger, req.FirstName, req.LastName, "No active source found for NflPlayers DataSet");
-            AddError("No active source found for NflPlayers DataSet");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(NflLog.CreatePlayerReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -97,8 +97,7 @@ public sealed class CreatePlayerEndpoint : Endpoint<CreatePlayerRequest, PlayerR
         if (!result.IsSuccess)
         {
             NflLog.CreatePlayerFailed(_logger, req.FirstName, req.LastName, result.CurrentMessage!);
-            AddError("Failed to create player");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(result, HttpContext)).ConfigureAwait(false);
             return;
         }
 

@@ -145,18 +145,18 @@ public static partial class ExecutionLog
     [MessageLogging(EventId = 8451, Level = LogLevel.Error, Message = "Execution '{executionId}' was decided but could not be put back to waiting: {message}")]
     public static partial IGenericMessage ExecutionReturnToWaitingFailed(ILogger logger, Guid executionId, string? message);
 
-    [MessageLogging(EventId = 8452, Level = LogLevel.Warning, Message = "Execution '{executionId}' is a '{itemType}' run; only a project run or a pipeline run waits for approval")]
+    [MessageLogging(EventId = 20001, Level = LogLevel.Warning, Message = "Execution '{executionId}' is a '{itemType}' run; only a project run or a pipeline run waits for approval", ClientMessage = "Execution '{executionId}' is a '{itemType}' run; only a project run or a pipeline run waits for approval")]
     public static partial IGenericMessage ExecutionNotAProjectRun(ILogger logger, Guid executionId, string itemType);
 
-    [MessageLogging(EventId = 8453, Level = LogLevel.Error, Message = "Execution '{executionId}' cannot be released: its record has no {missing}")]
+    [MessageLogging(EventId = 90001, Level = LogLevel.Error, Message = "Execution '{executionId}' cannot be released: its record has no {missing}", ClientMessage = "Execution '{executionId}' cannot be released: its record has no {missing}")]
     public static partial IGenericMessage ProjectRunIncomplete(ILogger logger, Guid executionId, string missing);
 
-    [MessageLogging(EventId = 8454, Level = LogLevel.Warning, Message = "Execution '{executionId}' cannot be released: the project queue is full for project '{projectName}'")]
+    [MessageLogging(EventId = 80001, Level = LogLevel.Warning, Message = "Execution '{executionId}' cannot be released: the project queue is full for project '{projectName}'", ClientMessage = "Execution '{executionId}' cannot be released: the project queue is full for project '{projectName}'")]
     public static partial IGenericMessage ProjectQueueFullOnRelease(ILogger logger, Guid executionId, string projectName);
 
-    [MessageLogging(EventId = 8455, Level = LogLevel.Warning, Message = "Execution '{executionId}' cannot be released: the request kept for it is gone (the host restarted); start the pipeline again, or deny this run")]
+    [MessageLogging(EventId = 90002, Level = LogLevel.Warning, Message = "Execution '{executionId}' cannot be released: the request kept for it is gone (the host restarted); start the pipeline again, or deny this run", ClientMessage = "Execution '{executionId}' cannot be released: the request kept for it is gone (the host restarted); start the pipeline again, or deny this run")]
     public static partial IGenericMessage PipelineRunHoldLost(ILogger logger, Guid executionId);
 
-    [MessageLogging(EventId = 8456, Level = LogLevel.Warning, Message = "Execution '{executionId}' cannot be released: the queue did not take the run of pipeline '{pipelineName}': {reason}")]
+    [MessageLogging(EventId = 80002, Level = LogLevel.Warning, Message = "Execution '{executionId}' cannot be released: the queue did not take the run of pipeline '{pipelineName}': {reason}", ClientMessage = "Execution '{executionId}' cannot be released: the queue did not take the run of pipeline '{pipelineName}'")]
     public static partial IGenericMessage PipelineQueueFullOnRelease(ILogger logger, Guid executionId, string pipelineName, string reason);
 }

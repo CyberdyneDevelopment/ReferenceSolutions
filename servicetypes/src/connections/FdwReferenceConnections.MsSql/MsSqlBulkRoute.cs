@@ -24,25 +24,26 @@ internal static class MsSqlBulkRoute
     /// Says whether the command takes the bulk route into <paramref name="container"/> on a connection that lets an insert run
     /// serially up to <paramref name="maxSerialInsert"/> rows (<see cref="SerialLimit"/>).
     /// </summary>
-    internal static bool Takes(IDataCommand command, IStorageContainer container, int maxSerialInsert)
+    internal static bool Takes(IDataCommand command, IStorageContainer container, int maxSerialInsert, int maxParametersBeforeTempTable)
         => command is IDatabaseConnectionCommand routed
            && routed.ReroutesToBulk(NoSerialRows)
-           && routed.ReroutesToBulk(SerialLimit(container, maxSerialInsert));
+           && routed.ReroutesToBulk(SerialLimit(container, maxSerialInsert, maxParametersBeforeTempTable));
 
     /// <summary>
     /// The most rows an insert into <paramref name="container"/> runs serially: the connection's configured
-    /// <paramref name="maxSerialInsert"/>, or fewer when one SQL Server request cannot carry that many rows of this container's
-    /// columns (2100 parameters). Rows beyond it go to the bulk copy, which has no such limit (FDW-1173).
+    /// <paramref name="maxSerialInsert"/>, or fewer when one request cannot carry that many rows of this container's columns within the connection's
+    /// <paramref name="maxParametersBeforeTempTable"/>. Rows
+    /// beyond it go to the bulk copy, which has no such limit (FDW-1173, FDW-4267).
     /// </summary>
-    internal static int SerialLimit(IStorageContainer container, int maxSerialInsert)
-        => Math.Min(maxSerialInsert, MsSqlInsertTranslator.RowsPerRequest(container));
+    internal static int SerialLimit(IStorageContainer container, int maxSerialInsert, int maxParametersBeforeTempTable)
+        => Math.Min(maxSerialInsert, MsSqlInsertTranslator.RowsPerRequest(container, maxParametersBeforeTempTable));
 
     /// <summary>
     /// Plans the bulk copy of a command that takes the bulk route, or says why it cannot: this connection's bulk mode copies
     /// inserts only, and the failure is a coded result naming the command and the connection.
     /// </summary>
     internal static IGenericResult<MsSqlBulkCopyPlan> Plan(
-        IDataCommand command, IStorageContainer container, ILogger logger, string connectionName, int maxSerialInsert, bool inTransaction)
+        IDataCommand command, IStorageContainer container, ILogger logger, string connectionName, int maxSerialInsert, int maxParametersBeforeTempTable, bool inTransaction)
     {
         if (!string.Equals(command.CommandType, Insert, StringComparison.Ordinal))
         {
@@ -51,7 +52,7 @@ internal static class MsSqlBulkRoute
         }
 
         DatabaseCommandLog.BulkRouteChosen(
-            logger, command.CommandType, connectionName, SerialLimit(container, maxSerialInsert), inTransaction ? " in a unit of work" : string.Empty);
+            logger, command.CommandType, connectionName, SerialLimit(container, maxSerialInsert, maxParametersBeforeTempTable), inTransaction ? " in a unit of work" : string.Empty);
         return MsSqlInsertTranslator.Plan(command, container);
     }
 }

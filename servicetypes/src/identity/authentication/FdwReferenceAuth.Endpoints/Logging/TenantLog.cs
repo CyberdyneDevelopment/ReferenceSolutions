@@ -110,7 +110,7 @@ public static partial class TenantLog
     [MessageLogging(EventId = 8639, Level = LogLevel.Information, Message = "User '{userId}' set tenant '{tenantId}' as default")]
     public static partial IGenericMessage DefaultTenantSet(ILogger logger, string userId, Guid tenantId);
 
-    [MessageLogging(EventId = 8640, Level = LogLevel.Error, Message = "The TenantSwitch flow did not issue a token for user '{userId}' and tenant '{tenantId}': {reason}")]
+    [MessageLogging(EventId = 90002, Level = LogLevel.Error, Message = "The TenantSwitch flow did not issue a token for user '{userId}' and tenant '{tenantId}': {reason}", ClientMessage = "The TenantSwitch flow did not issue a token for user '{userId}' and tenant")]
     public static partial IGenericMessage TenantSwitchNotIssued(ILogger logger, string userId, Guid tenantId, string reason);
 
     [MessageLogging(EventId = 8641, Level = LogLevel.Information, Message = "Reading the memberships of user '{idOrName}' for an administrator")]
@@ -118,4 +118,28 @@ public static partial class TenantLog
 
     [MessageLogging(EventId = 8642, Level = LogLevel.Warning, Message = "The caller does not administer user '{idOrName}', so their memberships are not read")]
     public static partial IGenericMessage UserMembershipsNotAdministered(ILogger logger, string idOrName);
+
+    /// <summary>Logs that User memberships was not found, or is not visible to the caller.</summary>
+    [MessageLogging(EventId = 30001, Level = LogLevel.Warning, Message = "User memberships was not found, or is not visible to the caller", ClientMessage = "User memberships was not found")]
+    public static partial IGenericMessage GetUserMembershipsUsermembershipsNotFound(ILogger logger);
+
+    /// <summary>Logs that The memberships read answered a success and no value.</summary>
+    [MessageLogging(EventId = 90001, Level = LogLevel.Error, Message = "The memberships read answered a success and no value", ClientMessage = "The memberships could not be read")]
+    public static partial IGenericMessage SetDefaultTenantMembershipsReturnedNothing(ILogger logger);
+
+    /// <summary>Logs that The request to clear default organization was refused: the caller is not signed in.</summary>
+    [MessageLogging(EventId = 50001, Level = LogLevel.Warning, Message = "The request to clear default organization was refused: the caller is not signed in", ClientMessage = "You must be signed in to clear default organization")]
+    public static partial IGenericMessage ClearDefaultOrganizationNotSignedIn(ILogger logger);
+
+    /// <summary>Logs that The request to get user memberships was refused: the caller is not allowed.</summary>
+    [MessageLogging(EventId = 108646, Level = LogLevel.Warning, Message = "The request to get user memberships was refused: the caller is not allowed", ClientMessage = "You are not allowed to get user memberships")]
+    public static partial IGenericMessage GetUserMembershipsForbidden(ILogger logger);
+
+    /// <summary>Logs that The request to set default organization was refused: the caller is not signed in.</summary>
+    [MessageLogging(EventId = 50002, Level = LogLevel.Warning, Message = "The request to set default organization was refused: the caller is not signed in", ClientMessage = "You must be signed in to set default organization")]
+    public static partial IGenericMessage SetDefaultOrganizationNotSignedIn(ILogger logger);
+
+    /// <summary>Logs that The request to set default tenant was refused: the caller is not signed in.</summary>
+    [MessageLogging(EventId = 50003, Level = LogLevel.Warning, Message = "The request to set default tenant was refused: the caller is not signed in", ClientMessage = "You must be signed in to set default tenant")]
+    public static partial IGenericMessage SetDefaultTenantNotSignedIn(ILogger logger);
 }

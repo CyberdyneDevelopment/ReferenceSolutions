@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceDdl.Endpoints.Logging;
+using Fdw.Results;
 
 namespace FdwReferenceDdl.Endpoints;
 
@@ -132,7 +133,7 @@ public sealed class GenerateDdlEndpoint : Endpoint<GenerateDdlRequest, GenerateD
         var configResult = await _configProvider.Get(req.Name, ct).ConfigureAwait(false);
         if (!configResult.IsSuccess || configResult.Value is not { } config)
         {
-            await Send.NotFoundAsync(ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(DdlLog.GenerateDdlNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -153,8 +154,7 @@ public sealed class GenerateDdlEndpoint : Endpoint<GenerateDdlRequest, GenerateD
         catch (Exception ex)
         {
             DdlLog.DdlGenerationFailed(_logger, req.Name, ex.Message);
-            AddError("DDL generation failed");
-            await Send.ErrorsAsync(500, ct);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(DdlLog.GenerateDdlFaulted(_logger)), HttpContext)).ConfigureAwait(false);
         }
     }
 

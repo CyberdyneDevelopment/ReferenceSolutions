@@ -1,3 +1,4 @@
+using Fdw.Services.Connections.Sql;
 using Fdw.Services;
 using System;
 using Fdw.Commands.Data.Abstractions.Logging;
@@ -28,6 +29,13 @@ namespace FdwReferenceConnections.MsSql;
 public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnection, MsSqlConnectionConfiguration>, IMsSqlConnectionFactory
 {
     private readonly ILogger<MsSqlConnectionFactory> _logger;
+
+    /// <summary>
+    /// Gets the default for the number of parameters a key list carries before it goes to a table the statement joins on, declared on the connection type's
+    /// service type option and handed to the factory when the type registers it (FDW-4267). A connection whose configuration states its own number takes that one.
+    /// Null when the factory was built without a connection type: the connections it builds then keep every value a parameter.
+    /// </summary>
+    public int? DefaultMaxParametersBeforeTempTable { get; init; }
     private readonly ILogger<MsSqlConnection> _connectionLogger;
     // Why the ACCESSOR and not an IAuthenticationContext: this factory is registered Singleton (the
     // three-phase eager-resolve/cache pattern requires it), so any IAuthenticationContext captured
@@ -186,6 +194,11 @@ public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnecti
         if (configuration.MaxSerialInsert <= 0)
             return GenericResult<IGenericConnection>.Failure(DatabaseCommandLog.MaxSerialInsertNotStated(_logger, name));
 
+        // Never defaulted (FDW-4267): the connection type hands its factory the default of MaxParametersBeforeTempTable when it registers, and every connection
+        // translates under that setting; a factory built without one is refused, naming the kind.
+        if (DefaultMaxParametersBeforeTempTable is not { } declaredDefault)
+            return GenericResult<IGenericConnection>.Failure(DatabaseCommandLog.MaxParametersBeforeTempTableNotDeclared(_logger, "MsSql"));
+
         // Never defaulted (FDW-4109): a pooled connection states its pool sizes, and sizes SQL Server cannot use are refused, naming them,
         // where SqlConnectionStringBuilder would otherwise throw on them.
         if (!PoolSizesUsable(configuration))
@@ -238,7 +251,10 @@ public sealed class MsSqlConnectionFactory : ServiceFactoryBase<IGenericConnecti
             configuration,
             built.Value.ConnectionString,
             commandTimeout.Value,
-            _authenticationContextAccessor));
+            _authenticationContextAccessor)
+        {
+            TranslationSettings = TranslationSettings.Resolve(configuration.MaxParametersBeforeTempTable, declaredDefault),
+        });
     }
 
 

@@ -9,6 +9,9 @@ using Fdw.Services.Data;
 using Fdw.Services.Data.Endpoints;
 using Fdw.Services.Data.Endpoints.Logging;
 using Microsoft.Extensions.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
+using Fdw.Results;
+using FdwReferenceDataStores.Endpoints.Logging;
 
 namespace FdwReferenceDataSets.Endpoints;
 
@@ -62,7 +65,7 @@ public class SearchDataSetSourceEndpoint : Endpoint<SearchDataSetSourceRequest, 
         var allResult = await _dataSetProvider.Get(ConfigurationLevels.RecordOnly, ct).ConfigureAwait(false);
         if (!allResult.IsSuccess)
         {
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(allResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -70,7 +73,7 @@ public class SearchDataSetSourceEndpoint : Endpoint<SearchDataSetSourceRequest, 
         var allDataSets = allResult.Value;
         if (allDataSets is null)
         {
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(DataStoreLog.SearchDataSetSourceDataSetsReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -86,9 +89,15 @@ public class SearchDataSetSourceEndpoint : Endpoint<SearchDataSetSourceRequest, 
         }
 
         var tree = await DataSetCategoryLinks.Tree(_categories, _logger, ct).ConfigureAwait(false);
-        if (tree.IsFailure || tree.Value is null)
+        if (tree.IsFailure)
         {
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(tree, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (tree.Value is null)
+        {
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceDataAnswerLog.SearchDataSetSourceTreeReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -96,9 +105,15 @@ public class SearchDataSetSourceEndpoint : Endpoint<SearchDataSetSourceRequest, 
         foreach (var ds in candidates.OrderBy(ds => ds.Name, System.StringComparer.OrdinalIgnoreCase))
         {
             var label = DataSetCategoryLinks.Label(tree.Value, ds.CategoryId, _logger);
-            if (label.IsFailure || label.Value is null)
+            if (label.IsFailure)
             {
-                await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+                await Send.ResultAsync(ResultHttpStatusMapper.Answer(label, HttpContext)).ConfigureAwait(false);
+                return;
+            }
+
+            if (label.Value is null)
+            {
+                await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceDataAnswerLog.SearchDataSetSourceLabelReturnedNothing(_logger)), HttpContext)).ConfigureAwait(false);
                 return;
             }
 

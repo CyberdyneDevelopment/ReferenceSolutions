@@ -7,6 +7,7 @@ using Fdw.Data.MsSql;
 using Fdw.Results;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging.Abstractions;
+using Fdw.Services.Connections.Sql;
 
 namespace FdwReferenceConnections.MsSql.Tests;
 
@@ -86,7 +87,10 @@ public sealed class MsSqlBulkRouteTests
     private static SqlTransaction NeverUsedTransaction() => (SqlTransaction)RuntimeHelpers.GetUninitializedObject(typeof(SqlTransaction));
 
     private static MsSqlDataConnectionTransaction UnitOfWork(SqlConnection connection, SqlTransaction transaction, RecordingWriter writer)
-        => new(connection, transaction, NullLogger.Instance, "Main", MaxSerialInsert, CommandTimeoutSeconds, writer.Write);
+        => new(connection, transaction, NullLogger.Instance, "Main", MaxSerialInsert, CommandTimeoutSeconds, writer.Write)
+        {
+            TranslationSettings = new TranslationSettings(2100),
+        };
 
     [Theory]
     [InlineData(1000, false)]
@@ -95,7 +99,7 @@ public sealed class MsSqlBulkRouteTests
     [Trait("Category", "DataIntegrity")]
     public void AnInsertTakesTheBulkRouteOnlyAboveTheLimit(int rows, bool takesBulk)
     {
-        MsSqlBulkRoute.Takes(Insert(rows), Container(), MaxSerialInsert).ShouldBe(takesBulk);
+        MsSqlBulkRoute.Takes(Insert(rows), Container(), MaxSerialInsert, 2100).ShouldBe(takesBulk);
     }
 
     [Theory]
@@ -107,7 +111,19 @@ public sealed class MsSqlBulkRouteTests
     {
         // Fifteen columns, as the earthquake table has: one request carries 2100 / 15 = 140 rows however high MaxSerialInsert is
         // set, so 141 rows (well under the 1000 limit) cannot go as INSERT statements (FDW-1173).
-        MsSqlBulkRoute.Takes(Insert(rows), Container(columns: 15), MaxSerialInsert).ShouldBe(takesBulk);
+        MsSqlBulkRoute.Takes(Insert(rows), Container(columns: 15), MaxSerialInsert, 2100).ShouldBe(takesBulk);
+    }
+
+    [Fact]
+    [Trait("Priority", "P0")]
+    [Trait("Category", "DataIntegrity")]
+    public void AConnectionThatLowersTheParameterLimitCarriesFewerRowsPerRequest()
+    {
+        // Fifteen columns: 1500 parameters carry 100 rows where SQL Server's 2100 carry 140 (FDW-4267).
+        MsSqlBulkRoute.SerialLimit(Container(columns: 15), MaxSerialInsert, 1500).ShouldBe(100);
+        MsSqlBulkRoute.SerialLimit(Container(columns: 15), MaxSerialInsert, 50).ShouldBe(3);
+        MsSqlBulkRoute.Takes(Insert(101), Container(columns: 15), MaxSerialInsert, 1500).ShouldBeTrue();
+        MsSqlBulkRoute.Takes(Insert(100), Container(columns: 15), MaxSerialInsert, 1500).ShouldBeFalse();
     }
 
     [Fact]
@@ -115,9 +131,9 @@ public sealed class MsSqlBulkRouteTests
     [Trait("Category", "DataIntegrity")]
     public void TheSerialLimitIsTheLowerOfTheConfiguredLimitAndWhatOneRequestCarries()
     {
-        MsSqlBulkRoute.SerialLimit(Container(columns: 15), MaxSerialInsert).ShouldBe(140);
-        MsSqlBulkRoute.SerialLimit(Container(columns: 1), MaxSerialInsert).ShouldBe(MaxSerialInsert);
-        MsSqlBulkRoute.SerialLimit(Container(columns: 15), 50).ShouldBe(50);
+        MsSqlBulkRoute.SerialLimit(Container(columns: 15), MaxSerialInsert, 2100).ShouldBe(140);
+        MsSqlBulkRoute.SerialLimit(Container(columns: 1), MaxSerialInsert, 2100).ShouldBe(MaxSerialInsert);
+        MsSqlBulkRoute.SerialLimit(Container(columns: 15), 50, 2100).ShouldBe(50);
     }
 
     [Fact]
@@ -140,8 +156,8 @@ public sealed class MsSqlBulkRouteTests
     [Trait("Category", "DataIntegrity")]
     public void ACommandThatDoesNotRouteNeverTakesTheBulkRoute()
     {
-        MsSqlBulkRoute.Takes(new DeleteCommand(), Container(), 0).ShouldBeFalse();
-        MsSqlBulkRoute.Takes(new Mock<IDataCommand>().Object, Container(), 0).ShouldBeFalse();
+        MsSqlBulkRoute.Takes(new DeleteCommand(), Container(), 0, 2100).ShouldBeFalse();
+        MsSqlBulkRoute.Takes(new Mock<IDataCommand>().Object, Container(), 0, 2100).ShouldBeFalse();
     }
 
     [Fact]
@@ -149,7 +165,7 @@ public sealed class MsSqlBulkRouteTests
     [Trait("Category", "DataIntegrity")]
     public void ACommandThatIsNotAnInsertIsRefusedTheBulkModeWithACodedResult()
     {
-        var plan = MsSqlBulkRoute.Plan(new DeleteCommand(), Container(), NullLogger.Instance, "Main", MaxSerialInsert, inTransaction: false);
+        var plan = MsSqlBulkRoute.Plan(new DeleteCommand(), Container(), NullLogger.Instance, "Main", MaxSerialInsert, 2100, inTransaction: false);
 
         plan.IsSuccess.ShouldBeFalse();
         plan.CurrentMessage.ShouldNotBeNull().ShouldContain("bulk");
@@ -213,7 +229,10 @@ public sealed class MsSqlBulkRouteTests
     {
         var unit = new MsSqlDataConnectionTransaction(
             new SqlConnection(), NeverUsedTransaction(), NullLogger.Instance, "Main", MaxSerialInsert, CommandTimeoutSeconds,
-            (_, _, _, _) => throw new InvalidOperationException("the copy failed"));
+            (_, _, _, _) => throw new InvalidOperationException("the copy failed"))
+        {
+            TranslationSettings = new TranslationSettings(2100),
+        };
 
         var result = await unit.Execute<int>(Insert(MaxSerialInsert + 1), Container(), TestContext.Current.CancellationToken);
 
@@ -225,7 +244,7 @@ public sealed class MsSqlBulkRouteTests
     [Trait("Category", "DataIntegrity")]
     public void AConnectionThatDoesNotStateMaxSerialInsertIsRefusedNamingIt()
     {
-        var factory = new MsSqlConnectionFactory(NullLogger<MsSqlConnectionFactory>.Instance, NullLogger<MsSqlConnection>.Instance);
+        var factory = new MsSqlConnectionFactory(NullLogger<MsSqlConnectionFactory>.Instance, NullLogger<MsSqlConnection>.Instance) { DefaultMaxParametersBeforeTempTable = 50 };
         var configuration = new MsSqlConnectionConfiguration
         {
             Port = 1433,

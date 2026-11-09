@@ -76,10 +76,16 @@ public class QueryDataSetEndpoint : Endpoint<QueryDataSetRequest, QueryDataSetRe
     {
         DataSetQueryLog.ResolvingDataSet(_logger, req.DataSetName);
         var dataSetResult = await _dataSetProvider.Get(req.DataSetName, ct).ConfigureAwait(false);
-        if (!dataSetResult.IsSuccess || dataSetResult.Value is null)
+        if (dataSetResult.IsFailure)
+        {
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(dataSetResult, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (dataSetResult.Value is null)
         {
             DataSetQueryLog.DataSetNotFound(_logger, req.DataSetName);
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(DataSetQueryLog.QueryDataSetQuerydatasetNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 

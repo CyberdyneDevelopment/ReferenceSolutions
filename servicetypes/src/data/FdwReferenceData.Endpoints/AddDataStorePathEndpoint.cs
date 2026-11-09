@@ -6,9 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using FastEndpoints;
+using Fdw.Results;
 using Fdw.Services.Connections;
 using Fdw.Services.Data;
 using Fdw.Services.Data.Endpoints;
+using Fdw.Web.RestEndpoints.ErrorMapping;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using FdwReferenceDataStores.Endpoints.Logging;
@@ -60,10 +62,16 @@ public class AddDataStorePathEndpoint : Endpoint<AddDataStorePathRequest, DataSt
         // Why: Get now cascades the full Paths hierarchy (single source — no GetWithChildren verb),
         // so the duplicate-name guard below has the existing path list without a separate query.
         var storeResult = await _dataStoreProvider.Get(req.Name, ct).ConfigureAwait(false);
-        if (!storeResult.IsSuccess || storeResult.Value is null)
+        if (storeResult.IsFailure)
+        {
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(storeResult, HttpContext)).ConfigureAwait(false);
+            return;
+        }
+
+        if (storeResult.Value is null)
         {
             DataStoreLog.DataStoreNotFound(_logger, req.Name);
-            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(DataStoreLog.AddDataStorePathDatastorepathNotFound(_logger)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -72,7 +80,7 @@ public class AddDataStorePathEndpoint : Endpoint<AddDataStorePathRequest, DataSt
         if (store.Paths.Any(p => string.Equals(p.Name, req.PathName, StringComparison.Ordinal)))
         {
             DataStoreLog.PathAlreadyExists(_logger, req.PathName, req.Name);
-            ThrowError($"A path named '{req.PathName}' already exists in DataStore '{req.Name}'", 409);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(DataStoreLog.AddDataStorePathPathAlreadyExists(_logger, req.PathName, req.Name)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
@@ -96,13 +104,20 @@ public class AddDataStorePathEndpoint : Endpoint<AddDataStorePathRequest, DataSt
         store.Paths.Add(path);
 
         // One save for the whole aggregate: the implementation provider cascades its children.
-        var saveResult = await _dataStoreProvider.Update(store, "DataStore", store.Implementation, store.Name, ct).ConfigureAwait(false);
+        var saveResult = await _dataStoreProvider.UpdateStore(store, ct).ConfigureAwait(false);
         if (!saveResult.IsSuccess)
         {
+            // Why: a store of another tenant that the cross-tenant change setting forbids changing is a 403 whose reason is the client text of its message, which names the setting (FDW-4459), not a fault and not the log line.
+            if (FailureCategory.IsForbidden(saveResult))
+            {
+                await Send.ResultAsync(ResultHttpStatusMapper.Answer(saveResult, HttpContext)).ConfigureAwait(false);
+                return;
+            }
+
             // Why: Log the failure via MessageLogging (log-and-return pattern). The provider's
             // own Save already logged the root cause; this entry records the endpoint-level context.
             DataStoreLog.AddPathFailed(_logger, req.PathName, req.Name, saveResult.CurrentMessage);
-            await Send.StatusCodeAsync(StatusCodes.Status500InternalServerError, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(saveResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 

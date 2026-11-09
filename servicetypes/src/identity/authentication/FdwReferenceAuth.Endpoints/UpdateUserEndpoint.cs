@@ -9,6 +9,7 @@ using Fdw.Services.Users.Endpoints;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using FdwReferenceAuth.Endpoints.Logging;
+using Fdw.Web.RestEndpoints.ErrorMapping;
 
 namespace FdwReferenceAuth.Endpoints;
 
@@ -52,17 +53,13 @@ public class UpdateUserEndpoint : UpdateUserEndpointBase<UpdateUserRequest>
             : await UserProvider.Get(req.IdOrName, ct).ConfigureAwait(false);
         if (userResult.IsFailure)
         {
-            await Send.ErrorsAsync(500, ct).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(userResult, HttpContext)).ConfigureAwait(false);
             return;
         }
 
         if (userResult.Value is null)
         {
-            await Send.ResultAsync(TypedResults.Json(new
-            {
-                errorCode = "NotFound",
-                messages = new[] { $"User '{req.IdOrName}' was not found." }
-            }, statusCode: StatusCodes.Status404NotFound)).ConfigureAwait(false);
+            await Send.ResultAsync(ResultHttpStatusMapper.Answer(GenericResult.Failure(FdwReferenceAuthAnswerLog.UpdateUserUserNotFound(_logger, req.IdOrName)), HttpContext)).ConfigureAwait(false);
             return;
         }
 
