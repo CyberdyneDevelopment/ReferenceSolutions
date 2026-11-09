@@ -42,8 +42,21 @@ if [[ -z "$base_prefix" ]]; then
 fi
 expected="$base_prefix${base_suffix:+-$base_suffix}.*"
 
-FDW_VERSION="${FDW_VERSION:-$expected}"
-REFERENCE_VERSION="${REFERENCE_VERSION:-$expected}"
+# Why a run can ask for the exact base with --exact: the default above is a float ("1.5.1-rc.7.*"),
+# which is right on internal and develop, where the packages are published as rc.7.<date>.<height>
+# and rc.7.build.N. On prerelease and main the packages are published at the exact base
+# ("1.5.1-rc.7"), and a float "rc.7.*" does NOT match the exact version: it matches only the
+# develop-tier builds that happen to share the feed, whose nuspecs floor Fdw.* at a build.N that
+# nuget.org never holds (FDW-4255, pipeline 14674: NU1102 for build.442). The caller states the
+# tier; with no argument the float stays, as before. FDW_VERSION and REFERENCE_VERSION still win.
+case "${1:-}" in
+  "") default_version="$expected" ;;
+  --exact) default_version="$base_prefix${base_suffix:+-$base_suffix}" ;;
+  *) echo "unknown argument '$1' - the only one is --exact (restore the exact base version, for prerelease and main)" >&2; exit 1 ;;
+esac
+
+FDW_VERSION="${FDW_VERSION:-$default_version}"
+REFERENCE_VERSION="${REFERENCE_VERSION:-$default_version}"
 NUGET_CONFIG="${NUGET_CONFIG:-$HOME/.nuget/NuGet/NuGet.Config}"
 
 if [[ ! -f "$NUGET_CONFIG" ]]; then
